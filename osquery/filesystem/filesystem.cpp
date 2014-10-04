@@ -1,7 +1,5 @@
 // Copyright 2004-present Facebook. All Rights Reserved.
 
-#include "osquery/filesystem.h"
-
 #include <fstream>
 #include <sstream>
 
@@ -13,6 +11,8 @@
 
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+
+#include "osquery/filesystem.h"
 
 using osquery::Status;
 
@@ -55,6 +55,17 @@ cleanup:
     file_h.close();
   }
   return Status(statusCode, statusMessage);
+}
+
+Status isWritable(const std::string& path) {
+  if (!pathExists(path).ok()) {
+    return Status(1, "Path does not exists.");
+  }
+
+  if (access(path.c_str(), W_OK) == 0) {
+    return Status(0, "OK");
+  }
+  return Status(1, "Path is not writable.");
 }
 
 Status pathExists(const std::string& path) {

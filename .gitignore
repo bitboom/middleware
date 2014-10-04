@@ -7,6 +7,11 @@
 *.swp
 *~
 
-# Build
-build/*
-deps/*
+# Build Artifacts
+build/
+
+# Dependency Artifacts
+deps/
+
+# Run Artifacts
+*.log

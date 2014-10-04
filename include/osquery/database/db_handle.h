@@ -8,9 +8,12 @@
 
 #include <rocksdb/db.h>
 
+#include "osquery/flags.h"
 #include "osquery/status.h"
 
 namespace osquery {
+
+DECLARE_string(db_path);
 
 /////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -179,7 +182,7 @@ class DBHandle {
    * @param in_memory a boolean indicating wether or not the database should
    * be creating in memory or not.
    */
-  DBHandle(std::string path, bool in_memory);
+  DBHandle(const std::string& path, bool in_memory);
 
   /**
    * @brief A method which allows you to override the database path
