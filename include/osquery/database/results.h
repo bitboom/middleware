@@ -242,14 +242,15 @@ Status deserializeHistoricalQueryResultsJSON(const std::string& json,
  * entire DiffResults set as well as some additional metadata.
  */
 struct ScheduledQueryLogItem {
-  /// The data which was changed as a result of the schedueld query
+  /// The data which was changed as a result of the scheduled query
   DiffResults diffResults;
 
   /// The name of the scheduled query
   std::string name;
 
-  /// The hostname of the host which the scheduled query was executed on
-  std::string hostname;
+  /// The identifier (hostname, or uuid) of the host on which the query was
+  /// executed
+  std::string hostIdentifier;
 
   /// The time that the query was executed, in unix time
   int unixTime;
@@ -323,4 +324,20 @@ Status serializeScheduledQueryLogItemAsEvents(
  */
 Status serializeScheduledQueryLogItemAsEventsJSON(
     const ScheduledQueryLogItem& i, std::string& json);
+
+/**
+ * @brief Add a Row to a QueryData if the Row hasn't appeared in the QueryData
+ * already
+ *
+ * Note that this function will iterate through the QueryData list until a
+ * given Row is found (or not found). This shouldn't be that significant of an
+ * overhead for most use-cases, but it's worth keeping in mind before you use
+ * this in it's current state.
+ *
+ * @param q the QueryData list to append to
+ * @param r the Row to add to q
+ *
+ * @return true if the Row was added to the QueryData, false if it wasn't
+ */
+bool addUniqueRowToQueryData(QueryData& q, const Row& r);
 }

@@ -255,7 +255,7 @@ Status deserializeHistoricalQueryResultsJSON(const std::string& json,
 
 /////////////////////////////////////////////////////////////////////////////
 // ScheduledQueryLogItem - the representation of a log result occuring when a
-// s schedueld query yields operating system state change.
+// scheduled query yields operating system state change.
 /////////////////////////////////////////////////////////////////////////////
 
 Status serializeScheduledQueryLogItem(const ScheduledQueryLogItem& i,
@@ -269,7 +269,7 @@ Status serializeScheduledQueryLogItem(const ScheduledQueryLogItem& i,
 
     tree.add_child("diffResults", diffResults);
     tree.put<std::string>("name", i.name);
-    tree.put<std::string>("hostname", i.hostname);
+    tree.put<std::string>("hostIdentifier", i.hostIdentifier);
     tree.put<std::string>("calendarTime", i.calendarTime);
     tree.put<int>("unixTime", i.unixTime);
   } catch (const std::exception& e) {
@@ -282,7 +282,7 @@ Status serializeEvent(const ScheduledQueryLogItem& item,
                       const boost::property_tree::ptree& event,
                       boost::property_tree::ptree& tree) {
   tree.put<std::string>("name", item.name);
-  tree.put<std::string>("hostname", item.hostname);
+  tree.put<std::string>("hostIdentifier", item.hostIdentifier);
   tree.put<std::string>("calendarTime", item.calendarTime);
   tree.put<int>("unixTime", item.unixTime);
 
@@ -353,5 +353,13 @@ Status serializeScheduledQueryLogItemJSON(const ScheduledQueryLogItem& i,
     return Status(1, e.what());
   }
   return Status(0, "OK");
+}
+
+bool addUniqueRowToQueryData(QueryData& q, const Row& r) {
+  if (std::find(q.begin(), q.end(), r) != q.end()) {
+    return false;
+  }
+  q.push_back(r);
+  return true;
 }
 }

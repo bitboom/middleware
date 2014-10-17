@@ -53,8 +53,8 @@ QueryData getTestDBExpectedResults() {
   return d;
 }
 
-std::vector<std::pair<std::string, QueryData>> getTestDBResultStream() {
-  std::vector<std::pair<std::string, QueryData>> results;
+std::vector<std::pair<std::string, QueryData> > getTestDBResultStream() {
+  std::vector<std::pair<std::string, QueryData> > results;
 
   std::string q2 =
       "INSERT INTO test_table (username, age) VALUES (\"joe\", 25)";
@@ -190,10 +190,10 @@ getSerializedScheduledQueryLogItem() {
   i.name = "foobar";
   i.calendarTime = "Mon Aug 25 12:10:57 2014";
   i.unixTime = 1408993857;
-  i.hostname = "foobaz";
+  i.hostIdentifier = "foobaz";
   root.add_child("diffResults", dr.first);
   root.put<std::string>("name", "foobar");
-  root.put<std::string>("hostname", "foobaz");
+  root.put<std::string>("hostIdentifier", "foobaz");
   root.put<std::string>("calendarTime", "Mon Aug 25 12:10:57 2014");
   root.put<int>("unixTime", 1408993857);
   return std::make_pair(root, i);
@@ -256,17 +256,17 @@ WxULUHBC6qH9gAlKEqZYS3CwpCEl/Blznwi30r4CwwQ6dLfeXoPQDxAt7LyPpV4=
 
 std::string getEtcHostsContent() {
   std::string content = R"(
-    ##
-    # Host Database
-    #
-    # localhost is used to configure the loopback interface
-    # when the system is booting.  Do not change this entry.
-    ##
-    127.0.0.1       localhost
-    255.255.255.255 broadcasthost
-    ::1             localhost
-    fe80::1%lo0     localhost
-    )";
+##
+#Host Database
+#
+#localhost is used to configure the loopback interface
+#when the system is booting.Do not change this entry.
+##
+127.0.0.1       localhost
+255.255.255.255 broadcasthost
+::1             localhost
+fe80::1%lo0     localhost
+)";
   return content;
 }
 

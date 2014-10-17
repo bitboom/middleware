@@ -4,11 +4,11 @@
 
 #include <linux/limits.h>
 
-#include "osquery/events.h"
-#include "osquery/filesystem.h"
-#include "osquery/events/linux/inotify.h"
-
 #include <glog/logging.h>
+
+#include "osquery/events.h"
+#include "osquery/events/linux/inotify.h"
+#include "osquery/filesystem.h"
 
 namespace osquery {
 
@@ -18,15 +18,17 @@ int kINotifyULatency = 200;
 static const uint32_t BUFFER_SIZE =
     (10 * ((sizeof(struct inotify_event)) + NAME_MAX + 1));
 
-std::map<int, std::string> kMaskActions = {{IN_ACCESS, "ACCESSED"},
-                                           {IN_ATTRIB, "ATTRIBUTES_MODIFIED"},
-                                           {IN_CLOSE_WRITE, "UPDATED"},
-                                           {IN_CREATE, "CREATED"},
-                                           {IN_DELETE, "DELETED"},
-                                           {IN_MODIFY, "UPDATED"},
-                                           {IN_MOVED_FROM, "MOVED_FROM"},
-                                           {IN_MOVED_TO, "MOVED_TO"},
-                                           {IN_OPEN, "OPENED"}, };
+std::map<int, std::string> kMaskActions = {
+    {IN_ACCESS, "ACCESSED"},
+    {IN_ATTRIB, "ATTRIBUTES_MODIFIED"},
+    {IN_CLOSE_WRITE, "UPDATED"},
+    {IN_CREATE, "CREATED"},
+    {IN_DELETE, "DELETED"},
+    {IN_MODIFY, "UPDATED"},
+    {IN_MOVED_FROM, "MOVED_FROM"},
+    {IN_MOVED_TO, "MOVED_TO"},
+    {IN_OPEN, "OPENED"},
+};
 
 void INotifyEventPublisher::setUp() {
   inotify_handle_ = ::inotify_init();
@@ -52,7 +54,7 @@ void INotifyEventPublisher::tearDown() {
 }
 
 Status INotifyEventPublisher::run() {
-  // Get a while wraper for free.
+  // Get a while wrapper for free.
   char buffer[BUFFER_SIZE];
   fd_set set;
 
@@ -211,7 +213,7 @@ bool INotifyEventPublisher::removeMonitor(int watch, bool force) {
 }
 
 bool INotifyEventPublisher::isPathMonitored(const std::string& path) {
-  std::string parent_path;
+  boost::filesystem::path parent_path;
   if (!isDirectory(path).ok()) {
     if (path_descriptors_.find(path) != path_descriptors_.end()) {
       // Path is a file, and is directly monitored.
@@ -226,6 +228,7 @@ bool INotifyEventPublisher::isPathMonitored(const std::string& path) {
   }
 
   // Directory or parent of file monitoring
-  return (path_descriptors_.find(parent_path) != path_descriptors_.end());
+  auto path_iterator = path_descriptors_.find(parent_path.string());
+  return (path_iterator != path_descriptors_.end());
 }
 }

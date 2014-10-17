@@ -4,6 +4,7 @@
 #include <fstream>
 #include <streambuf>
 #include <sstream>
+#include <map>
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -20,13 +21,12 @@ namespace tables {
 
 #ifdef PROC_EDITCMDLCVT
 /// EDITCMDLCVT is available in libprocps3-dev
-# define PROC_SELECTS \
+#define PROC_SELECTS                                                 \
   PROC_FILLCOM | PROC_EDITCMDLCVT | PROC_FILLMEM | PROC_FILLSTATUS | \
-    PROC_FILLSTAT
+      PROC_FILLSTAT
 #else
-# define PROC_SELECTS \
-  PROC_FILLCOM | PROC_FILLMEM | PROC_FILLSTATUS | \
-    PROC_FILLSTAT
+#define PROC_SELECTS \
+  PROC_FILLCOM | PROC_FILLMEM | PROC_FILLSTATUS | PROC_FILLSTAT
 #endif
 
 std::string proc_name(const proc_t* proc_info) {
@@ -80,6 +80,25 @@ std::string proc_link(const proc_t* proc_info) {
   return result;
 }
 
+std::map<std::string, std::string> proc_env(const proc_t* proc_info) {
+  std::map<std::string, std::string> env;
+  std::string attr = osquery::tables::proc_attr("environ", proc_info);
+  std::string buf;
+
+  std::ifstream fd(attr, std::ios::in | std::ios::binary);
+
+  while (!(fd.fail() || fd.eof())) {
+    std::getline(fd, buf, '\0');
+    size_t idx = buf.find_first_of("=");
+
+    std::string key = buf.substr(0, idx);
+    std::string value = buf.substr(idx + 1);
+
+    env[key] = value;
+  }
+  return env;
+}
+
 /**
  * @brief deallocate the space allocated by readproc if the passed rbuf was NULL
  *
@@ -89,8 +108,8 @@ void standard_freeproc(proc_t* p) {
   if (!p) { // in case p is NULL
     return;
   }
-    // ptrs are after strings to avoid copying memory when building them.
-    // so free is called on the address of the address of strvec[0].
+  // ptrs are after strings to avoid copying memory when building them.
+  // so free is called on the address of the address of strvec[0].
   if (p->cmdline) {
     free((void*)*p->cmdline);
   }
@@ -111,6 +130,10 @@ QueryData genProcesses() {
     Row r;
 
     r["pid"] = boost::lexical_cast<std::string>(proc_info->tid);
+    r["uid"] = boost::lexical_cast<std::string>((unsigned int)proc_info->ruid);
+    r["gid"] = boost::lexical_cast<std::string>((unsigned int)proc_info->rgid);
+    r["euid"] = boost::lexical_cast<std::string>((unsigned int)proc_info->euid);
+    r["egid"] = boost::lexical_cast<std::string>((unsigned int)proc_info->egid);
     r["name"] = proc_name(proc_info);
     r["cmdline"] = proc_cmdline(proc_info);
     r["path"] = proc_link(proc_info);
@@ -124,11 +147,48 @@ QueryData genProcesses() {
     r["parent"] = boost::lexical_cast<std::string>(proc_info->ppid);
 
     results.push_back(r);
+#ifdef PROC_EDITCMDLCVT
+    freeproc(proc_info);
+#else
+    standard_freeproc(proc_info);
+#endif
+  }
+
+  closeproc(proc);
+
+  return results;
+}
+
+QueryData genProcessEnvs() {
+  QueryData results;
+
+  proc_t* proc_info;
+  PROCTAB* proc = openproc(PROC_SELECTS);
+
+  // Populate proc struc for each process.
+
+  while ((proc_info = readproc(proc, NULL))) {
+    auto env = proc_env(proc_info);
+    for (auto itr = env.begin(); itr != env.end(); ++itr) {
+      Row r;
+      r["pid"] = boost::lexical_cast<std::string>(proc_info->tid);
+      r["name"] = proc_name(proc_info);
+      r["path"] = proc_link(proc_info);
+      r["key"] = itr->first;
+      r["value"] = itr->second;
+      results.push_back(r);
+    }
+
     standard_freeproc(proc_info);
   }
 
   closeproc(proc);
 
+  return results;
+}
+
+QueryData genProcessOpenFiles() {
+  QueryData results;
   return results;
 }
 }

@@ -7,6 +7,8 @@
 
 #include <sqlite3.h>
 
+#include <boost/filesystem.hpp>
+
 #include "osquery/database/results.h"
 
 namespace osquery {
@@ -16,7 +18,20 @@ namespace osquery {
  */
 extern const std::string kVersion;
 /// Use a macro for the version literal, set the kVersion symbol in the library.
-#define VERSION "1.0.3"
+#ifndef STR
+#define STR_OF(x) #x
+#define STR(x) STR_OF(x)
+#endif
+#define OSQUERY_VERSION STR(OSQUERY_BUILD_VERSION)
+
+/**
+ * @brief A helpful tool type to report when logging, print help, or debugging.
+ */
+enum osqueryTool {
+  OSQUERY_TOOL_SHELL,
+  OSQUERY_TOOL_DAEMON,
+  OSQUERY_TOOL_TEST,
+};
 
 /**
  * @brief Execute a query
@@ -81,7 +96,7 @@ sqlite3* createDB();
  * @param argc the number of elements in argv
  * @param argv the command-line arguments passed to `main()`
  */
-void initOsquery(int argc, char* argv[]);
+void initOsquery(int argc, char* argv[], int tool = OSQUERY_TOOL_TEST);
 
 /**
  * @brief Split a given string based on an optional deliminator.
@@ -105,6 +120,13 @@ std::vector<std::string> split(const std::string& s,
 std::string getHostname();
 
 /**
+ * @brief generate a uuid to uniquely identify this machine
+ *
+ * @return uuid string to identify this machine
+ */
+std::string generateHostUuid();
+
+/**
  * @brief Getter for the current time, in a human-readable format.
  *
  * @return the current date/time in the format: "Wed Sep 21 10:27:52 2011"
@@ -117,4 +139,11 @@ std::string getAsciiTime();
  * @return an int representing the amount of seconds since the unix epoch
  */
 int getUnixTime();
+
+/**
+ * @brief Return a vector of all home directories on the system
+ *
+ * @return a vector of strings representing the path of all home directories
+ */
+std::vector<boost::filesystem::path> getHomeDirectories();
 }

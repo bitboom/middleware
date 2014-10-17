@@ -1,5 +1,5 @@
 Name: osquery
-Version: 1.0.3
+Version: 1.0.4
 Release: 0
 License: Apache-2.0 and GPLv2
 Summary: A SQL powered operating system instrumentation, monitoring framework.
@@ -32,7 +32,7 @@ Requires: zlib
 Requires: bzip2
 Requires: lz4
 Requires: zstd
-Requires: boost-system boost-thread boost-filesystem
+Requires: boost-regex boost-system boost-thread boost-filesystem
 Requires: thrift
 Requires: libreadline
 Requires: procps-ng
@@ -53,7 +53,8 @@ cp %SOURCE1 .
 
 %build
 %{!?build_type:%define build_type "RELEASE"}
-%cmake . -DCMAKE_BUILD_TYPE=%{build_type}
+%cmake . -DCMAKE_BUILD_TYPE=%{build_type} \
+		 -DOSQUERY_BUILD_VERSION=%{version}
 
 make %{?jobs:-j%jobs}
 

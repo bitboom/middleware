@@ -29,7 +29,7 @@ const std::vector<std::string> kDomains = {kConfigurations, kQueries, kEvents};
 DEFINE_osquery_flag(string,
                     db_path,
                     "/tmp/rocksdb-osquery",
-                    "If using a disk-based backing store, specificy a path.");
+                    "If using a disk-based backing store, specify a path.");
 
 DEFINE_osquery_flag(bool,
                     use_in_memory_database,
@@ -59,16 +59,15 @@ DBHandle::DBHandle(const std::string& path, bool in_memory) {
         cf_name, rocksdb::ColumnFamilyOptions()));
   }
 
-  if (pathExists(path).what() == "1" && !isWritable(path).ok()) {
+  if (pathExists(path).ok() && !isWritable(path).ok()) {
     throw std::domain_error("Cannot write to RocksDB path: " + path);
   }
 
   status_ =
-    rocksdb::DB::Open(options_, path, column_families_, &handles_, &db_);
+      rocksdb::DB::Open(options_, path, column_families_, &handles_, &db_);
 }
 
 DBHandle::~DBHandle() {
-  DLOG(INFO) << "DBHandle::~DBHandle()";
   for (auto handle : handles_) {
     if (handle != nullptr) {
       delete handle;

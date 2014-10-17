@@ -82,6 +82,7 @@
 
 #include "osquery/database/results.h"
 #include "osquery/devtools.h"
+#include "osquery/flags.h"
 #include "osquery/registry/registry.h"
 
 /* Make sure isatty() has a prototype.
@@ -469,6 +470,14 @@ struct previous_mode_data {
 };
 
 /*
+** Pretty print structure
+ */
+struct prettyprint_data {
+  osquery::QueryData queryData;
+  std::vector<std::string> resultsOrder;
+};
+
+/*
 ** An pointer to an instance of this structure is passed from
 ** the main program to the callback.  This is used to communicate
 ** state and mode information.
@@ -505,8 +514,7 @@ struct callback_data {
   int iIndent; /* Index of current op in aiIndent[] */
 
   /* Additional attributes to be used in pretty mode */
-  osquery::QueryData queryData;
-  std::vector<std::string> resultsOrder;
+  struct prettyprint_data *prettyPrint;
 };
 
 /*
@@ -997,19 +1005,26 @@ static int shell_callback(
   switch (p->mode) {
   case MODE_Pretty: {
 
-    if (p->resultsOrder.size() == 0) {
+    if (p->prettyPrint->resultsOrder.size() == 0) {
       for (i = 0; i < nArg; i++) {
-        p->resultsOrder.push_back(std::string(azCol[i]));
+        p->prettyPrint->resultsOrder.push_back(std::string(azCol[i]));
       }
     }
 
     osquery::Row r;
     for (i = 0; i < nArg; i++) {
-      std::string header = std::string(azCol[i]);
-      std::string result = std::string(azArg[i]);
+      std::string header;
+      if (azCol[i] != nullptr) {
+        header = std::string(azCol[i]);
+      }
+
+      std::string result;
+      if (azArg[i] != nullptr) {
+        result = std::string(azArg[i]);
+      }
       r[header] = result;
     }
-    p->queryData.push_back(r);
+    p->prettyPrint->queryData.push_back(r);
     break;
   }
   case MODE_Line: {
@@ -1820,9 +1835,10 @@ static int shell_exec(
   } /* end while */
 
   if (pArg->mode == MODE_Pretty) {
-    osquery::prettyPrint(pArg->queryData, pArg->resultsOrder);
-    pArg->queryData.clear();
-    pArg->resultsOrder.clear();
+    osquery::prettyPrint(pArg->prettyPrint->queryData,
+                         pArg->prettyPrint->resultsOrder);
+    pArg->prettyPrint->queryData.clear();
+    pArg->prettyPrint->resultsOrder.clear();
   }
 
   return rc;
@@ -4036,6 +4052,7 @@ static void usage(int showDetail) {
 */
 static void main_init(struct callback_data *data) {
   memset(data, 0, sizeof(*data));
+  data->prettyPrint = new struct prettyprint_data();
   data->mode = MODE_Pretty;
   memcpy(data->separator, "|", 2);
   data->showHeader = 1;
@@ -4077,6 +4094,45 @@ static char *cmdline_option_value(int argc, char **argv, int i) {
 
 namespace osquery {
 
+/// Define flags used by the shell. They are parsed by the drop-in shell.
+DEFINE_shell_flag(bool, bail, false, "stop after hitting an error");
+DEFINE_shell_flag(bool, batch, false, "force batch I/O");
+DEFINE_shell_flag(bool, column, false, "set output mode to 'column'");
+DEFINE_shell_flag(string, cmd, "", "run \"COMMAND\" before reading stdin");
+DEFINE_shell_flag(bool, csv, false, "set output mode to 'csv'");
+DEFINE_shell_flag(bool, echo, false, "print commands before execution");
+DEFINE_shell_flag(string, init, "", "read/process named file");
+DEFINE_shell_flag(bool, header, true, "turn headers on or off");
+DEFINE_shell_flag(bool, html, false, "set output mode to HTML");
+DEFINE_shell_flag(bool, interactive, false, "force interactive I/O");
+DEFINE_shell_flag(bool, line, false, "set output mode to 'line'");
+DEFINE_shell_flag(bool, list, false, "set output mode to 'list'");
+DEFINE_shell_flag(int64, mmap, 0, "default mmap size set to N");
+DEFINE_shell_flag(string,
+                    nullvalue,
+                    "",
+                    "set text string for NULL values. Default ''");
+DEFINE_shell_flag(string,
+                    separator,
+                    "|",
+                    "set output field separator. Default: '|'");
+DEFINE_shell_flag(bool,
+                    stats,
+                    false,
+                    "print memory stats before each finalize");
+DEFINE_shell_flag(string, vfs, "", "use NAME as the default VFS");
+
+/// Optional flags enabled at compile time.
+#if defined(SQLITE_ENABLE_MEMSYS3) || defined(SQLITE_ENABLE_MEMSYS5)
+DEFINE_shell_flag(int64, heap, 0, "Size of heap for memsys3 or memsys5");
+#endif
+#ifdef SQLITE_ENABLE_MULTIPLEX
+DEFINE_shell_flag(bool, multiplex, false, "enable the multiplexor VFS");
+#endif
+#ifdef SQLITE_ENABLE_VFSTRACE
+DEFINE_shell_flag(bool, vfstrace, false, "enable tracing of all VFS calls");
+#endif
+
 int launchIntoShell(int argc, char **argv) {
   char *zErrMsg = 0;
   struct callback_data data;
@@ -4115,10 +4171,6 @@ int launchIntoShell(int argc, char **argv) {
     char *z;
     z = argv[i];
     if (z[0] != '-') {
-      if (data.zDbFilename == 0) {
-        data.zDbFilename = z;
-        continue;
-      }
       if (zFirstCmd == 0) {
         zFirstCmd = z;
         continue;
@@ -4309,10 +4361,6 @@ int launchIntoShell(int argc, char **argv) {
             return rc;
         }
       }
-    } else {
-      fprintf(stderr, "%s: Error: unknown option: %s\n", Argv0, z);
-      fprintf(stderr, "Use -help for a list of options.\n");
-      return 1;
     }
   }
 
@@ -4379,6 +4427,10 @@ int launchIntoShell(int argc, char **argv) {
     sqlite3_close(data.db);
   }
   sqlite3_free(data.zFreeOnClose);
+
+  if (data.prettyPrint != nullptr) {
+    delete data.prettyPrint;
+  }
   return rc;
 }
 }

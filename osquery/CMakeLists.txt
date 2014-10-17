@@ -28,6 +28,7 @@ SET(${TARGET_OSQUERY_LIB}_DEP glog
 							  dl
 							  lz4
 							  zstd
+							  boost_regex
 							  boost_system
 							  boost_thread
 							  boost_filesystem
@@ -37,6 +38,8 @@ SET(${TARGET_OSQUERY_LIB}_DEP glog
 							  procps
 							  systemd)
 SET(${TARGET_OSQUERY_LIB}_SRCS "")
+
+ADD_DEFINITIONS("-DOSQUERY_BUILD_VERSION=${OSQUERY_BUILD_VERSION}")
 
 MACRO(ADD_OSQUERY_LIBRARY TARGET)
 	ADD_LIBRARY(${TARGET} OBJECT ${ARGN})
@@ -90,8 +93,8 @@ FOREACH(TABLE_FILE ${TABLE_FILES})
 	ADD_CUSTOM_COMMAND(
 		OUTPUT ${TABLE_FILE_GEN}
 		COMMAND
-			python ${CMAKE_SOURCE_DIR}/tools/gentable.py ${TABLE_FILE} ${TABLE_FILE_GEN}
-		DEPENDS ${TABLE_FILE}
+			python ${CMAKE_SOURCE_DIR}/tools/gentable.py ${TABLE_FILE} ${TABLE_FILE_GEN} $ENV{DISABLE_BLACKLIST}
+		DEPENDS ${TABLE_FILE} ${CMAKE_SOURCE_DIR}/osquery/tables/specs/blacklist
 		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 	LIST(APPEND GENERATED_TABLES ${TABLE_FILE_GEN})
 ENDFOREACH()

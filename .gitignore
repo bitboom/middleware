@@ -8,6 +8,7 @@
 *~
 
 # Build Artifacts
+.provision
 build/
 
 # Dependency Artifacts
