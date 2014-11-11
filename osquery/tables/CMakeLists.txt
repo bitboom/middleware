@@ -2,6 +2,7 @@ ADD_OSQUERY_LIBRARY(osquery_tables_linux events/linux/passwd_changes.cpp
 										 networking/linux/routes.cpp
 										 networking/linux/socket_inode.cpp
 										 networking/linux/port_inode.cpp
+										 networking/linux/arp_cache.cpp
 										 system/linux/kernel_modules.cpp
 										 system/linux/processes.cpp
 										 system/linux/users.cpp

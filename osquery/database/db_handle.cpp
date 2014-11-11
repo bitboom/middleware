@@ -28,7 +28,7 @@ const std::vector<std::string> kDomains = {kConfigurations, kQueries, kEvents};
 
 DEFINE_osquery_flag(string,
                     db_path,
-                    "/tmp/rocksdb-osquery",
+                    "/var/osquery/osquery.db",
                     "If using a disk-based backing store, specify a path.");
 
 DEFINE_osquery_flag(bool,
@@ -45,10 +45,13 @@ DBHandle::DBHandle(const std::string& path, bool in_memory) {
   options_.create_missing_column_families = true;
 
   if (in_memory) {
-    // Remove when upgrading to RocksDB 3.2
-    // Replace with:
+    // Remove when MemEnv is included in librocksdb
     // options_.env = rocksdb::NewMemEnv(rocksdb::Env::Default());
-    throw std::domain_error("Requires RocksDB 3.3 https://fburl.com/27350299");
+    throw std::runtime_error("Requires MemEnv");
+  }
+
+  if (pathExists(path).ok() && !isWritable(path).ok()) {
+    throw std::runtime_error("Cannot write to RocksDB path: " + path);
   }
 
   column_families_.push_back(rocksdb::ColumnFamilyDescriptor(
@@ -59,25 +62,17 @@ DBHandle::DBHandle(const std::string& path, bool in_memory) {
         cf_name, rocksdb::ColumnFamilyOptions()));
   }
 
-  if (pathExists(path).ok() && !isWritable(path).ok()) {
-    throw std::domain_error("Cannot write to RocksDB path: " + path);
+  auto s = rocksdb::DB::Open(options_, path, column_families_, &handles_, &db_);
+  if (!s.ok()) {
+    throw std::runtime_error(s.ToString());
   }
-
-  status_ =
-      rocksdb::DB::Open(options_, path, column_families_, &handles_, &db_);
 }
 
 DBHandle::~DBHandle() {
   for (auto handle : handles_) {
-    if (handle != nullptr) {
-      delete handle;
-      handle = nullptr;
-    }
+    delete handle;
   }
-  if (db_ != nullptr) {
-    delete db_;
-    db_ = nullptr;
-  }
+  delete db_;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -88,8 +83,6 @@ std::shared_ptr<DBHandle> DBHandle::getInstance() {
 }
 
 std::shared_ptr<DBHandle> DBHandle::getInstanceInMemory() {
-  // Remove when upgrading to RocksDB 3.3
-  throw std::domain_error("Requires RocksDB 3.3 https://fburl.com/27350299");
   return getInstance("", true);
 }
 
@@ -108,18 +101,18 @@ std::shared_ptr<DBHandle> DBHandle::getInstance(const std::string& path,
 // getters and setters
 /////////////////////////////////////////////////////////////////////////////
 
-osquery::Status DBHandle::getStatus() {
-  return Status(status_.code(), status_.ToString());
-}
-
 rocksdb::DB* DBHandle::getDB() { return db_; }
 
 rocksdb::ColumnFamilyHandle* DBHandle::getHandleForColumnFamily(
     const std::string& cf) {
-  for (int i = 0; i < kDomains.size(); i++) {
-    if (kDomains[i] == cf) {
-      return handles_[i];
+  try {
+    for (int i = 0; i < kDomains.size(); i++) {
+      if (kDomains[i] == cf) {
+        return handles_[i];
+      }
     }
+  } catch (const std::exception& e) {
+    // pass through and return nullptr
   }
   return nullptr;
 }
@@ -131,30 +124,45 @@ rocksdb::ColumnFamilyHandle* DBHandle::getHandleForColumnFamily(
 osquery::Status DBHandle::Get(const std::string& domain,
                               const std::string& key,
                               std::string& value) {
-  auto s = getDB()->Get(
-      rocksdb::ReadOptions(), getHandleForColumnFamily(domain), key, &value);
+  auto cfh = getHandleForColumnFamily(domain);
+  if (cfh == nullptr) {
+    return Status(1, "Could not get column family for " + domain);
+  }
+  auto s = getDB()->Get(rocksdb::ReadOptions(), cfh, key, &value);
   return Status(s.code(), s.ToString());
 }
 
 osquery::Status DBHandle::Put(const std::string& domain,
                               const std::string& key,
                               const std::string& value) {
-  auto s = getDB()->Put(
-      rocksdb::WriteOptions(), getHandleForColumnFamily(domain), key, value);
+  auto cfh = getHandleForColumnFamily(domain);
+  if (cfh == nullptr) {
+    return Status(1, "Could not get column family for " + domain);
+  }
+  auto s = getDB()->Put(rocksdb::WriteOptions(), cfh, key, value);
   return Status(s.code(), s.ToString());
 }
 
 osquery::Status DBHandle::Delete(const std::string& domain,
                                  const std::string& key) {
-  auto s = getDB()->Delete(
-      rocksdb::WriteOptions(), getHandleForColumnFamily(domain), key);
+  auto cfh = getHandleForColumnFamily(domain);
+  if (cfh == nullptr) {
+    return Status(1, "Could not get column family for " + domain);
+  }
+  auto s = getDB()->Delete(rocksdb::WriteOptions(), cfh, key);
   return Status(s.code(), s.ToString());
 }
 
 osquery::Status DBHandle::Scan(const std::string& domain,
                                std::vector<std::string>& results) {
-  auto it = getDB()->NewIterator(rocksdb::ReadOptions(),
-                                 getHandleForColumnFamily(domain));
+  auto cfh = getHandleForColumnFamily(domain);
+  if (cfh == nullptr) {
+    return Status(1, "Could not get column family for " + domain);
+  }
+  auto it = getDB()->NewIterator(rocksdb::ReadOptions(), cfh);
+  if (it == nullptr) {
+    return Status(1, "Could not get iterator for " + domain);
+  }
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
     results.push_back(it->key().ToString());
   }
