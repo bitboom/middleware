@@ -3,13 +3,14 @@
 #pragma once
 
 #include <future>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "osquery/status.h"
+#include <osquery/status.h>
 
 namespace osquery {
 
@@ -50,6 +51,7 @@ struct OsqueryScheduledQuery {
 struct OsqueryConfig {
   /// A vector of all of the queries that are scheduled to execute.
   std::vector<OsqueryScheduledQuery> scheduledQueries;
+  std::map<std::string, std::string> options;
 };
 
 /**

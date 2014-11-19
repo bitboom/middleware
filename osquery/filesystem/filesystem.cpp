@@ -14,9 +14,7 @@
 
 #include <glog/logging.h>
 
-#include "osquery/filesystem.h"
-
-using osquery::Status;
+#include <osquery/filesystem.h>
 
 namespace pt = boost::property_tree;
 namespace fs = boost::filesystem;
@@ -68,9 +66,9 @@ Status readFile(const boost::filesystem::path& path, std::string& content) {
     if (file_h.bad()) {
       statusCode = 1;
       statusMessage = "Could not read file";
-    } else 
+    } else
       content.assign(std::move(buffer.str()));
-      
+
   } else {
     statusCode = 1;
     statusMessage = "Could not open file for reading";
@@ -112,8 +110,7 @@ Status pathExists(const boost::filesystem::path& path) {
     if (!boost::filesystem::exists(path)) {
       return Status(1, "0");
     }
-  }
-  catch (boost::filesystem::filesystem_error e) {
+  } catch (boost::filesystem::filesystem_error e) {
     return Status(1, e.what());
   }
   return Status(0, "1");

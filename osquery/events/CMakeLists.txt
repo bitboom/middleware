@@ -1,5 +1,6 @@
 ADD_OSQUERY_LIBRARY(osquery_events events.cpp
-								   linux/inotify.cpp)
+								   linux/inotify.cpp
+								   linux/udev.cpp)
 
 ADD_OSQUERY_TEST(osquery_events_tests events_tests.cpp)
 ADD_OSQUERY_TEST(osquery_events_database_tests events_database_tests.cpp)

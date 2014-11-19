@@ -1,21 +1,21 @@
 // Copyright 2004-present Facebook. All Rights Reserved.
 
-#include "osquery/core.h"
-#include "osquery/database/db_handle.h"
-
 #include <sys/types.h>
 #include <signal.h>
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 #include <glog/logging.h>
 
-#include "osquery/filesystem.h"
-#include "osquery/sql.h"
+#include <osquery/core.h>
+#include <osquery/database/db_handle.h>
+#include <osquery/filesystem.h>
+#include <osquery/sql.h>
 
 namespace fs = boost::filesystem;
 
@@ -28,8 +28,8 @@ DEFINE_osquery_flag(string,
                     "The path to the pidfile for osqueryd.");
 
 std::string getHostname() {
-  char hostname[256];
-  memset(hostname, 0, 255);
+  char hostname[256]; // Linux max should be 64.
+  memset(hostname, 0, 256);
   gethostname(hostname, 255);
   std::string hostname_string = std::string(hostname);
   boost::algorithm::trim(hostname_string);
@@ -78,14 +78,16 @@ int getUnixTime() {
 }
 
 std::vector<fs::path> getHomeDirectories() {
-  auto sql = SQL("SELECT DISTINCT directory FROM users WHERE directory != '/var/empty';");
+  auto sql = SQL(
+      "SELECT DISTINCT directory FROM users WHERE directory != '/var/empty';");
   std::vector<fs::path> results;
   if (sql.ok()) {
-    for (const auto& row: sql.rows()) {
+    for (const auto& row : sql.rows()) {
       results.push_back(row.at("directory"));
     }
   } else {
-    LOG(ERROR) << "Error executing query to return users: " << sql.getMessageString();
+    LOG(ERROR)
+        << "Error executing query to return users: " << sql.getMessageString();
   }
   return results;
 }
@@ -115,7 +117,11 @@ Status createPidFile() {
       return Status(1, "osqueryd is already running");
     } else if (errno == ESRCH) {
       // if the pid isn't running, overwrite the pidfile
-      boost::filesystem::remove(FLAGS_pidfile);
+      try {
+        boost::filesystem::remove(FLAGS_pidfile);
+      } catch (boost::filesystem::filesystem_error& e) {
+        // Unable to remove old pidfile.
+      }
       goto write_new_pidfile;
     } else {
       return Status(

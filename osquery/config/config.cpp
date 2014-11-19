@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <future>
+#include <random>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -12,10 +13,10 @@
 
 #include <glog/logging.h>
 
-#include "osquery/config.h"
-#include "osquery/config/plugin.h"
-#include "osquery/flags.h"
-#include "osquery/status.h"
+#include <osquery/config.h>
+#include <osquery/config/plugin.h>
+#include <osquery/flags.h>
+#include <osquery/status.h>
 
 using osquery::Status;
 
@@ -26,13 +27,12 @@ namespace osquery {
 DEFINE_osquery_flag(string,
                     config_retriever,
                     "filesystem",
-                    "The config mechanism to retrieve config content via.");
+                    "Config type (plugin).");
 
-/// The percent to splay config times by
 DEFINE_osquery_flag(int32,
                     schedule_splay_percent,
                     10,
-                    "The percent to splay config times by");
+                    "Percent to splay config times.");
 
 boost::shared_mutex rw_lock;
 
@@ -47,15 +47,26 @@ Config::Config() {
   auto s = Config::genConfig(conf);
   if (!s.ok()) {
     LOG(ERROR) << "error retrieving config: " << s.toString();
-  } else {
-    for (auto& q : conf.scheduledQueries) {
-      auto old_interval = q.interval;
-      auto new_interval =
-          splayValue(old_interval, FLAGS_schedule_splay_percent);
-      LOG(INFO) << "Changing the interval for " << q.name << " from  "
-                << old_interval << " to " << new_interval;
-      q.interval = new_interval;
+    return;
+  }
+
+  // Override default arguments with flag options from config.
+  for (const auto& option : conf.options) {
+    if (Flag::isDefault(option.first)) {
+      // Only override if option was NOT given as an argument.
+      Flag::updateValue(option.first, option.second);
+      VLOG(1) << "Setting flag option: " << option.first << "="
+              << option.second;
     }
+  }
+
+  // Iterate over scheduled queryies and add a splay to each.
+  for (auto& q : conf.scheduledQueries) {
+    auto old_interval = q.interval;
+    auto new_interval = splayValue(old_interval, FLAGS_schedule_splay_percent);
+    LOG(INFO) << "Changing the interval for " << q.name << " from  "
+              << old_interval << " to " << new_interval;
+    q.interval = new_interval;
   }
   cfg_ = conf;
 }
@@ -78,12 +89,20 @@ Status Config::genConfig(OsqueryConfig& conf) {
   pt::read_json(json, tree);
 
   try {
+    // Parse each scheduled query from the config.
     for (const pt::ptree::value_type& v : tree.get_child("scheduledQueries")) {
       OsqueryScheduledQuery q;
       q.name = (v.second).get<std::string>("name");
       q.query = (v.second).get<std::string>("query");
       q.interval = (v.second).get<int>("interval");
       conf.scheduledQueries.push_back(q);
+    }
+
+    // Flags may be set as 'options' within the config.
+    if (tree.count("options") > 0) {
+      for (const pt::ptree::value_type& v : tree.get_child("options")) {
+        conf.options[v.first.data()] = v.second.data();
+      }
     }
   } catch (const std::exception& e) {
     LOG(ERROR) << "Error parsing config JSON: " << e.what();
@@ -112,6 +131,8 @@ int Config::splayValue(int original, int splayPercent) {
     return max_value;
   }
 
-  return (rand() % (max_value - min_value)) + min_value;
+  std::default_random_engine generator;
+  std::uniform_int_distribution<int> distribution(min_value, max_value);
+  return distribution(generator);
 }
 }

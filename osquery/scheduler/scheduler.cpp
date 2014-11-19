@@ -1,18 +1,17 @@
 // Copyright 2004-present Facebook. All Rights Reserved.
 
-#include "osquery/scheduler.h"
-
 #include <climits>
 #include <ctime>
 
 #include <glog/logging.h>
 
-#include "osquery/config.h"
-#include "osquery/core.h"
-#include "osquery/database.h"
-#include "osquery/flags.h"
-#include "osquery/logger.h"
-#include "osquery/sql.h"
+#include <osquery/config.h>
+#include <osquery/core.h>
+#include <osquery/database.h>
+#include <osquery/flags.h>
+#include <osquery/logger.h>
+#include <osquery/sql.h>
+#include <osquery/scheduler.h>
 
 namespace osquery {
 
@@ -21,40 +20,44 @@ DEFINE_osquery_flag(string,
                     "hostname",
                     "Field used to identify the host running osqueryd");
 
-std::string getHostIdentifier(std::string hostIdFlag,
-                              std::shared_ptr<DBHandle> db) {
-  if (hostIdFlag == "uuid") {
+Status getHostIdentifier(std::string& ident) {
+  std::shared_ptr<DBHandle> db;
+  try {
+    db = DBHandle::getInstance();
+  } catch (const std::exception& e) {
+    return Status(1, e.what());
+  }
+
+  if (FLAGS_host_identifier == "uuid") {
     std::vector<std::string> results;
     auto status = db->Scan(kConfigurations, results);
 
     if (!status.ok()) {
       LOG(ERROR) << "Could not access database, using hostname as the host "
                     "identifier.";
-      return osquery::getHostname();
+      ident = osquery::getHostname();
+      return Status(0, "OK");
     }
 
-    std::string hostId;
-    bool present =
-        (std::find(results.begin(), results.end(), "hostIdentifier") !=
-         results.end());
-    if (present) {
-      status = db->Get(kConfigurations, "hostIdentifier", hostId);
+    if (std::find(results.begin(), results.end(), "hostIdentifier") !=
+        results.end()) {
+      status = db->Get(kConfigurations, "hostIdentifier", ident);
       if (!status.ok()) {
         LOG(ERROR) << "Could not access database, using hostname as the host "
                       "identifier.";
-        return osquery::getHostname();
+        ident = osquery::getHostname();
       }
+      return status;
     } else {
       // There was no uuid stored in the database, generate one and store it.
-      hostId = osquery::generateHostUuid();
-      LOG(INFO) << "Using uuid " << hostId << " to identify this host.";
-      db->Put(kConfigurations, "hostIdentifier", hostId);
+      ident = osquery::generateHostUuid();
+      LOG(INFO) << "Using uuid " << ident << " to identify this host.";
+      return db->Put(kConfigurations, "hostIdentifier", ident);
     }
-    return hostId;
-
   } else {
     // use the hostname as the default machine identifier
-    return osquery::getHostname();
+    ident = osquery::getHostname();
+    return Status(0, "OK");
   }
 }
 
@@ -62,11 +65,11 @@ void launchQueries(const std::vector<OsqueryScheduledQuery>& queries,
                    const int64_t& second) {
   for (const auto& q : queries) {
     if (second % q.interval == 0) {
-      LOG(INFO) << "executing query: " << q.query;
+      LOG(INFO) << "Executing query: " << q.query;
       int unix_time = std::time(0);
       auto sql = SQL(q.query);
       if (!sql.ok()) {
-        LOG(ERROR) << "error executing query (" << q.query
+        LOG(ERROR) << "Error executing query (" << q.query
                    << "): " << sql.getMessageString();
         continue;
       }
@@ -75,20 +78,34 @@ void launchQueries(const std::vector<OsqueryScheduledQuery>& queries,
       auto status = dbQuery.addNewResults(sql.rows(), diff_results, unix_time);
       if (!status.ok()) {
         LOG(ERROR)
-            << "error adding new results to database: " << status.toString();
+            << "Error adding new results to database: " << status.toString();
         continue;
       }
 
       if (diff_results.added.size() > 0 || diff_results.removed.size() > 0) {
-        VLOG(1) << "Results found for query: \"" << q.query << "\"";
         ScheduledQueryLogItem item;
+        Status s;
+
         item.diffResults = diff_results;
         item.name = q.name;
-        item.hostIdentifier =
-            getHostIdentifier(FLAGS_host_identifier, DBHandle::getInstance());
+
+        std::string ident;
+        s = getHostIdentifier(ident);
+        if (s.ok()) {
+          item.hostIdentifier = ident;
+        } else {
+          LOG(ERROR) << "Error getting the host identifier";
+          if (ident.empty()) {
+            ident = "<unknown>";
+          }
+        }
+
         item.unixTime = osquery::getUnixTime();
         item.calendarTime = osquery::getAsciiTime();
-        auto s = logScheduledQueryLogItem(item);
+
+        LOG(INFO) << "Found results for query " << q.name
+                  << " for host: " << ident;
+        s = logScheduledQueryLogItem(item);
         if (!s.ok()) {
           LOG(ERROR) << "Error logging the results of query \"" << q.query
                      << "\""

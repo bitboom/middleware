@@ -3,7 +3,10 @@ ADD_OSQUERY_LIBRARY(osquery_core init_osquery.cpp
 								 sqlite_util.cpp
 								 system.cpp
 								 test_util.cpp
-								 text.cpp)
+								 text.cpp
+								 tables.cpp
+								 virtual_table.cpp
+								 flags.cpp)
 
 ADD_OSQUERY_TEST(osquery_status_tests status_tests.cpp)
 ADD_OSQUERY_TEST(osquery_sql_tests sql_tests.cpp)

@@ -1,13 +1,12 @@
 // Copyright 2004-present Facebook. All Rights Reserved.
 
-#include "osquery/config.h"
-#include "osquery/config/plugin.h"
-
 #include <gtest/gtest.h>
 
-#include "osquery/core.h"
-#include "osquery/status.h"
-#include "osquery/registry.h"
+#include <osquery/core.h>
+#include <osquery/config.h>
+#include <osquery/config/plugin.h>
+#include <osquery/status.h>
+#include <osquery/registry.h>
 
 using osquery::Status;
 
@@ -59,14 +58,12 @@ TEST_F(ConfigTests, test_splay) {
   EXPECT_GE(val2, 90);
   EXPECT_LE(val2, 110);
 
-  EXPECT_NE(val1, val2);
-
   auto val3 = Config::splayValue(10, 0);
   EXPECT_EQ(val3, 10);
 
   auto val4 = Config::splayValue(100, 1);
-  EXPECT_GE(val2, 99);
-  EXPECT_LE(val2, 101);
+  EXPECT_GE(val4, 99);
+  EXPECT_LE(val4, 101);
 
   auto val5 = Config::splayValue(1, 10);
   EXPECT_EQ(val5, 1);

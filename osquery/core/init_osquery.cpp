@@ -2,14 +2,12 @@
 
 #include <glog/logging.h>
 
-#include "osquery/core.h"
-#include "osquery/flags.h"
-#include "osquery/filesystem.h"
-#include "osquery/registry.h"
+#include <osquery/core.h>
+#include <osquery/flags.h>
+#include <osquery/filesystem.h>
+#include <osquery/registry.h>
 
 namespace osquery {
-
-#define __GFLAGS_NAMESPACE google
 
 const std::string kDescription =
     "your operating system as a high-performance "
@@ -21,7 +19,7 @@ DEFINE_osquery_flag(bool, debug, false, "Enable debug messages.");
 DEFINE_osquery_flag(bool,
                     verbose_debug,
                     false,
-                    "Enable verbose debug messages.")
+                    "Enable verbose debug messages.");
 
 DEFINE_osquery_flag(bool,
                     disable_logging,
