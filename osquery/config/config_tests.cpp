@@ -11,10 +11,10 @@
 #include <gtest/gtest.h>
 
 #include <osquery/config.h>
-#include <osquery/config/plugin.h>
 #include <osquery/core.h>
 #include <osquery/flags.h>
 #include <osquery/registry.h>
+#include <osquery/sql.h>
 
 #include "osquery/core/test_util.h"
 
@@ -26,26 +26,14 @@ DECLARE_string(config_path);
 class ConfigTests : public testing::Test {
  public:
   ConfigTests() {
-    FLAGS_config_retriever = "filesystem";
+    FLAGS_config_plugin = "filesystem";
     FLAGS_config_path = kTestDataPath + "test.config";
 
-    osquery::InitRegistry::get().run();
+    Registry::setUp();
     auto c = Config::getInstance();
     c->load();
   }
 };
-
-TEST_F(ConfigTests, test_queries_execute) {
-  auto c = Config::getInstance();
-  auto queries = c->getScheduledQueries();
-
-  EXPECT_EQ(queries.size(), 1);
-  for (const auto& i : queries) {
-    int err;
-    auto r = query(i.query, err);
-    EXPECT_EQ(err, 0);
-  }
-}
 
 class TestConfigPlugin : public ConfigPlugin {
  public:
@@ -54,17 +42,30 @@ class TestConfigPlugin : public ConfigPlugin {
   std::pair<Status, std::string> genConfig() {
     return std::make_pair(Status(0, "OK"), "foobar");
   }
-
-  virtual ~TestConfigPlugin() {}
 };
 
-REGISTER_CONFIG_PLUGIN("test", std::make_shared<osquery::TestConfigPlugin>())
-
 TEST_F(ConfigTests, test_plugin) {
-  auto p = REGISTERED_CONFIG_PLUGINS.at("test")->genConfig();
-  EXPECT_EQ(p.first.ok(), true);
-  EXPECT_EQ(p.first.toString(), "OK");
-  EXPECT_EQ(p.second, "foobar");
+  Registry::add<TestConfigPlugin>("config", "test");
+
+  PluginResponse response;
+  auto status =
+      Registry::call("config", "test", {{"action", "genConfig"}}, response);
+
+  EXPECT_EQ(status.ok(), true);
+  EXPECT_EQ(status.toString(), "OK");
+  EXPECT_EQ(response[0].at("data"), "foobar");
+}
+
+TEST_F(ConfigTests, test_queries_execute) {
+  auto c = Config::getInstance();
+  auto queries = c->getScheduledQueries();
+
+  EXPECT_EQ(queries.size(), 1);
+  for (const auto& i : queries) {
+    QueryData results;
+    auto status = query(i.query, results);
+    EXPECT_TRUE(status.ok());
+  }
 }
 }
 

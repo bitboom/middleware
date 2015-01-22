@@ -1,4 +1,4 @@
-ADD_OSQUERY_LIBRARY(osquery_logger logger.cpp
-								   plugins/filesystem.cpp)
+ADD_OSQUERY_LIBRARY(TRUE osquery_logger logger.cpp)
+ADD_OSQUERY_LIBRARY(FALSE osquery_logger_plugins plugins/filesystem.cpp)
 
-ADD_OSQUERY_TEST(osquery_logger_tests logger_tests.cpp)
+ADD_OSQUERY_TEST(FALSE osquery_logger_tests logger_tests.cpp)

@@ -15,6 +15,7 @@
 
 #include <gtest/gtest.h>
 
+#include <boost/filesystem/operations.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 #include <osquery/filesystem.h>
@@ -24,34 +25,130 @@ namespace pt = boost::property_tree;
 
 namespace osquery {
 
-class FilesystemTests : public testing::Test {};
+const std::string kFakeDirectory = "/tmp/osquery-fstests-pattern";
+const std::string kFakeFile = "/tmp/osquery-fstests-pattern/file0";
+const std::string kFakeSubFile = "/tmp/osquery-fstests-pattern/1/file1";
+const std::string kFakeSubSubFile = "/tmp/osquery-fstests-pattern/1/2/file2";
+
+class FilesystemTests : public testing::Test {
+
+  void createFileAt(const std::string loc, const std::string content) {
+  std::ofstream test_file(loc);
+  test_file.write(content.c_str(), sizeof("test123"));
+  test_file.close();
+}
+
+
+ protected:
+  void SetUp() {
+    boost::filesystem::create_directories(kFakeDirectory + "/deep11/deep2/deep3/");
+    boost::filesystem::create_directories(kFakeDirectory + "/deep1/deep2/");
+
+    createFileAt(kFakeDirectory + "/root.txt", "root");
+    createFileAt(kFakeDirectory + "/toor.txt", "toor");
+    createFileAt(kFakeDirectory + "/roto.txt", "roto");
+    createFileAt(kFakeDirectory + "/deep1/level1.txt", "l1");
+    createFileAt(kFakeDirectory + "/deep11/not_bash", "l1");
+    createFileAt(kFakeDirectory + "/deep1/deep2/level2.txt", "l2");
+
+    createFileAt(kFakeDirectory + "/deep11/level1.txt", "l1");
+    createFileAt(kFakeDirectory + "/deep11/deep2/level2.txt", "l2");
+    createFileAt(kFakeDirectory + "/deep11/deep2/deep3/level3.txt", "l3");
+  }
+
+  void TearDown() { boost::filesystem::remove_all(kFakeDirectory); }
+};
 
 TEST_F(FilesystemTests, test_plugin) {
-  std::ofstream test_file("/tmp/osquery-test-file");
+  std::ofstream test_file("/tmp/osquery-fstests-file");
   test_file.write("test123\n", sizeof("test123"));
   test_file.close();
 
   std::string content;
-  auto s = readFile("/tmp/osquery-test-file", content);
+  auto s = readFile("/tmp/osquery-fstests-file", content);
   EXPECT_TRUE(s.ok());
   EXPECT_EQ(s.toString(), "OK");
   EXPECT_EQ(content, "test123\n");
 
-  remove("/tmp/osquery-test-file");
+  remove("/tmp/osquery-fstests-file");
 }
 
 TEST_F(FilesystemTests, test_list_files_in_directory_not_found) {
   std::vector<std::string> not_found_vector;
   auto not_found = listFilesInDirectory("/foo/bar", not_found_vector);
   EXPECT_FALSE(not_found.ok());
-  EXPECT_EQ(not_found.toString(), "Directory not found");
+  EXPECT_EQ(not_found.toString(), "Directory not found: /foo/bar");
+}
+TEST_F(FilesystemTests, test_wildcard_single_folder_list) {
+  std::vector<std::string> files;
+  auto status = resolveFilePattern(kFakeDirectory + "/%", files);
+  EXPECT_TRUE(status.ok());
+  EXPECT_NE(
+      std::find(files.begin(), files.end(), kFakeDirectory + "/roto.txt"),
+      files.end());
+}
+
+TEST_F(FilesystemTests, test_wildcard_dual) {
+  std::vector<std::string> files;
+  auto status = resolveFilePattern(kFakeDirectory + "/%/%", files);
+  EXPECT_TRUE(status.ok());
+  EXPECT_NE(std::find(files.begin(), files.end(),
+                      kFakeDirectory + "/deep1/level1.txt"),
+            files.end());
+}
+
+TEST_F(FilesystemTests, test_wildcard_full_recursion) {
+  std::vector<std::string> files;
+  auto status = resolveFilePattern(kFakeDirectory + "/%%", files);
+  EXPECT_TRUE(status.ok());
+  EXPECT_NE(std::find(files.begin(), files.end(),
+                      kFakeDirectory + "/deep1/deep2/level2.txt"),
+            files.end());
+}
+
+TEST_F(FilesystemTests, test_wildcard_end_last_component) {
+  std::vector<std::string> files;
+  auto status = resolveFilePattern(kFakeDirectory + "/%11/%sh", files);
+  EXPECT_TRUE(status.ok());
+  EXPECT_NE(std::find(files.begin(), files.end(),
+                      kFakeDirectory + "/deep11/not_bash"),
+            files.end());
+}
+
+TEST_F(FilesystemTests, test_wildcard_three_kinds) {
+  std::vector<std::string> files;
+  auto status = resolveFilePattern(kFakeDirectory + "/%p11/%/%%", files);
+  EXPECT_TRUE(status.ok());
+  EXPECT_NE(std::find(files.begin(), files.end(),
+                      kFakeDirectory + "/deep11/deep2/deep3/level3.txt"),
+            files.end());
+}
+
+TEST_F(FilesystemTests, test_wildcard_invalid_path) {
+  std::vector<std::string> files;
+  auto status = resolveFilePattern("/not_ther_abcdefz/%%", files);
+  EXPECT_TRUE(status.ok());
+  EXPECT_EQ(files.size(), 0);
+}
+
+TEST_F(FilesystemTests, test_wildcard_filewild) {
+  std::vector<std::string> files;
+  auto status = resolveFilePattern(kFakeDirectory + "/deep1%/%", files);
+  EXPECT_TRUE(status.ok());
+  EXPECT_NE(std::find(files.begin(), files.end(),
+                      kFakeDirectory + "/deep1/level1.txt"),
+            files.end());
+  EXPECT_NE(std::find(files.begin(), files.end(),
+                      kFakeDirectory + "/deep11/level1.txt"),
+            files.end());
+  boost::filesystem::remove_all(kFakeDirectory + "");
 }
 
 TEST_F(FilesystemTests, test_list_files_in_directory_not_dir) {
   std::vector<std::string> not_dir_vector;
   auto not_dir = listFilesInDirectory("/etc/hosts", not_dir_vector);
   EXPECT_FALSE(not_dir.ok());
-  EXPECT_EQ(not_dir.toString(), "Supplied path is not a directory");
+  EXPECT_EQ(not_dir.toString(), "Supplied path is not a directory: /etc/hosts");
 }
 
 TEST_F(FilesystemTests, test_list_files_in_directorty) {
@@ -61,50 +158,6 @@ TEST_F(FilesystemTests, test_list_files_in_directorty) {
   EXPECT_EQ(s.toString(), "OK");
   EXPECT_NE(std::find(results.begin(), results.end(), "/etc/hosts"),
             results.end());
-}
-
-TEST_F(FilesystemTests, test_parse_tomcat_user_config) {
-  // clang-format off
-  std::string config_content = R"(
-<?xml version='1.0' encoding='utf-8'?>
-<!--
-  Licensed to the Apache Software Foundation (ASF) under one or more
-  contributor license agreements.  See the NOTICE file distributed with
-  this work for additional information regarding copyright ownership.
-  The ASF licenses this file to You under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with
-  the License.  You may obtain a copy of the License at
-      http://www.apache.org/licenses/LICENSE-2.0
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
--->
-<tomcat-users>
-<!--
-  NOTE:  By default, no user is included in the "manager-gui" role required
-  to operate the "/manager/html" web application.  If you wish to use this app,
-  you must define such a user - the username and password are arbitrary.
--->
-<!--
-  NOTE:  The sample user and role entries below are wrapped in a comment
-  and thus are ignored when reading this file. Do not forget to remove
-  <!.. ..> that surrounds them.
--->
-  <role rolename="tomcat"/>
-  <user username="tomcat" password="tomcat" roles="tomcat"/>
-</tomcat-users>
-)";
-  // clang-format on
-
-  std::vector<std::pair<std::string, std::string>> credentials;
-  auto s = parseTomcatUserConfig(config_content, credentials);
-  EXPECT_TRUE(s.ok());
-  EXPECT_EQ(s.toString(), "OK");
-  EXPECT_EQ(credentials.size(), (size_t)1);
-  EXPECT_EQ(credentials[0].first, "tomcat");
-  EXPECT_EQ(credentials[0].second, "tomcat");
 }
 }
 

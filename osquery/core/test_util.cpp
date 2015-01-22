@@ -3,7 +3,7 @@
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  LICENSE file in the root directory of this source tree. An additional grant
  *  of patent rights can be found in the PATENTS file in the same directory.
  *
  */
@@ -16,7 +16,6 @@
 #include <osquery/filesystem.h>
 #include <osquery/logger.h>
 
-#include "osquery/core/sqlite_util.h"
 #include "osquery/core/test_util.h"
 
 namespace pt = boost::property_tree;
@@ -25,27 +24,6 @@ namespace osquery {
 
 const std::string kTestQuery = "SELECT * FROM test_table";
 const std::string kTestDataPath = "../../../tools/tests/";
-
-sqlite3* createTestDB() {
-  sqlite3* db = createDB();
-  char* err = nullptr;
-  std::vector<std::string> queries = {
-      "CREATE TABLE test_table ("
-      "username varchar(30) primary key, "
-      "age int"
-      ")",
-      "INSERT INTO test_table VALUES (\"mike\", 23)",
-      "INSERT INTO test_table VALUES (\"matt\", 24)"};
-  for (auto q : queries) {
-    sqlite3_exec(db, q.c_str(), nullptr, nullptr, &err);
-    if (err != nullptr) {
-      LOG(ERROR) << "Error creating test database: " << err;
-      return nullptr;
-    }
-  }
-
-  return db;
-}
 
 QueryData getTestDBExpectedResults() {
   QueryData d;
@@ -259,5 +237,9 @@ osquery::QueryData getEtcHostsExpectedResults() {
   row4["address"] = "fe80::1%lo0";
   row4["hostnames"] = "localhost";
   return {row1, row2, row3, row4};
+}
+
+::std::ostream& operator<<(::std::ostream& os, const Status& s) {
+  return os << "Status(" << s.getCode() << ", \"" << s.getMessage() << "\")";
 }
 }

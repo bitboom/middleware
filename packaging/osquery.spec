@@ -1,5 +1,5 @@
 Name: osquery
-Version: 1.3.1
+Version: 1.4.0
 Release: 0
 License: Apache-2.0 and GPLv2
 Summary: A SQL powered operating system instrumentation, monitoring framework.
@@ -85,6 +85,7 @@ Testcases for osquery
 %{_bindir}/osquery_sqlite_util_tests
 %{_bindir}/osquery_scheduler_tests
 %{_bindir}/osquery_tables_tests
+%{_bindir}/osquery_virtual_table_tests
 %{_bindir}/osquery_test_util_tests
 %{_bindir}/osquery_text_tests
 %{_bindir}/osquery_logger_tests
@@ -95,3 +96,4 @@ Testcases for osquery
 %{_bindir}/osquery_inotify_tests
 %{_bindir}/osquery_etc_hosts_tests
 %{_bindir}/osquery_printer_tests
+%{_bindir}/osquery_extensions_test

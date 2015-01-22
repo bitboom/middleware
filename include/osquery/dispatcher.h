@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 
+#include <boost/thread.hpp>
+
 #include <thrift/concurrency/Thread.h>
 #include <thrift/concurrency/PosixThreadFactory.h>
 #include <thrift/concurrency/ThreadManager.h>
@@ -23,6 +25,9 @@
 
 namespace osquery {
 
+typedef apache::thrift::concurrency::ThreadManager InternalThreadManager;
+typedef std::shared_ptr<InternalThreadManager> InternalThreadManagerRef;
+
 /**
  * @brief Default number of threads in the thread pool.
  *
@@ -30,6 +35,34 @@ namespace osquery {
  * value is not specified on the command-line.
  */
 extern const int kDefaultThreadPoolSize;
+
+class InternalRunnable : public apache::thrift::concurrency::Runnable {
+ public:
+  virtual ~InternalRunnable() {}
+  InternalRunnable() : run_(false) {}
+
+ public:
+  /// The boost::thread entrypoint.
+  void run() {
+    run_ = true;
+    enter();
+  }
+
+  /// Check if the thread's entrypoint (run) executed, meaning thread context
+  /// was allocated.
+  bool hasRun() { return run_; }
+  /// Sleep in a boost::thread interruptable state.
+  void interruptableSleep(size_t milli);
+
+ protected:
+  /// Require the runnable thread define an entrypoint.
+  virtual void enter() = 0;
+
+ private:
+  bool run_;
+};
+
+typedef boost::shared_ptr<InternalRunnable> InternalRunnableRef;
 
 /**
  * @brief Singleton for queueing asynchronous tasks to be executed in parallel
@@ -80,7 +113,9 @@ class Dispatcher {
    * @return an instance of osquery::Status, indicating the success or failure
    * of the operation.
    */
-  Status add(std::shared_ptr<apache::thrift::concurrency::Runnable> task);
+  Status add(std::shared_ptr<InternalRunnable> task);
+
+  Status addService(std::shared_ptr<InternalRunnable> service);
 
   /**
    * @brief Getter for the underlying thread manager instance.
@@ -100,8 +135,7 @@ class Dispatcher {
    * @return a shared pointer to the Apache Thrift `ThreadManager` instance
    * which is currently being used to orchestrate multi-threaded operations.
    */
-  std::shared_ptr<apache::thrift::concurrency::ThreadManager>
-  getThreadManager();
+  InternalThreadManagerRef getThreadManager();
 
   /**
    * @brief Joins the thread manager.
@@ -112,12 +146,16 @@ class Dispatcher {
    */
   void join();
 
+  void joinServices();
+
+  void removeServices();
+
   /**
    * @brief Get the current state of the thread manager.
    *
    * @return an Apache Thrift STATE enum.
    */
-  apache::thrift::concurrency::ThreadManager::STATE state() const;
+  InternalThreadManager::STATE state() const;
 
   /**
    * @brief Add a worker thread.
@@ -208,6 +246,8 @@ class Dispatcher {
    *
    * @see getThreadManager
    */
-  std::shared_ptr<apache::thrift::concurrency::ThreadManager> thread_manager_;
+  InternalThreadManagerRef thread_manager_;
+  std::vector<std::shared_ptr<boost::thread> > service_threads_;
+  std::vector<std::shared_ptr<InternalRunnable> > services_;
 };
 }

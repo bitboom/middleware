@@ -3,7 +3,7 @@
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  LICENSE file in the root directory of this source tree. An additional grant
  *  of patent rights can be found in the PATENTS file in the same directory.
  *
  */
@@ -14,8 +14,6 @@
 
 #include <osquery/events.h>
 #include <osquery/tables.h>
-
-#include "osquery/core/virtual_table.h"
 
 namespace osquery { namespace tables {
 
@@ -30,14 +28,15 @@ class {{class_name}} {
 {% endif %}\
 
 class {{table_name_cc}}TablePlugin : public TablePlugin {
-public:
-  TableName name = "{{table_name}}";
-  TableColumns columns = {
+ private:
+  TableColumns columns() {
+    return {
 {% for column in schema %}\
-    std::make_pair("{{column.name}}", "{{column.type.affinity}}")\
+      {"{{column.name}}", "{{column.type.affinity}}"}\
 {% if not loop.last %}, {% endif %}
 {% endfor %}\
-  };
+    };
+  }
 
   QueryData generate(QueryContext& request) {
 {% if class_name != "" %}\
@@ -47,16 +46,9 @@ public:
     return osquery::tables::{{function}}(request);
 {% endif %}\
   }
-
-public:
-  {{table_name_cc}}TablePlugin() {}
-  int attachVtable(sqlite3 *db) {
-    return sqlite3_attach_vtable<{{table_name_cc}}TablePlugin>(db, name);
-  }
-  virtual ~{{table_name_cc}}TablePlugin() {}
 };
 
-REGISTER_TABLE("{{table_name}}", std::make_shared<{{table_name_cc}}TablePlugin>());
+REGISTER({{table_name_cc}}TablePlugin, "table", "{{table_name}}");
 /// END[GENTABLE]
 
 }}

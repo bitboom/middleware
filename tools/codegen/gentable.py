@@ -4,7 +4,7 @@
 #  All rights reserved.
 #
 #  This source code is licensed under the BSD-style license found in the
-#  LICENSE file in the root directory of this source tree. An additional grant 
+#  LICENSE file in the root directory of this source tree. An additional grant
 #  of patent rights can be found in the PATENTS file in the same directory.
 
 from __future__ import absolute_import
@@ -131,6 +131,7 @@ class TableState(Singleton):
         self.function = ""
         self.class_name = ""
         self.description = ""
+        self.attributes = {}
 
     def columns(self):
         return [i for i in self.schema if isinstance(i, Column)]
@@ -148,7 +149,7 @@ class TableState(Singleton):
             header=self.header,
             impl=self.impl,
             function=self.function,
-            class_name=self.class_name
+            class_name=self.class_name,
         )
 
         # Check for reserved column names
@@ -214,6 +215,7 @@ def table_name(name):
     logging.debug("  - called with: %s" % name)
     table.table_name = name
     table.description = ""
+    table.attributes = {}
 
 
 def schema(schema_list):
@@ -228,6 +230,15 @@ def schema(schema_list):
         if isinstance(it, ForeignKey):
             logging.debug("  - foreign_key: %s (%s)" % (it.column, it.table))
     table.schema = schema_list
+
+
+def description(text):
+    table.description = text
+
+
+def attributes(**kwargs): 
+    for attr in kwargs:
+        table.attributes[attr] = kwargs[attr]
 
 
 def implementation(impl_string):
@@ -253,10 +264,6 @@ def implementation(impl_string):
     table.class_name = class_name
 
 
-def description(text):
-    table.description = text
-
-
 def main(argc, argv):
     if DEVELOPING:
         logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)
@@ -270,18 +277,19 @@ def main(argc, argv):
     filename = argv[1]
     output = argv[2]
 
-    # Adding a 3rd parameter will enable the blacklist
-    disable_blacklist = argc > 3
+    if filename.endswith(".table"):
+        # Adding a 3rd parameter will enable the blacklist
+        disable_blacklist = argc > 3
 
-    setup_templates(filename)
-    with open(filename, "rU") as file_handle:
-        tree = ast.parse(file_handle.read())
-        exec(compile(tree, "<string>", "exec"))
-        blacklisted = is_blacklisted(table.table_name, path=filename)
-        if not disable_blacklist and blacklisted:
-            table.blacklist(output)
-        else:
-            table.generate(output)
+        setup_templates(filename)
+        with open(filename, "rU") as file_handle:
+            tree = ast.parse(file_handle.read())
+            exec(compile(tree, "<string>", "exec"))
+            blacklisted = is_blacklisted(table.table_name, path=filename)
+            if not disable_blacklist and blacklisted:
+                table.blacklist(output)
+            else:
+                table.generate(output)
 
 if __name__ == "__main__":
     main(len(sys.argv), sys.argv)

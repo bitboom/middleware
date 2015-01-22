@@ -11,92 +11,39 @@
 #include <boost/thread.hpp>
 
 #include <osquery/config.h>
-#include <osquery/config/plugin.h>
 #include <osquery/core.h>
-#include <osquery/database.h>
 #include <osquery/events.h>
+#include <osquery/extensions.h>
 #include <osquery/logger.h>
-#include <osquery/logger/plugin.h>
 #include <osquery/scheduler.h>
 
-#ifndef __APPLE__
-namespace osquery {
-DEFINE_osquery_flag(bool, daemonize, false, "Run as daemon (osqueryd only).");
-}
-#endif
+#include "osquery/core/watcher.h"
 
-namespace osquery {
-DEFINE_osquery_flag(bool,
-                    config_check,
-                    false,
-                    "Check the format and accessibility of the daemon");
-}
+const std::string kWatcherWorkerName = "osqueryd: worker";
 
 int main(int argc, char* argv[]) {
   osquery::initOsquery(argc, argv, osquery::OSQUERY_TOOL_DAEMON);
 
-  if (osquery::FLAGS_config_check) {
-    auto s = osquery::Config::checkConfig();
-    if (!s.ok()) {
-      std::cerr << "Error reading config: " << s.toString() << "\n";
-    }
-    return s.getCode();
+  if (!osquery::isOsqueryWorker()) {
+    osquery::initOsqueryDaemon();
   }
 
-#ifndef __APPLE__
-  // OSX uses launchd to daemonize.
-  if (osquery::FLAGS_daemonize) {
-    if (daemon(0, 0) == -1) {
-      ::exit(EXIT_FAILURE);
-    }
-  }
-#endif
-
-  auto pid_status = osquery::createPidFile();
-  if (!pid_status.ok()) {
-    LOG(ERROR) << "Could not start osqueryd: " << pid_status.toString();
-    ::exit(EXIT_FAILURE);
+  if (!osquery::FLAGS_disable_watchdog) {
+    // When a watcher is used, the current watcher will fork into a worker.
+    osquery::initWorkerWatcher(kWatcherWorkerName, argc, argv);
   }
 
-  try {
-    osquery::DBHandle::getInstance();
-  } catch (std::exception& e) {
-    LOG(ERROR) << "osqueryd failed to start: " << e.what();
-    ::exit(EXIT_FAILURE);
-  }
-
-  LOG(INFO) << "Listing all plugins";
-
-  LOG(INFO) << "Logger plugins:";
-  for (const auto& it : REGISTERED_LOGGER_PLUGINS) {
-    LOG(INFO) << "  - " << it.first;
-  }
-
-  LOG(INFO) << "Config plugins:";
-  for (const auto& it : REGISTERED_CONFIG_PLUGINS) {
-    LOG(INFO) << "  - " << it.first;
-  }
-
-  LOG(INFO) << "Event Publishers:";
-  for (const auto& it : REGISTERED_EVENTPUBLISHERS) {
-    LOG(INFO) << "  - " << it.first;
-  }
-
-  LOG(INFO) << "Event Subscribers:";
-  for (const auto& it : REGISTERED_EVENTSUBSCRIBERS) {
-    LOG(INFO) << "  - " << it.first;
-  }
-
-  // Start a thread for each appropriate event type
-  osquery::registries::faucet(REGISTERED_EVENTPUBLISHERS,
-                              REGISTERED_EVENTSUBSCRIBERS);
+  // Start event threads.
+  osquery::attachEvents();
   osquery::EventFactory::delay();
+  osquery::startExtensionManager();
 
+  // Begin the schedule runloop.
   boost::thread scheduler_thread(osquery::initializeScheduler);
   scheduler_thread.join();
 
-  // End any event type run loops.
-  osquery::EventFactory::end();
+  // Finally shutdown.
+  osquery::shutdownOsquery();
 
   return 0;
 }

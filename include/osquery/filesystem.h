@@ -3,7 +3,7 @@
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  LICENSE file in the root directory of this source tree. An additional grant
  *  of patent rights can be found in the PATENTS file in the same directory.
  *
  */
@@ -20,6 +20,16 @@
 #include <osquery/status.h>
 
 namespace osquery {
+
+/**
+ * Our wildcard directory traversal function will not resolve more than
+ * this many wildcards.
+ */
+const unsigned int kMaxDirectoryTraversalDepth = 40;
+
+const std::string kWildcardCharacter = "%";
+const std::string kWildcardCharacterRecursive =
+    kWildcardCharacter + kWildcardCharacter;
 
 /**
  * @brief Read a file from disk.
@@ -80,6 +90,42 @@ Status listFilesInDirectory(const boost::filesystem::path& path,
                             std::vector<std::string>& results);
 
 /**
+ * @brief List all of the directories in a specific directory, non-recursively.
+ *
+ * @param path the path which you would like to list.
+ * @param results a non-const reference to a vector which will be populated
+ * with the directory listing of the path param, assuming that all operations
+ * completed successfully.
+ *
+ * @return an instance of Status, indicating the success or failure
+ * of the operation.
+ */
+Status listDirectoriesInDirectory(const boost::filesystem::path& path,
+                                  std::vector<std::string>& results);
+
+/**
+ * @brief Given a wildcard filesystem patten, resolve all possible paths
+ *
+ * @code{.cpp}
+ *   std::vector<std::string> results;
+ *   auto s = resolveFilePattern("/Users/marpaia/Downloads/%", results);
+ *   if (s.ok()) {
+ *     for (const auto& result : results) {
+ *       LOG(INFO) << result;
+ *     }
+ *   }
+ * @endcode
+ *
+ * @param fs_path The filesystem pattern
+ * @param results The vector in which all results will be returned
+ *
+ * @return An instance of osquery::Status which indicates the success or
+ * failure of the operation
+ */
+Status resolveFilePattern(const boost::filesystem::path& fs_path,
+                          std::vector<std::string>& results);
+
+/**
  * @brief Get directory portion of a path.
  *
  * @param path The input path, either a filename or directory.
@@ -91,6 +137,8 @@ Status listFilesInDirectory(const boost::filesystem::path& path,
 Status getDirectory(const boost::filesystem::path& path,
                     boost::filesystem::path& dirpath);
 
+Status remove(const boost::filesystem::path& path);
+
 /**
  * @brief Check if an input path is a directory.
  *
@@ -101,34 +149,11 @@ Status getDirectory(const boost::filesystem::path& path,
 Status isDirectory(const boost::filesystem::path& path);
 
 /**
- * @brief Parse the users out of a tomcat user config from disk
+ * @brief Return a vector of all home directories on the system
  *
- * @param path A string which represents the path of the tomcat user config
- * @param a vector of pairs which represent all of the users which were found
- * in the supplied file. pair.first is the username and pair.second is the
- * password.
- *
- * @return an instance of Status, indicating the success or failure
- * of the operation
+ * @return a vector of strings representing the path of all home directories
  */
-Status parseTomcatUserConfigFromDisk(
-    const boost::filesystem::path& path,
-    std::vector<std::pair<std::string, std::string> >& credentials);
-
-/**
- * @brief Parse the users out of a tomcat user config
- *
- * @param content A string which represents the content of the file to parse
- * @param a vector of pairs which represent all of the users which were found
- * in the supplied file. pair.first is the username and pair.second is the
- * password.
- *
- * @return an instance of Status, indicating the success or failure
- * of the operation
- */
-Status parseTomcatUserConfig(
-    const std::string& content,
-    std::vector<std::pair<std::string, std::string> >& credentials);
+std::vector<boost::filesystem::path> getHomeDirectories();
 
 #ifdef __APPLE__
 /**

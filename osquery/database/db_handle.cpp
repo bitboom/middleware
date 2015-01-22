@@ -3,7 +3,7 @@
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  LICENSE file in the root directory of this source tree. An additional grant
  *  of patent rights can be found in the PATENTS file in the same directory.
  *
  */
@@ -35,12 +35,12 @@ const std::vector<std::string> kDomains = {kConfigurations, kQueries, kEvents};
 DEFINE_osquery_flag(string,
                     db_path,
                     "/var/osquery/osquery.db",
-                    "If using a disk-based backing store, specify a path.");
+                    "If using a disk-based backing store, specify a path");
 
 DEFINE_osquery_flag(bool,
                     use_in_memory_database,
                     false,
-                    "Keep osquery backing-store in memory.");
+                    "Keep osquery backing-store in memory");
 
 /////////////////////////////////////////////////////////////////////////////
 // constructors and destructors
@@ -86,6 +86,15 @@ DBHandle::~DBHandle() {
 /////////////////////////////////////////////////////////////////////////////
 std::shared_ptr<DBHandle> DBHandle::getInstance() {
   return getInstance(FLAGS_db_path, FLAGS_use_in_memory_database);
+}
+
+bool DBHandle::checkDB() {
+  try {
+    auto handle = DBHandle(FLAGS_db_path, FLAGS_use_in_memory_database);
+  } catch (const std::exception& e) {
+    return false;
+  }
+  return true;
 }
 
 std::shared_ptr<DBHandle> DBHandle::getInstanceInMemory() {

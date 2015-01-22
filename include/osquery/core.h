@@ -3,7 +3,7 @@
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  LICENSE file in the root directory of this source tree. An additional grant
  *  of patent rights can be found in the PATENTS file in the same directory.
  *
  */
@@ -13,15 +13,16 @@
 #include <string>
 #include <vector>
 
-#include <boost/filesystem.hpp>
-
-#include <sqlite3.h>
-
-#include <osquery/database/results.h>
+#include <osquery/status.h>
 
 #ifndef STR
 #define STR_OF(x) #x
 #define STR(x) STR_OF(x)
+#endif
+
+#ifndef FRIEND_TEST
+#define FRIEND_TEST(test_case_name, test_name) \
+  friend class test_case_name##_##test_name##_Test
 #endif
 
 namespace osquery {
@@ -44,59 +45,6 @@ enum osqueryTool {
 };
 
 /**
- * @brief Execute a query
- *
- * This is a lower-level version of osquery::SQL. Prefer to use osquery::SQL.
- *
- * @code{.cpp}
- *   std::string q = "SELECT * FROM time;";
- *   int i = 0;
- *   auto qd = query(q, i);
- *   if (i == 0) {
- *     for (const auto& each : qd) {
- *       for (const auto& it : each) {
- *         LOG(INFO) << it.first << ": " << it.second;
- *       }
- *     }
- *   } else {
- *     LOG(ERROR) << "Error: " << i;
- *   }
- * @endcode
- *
- * @param q the query to execute
- * @param error_return an int indicating the success or failure of the query
- *
- * @return the results of the query
- */
-osquery::QueryData query(const std::string& q, int& error_return);
-
-/**
- * @brief Execute a query on a specific database
- *
- * If you need to use a different database, other than the osquery default,
- * use this method and pass along a pointer to a SQLite3 database. This is
- * useful for testing.
- *
- * @param q the query to execute
- * @param error_return an int indicating the success or failure of the query
- * @param db the SQLite3 database the execute query q against
- *
- * @return the results of the query
- */
-osquery::QueryData query(const std::string& q, int& error_return, sqlite3* db);
-
-/**
- * @brief Return a fully configured sqlite3 database object
- *
- * An osquery database is basically just a SQLite3 database with several
- * virtual tables attached. This method is the main abstraction for creating
- * SQLite3 databases within osquery.
- *
- * @return a SQLite3 database with all virtual tables attached
- */
-sqlite3* createDB();
-
-/**
  * @brief Sets up various aspects of osquery execution state.
  *
  * osquery needs a few things to happen as soon as the executable begins
@@ -109,9 +57,20 @@ sqlite3* createDB();
 void initOsquery(int argc, char* argv[], int tool = OSQUERY_TOOL_TEST);
 
 /**
- * @brief Split a given string based on an optional deliminator.
+ * @brief Sets up a process as a osquery daemon.
+ */
+void initOsqueryDaemon();
+
+/**
+ * @brief Turns of various aspects of osquery such as event loops.
  *
- * If no deliminator is supplied, the string will be split based on whitespace.
+ */
+void shutdownOsquery();
+
+/**
+ * @brief Split a given string based on an optional delimiter.
+ *
+ * If no delimiter is supplied, the string will be split based on whitespace.
  *
  * @param s the string that you'd like to split
  * @param delim the delimiter which you'd like to split the string by
@@ -149,13 +108,6 @@ std::string getAsciiTime();
  * @return an int representing the amount of seconds since the unix epoch
  */
 int getUnixTime();
-
-/**
- * @brief Return a vector of all home directories on the system
- *
- * @return a vector of strings representing the path of all home directories
- */
-std::vector<boost::filesystem::path> getHomeDirectories();
 
 /**
  * @brief Inline helper function for use with utf8StringSize

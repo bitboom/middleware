@@ -3,7 +3,7 @@
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  LICENSE file in the root directory of this source tree. An additional grant
  *  of patent rights can be found in the PATENTS file in the same directory.
  *
  */
@@ -13,18 +13,15 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <set>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/property_tree/ptree.hpp>
 
-#include <sqlite3.h>
-
+#include <osquery/registry.h>
+#include <osquery/core.h>
 #include <osquery/database/results.h>
 #include <osquery/status.h>
-
-#ifndef FRIEND_TEST
-#define FRIEND_TEST(test_case_name, test_name) \
-  friend class test_case_name##_##test_name##_Test
-#endif
 
 namespace osquery {
 namespace tables {
@@ -66,8 +63,8 @@ namespace tables {
 #define AS_LITERAL(literal, value) boost::lexical_cast<literal>(value)
 
 /// Helper alias for TablePlugin names.
-typedef const std::string TableName;
-typedef const std::vector<std::pair<std::string, std::string> > TableColumns;
+typedef std::string TableName;
+typedef std::vector<std::pair<std::string, std::string> > TableColumns;
 typedef std::map<std::string, std::vector<std::string> > TableData;
 
 /**
@@ -147,7 +144,7 @@ struct ConstraintList {
   /**
    * @brief Check and return if there are any constraints on this column.
    *
-   * A ConstraintList is used in a ConstraintMap with a column name as the 
+   * A ConstraintList is used in a ConstraintMap with a column name as the
    * map index. Tables that act on optional constraints should check if any
    * constraint was provided.
    *
@@ -171,7 +168,7 @@ struct ConstraintList {
   /**
    * @brief Check if a constraint is missing or matches a type expression.
    *
-   * A ConstraintList is used in a ConstraintMap with a column name as the 
+   * A ConstraintList is used in a ConstraintMap with a column name as the
    * map index. Tables that act on required constraints can make decisions
    * on missing constraints or a constraint match.
    *
@@ -198,7 +195,17 @@ struct ConstraintList {
    * @param op the ConstraintOperator.
    * @return A list of TEXT%-represented types matching the operator.
    */
-  std::vector<std::string> getAll(ConstraintOperator op);
+  std::set<std::string> getAll(ConstraintOperator op);
+
+  template<typename T>
+  std::set<T> getAll(ConstraintOperator op) {
+    std::set<T> literal_matches;
+    auto matches = getAll(op);
+    for (const auto& match : matches) {
+      literal_matches.insert(AS_LITERAL(T, match));
+    }
+    return literal_matches;
+  }
 
   /**
    * @brief Add a new Constraint to the list of constraints.
@@ -208,6 +215,20 @@ struct ConstraintList {
   void add(const struct Constraint& constraint) {
     constraints_.push_back(constraint);
   }
+
+  /**
+   * @brief Serialize a ConstraintList into a property tree.
+   *
+   * The property tree will use the format:
+   * {
+   *   "affinity": affinity,
+   *   "list": [
+   *     {"op": op, "expr": expr}, ...
+   *   ]
+   * }
+   */
+  void serialize(boost::property_tree::ptree& tree) const;
+  void unserialize(const boost::property_tree::ptree& tree);
 
   ConstraintList() { affinity = "TEXT"; }
 
@@ -232,6 +253,8 @@ struct QueryContext {
   ConstraintMap constraints;
   /// Support a limit to the number of results.
   int limit;
+
+  QueryContext() : limit(0) {}
 };
 
 typedef struct QueryContext QueryContext;
@@ -243,30 +266,43 @@ typedef struct Constraint Constraint;
  * To attach a virtual table create a TablePlugin subclass and register the
  * virtual table name as the plugin ID. osquery will enumerate all registered
  * TablePlugins and attempt to attach them to SQLite at instanciation.
+ *
+ * Note: When updating this class, be sure to update the corresponding template
+ * in osquery/tables/templates/default.cpp.in
  */
-class TablePlugin {
- public:
-  TableName name;
-  TableColumns columns;
-  /// Helper method to generate the virtual table CREATE statement.
-  std::string statement(TableName name, TableColumns columns);
-
- public:
-  /// Part of the query state, number of rows generated.
-  int n;
-  /// Part of the query state, column data returned from a query.
-  TableData data;
-  /// Part of the query state, parsed set of query predicate constraints.
-  ConstraintSet constraints;
-
- public:
-  virtual int attachVtable(sqlite3 *db) { return -1; }
-  virtual ~TablePlugin(){};
-
+class TablePlugin : public Plugin {
  protected:
-  TablePlugin() { n = 0; };
+  /// Helper method to generate the virtual table CREATE statement.
+  virtual std::string statement();
+  virtual std::string columnDefinition();
+  virtual TableColumns columns() {
+    TableColumns columns;
+    return columns;
+  }
+
+  virtual QueryData generate(QueryContext& request) {
+    QueryData data;
+    return data;
+  }
+
+ public:
+  /// Public API methods.
+  Status call(const PluginRequest& request, PluginResponse& response);
+
+ public:
+  /// Helper data structure transformation methods
+  static void setRequestFromContext(const QueryContext& context,
+                                    PluginRequest& request);
+  static void setResponseFromQueryData(const QueryData& data,
+                                       PluginResponse& response);
+  static void setContextFromRequest(const PluginRequest& request,
+                                    QueryContext& context);
+
+ private:
+  FRIEND_TEST(VirtualTableTests, test_tableplugin_columndefinition);
+  FRIEND_TEST(VirtualTableTests, test_tableplugin_statement);
 };
 
-typedef std::shared_ptr<TablePlugin> TablePluginRef;
+CREATE_REGISTRY(TablePlugin, "table");
 }
 }

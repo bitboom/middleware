@@ -12,6 +12,7 @@
 
 #include <osquery/config.h>
 #include <osquery/core.h>
+#include <osquery/events.h>
 #include <osquery/flags.h>
 #include <osquery/filesystem.h>
 #include <osquery/logger.h>
@@ -24,22 +25,30 @@ const std::string kDescription =
     "relational database";
 const std::string kEpilog = "osquery project page <http://osquery.io>.";
 
-DEFINE_osquery_flag(bool, debug, false, "Enable debug messages.");
+DEFINE_osquery_flag(bool, debug, false, "Enable debug messages");
 
 DEFINE_osquery_flag(bool,
                     verbose_debug,
                     false,
-                    "Enable verbose debug messages.");
+                    "Enable verbose debug messages");
 
-DEFINE_osquery_flag(bool,
-                    disable_logging,
-                    false,
-                    "Disable ERROR/INFO logging.");
+DEFINE_osquery_flag(bool, disable_logging, false, "Disable ERROR/INFO logging");
 
 DEFINE_osquery_flag(string,
                     osquery_log_dir,
                     "/var/log/osquery/",
-                    "Directory to store ERROR/INFO and results logging.");
+                    "Directory for ERROR/INFO and results logging");
+
+DEFINE_osquery_flag(bool,
+                    config_check,
+                    false,
+                    "Check the format of an osquery config");
+
+#ifndef __APPLE__
+namespace osquery {
+DEFINE_osquery_flag(bool, daemonize, false, "Run as daemon (osqueryd only)");
+}
+#endif
 
 namespace fs = boost::filesystem;
 
@@ -68,7 +77,7 @@ void printUsage(const std::string& binary, int tool) {
   fprintf(stdout, "\n%s\n", kEpilog.c_str());
 }
 
-void announce(const std::string& basename) {
+void announce() {
   syslog(LOG_NOTICE, "osqueryd started [version=" OSQUERY_VERSION "]");
 }
 
@@ -83,15 +92,16 @@ void initOsquery(int argc, char* argv[], int tool) {
     ::exit(0);
   }
 
-  // Print the version to SYSLOG.
-  if (tool == OSQUERY_TOOL_DAEMON) {
-    announce(binary);
-  }
-
   FLAGS_alsologtostderr = true;
   FLAGS_logbufsecs = 0; // flush the log buffer immediately
   FLAGS_stop_logging_if_full_disk = true;
   FLAGS_max_log_size = 10; // max size for individual log file is 10MB
+  
+  // if you'd like to change the default logging plugin, compile osquery with
+  // -DOSQUERY_DEFAULT_CONFIG_PLUGIN=<new_default_plugin>
+#ifdef OSQUERY_DEFAULT_CONFIG_PLUGIN
+  FLAGS_config_plugin = STR(OSQUERY_DEFAULT_CONFIG_PLUGIN);
+#endif
 
   // Set version string from CMake build
   __GFLAGS_NAMESPACE::SetVersionString(OSQUERY_VERSION);
@@ -126,15 +136,57 @@ void initOsquery(int argc, char* argv[], int tool) {
     FLAGS_minloglevel = 2; // ERROR
   }
 
+  // Start the logging, and announce the daemon is starting.
   google::InitGoogleLogging(argv[0]);
-  VLOG(1) << "osquery starting [version=" OSQUERY_VERSION "]";
-  osquery::InitRegistry::get().run();
+  VLOG(1) << "osquery initializing [version=" OSQUERY_VERSION "]";
 
-// Once command line arguments are parsed load the osquery config.
-#ifdef OSQUERY_DEFAULT_CONFIG_PLUGIN
-  FLAGS_config_retriever = STR(OSQUERY_DEFAULT_CONFIG_PLUGIN);
-#endif
+  // Run the setup for all non-lazy registries.
+  Registry::setUp();
+  // And finally load the config.
   auto config = Config::getInstance();
   config->load();
+
+  if (FLAGS_config_check) {
+    auto s = Config::checkConfig();
+    if (!s.ok()) {
+      std::cerr << "Error reading config: " << s.toString() << "\n";
+    }
+    ::exit(s.getCode());
+  }
+}
+
+void initOsqueryDaemon() {
+#ifndef __APPLE__
+  // OSX uses launchd to daemonize.
+  if (osquery::FLAGS_daemonize) {
+    if (daemon(0, 0) == -1) {
+      ::exit(EXIT_FAILURE);
+    }
+  }
+#endif
+
+  // Print the version to SYSLOG.
+  announce();
+
+  // Create a process mutex around the daemon.
+  auto pid_status = createPidFile();
+  if (!pid_status.ok()) {
+    LOG(ERROR) << "osqueryd initialize failed: " << pid_status.toString();
+    ::exit(EXIT_FAILURE);
+  }
+
+  // Check the backing store by allocating and exitting on error.
+  if (!DBHandle::checkDB()) {
+    LOG(ERROR) << "osqueryd initialize failed: Could not create DB handle";
+    ::exit(EXIT_FAILURE);
+  }
+}
+
+void shutdownOsquery() {
+  // End any event type run loops.
+  EventFactory::end();
+
+  // Hopefully release memory used by global string constructors in gflags.
+  __GFLAGS_NAMESPACE::ShutDownCommandLineFlags();
 }
 }

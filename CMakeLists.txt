@@ -41,5 +41,7 @@ INCLUDE_DIRECTORIES("/usr/local/include")
 
 ENABLE_TESTING()
 
+INCLUDE(CMake/Thrift.cmake)
+
 ADD_SUBDIRECTORY(osquery)
 ADD_SUBDIRECTORY(sqlite3)

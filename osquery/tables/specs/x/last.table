@@ -1,4 +1,5 @@
 table_name("last")
+description("System logins and logouts.")
 schema([
     Column("username", TEXT),
     Column("tty", TEXT),

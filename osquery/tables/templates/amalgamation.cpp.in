@@ -15,13 +15,8 @@
 #include <osquery/events.h>
 #include <osquery/tables.h>
 
-#include "osquery/core/virtual_table.h"
-
 namespace osquery { namespace tables {
-
 {% for table in tables %}
 {{table}}
-
 {% endfor %}
-
 }}
