@@ -37,28 +37,28 @@ int main(int argc, char* argv[]) {
   osquery::Registry::setUp();
   osquery::attachEvents();
 
-  int result = 0;
   if (FLAGS_delay != 0) {
     ::sleep(FLAGS_delay);
   }
 
   osquery::QueryData results;
+  osquery::Status status;
   for (int i = 0; i < FLAGS_iterations; ++i) {
-    printf("Executing: %s\n", FLAGS_query.c_str());
-    auto status = osquery::query(FLAGS_query, results);
+    status = osquery::query(FLAGS_query, results);
     if (!status.ok()) {
       fprintf(stderr, "Query failed: %d\n", status.getCode());
       break;
-    } else {
-      if (FLAGS_delay != 0) {
-        ::sleep(FLAGS_delay);
-      }
     }
   }
+
+  if (FLAGS_delay != 0) {
+    ::sleep(FLAGS_delay);
+  }
+
 
   // Instead of calling "shutdownOsquery" force the EF to join its threads.
   osquery::EventFactory::end(true);
   __GFLAGS_NAMESPACE::ShutDownCommandLineFlags();
 
-  return result;
+  return status.getCode();
 }

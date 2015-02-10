@@ -16,7 +16,7 @@
 
 namespace osquery {
 
-int kUdevULatency = 200;
+int kUdevMLatency = 200;
 
 REGISTER(UdevEventPublisher, "event_publisher", "udev");
 
@@ -76,7 +76,7 @@ Status UdevEventPublisher::run() {
 
   udev_device_unref(device);
 
-  ::usleep(kUdevULatency);
+  osquery::interruptableSleep(kUdevMLatency);
   return Status(0, "Continue");
 }
 
@@ -138,7 +138,7 @@ UdevEventContextRef UdevEventPublisher::createEventContextFrom(
 }
 
 bool UdevEventPublisher::shouldFire(const UdevSubscriptionContextRef& sc,
-                                    const UdevEventContextRef& ec) {
+                                    const UdevEventContextRef& ec) const {
   if (sc->action != UDEV_EVENT_ACTION_ALL) {
     if (sc->action != ec->action) {
       return false;
