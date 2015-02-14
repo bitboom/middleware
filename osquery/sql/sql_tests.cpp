@@ -19,18 +19,9 @@ namespace osquery {
 
 class SQLTests : public testing::Test {};
 
-TEST_F(SQLTests, test_simple_query_execution) {
-  auto sql = SQL("SELECT * FROM time");
-  EXPECT_TRUE(sql.ok());
-  EXPECT_EQ(sql.rows().size(), 1);
-}
-
-TEST_F(SQLTests, test_get_tables) {
-  auto tables = SQL::getTableNames();
-  EXPECT_TRUE(tables.size() > 0);
-}
-
 TEST_F(SQLTests, test_raw_access) {
+  // Access to the table plugins (no SQL parsing required) works in both
+  // extensions and core, though with limitations on available tables.
   auto results = SQL::selectAllFrom("time");
   EXPECT_EQ(results.size(), 1);
 }

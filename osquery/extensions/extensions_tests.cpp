@@ -10,20 +10,13 @@
 
 #include <stdexcept>
 
-#define GTEST_HAS_TR1_TUPLE 0
-// GTest must come before the Thrift includes.
 #include <gtest/gtest.h>
-
-#include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/transport/TBufferTransports.h>
-#include <thrift/transport/TSocket.h>
 
 #include <osquery/extensions.h>
 #include <osquery/filesystem.h>
+#include <osquery/database.h>
 
-using namespace apache::thrift;
-using namespace apache::thrift::protocol;
-using namespace apache::thrift::transport;
+#include "osquery/extensions/interface.h"
 
 using namespace osquery::extensions;
 
@@ -48,28 +41,39 @@ class ExtensionsTest : public testing::Test {
   }
 
   bool ping(int attempts = 3) {
-    // Open a socket to the test extension manager.
-    boost::shared_ptr<TSocket> socket(new TSocket(kTestManagerSocket));
-    boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
-    boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-
-    ExtensionManagerClient client(protocol);
-
     // Calling open will except if the socket does not exist.
     ExtensionStatus status;
     for (int i = 0; i < attempts; ++i) {
       try {
-        transport->open();
-        client.ping(status);
-        transport->close();
+        EXManagerClient client(kTestManagerSocket);
+        client.get()->ping(status);
         return (status.code == ExtensionCode::EXT_SUCCESS);
-      }
-      catch (const std::exception& e) {
+      } catch (const std::exception& e) {
         ::usleep(kDelayUS);
       }
     }
 
     return false;
+  }
+
+  QueryData query(const std::string& sql, int attempts = 3) {
+    // Calling open will except if the socket does not exist.
+    ExtensionResponse response;
+    for (int i = 0; i < attempts; ++i) {
+      try {
+        EXManagerClient client(kTestManagerSocket);
+        client.get()->query(response, sql);
+      } catch (const std::exception& e) {
+        ::usleep(kDelayUS);
+      }
+    }
+
+    QueryData qd;
+    for (const auto& row : response.response) {
+      qd.push_back(row);
+    }
+
+    return qd;
   }
 
   ExtensionList registeredExtensions(int attempts = 3) {
@@ -115,18 +119,6 @@ TEST_F(ExtensionsTest, test_extension_runnable) {
   EXPECT_TRUE(ping());
 }
 
-TEST_F(ExtensionsTest, test_extension_start_failed) {
-  auto status = startExtensionManager(kTestManagerSocket);
-  EXPECT_TRUE(status.ok());
-  // Wait for the extension manager to start.
-  EXPECT_TRUE(socketExists(kTestManagerSocket));
-
-  // Start an extension that does NOT fatal if the extension manager dies.
-  status = startExtension(kTestManagerSocket, "test", "0.1", "0.0.1");
-  // This will be false since we are registering duplicate items
-  EXPECT_FALSE(status.ok());
-}
-
 TEST_F(ExtensionsTest, test_extension_start) {
   auto status = startExtensionManager(kTestManagerSocket);
   EXPECT_TRUE(status.ok());
@@ -134,7 +126,7 @@ TEST_F(ExtensionsTest, test_extension_start) {
 
   // Now allow duplicates (for testing, since EM/E are the same).
   Registry::allowDuplicates(true);
-  status = startExtension(kTestManagerSocket, "test", "0.1", "0.0.1");
+  status = startExtension(kTestManagerSocket, "test", "0.1", "0.0.0", "0.0.1");
   // This will be false since we are registering duplicate items
   EXPECT_TRUE(status.ok());
 
@@ -192,7 +184,7 @@ TEST_F(ExtensionsTest, test_extension_broadcast) {
   EXPECT_TRUE(Registry::exists("extension_test", "test_item"));
   EXPECT_FALSE(Registry::exists("extension_test", "test_alias"));
 
-  status = startExtension(kTestManagerSocket, "test", "0.1", "0.0.1");
+  status = startExtension(kTestManagerSocket, "test", "0.1", "0.0.0", "0.0.1");
   EXPECT_TRUE(status.ok());
 
   RouteUUID uuid;

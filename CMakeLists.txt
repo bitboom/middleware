@@ -34,6 +34,13 @@ ADD_DEFINITIONS("-fPIC")
 #ADD_DEFINITIONS("-pedantic")
 #ADD_DEFINITIONS("-pedantic-errors")
 
+# TODO(sangwan.kwon): Get version from packing spec.
+SET(OSQUERY_BUILD_VERSION "1.4.2")
+
+# Set various platform/platform-version/build version/etc defines.
+ADD_DEFINITIONS(-DOSQUERY_BUILD_VERSION=${OSQUERY_BUILD_VERSION}
+				-DOSQUERY_BUILD_SDK_VERSION=${OSQUERY_BUILD_VERSION})
+
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/include")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/sqlite3")
@@ -42,6 +49,9 @@ INCLUDE_DIRECTORIES("/usr/local/include")
 ENABLE_TESTING()
 
 INCLUDE(CMake/Thrift.cmake)
+
+# Make sure the generated paths exist
+EXECUTE_PROCESS(COMMAND mkdir -p "${CMAKE_BINARY_DIR}/generated")
 
 ADD_SUBDIRECTORY(osquery)
 ADD_SUBDIRECTORY(sqlite3)

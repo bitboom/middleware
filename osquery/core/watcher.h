@@ -14,8 +14,9 @@
 
 #include <unistd.h>
 
-#include <osquery/dispatcher.h>
 #include <osquery/flags.h>
+
+#include "osquery/dispatcher/dispatcher.h"
 
 namespace osquery {
 
@@ -76,7 +77,7 @@ class Watcher {
 /// The WatcherWatcher is spawned within the worker and watches the watcher.
 class WatcherWatcherRunner : public InternalRunnable {
  public:
-  WatcherWatcherRunner(pid_t watcher) : watcher_(watcher) {}
+  explicit WatcherWatcherRunner(pid_t watcher) : watcher_(watcher) {}
   void enter();
 
  private:

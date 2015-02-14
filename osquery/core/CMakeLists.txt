@@ -9,6 +9,7 @@ ADD_OSQUERY_LIBRARY(TRUE osquery_core init.cpp
 
 ADD_OSQUERY_LIBRARY(TRUE osquery_test_util test_util.cpp)
 
+ADD_OSQUERY_TEST(TRUE osquery_flags_tests flags_tests.cpp)
 ADD_OSQUERY_TEST(TRUE osquery_hash_tests hash_tests.cpp)
 ADD_OSQUERY_TEST(TRUE osquery_status_tests status_tests.cpp)
 ADD_OSQUERY_TEST(TRUE osquery_tables_tests tables_tests.cpp)

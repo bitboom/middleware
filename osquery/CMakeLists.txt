@@ -186,3 +186,8 @@ INSTALL(TARGETS ${TARGET_OSQUERY_DAEMON}
 					GROUP_EXECUTE
 					WORLD_READ
 					WORLD_EXECUTE)
+
+## example extension with the SDK ##############################################
+ADD_EXECUTABLE(example_extension examples/example_extension.cpp)
+TARGET_LINK_LIBRARIES(example_extension ${TARGET_OSQUERY_LIB})
+SET_TARGET_PROPERTIES(example_extension PROPERTIES OUTPUT_NAME example_extension)

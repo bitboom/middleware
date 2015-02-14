@@ -21,7 +21,6 @@
 #include <boost/thread/mutex.hpp>
 
 #include <osquery/database.h>
-#include <osquery/dispatcher.h>
 #include <osquery/registry.h>
 #include <osquery/status.h>
 #include <osquery/tables.h>
@@ -78,11 +77,14 @@ typedef EventPublisher<SubscriptionContext, EventContext> BaseEventPublisher;
 typedef std::shared_ptr<BaseEventPublisher> EventPublisherRef;
 typedef std::shared_ptr<SubscriptionContext> SubscriptionContextRef;
 typedef std::shared_ptr<EventContext> EventContextRef;
+typedef EventSubscriber<BaseEventPublisher> BaseEventSubscriber;
 typedef std::shared_ptr<EventSubscriber<BaseEventPublisher>> EventSubscriberRef;
 
 /// Use a single placeholder for the EventContextRef passed to EventCallback.
 using std::placeholders::_1;
-typedef std::function<Status(const EventContextRef&)> EventCallback;
+using std::placeholders::_2;
+typedef std::function<Status(const EventContextRef&, const void*)>
+    EventCallback;
 
 /// An EventPublisher must track every subscription added.
 typedef std::vector<SubscriptionRef> SubscriptionVector;
@@ -135,14 +137,18 @@ struct Subscription {
   SubscriptionContextRef context;
   /// An EventSubscription member EventCallback method.
   EventCallback callback;
+  /// A pointer to possible extra data
+  void* user_data;
 
   static SubscriptionRef create() { return std::make_shared<Subscription>(); }
 
   static SubscriptionRef create(const SubscriptionContextRef& mc,
-                                EventCallback ec = 0) {
+                                EventCallback ec = 0,
+                                void* user_data = nullptr) {
     auto subscription = std::make_shared<Subscription>();
     subscription->context = mc;
     subscription->callback = ec;
+    subscription->user_data = user_data;
     return subscription;
   }
 };
@@ -343,7 +349,7 @@ class EventPublisher : public EventPublisherPlugin {
     auto pub_sc = getSubscriptionContext(sub->context);
     auto pub_ec = getEventContext(ec);
     if (shouldFire(pub_sc, pub_ec) && sub->callback != nullptr) {
-      sub->callback(pub_ec);
+      sub->callback(pub_ec, sub->user_data);
     }
   }
 
@@ -365,178 +371,6 @@ class EventPublisher : public EventPublisherPlugin {
   FRIEND_TEST(EventsTests, test_event_sub_subscribe);
   FRIEND_TEST(EventsTests, test_event_sub_context);
   FRIEND_TEST(EventsTests, test_fire_event);
-};
-
-/**
- * @brief A factory for associating event generators to EventPublisherID%s.
- *
- * This factory both registers new event types and the subscriptions that use
- * them. An EventPublisher is also a factory, the single event factory arbitates
- * Subscription creatating and management for each associated EventPublisher.
- *
- * Since event types may be plugins, they are created using the factory.
- * Since subscriptions may be configured/disabled they are also factory-managed.
- */
-class EventFactory {
- public:
-  /// Access to the EventFactory instance.
-  static EventFactory& getInstance();
-
-  /**
-   * @brief Add an EventPublisher to the factory.
-   *
-   * The registration is mostly abstracted using osquery's registery.
-   *
-   * @param event_pub If for some reason the caller needs access to the
-   * EventPublisher instance they can register-by-instance.
-   *
-   * Access to the EventPublisher instance is not discouraged, but using the
-   * EventFactory `getEventPublisher` accessor is encouraged.
-   */
-  template <class T>
-  static Status registerEventPublisher(const std::shared_ptr<T>& pub) {
-    auto base_pub = reinterpret_cast<const EventPublisherRef&>(pub);
-    return registerEventPublisher(base_pub);
-  }
-
-  /// Once the event publisher has been down-casted, call it's API.
-  static Status registerEventPublisher(const EventPublisherRef& pub);
-
-  /**
-   * @brief Add an EventSubscriber to the factory.
-   *
-   * The registration is mostly abstracted using osquery's registery.
-   */
-  template <class T>
-  static Status registerEventSubscriber() {
-    auto sub = std::make_shared<T>();
-    return registerEventSubscriber(sub);
-  }
-
-  /**
-   * @brief Add an EventSubscriber to the factory.
-   *
-   * The registration is mostly abstracted using osquery's registery.
-   *
-   * @param sub If the caller must access the EventSubscriber instance
-   * control may be passed to the registry.
-   *
-   * Access to the EventSubscriber instance outside of the within-instance
-   * table generation method and set of EventCallback%s is discouraged.
-   */
-  template <class T>
-  static Status registerEventSubscriber(std::shared_ptr<T> sub) {
-    auto base_sub = reinterpret_cast<EventSubscriberRef&>(sub);
-    return registerEventSubscriber(base_sub);
-  }
-
-  /// Once the event subscriber has been down-casted, call it's API.
-  static Status registerEventSubscriber(const EventSubscriberRef& sub);
-
-  /**
-   * @brief Add a SubscriptionContext and EventCallback Subscription to an
-   *EventPublisher.
-   *
-   * Create a Subscription from a given SubscriptionContext and EventCallback
-   * and add that Subscription to the EventPublisher assosicated identiter.
-   *
-   * @param type_id The string for an EventPublisher receiving the Subscription.
-   * @param mc A SubscriptionContext related to the EventPublisher.
-   * @param cb When the EventPublisher fires an event the SubscriptionContext
-   * will be evaluated, if the event matches optional specifics in the context
-   * this callback function will be called. It should belong to an
-   * EventSubscription.
-   *
-   * @return Was the SubscriptionContext appropriate for the EventPublisher.
-   */
-  static Status addSubscription(EventPublisherID& type_id,
-                                const SubscriptionContextRef& mc,
-                                EventCallback cb = 0);
-
-  /// Add a Subscription by templating the EventPublisher, using a
-  /// SubscriptionContext.
-  template <typename PUB>
-  static Status addSubscription(const SubscriptionContextRef& mc,
-                                EventCallback cb = 0) {
-    return addSubscription(BaseEventPublisher::getType<PUB>(), mc, cb);
-  }
-
-  /// Add a Subscription using a caller Subscription instance.
-  static Status addSubscription(EventPublisherID& type_id,
-                                const SubscriptionRef& subscription);
-
-  /// Get the total number of Subscription%s across ALL EventPublisher%s.
-  static size_t numSubscriptions(EventPublisherID& type_id);
-
-  /// Get the number of EventPublishers.
-  static size_t numEventPublishers() {
-    return EventFactory::getInstance().event_pubs_.size();
-  }
-
-  /**
-   * @brief Halt the EventPublisher run loop and call its `tearDown`.
-   *
-   * Any EventSubscriber%s with Subscription%s for this EventPublisher will
-   * become useless. osquery instanciators MUST deregister events.
-   * EventPublisher%s assume they can hook/trampoline, which requires cleanup.
-   *
-   * @param event_pub The string label for the EventPublisher.
-   *
-   * @return Did the EventPublisher deregister cleanly.
-   */
-  static Status deregisterEventPublisher(const EventPublisherRef& pub);
-
-  /// Deregister an EventPublisher by EventPublisherID.
-  static Status deregisterEventPublisher(EventPublisherID& type_id);
-
-  /// Return an instance to a registered EventPublisher.
-  static EventPublisherRef getEventPublisher(EventPublisherID& pub);
-
-  /// Return an instance to a registered EventSubscriber.
-  static EventSubscriberRef getEventSubscriber(EventSubscriberID& pub);
-
-  static std::vector<std::string> publisherTypes();
-  static std::vector<std::string> subscriberNames();
-
- public:
-  /// The dispatched event thread's entrypoint (if needed).
-  static Status run(EventPublisherID& type_id);
-
-  /// An initializer's entrypoint for spawning all event type run loops.
-  static void delay();
-
-  /// If a static EventPublisher callback wants to fire
-  template <typename PUB>
-  static void fire(const EventContextRef& ec) {
-    auto event_pub = getEventPublisher(BaseEventPublisher::getType<PUB>());
-    event_pub->fire(ec);
-  }
-
-  /**
-   * @brief End all EventPublisher run loops and call their `tearDown` methods.
-   *
-   * End is NOT the same as deregistration.
-   *
-   * @param should_end Reset the "is ending" state if False.
-   */
-  static void end(bool join = false);
-
- private:
-  /// An EventFactory will exist for the lifetime of the application.
-  EventFactory() {}
-  EventFactory(EventFactory const&);
-  void operator=(EventFactory const&);
-  ~EventFactory() {}
-
- private:
-  /// Set of registered EventPublisher instances.
-  std::map<EventPublisherID, EventPublisherRef> event_pubs_;
-
-  /// Set of instanciated EventSubscriber subscriptions.
-  std::map<EventSubscriberID, EventSubscriberRef> event_subs_;
-
-  /// Set of running EventPublisher run loop threads.
-  std::vector<std::shared_ptr<boost::thread> > threads_;
 };
 
 class EventSubscriberPlugin : public Plugin {
@@ -706,6 +540,165 @@ class EventSubscriberPlugin : public Plugin {
 };
 
 /**
+ * @brief A factory for associating event generators to EventPublisherID%s.
+ *
+ * This factory both registers new event types and the subscriptions that use
+ * them. An EventPublisher is also a factory, the single event factory arbitates
+ * Subscription creatating and management for each associated EventPublisher.
+ *
+ * Since event types may be plugins, they are created using the factory.
+ * Since subscriptions may be configured/disabled they are also factory-managed.
+ */
+class EventFactory {
+ public:
+  /// Access to the EventFactory instance.
+  static EventFactory& getInstance();
+
+  /**
+   * @brief Add an EventPublisher to the factory.
+   *
+   * The registration is mostly abstracted using osquery's registery.
+   *
+   * @param event_pub If for some reason the caller needs access to the
+   * EventPublisher instance they can register-by-instance.
+   *
+   * Access to the EventPublisher instance is not discouraged, but using the
+   * EventFactory `getEventPublisher` accessor is encouraged.
+   */
+  static Status registerEventPublisher(const PluginRef& pub);
+
+  /**
+   * @brief Add an EventSubscriber to the factory.
+   *
+   * The registration is mostly abstracted using osquery's registry.
+   */
+  template <class T>
+  static Status registerEventSubscriber() {
+    auto sub = std::make_shared<T>();
+    return registerEventSubscriber(sub);
+  }
+
+  /**
+   * @brief Add an EventSubscriber to the factory.
+   *
+   * The registration is mostly abstracted using osquery's registry.
+   *
+   * @param sub If the caller must access the EventSubscriber instance
+   * control may be passed to the registry.
+   *
+   * Access to the EventSubscriber instance outside of the within-instance
+   * table generation method and set of EventCallback%s is discouraged.
+   */
+  static Status registerEventSubscriber(const PluginRef& sub);
+
+  /**
+   * @brief Add a SubscriptionContext and EventCallback Subscription to an
+   *EventPublisher.
+   *
+   * Create a Subscription from a given SubscriptionContext and EventCallback
+   * and add that Subscription to the EventPublisher associated identifier.
+   *
+   * @param type_id The string for an EventPublisher receiving the Subscription.
+   * @param mc A SubscriptionContext related to the EventPublisher.
+   * @param cb When the EventPublisher fires an event the SubscriptionContext
+   * will be evaluated, if the event matches optional specifics in the context
+   * this callback function will be called. It should belong to an
+   * EventSubscription.
+   *
+   * @return Was the SubscriptionContext appropriate for the EventPublisher.
+   */
+  static Status addSubscription(EventPublisherID& type_id,
+                                const SubscriptionContextRef& mc,
+                                EventCallback cb = 0,
+                                void* user_data = nullptr);
+
+  /// Add a Subscription by templating the EventPublisher, using a
+  /// SubscriptionContext.
+  template <typename PUB>
+  static Status addSubscription(const SubscriptionContextRef& mc,
+                                EventCallback cb = 0) {
+    return addSubscription(BaseEventPublisher::getType<PUB>(), mc, cb);
+  }
+
+  /// Add a Subscription using a caller Subscription instance.
+  static Status addSubscription(EventPublisherID& type_id,
+                                const SubscriptionRef& subscription);
+
+  /// Get the total number of Subscription%s across ALL EventPublisher%s.
+  static size_t numSubscriptions(EventPublisherID& type_id);
+
+  /// Get the number of EventPublishers.
+  static size_t numEventPublishers() {
+    return EventFactory::getInstance().event_pubs_.size();
+  }
+
+  /**
+   * @brief Halt the EventPublisher run loop and call its `tearDown`.
+   *
+   * Any EventSubscriber%s with Subscription%s for this EventPublisher will
+   * become useless. osquery callers MUST deregister events.
+   * EventPublisher%s assume they can hook/trampoline, which requires cleanup.
+   *
+   * @param event_pub The string label for the EventPublisher.
+   *
+   * @return Did the EventPublisher deregister cleanly.
+   */
+  static Status deregisterEventPublisher(const EventPublisherRef& pub);
+
+  /// Deregister an EventPublisher by EventPublisherID.
+  static Status deregisterEventPublisher(EventPublisherID& type_id);
+
+  /// Return an instance to a registered EventPublisher.
+  static EventPublisherRef getEventPublisher(EventPublisherID& pub);
+
+  /// Return an instance to a registered EventSubscriber.
+  static EventSubscriberRef getEventSubscriber(EventSubscriberID& pub);
+
+  static std::vector<std::string> publisherTypes();
+  static std::vector<std::string> subscriberNames();
+
+ public:
+  /// The dispatched event thread's entry-point (if needed).
+  static Status run(EventPublisherID& type_id);
+
+  /// An initializer's entry-point for spawning all event type run loops.
+  static void delay();
+
+  /// If a static EventPublisher callback wants to fire
+  template <typename PUB>
+  static void fire(const EventContextRef& ec) {
+    auto event_pub = getEventPublisher(BaseEventPublisher::getType<PUB>());
+    event_pub->fire(ec);
+  }
+
+  /**
+   * @brief End all EventPublisher run loops and call their `tearDown` methods.
+   *
+   * End is NOT the same as deregistration.
+   *
+   * @param should_end Reset the "is ending" state if False.
+   */
+  static void end(bool join = false);
+
+ private:
+  /// An EventFactory will exist for the lifetime of the application.
+  EventFactory() {}
+  EventFactory(EventFactory const&);
+  void operator=(EventFactory const&);
+  ~EventFactory() {}
+
+ private:
+  /// Set of registered EventPublisher instances.
+  std::map<EventPublisherID, EventPublisherRef> event_pubs_;
+
+  /// Set of instantiated EventSubscriber subscriptions.
+  std::map<EventSubscriberID, EventSubscriberRef> event_subs_;
+
+  /// Set of running EventPublisher run loop threads.
+  std::vector<std::shared_ptr<boost::thread> > threads_;
+};
+
+/**
  * @brief An interface binding Subscriptions, event response, and table
  *generation.
  *
@@ -745,18 +738,20 @@ class EventSubscriber : public EventSubscriberPlugin {
    * @param sc The subscription context.
    */
   template <class T, typename C>
-  void subscribe(Status (T::*entry)(const std::shared_ptr<C>&),
-                 const SubscriptionContextRef& sc) {
+  void subscribe(Status (T::*entry)(const std::shared_ptr<C>&, const void*),
+                 const SubscriptionContextRef& sc,
+                 void* user_data) {
     // Up-cast the CRTP-style EventSubscriber to the caller.
     auto self = dynamic_cast<T*>(this);
     // Down-cast the pointer to the member function.
     auto base_entry =
-        reinterpret_cast<Status (T::*)(const EventContextRef&)>(entry);
-    // Create a callable theo the member function using the instance of the
+        reinterpret_cast<Status (T::*)(const EventContextRef&, void const*)>(
+            entry);
+    // Create a callable through the member function using the instance of the
     // EventSubscriber and a single parameter placeholder (the EventContext).
-    auto cb = std::bind(base_entry, self, _1);
+    auto cb = std::bind(base_entry, self, _1, _2);
     // Add a subscription using the callable and SubscriptionContext.
-    EventFactory::addSubscription(type(), sc, cb);
+    EventFactory::addSubscription(type(), sc, cb, user_data);
   }
 
   /// Helper EventPublisher string type accessor.
@@ -771,6 +766,9 @@ class EventSubscriber : public EventSubscriberPlugin {
 /// Iterate the event publisher registry and create run loops for each using
 /// the event factory.
 void attachEvents();
+
+/// Sleep in a boost::thread interruptable state.
+void interruptableSleep(size_t milli);
 
 CREATE_LAZY_REGISTRY(EventPublisherPlugin, "event_publisher");
 CREATE_REGISTRY(EventSubscriberPlugin, "event_subscriber");

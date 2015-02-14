@@ -8,11 +8,13 @@
  *
  */
 
+#include <boost/make_shared.hpp>
+
 #define GTEST_HAS_TR1_TUPLE 0
 
 #include <gtest/gtest.h>
 
-#include <osquery/dispatcher.h>
+#include "osquery/dispatcher/dispatcher.h"
 
 namespace osquery {
 
@@ -27,7 +29,7 @@ TEST_F(DispatcherTests, test_singleton) {
 class TestRunnable : public InternalRunnable {
  public:
   int* i;
-  TestRunnable(int* i) : i(i) {}
+  explicit TestRunnable(int* i) : i(i) {}
   virtual void enter() { ++*i; }
 };
 
@@ -38,7 +40,7 @@ TEST_F(DispatcherTests, test_add_work) {
 
   int i = base;
   for (int c = 0; c < repetitions; ++c) {
-    dispatcher.add(std::make_shared<TestRunnable>(&i));
+    dispatcher.add(OSQUERY_THRIFT_POINTER::make_shared<TestRunnable>(&i));
   }
   while (dispatcher.totalTaskCount() > 0) {
   }

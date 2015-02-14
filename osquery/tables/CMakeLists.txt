@@ -1,4 +1,5 @@
 ADD_OSQUERY_LIBRARY(FALSE osquery_tables_linux events/linux/passwd_changes.cpp
+											   events/linux/file_changes.cpp
 											   events/linux/hardware_events.cpp
 											   networking/linux/routes.cpp
 											   networking/linux/process_open_sockets.cpp

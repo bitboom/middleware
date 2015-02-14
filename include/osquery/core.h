@@ -15,15 +15,19 @@
 
 #include <osquery/status.h>
 
+// clang-format off
 #ifndef STR
 #define STR_OF(x) #x
 #define STR(x) STR_OF(x)
 #endif
+#define STR_EX(x) x
+#define CONCAT(x, y) STR(STR_EX(x)STR_EX(y))
 
 #ifndef FRIEND_TEST
 #define FRIEND_TEST(test_case_name, test_name) \
   friend class test_case_name##_##test_name##_Test
 #endif
+// clang-format on
 
 namespace osquery {
 
@@ -31,9 +35,11 @@ namespace osquery {
  * @brief The version of osquery
  */
 extern const std::string kVersion;
+extern const std::string kSDKVersion;
 
 /// Use a macro for the version literal, set the kVersion symbol in the library.
 #define OSQUERY_VERSION STR(OSQUERY_BUILD_VERSION)
+#define OSQUERY_SDK_VERSION STR(OSQUERY_BUILD_SDK_VERSION)
 
 /**
  * @brief A helpful tool type to report when logging, print help, or debugging.
@@ -42,6 +48,7 @@ enum osqueryTool {
   OSQUERY_TOOL_SHELL,
   OSQUERY_TOOL_DAEMON,
   OSQUERY_TOOL_TEST,
+  OSQUERY_EXTENSION,
 };
 
 /**

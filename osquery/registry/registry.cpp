@@ -13,6 +13,8 @@
 
 #include <boost/property_tree/json_parser.hpp>
 
+#include <osquery/extensions.h>
+#include <osquery/logger.h>
 #include <osquery/registry.h>
 
 namespace osquery {
@@ -39,6 +41,12 @@ void RegistryHelperCore::remove(const std::string& item_name) {
 RegistryRoutes RegistryHelperCore::getRoutes() const {
   RegistryRoutes route_table;
   for (const auto& item : items_) {
+    if (std::find(internal_.begin(), internal_.end(), item.first) !=
+        internal_.end()) {
+      // This is an internal plugin, do not include the route.
+      continue;
+    }
+
     bool has_alias = false;
     for (const auto& alias : aliases_) {
       if (alias.second == item.first) {
@@ -62,6 +70,17 @@ Status RegistryHelperCore::call(const std::string& item_name,
   if (items_.count(item_name) > 0) {
     return items_.at(item_name)->call(request, response);
   }
+
+  if (external_.count(item_name) > 0) {
+    // The item is a registered extension, call the extension by UUID.
+    return callExtension(external_.at(item_name), name_, item_name, request,
+                         response);
+  } else if (routes_.count(item_name) > 0) {
+    // The item has a route, but no extension, pass in the route info.
+    response = routes_.at(item_name);
+    return Status(0, "Route only");
+  }
+
   return Status(1, "Cannot call registry item: " + item_name);
 }
 
@@ -103,14 +122,23 @@ void RegistryHelperCore::setUp() {
 }
 
 /// Facility method to check if a registry item exists.
-bool RegistryHelperCore::exists(const std::string& item_name) const {
-  return (items_.count(item_name) > 0);
+bool RegistryHelperCore::exists(const std::string& item_name,
+                                bool local) const {
+  bool has_local = (items_.count(item_name) > 0);
+  bool has_external = (external_.count(item_name) > 0);
+  bool has_route = (routes_.count(item_name) > 0);
+  return (local) ? has_local : has_local || has_external || has_route;
 }
 
 /// Facility method to list the registry item identifiers.
 std::vector<std::string> RegistryHelperCore::names() const {
   std::vector<std::string> names;
   for (const auto& item : items_) {
+    names.push_back(item.first);
+  }
+
+  // Also add names of external plugins.
+  for (const auto& item : external_) {
     names.push_back(item.first);
   }
   return names;
@@ -160,14 +188,34 @@ Status RegistryFactory::addBroadcast(const RouteUUID& uuid,
     for (const auto& registry : broadcast) {
       for (const auto& item : registry.second) {
         if (Registry::exists(registry.first, item.first)) {
+          VLOG(1) << "Extension " << uuid
+                  << " has duplicate plugin name: " << item.first
+                  << " in registry: " << registry.first;
           return Status(1, "Duplicate registry item: " + item.first);
         }
       }
     }
   }
 
-  instance().extensions_[uuid] = broadcast;
-  return Status(0, "OK");
+  // Once duplication is satisfied call each registry's addExternal.
+  Status status;
+  for (const auto& registry : broadcast) {
+    status = RegistryFactory::registry(registry.first)
+                 ->addExternal(uuid, registry.second);
+    if (!status.ok()) {
+      // If any registry fails to add the set of external routes, stop.
+      break;
+    }
+  }
+
+  // If any registry failed, remove each (assume a broadcast is atomic).
+  if (!status.ok()) {
+    for (const auto& registry : broadcast) {
+      Registry::registry(registry.first)->removeExternal(uuid);
+    }
+  }
+  instance().extensions_.insert(uuid);
+  return status;
 }
 
 Status RegistryFactory::removeBroadcast(const RouteUUID& uuid) {
@@ -175,6 +223,9 @@ Status RegistryFactory::removeBroadcast(const RouteUUID& uuid) {
     return Status(1, "Unknown extension UUID: " + std::to_string(uuid));
   }
 
+  for (const auto& registry : instance().registries_) {
+    registry.second->removeExternal(uuid);
+  }
   instance().extensions_.erase(uuid);
   return Status(0, "OK");
 }
@@ -203,17 +254,19 @@ Status RegistryFactory::call(const std::string& registry_name,
                              const std::string& item_name,
                              const PluginRequest& request,
                              PluginResponse& response) {
-  if (instance().registries_.count(registry_name) == 0) {
-    return Status(1, "Unknown registry: " + registry_name);
+  if (!exists(registry_name, item_name)) {
+    return Status(1, "Registry: " + registry_name + ", item: " + item_name +
+                         " not found");
   }
-  return instance().registries_.at(registry_name)->call(
-      item_name, request, response);
+  // Forward factory call to the registry.
+  return registry(registry_name)->call(item_name, request, response);
 }
 
 Status RegistryFactory::call(const std::string& registry_name,
                              const std::string& item_name,
                              const PluginRequest& request) {
   PluginResponse response;
+  // Wrapper around a call expecting a response.
   return call(registry_name, item_name, request, response);
 }
 
@@ -224,26 +277,14 @@ void RegistryFactory::setUp() {
 }
 
 bool RegistryFactory::exists(const std::string& registry_name,
-                             const std::string& item_name) {
+                             const std::string& item_name,
+                             bool local) {
   if (instance().registries_.count(registry_name) == 0) {
     return false;
   }
 
-  // Check the local registry.
-  if (instance().registry(registry_name)->exists(item_name)) {
-    return true;
-  }
-
-  // Check the known extension registries.
-  for (const auto& extension : instance().extensions_) {
-    if (extension.second.count(registry_name) > 0) {
-      if (extension.second.at(registry_name).count(item_name) > 0) {
-        return true;
-      }
-    }
-  }
-
-  return false;
+  // Check the registry.
+  return registry(registry_name)->exists(item_name, local);
 }
 
 std::vector<std::string> RegistryFactory::names(
@@ -253,6 +294,14 @@ std::vector<std::string> RegistryFactory::names(
     return names;
   }
   return instance().registry(registry_name)->names();
+}
+
+std::vector<RouteUUID> RegistryFactory::routeUUIDs() {
+  std::vector<RouteUUID> uuids;
+  for (const auto& extension : instance().extensions_) {
+    uuids.push_back(extension);
+  }
+  return uuids;
 }
 
 size_t RegistryFactory::count() { return instance().registries_.size(); }

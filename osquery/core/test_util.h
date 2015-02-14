@@ -16,8 +16,6 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include <sqlite3.h>
-
 #include <osquery/config.h>
 #include <osquery/core.h>
 #include <osquery/database.h>
@@ -30,6 +28,8 @@ namespace osquery {
 // getTestDBExpectedResults()
 extern const std::string kTestQuery;
 extern const std::string kTestDataPath;
+
+const std::string kFakeDirectory = "/tmp/osquery-fstests-pattern";
 
 // getTestDBExpectedResults returns the results of kTestQuery of the table that
 // initially gets returned from createTestDB()
@@ -100,4 +100,9 @@ struct SplitStringTestData {
 
 // generate a set of test data to test osquery::splitString
 std::vector<SplitStringTestData> generateSplitStringTestData();
+
+// generate a small directory structure for testing
+void createMockFileStructure();
+// remove the small directory structure used for testing
+void tearDownMockFileStructure();
 }

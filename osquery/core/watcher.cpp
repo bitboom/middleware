@@ -17,6 +17,7 @@
 #include <boost/filesystem.hpp>
 
 #include <osquery/core.h>
+#include <osquery/events.h>
 #include <osquery/filesystem.h>
 #include <osquery/logger.h>
 #include <osquery/sql.h>
@@ -30,27 +31,26 @@ namespace fs = boost::filesystem;
 namespace osquery {
 
 const std::map<WatchdogLimitType, std::vector<size_t> > kWatchdogLimits = {
-    {MEMORY_LIMIT, {50, 20, 10}},
-    {UTILIZATION_LIMIT, {90, 70, 60}},
+    // Maximum MB worker can privately allocate.
+    {MEMORY_LIMIT, {50, 20, 10, 10}},
+    // Percent of user or system CPU worker can utilize for LATENCY_LIMIT
+    // seconds.
+    {UTILIZATION_LIMIT, {90, 70, 60, 50}},
     // Number of seconds the worker should run, else consider the exit fatal.
-    {RESPAWN_LIMIT, {20, 20, 20}},
+    {RESPAWN_LIMIT, {20, 20, 20, 5}},
     // If the worker respawns too quickly, backoff on creating additional.
-    {RESPAWN_DELAY, {5, 5, 5}},
-    // Seconds of tolerable sustained latency.
-    {LATENCY_LIMIT, {5, 5, 3}},
+    {RESPAWN_DELAY, {5, 5, 5, 1}},
+    // Seconds of tolerable UTILIZATION_LIMIT sustained latency.
+    {LATENCY_LIMIT, {5, 5, 3, 1}},
     // How often to poll for performance limit violations.
-    {INTERVAL, {3, 3, 3}}, };
+    {INTERVAL, {3, 3, 3, 1}}, };
 
-DEFINE_osquery_flag(
-    int32,
-    watchdog_level,
-    1,
-    "Performance limit level (0=loose, 1=normal, 2=restrictive)");
+FLAG(int32,
+     watchdog_level,
+     1,
+     "Performance limit level (0=loose, 1=normal, 2=restrictive, 3=debug)");
 
-DEFINE_osquery_flag(bool,
-                    disable_watchdog,
-                    false,
-                    "Disable userland watchdog process");
+FLAG(bool, disable_watchdog, false, "Disable userland watchdog process");
 
 bool Watcher::ok() {
   ::sleep(getWorkerLimit(INTERVAL));
@@ -131,6 +131,14 @@ void Watcher::createWorker() {
     ::sleep(getWorkerLimit(RESPAWN_DELAY));
   }
 
+  // Get the path of the current process.
+  auto qd = SQL::selectAllFrom("processes", "pid", tables::EQUALS,
+    INTEGER(getpid()));
+  if (qd.size() != 1 || qd[0].count("path") == 0 || qd[0]["path"].size() == 0) {
+    LOG(ERROR) << "osquery watcher cannot determine process path";
+    ::exit(EXIT_FAILURE);
+  }
+
   worker_ = fork();
   if (worker_ < 0) {
     // Unrecoverable error, cannot create a worker process.
@@ -139,8 +147,8 @@ void Watcher::createWorker() {
   } else if (worker_ == 0) {
     // This is the new worker process, no watching needed.
     setenv("OSQUERYD_WORKER", std::to_string(getpid()).c_str(), 1);
-    fs::path exec_path(fs::initial_path<fs::path>());
-    exec_path = fs::system_complete(fs::path(argv_[0]));
+    // Get the complete path of the osquery process binary.
+    auto exec_path = fs::system_complete(fs::path(qd[0]["path"]));
     execve(exec_path.string().c_str(), argv_, environ);
     // Code will never reach this point.
     ::exit(EXIT_FAILURE);

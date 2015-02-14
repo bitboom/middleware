@@ -12,6 +12,7 @@
 #include <sstream>
 
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/filesystem/operations.hpp>
 
 #include <osquery/filesystem.h>
 #include <osquery/logger.h>
@@ -23,7 +24,12 @@ namespace pt = boost::property_tree;
 namespace osquery {
 
 const std::string kTestQuery = "SELECT * FROM test_table";
-const std::string kTestDataPath = "../../../tools/tests/";
+
+#ifndef OSQUERY_BUILD_SDK
+const std::string kTestDataPath = "../../../../tools/tests/";
+#else
+const std::string kTestDataPath = "../../../../../tools/tests/";
+#endif
 
 QueryData getTestDBExpectedResults() {
   QueryData d;
@@ -241,5 +247,25 @@ osquery::QueryData getEtcHostsExpectedResults() {
 
 ::std::ostream& operator<<(::std::ostream& os, const Status& s) {
   return os << "Status(" << s.getCode() << ", \"" << s.getMessage() << "\")";
+}
+
+void createMockFileStructure() {
+  boost::filesystem::create_directories(kFakeDirectory +
+                                        "/deep11/deep2/deep3/");
+  boost::filesystem::create_directories(kFakeDirectory + "/deep1/deep2/");
+  writeTextFile(kFakeDirectory + "/root.txt", "root");
+  writeTextFile(kFakeDirectory + "/toor.txt", "toor");
+  writeTextFile(kFakeDirectory + "/roto.txt", "roto");
+  writeTextFile(kFakeDirectory + "/deep1/level1.txt", "l1");
+  writeTextFile(kFakeDirectory + "/deep11/not_bash", "l1");
+  writeTextFile(kFakeDirectory + "/deep1/deep2/level2.txt", "l2");
+
+  writeTextFile(kFakeDirectory + "/deep11/level1.txt", "l1");
+  writeTextFile(kFakeDirectory + "/deep11/deep2/level2.txt", "l2");
+  writeTextFile(kFakeDirectory + "/deep11/deep2/deep3/level3.txt", "l3");
+}
+
+void tearDownMockFileStructure() {
+  boost::filesystem::remove_all(kFakeDirectory);
 }
 }

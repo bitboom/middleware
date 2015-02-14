@@ -1,3 +1,3 @@
 ADD_OSQUERY_LIBRARY(TRUE osquery_distributed distributed.cpp)
 
-ADD_OSQUERY_TEST(TRUE osquery_distributed_tests distributed_tests.cpp)
+ADD_OSQUERY_TEST(FALSE osquery_distributed_tests distributed_tests.cpp)

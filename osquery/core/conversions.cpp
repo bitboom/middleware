@@ -13,6 +13,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/archive/iterators/transform_width.hpp>
 #include <boost/archive/iterators/binary_from_base64.hpp>
+#include <boost/archive/iterators/base64_from_binary.hpp>
+
+#include <boost/archive/iterators/transform_width.hpp>
 
 #include "osquery/core/conversions.h"
 
@@ -22,6 +25,8 @@ namespace osquery {
 
 typedef bai::binary_from_base64<const char*> base64_str;
 typedef bai::transform_width<base64_str, 8, 6> base64_dec;
+typedef bai::transform_width<std::string::const_iterator, 6, 8> base64_enc;
+typedef bai::base64_from_binary<base64_enc> it_base64;
 
 std::string base64Decode(const std::string& encoded) {
   std::string is;
@@ -41,13 +46,27 @@ std::string base64Decode(const std::string& encoded) {
   }
 
   if (size == 0) {
-    return std::string();
+    return "";
   }
 
   std::copy(base64_dec(is.data()),
             base64_dec(is.data() + size),
             std::ostream_iterator<char>(os));
 
+  return os.str();
+}
+
+std::string base64Encode(const std::string& unencoded) {
+  std::stringstream os;
+
+  if (unencoded.size() == 0) {
+    return std::string();
+  }
+
+  unsigned int writePaddChars = (3-unencoded.length()%3)%3;
+  std::string base64(it_base64(unencoded.begin()), it_base64(unencoded.end()));
+  base64.append(writePaddChars,'=');
+  os << base64;
   return os.str();
 }
 }

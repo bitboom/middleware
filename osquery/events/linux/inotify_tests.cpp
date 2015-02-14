@@ -187,12 +187,13 @@ class TestINotifyEventSubscriber
 
  public:
   void init() { callback_count_ = 0; }
-  Status SimpleCallback(const INotifyEventContextRef& ec) {
+  Status SimpleCallback(const INotifyEventContextRef& ec,
+                        const void* user_data) {
     callback_count_ += 1;
     return Status(0, "OK");
   }
 
-  Status Callback(const INotifyEventContextRef& ec) {
+  Status Callback(const INotifyEventContextRef& ec, const void* user_data) {
     // The following comments are an example Callback routine.
     // Row r;
     // r["action"] = ec->action;
@@ -239,7 +240,7 @@ TEST_F(INotifyTests, test_inotify_fire_event) {
 
   // Create a subscriptioning context, note the added Event to the symbol
   auto sc = sub->GetSubscription(kRealTestPath, 0);
-  sub->subscribe(&TestINotifyEventSubscriber::SimpleCallback, sc);
+  sub->subscribe(&TestINotifyEventSubscriber::SimpleCallback, sc, nullptr);
 
   TriggerEvent(kRealTestPath);
   sub->WaitForEvents(kMaxEventLatency);
@@ -256,7 +257,7 @@ TEST_F(INotifyTests, test_inotify_event_action) {
   sub->init();
 
   auto sc = sub->GetSubscription(kRealTestPath, 0);
-  sub->subscribe(&TestINotifyEventSubscriber::Callback, sc);
+  sub->subscribe(&TestINotifyEventSubscriber::Callback, sc, nullptr);
 
   TriggerEvent(kRealTestPath);
   sub->WaitForEvents(kMaxEventLatency, 1);
@@ -299,7 +300,7 @@ TEST_F(INotifyTests, test_inotify_recursion) {
   auto mc = sub->createSubscriptionContext();
   mc->path = kRealTestDir;
   mc->recursive = true;
-  sub->subscribe(&TestINotifyEventSubscriber::Callback, mc);
+  sub->subscribe(&TestINotifyEventSubscriber::Callback, mc, nullptr);
 
   // Trigger on a subdirectory's file.
   TriggerEvent(kRealTestSubDirPath);

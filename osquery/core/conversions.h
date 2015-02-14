@@ -15,6 +15,10 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 
+#ifdef DARWIN
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
 namespace osquery {
 
 template <typename T>
@@ -40,4 +44,34 @@ typename boost::shared_ptr<T> std_to_boost_shared_ptr(
     typename std::shared_ptr<T> const& p) {
   return boost::shared_ptr<T>(p.get(), boost::bind(&do_release_std<T>, p, _1));
 }
+
+/**
+ * @brief Decode a base64 encoded string.
+ *
+ * @param encoded The encode base64 string.
+ * @return Decoded string.
+ */
+std::string base64Decode(const std::string& encoded);
+
+/**
+ * @brief Encode a  string.
+ *
+ * @param A string to encode.
+ * @return Encoded string.
+ */
+std::string base64Encode(const std::string& unencoded);
+
+#ifdef DARWIN
+/**
+ * @brief Convert a CFStringRef to a std::string.
+ */
+std::string stringFromCFString(const CFStringRef& cf_string);
+
+/**
+ * @brief Convert a CFNumberRef to a std::string.
+ */
+std::string stringFromCFNumber(const CFDataRef& cf_number);
+std::string stringFromCFData(const CFDataRef& cf_data);
+#endif
+
 }
