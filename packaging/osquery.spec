@@ -1,5 +1,5 @@
 Name: osquery
-Version: 1.4.2
+Version: 1.4.3
 Release: 0
 License: Apache-2.0 and GPLv2
 Summary: A SQL powered operating system instrumentation, monitoring framework.

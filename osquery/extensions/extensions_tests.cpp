@@ -16,6 +16,7 @@
 #include <osquery/filesystem.h>
 #include <osquery/database.h>
 
+#include "osquery/core/test_util.h"
 #include "osquery/extensions/interface.h"
 
 using namespace osquery::extensions;
@@ -37,6 +38,7 @@ class ExtensionsTest : public testing::Test {
 
   void TearDown() {
     Dispatcher::getInstance().removeServices();
+    Dispatcher::joinServices();
     remove(kTestManagerSocket);
   }
 
@@ -128,18 +130,11 @@ TEST_F(ExtensionsTest, test_extension_start) {
   Registry::allowDuplicates(true);
   status = startExtension(kTestManagerSocket, "test", "0.1", "0.0.0", "0.0.1");
   // This will be false since we are registering duplicate items
-  EXPECT_TRUE(status.ok());
+  ASSERT_TRUE(status.ok());
 
   // The `startExtension` internal call (exposed for testing) returns the
   // uuid of the extension in the success status.
-  RouteUUID uuid;
-  try {
-    uuid = (RouteUUID)stoi(status.getMessage(), nullptr, 0);
-  }
-  catch (const std::exception& e) {
-    EXPECT_TRUE(false);
-    return;
-  }
+  RouteUUID uuid = (RouteUUID)stoi(status.getMessage(), nullptr, 0);
 
   // We can test-wait for the extensions's socket to open.
   EXPECT_TRUE(socketExists(kTestManagerSocket + "." + std::to_string(uuid)));
@@ -155,7 +150,7 @@ class ExtensionPlugin : public Plugin {
     for (const auto& request_item : request) {
       response.push_back({{request_item.first, request_item.second}});
     }
-    return Status(0, "Test sucess");
+    return Status(0, "Test success");
   }
 };
 
@@ -169,7 +164,7 @@ TEST_F(ExtensionsTest, test_extension_broadcast) {
   EXPECT_TRUE(socketExists(kTestManagerSocket));
 
   // This time we're going to add a plugin to the extension_test registry.
-  REGISTER(TestExtensionPlugin, "extension_test", "test_item");
+  Registry::add<TestExtensionPlugin>("extension_test", "test_item");
 
   // Now we create a registry alias that will be broadcasted but NOT used for
   // internal call lookups. Aliasing was introduced for testing such that an
@@ -234,6 +229,13 @@ TEST_F(ExtensionsTest, test_extension_broadcast) {
 
   Registry::removeBroadcast(uuid);
   Registry::allowDuplicates(false);
+}
+
+TEST_F(ExtensionsTest, test_extension_module_search) {
+  createMockFileStructure();
+  EXPECT_TRUE(loadModules(kFakeDirectory));
+  EXPECT_FALSE(loadModules("/dir/does/not/exist"));
+  tearDownMockFileStructure();
 }
 }
 

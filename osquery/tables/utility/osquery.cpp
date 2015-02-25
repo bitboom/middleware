@@ -13,6 +13,7 @@
 #include <osquery/extensions.h>
 #include <osquery/flags.h>
 #include <osquery/logger.h>
+#include <osquery/registry.h>
 #include <osquery/sql.h>
 #include <osquery/tables.h>
 
@@ -43,21 +44,62 @@ QueryData genOsqueryFlags(QueryContext& context) {
   return results;
 }
 
+QueryData genOsqueryRegistry(QueryContext& context) {
+  QueryData results;
+
+  const auto& registries = RegistryFactory::all();
+  for (const auto& registry : registries) {
+    const auto& plugins = registry.second->all();
+    for (const auto& plugin : plugins) {
+      Row r;
+      r["registry"] = registry.first;
+      r["name"] = plugin.first;
+      r["owner_uuid"] = "0";
+      r["internal"] = (registry.second->isInternal(plugin.first)) ? "1" : "0";
+      r["active"] = "1";
+      results.push_back(r);
+    }
+
+    for (const auto& route : registry.second->getExternal()) {
+      Row r;
+      r["registry"] = registry.first;
+      r["name"] = route.first;
+      r["owner_uuid"] = INTEGER(route.second);
+      r["internal"] = "0";
+      r["active"] = "1";
+      results.push_back(r);
+    }
+  }
+
+  return results;
+}
+
 QueryData genOsqueryExtensions(QueryContext& context) {
   QueryData results;
 
   ExtensionList extensions;
-  if (!getExtensions(extensions).ok()) {
-    return {};
+  if (getExtensions(extensions).ok()) {
+    for (const auto& extenion : extensions) {
+      Row r;
+      r["uuid"] = TEXT(extenion.first);
+      r["name"] = extenion.second.name;
+      r["version"] = extenion.second.version;
+      r["sdk_version"] = extenion.second.sdk_version;
+      r["path"] = getExtensionSocket(extenion.first);
+      r["type"] = "extension";
+      results.push_back(r);
+    }
   }
 
-  for (const auto& extenion : extensions) {
+  const auto& modules = RegistryFactory::getModules();
+  for (const auto& module : modules) {
     Row r;
-    r["uuid"] = TEXT(extenion.first);
-    r["name"] = extenion.second.name;
-    r["version"] = extenion.second.version;
-    r["sdk_version"] = extenion.second.sdk_version;
-    r["socket"] = getExtensionSocket(extenion.first);
+    r["uuid"] = TEXT(module.first);
+    r["name"] = module.second.name;
+    r["version"] = module.second.version;
+    r["sdk_version"] = module.second.sdk_version;
+    r["path"] = module.second.path;
+    r["type"] = "module";
     results.push_back(r);
   }
 
@@ -72,7 +114,7 @@ QueryData genOsqueryInfo(QueryContext& context) {
   r["pid"] = INTEGER(getpid());
 
   std::string hash_string;
-  auto s = Config::getInstance().getMD5(hash_string);
+  auto s = Config::getMD5(hash_string);
   if (s.ok()) {
     r["config_md5"] = TEXT(hash_string);
   } else {

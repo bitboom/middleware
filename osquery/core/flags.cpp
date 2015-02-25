@@ -34,8 +34,8 @@ int Flag::create(const std::string& name, const FlagDetail& flag) {
   return 0;
 }
 
-int Flag::createAlias(const std::string& alias, const std::string& name) {
-  instance().aliases_.insert(std::make_pair(alias, name));
+int Flag::createAlias(const std::string& alias, const FlagDetail& flag) {
+  instance().aliases_.insert(std::make_pair(alias, flag));
   return 0;
 }
 
@@ -72,6 +72,17 @@ std::string Flag::getType(const std::string& name) {
   return info.type;
 }
 
+std::string Flag::getDescription(const std::string& name) {
+  if (instance().flags_.count(name)) {
+    return instance().flags_.at(name).description;
+  }
+
+  if (instance().aliases_.count(name)) {
+    return getDescription(instance().aliases_.at(name).description);
+  }
+  return "";
+}
+
 Status Flag::updateValue(const std::string& name, const std::string& value) {
   GFLAGS_NAMESPACE::SetCommandLineOption(name.c_str(), value.c_str());
   return Status(0, "OK");
@@ -100,7 +111,7 @@ std::map<std::string, FlagInfo> Flag::flags() {
   return flags;
 }
 
-void Flag::printFlags(bool shell, bool external) {
+void Flag::printFlags(bool shell, bool external, bool cli) {
   std::vector<GFLAGS_NAMESPACE::CommandLineFlagInfo> info;
   GFLAGS_NAMESPACE::GetAllFlags(&info);
 
@@ -110,19 +121,25 @@ void Flag::printFlags(bool shell, bool external) {
   }
   max += 7;
 
+  auto& aliases = instance().aliases_;
   auto& details = instance().flags_;
   for (const auto& flag : info) {
-    if (details.count(flag.name) == 0) {
-      // This flag was not defined within osquery code, skip.
-      continue;
-    }
-
-    const auto& detail = details.at(flag.name);
-    if ((shell && !detail.shell) || (!shell && detail.shell)) {
-      continue;
-    }
-
-    if ((external && !detail.external) || (!external && detail.external)) {
+    if (details.count(flag.name) > 0) {
+      const auto& detail = details.at(flag.name);
+      if ((shell && !detail.shell) || (!shell && detail.shell) ||
+          (external && !detail.external) || (!external && detail.external) ||
+          (cli && !detail.cli) || (!cli && detail.cli)) {
+        continue;
+      }
+    } else if (aliases.count(flag.name) > 0) {
+      const auto& alias = aliases.at(flag.name);
+      // Aliases are only printed if this is an external tool and the alias
+      // is external.
+      if (!alias.external || !external) {
+        continue;
+      }
+    } else {
+      // This flag was not defined as an osquery flag or flag alias.
       continue;
     }
 
@@ -135,7 +152,7 @@ void Flag::printFlags(bool shell, bool external) {
     }
 
     fprintf(stdout, "%s", std::string(pad - flag.name.size(), ' ').c_str());
-    fprintf(stdout, "%s\n", detail.description.c_str());
+    fprintf(stdout, "%s\n", getDescription(flag.name).c_str());
   }
 }
 }

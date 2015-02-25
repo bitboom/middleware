@@ -11,6 +11,8 @@
 #include <cstdlib>
 #include <sstream>
 
+#include <dlfcn.h>
+
 #include <boost/property_tree/json_parser.hpp>
 
 #include <osquery/extensions.h>
@@ -38,11 +40,28 @@ void RegistryHelperCore::remove(const std::string& item_name) {
   }
 }
 
+bool RegistryHelperCore::isInternal(const std::string& item_name) const {
+  if (std::find(internal_.begin(), internal_.end(), item_name) ==
+      internal_.end()) {
+    return false;
+  }
+  return true;
+}
+
+Status RegistryHelperCore::setActive(const std::string& item_name) {
+  if (items_.count(item_name) == 0 && external_.count(item_name) == 0) {
+    return Status(1, "Unknown registry item");
+  }
+  active_ = item_name;
+  return Status(0, "OK");
+}
+
+const std::string& RegistryHelperCore::getActive() const { return active_; }
+
 RegistryRoutes RegistryHelperCore::getRoutes() const {
   RegistryRoutes route_table;
   for (const auto& item : items_) {
-    if (std::find(internal_.begin(), internal_.end(), item.first) !=
-        internal_.end()) {
+    if (isInternal(item.first)) {
       // This is an internal plugin, do not include the route.
       continue;
     }
@@ -102,6 +121,13 @@ const std::string& RegistryHelperCore::getAlias(
 }
 
 void RegistryHelperCore::setUp() {
+  // If the registry is using a single 'active' plugin, setUp that plugin.
+  // For config and logger, only setUp the selected plugin.
+  if (active_.size() != 0 && exists(active_, true)) {
+    items_.at(active_)->setUp();
+    return;
+  }
+
   // If this registry does not auto-setup do NOT setup the registry items.
   if (!auto_setup_) {
     return;
@@ -206,6 +232,11 @@ Status RegistryFactory::addBroadcast(const RouteUUID& uuid,
       // If any registry fails to add the set of external routes, stop.
       break;
     }
+
+    for (const auto& plugin : registry.second) {
+      VLOG(1) << "Extension " << uuid << " registered " << registry.first
+              << " plugin " << plugin.first;
+    }
   }
 
   // If any registry failed, remove each (assume a broadcast is atomic).
@@ -270,6 +301,32 @@ Status RegistryFactory::call(const std::string& registry_name,
   return call(registry_name, item_name, request, response);
 }
 
+Status RegistryFactory::call(const std::string& registry_name,
+                             const PluginRequest& request,
+                             PluginResponse& response) {
+  auto& plugin = registry(registry_name)->getActive();
+  return registry(registry_name)->call(plugin, request, response);
+}
+
+Status RegistryFactory::call(const std::string& registry_name,
+                             const PluginRequest& request) {
+  PluginResponse response;
+  return call(registry_name, request, response);
+}
+
+Status RegistryFactory::setActive(const std::string& registry_name,
+                                  const std::string& item_name) {
+  if (!exists(registry_name, item_name)) {
+    return Status(1, "Registry plugin does not exist");
+  }
+  return registry(registry_name)->setActive(item_name);
+}
+
+const std::string& RegistryFactory::getActive(
+    const std::string& registry_name) {
+  return registry(registry_name)->getActive();
+}
+
 void RegistryFactory::setUp() {
   for (const auto& registry : instance().all()) {
     registry.second->setUp();
@@ -285,6 +342,14 @@ bool RegistryFactory::exists(const std::string& registry_name,
 
   // Check the registry.
   return registry(registry_name)->exists(item_name, local);
+}
+
+std::vector<std::string> RegistryFactory::names() {
+  std::vector<std::string> names;
+  for (const auto& registry : all()) {
+    names.push_back(registry.second->getName());
+  }
+  return names;
 }
 
 std::vector<std::string> RegistryFactory::names(
@@ -311,6 +376,116 @@ size_t RegistryFactory::count(const std::string& registry_name) {
     return 0;
   }
   return instance().registry(registry_name)->count();
+}
+
+Status RegistryHelperCore::add(const std::string& item_name, bool internal) {
+  // The item can be listed as internal, meaning it does not broadcast.
+  if (internal) {
+    internal_.push_back(item_name);
+  }
+
+  // The item may belong to a module.
+  if (RegistryFactory::usingModule()) {
+    modules_[item_name] = RegistryFactory::getModule();
+  }
+
+  return Status(0, "OK");
+}
+
+const std::map<RouteUUID, ModuleInfo>& RegistryFactory::getModules() {
+  return instance().modules_;
+}
+
+RouteUUID RegistryFactory::getModule() { return instance().module_uuid_; }
+
+bool RegistryFactory::usingModule() {
+  // Check if the registry is allowing a module's registrations.
+  return (!instance().locked() && instance().module_uuid_ != 0);
+}
+
+void RegistryFactory::shutdownModule() {
+  instance().locked(true);
+  instance().module_uuid_ = 0;
+}
+
+void RegistryFactory::initModule(const std::string& path) {
+  // Begin a module initialization, lock until the module is determined
+  // appropriate by requesting a call to `declareModule`.
+  instance().module_uuid_ = (RouteUUID)rand();
+  instance().modules_[getModule()].path = path;
+  instance().locked(true);
+}
+
+void RegistryFactory::declareModule(const std::string& name,
+                                    const std::string& version,
+                                    const std::string& min_sdk_version,
+                                    const std::string& sdk_version) {
+  // Check the min_sdk_version against the Registry's SDK version.
+  auto& module = instance().modules_[instance().module_uuid_];
+  module.name = name;
+  module.version = version;
+  module.sdk_version = sdk_version;
+  instance().locked(false);
+}
+
+RegistryModuleLoader::RegistryModuleLoader(const std::string& path)
+    : handle_(nullptr), path_(path) {
+  // Tell the registry that we are attempting to construct a module.
+  // Locking the registry prevents the module's global initialization from
+  // adding or creating registry items.
+  RegistryFactory::initModule(path_);
+  handle_ = dlopen(path_.c_str(), RTLD_NOW | RTLD_LOCAL);
+  if (handle_ == nullptr) {
+    VLOG(1) << "Failed to load module: " << path_;
+    VLOG(1) << dlerror();
+    return;
+  }
+
+  // The module should have called RegistryFactory::declareModule and unlocked
+  // the registry for modification. The module should have done this using
+  // the SDK's CREATE_MODULE macro, which adds the global-scope constructor.
+  if (RegistryFactory::locked()) {
+    VLOG(1) << "Failed to declare module: " << path_;
+    dlclose(handle_);
+    handle_ = nullptr;
+  }
+}
+
+void RegistryModuleLoader::init() {
+  if (handle_ == nullptr || RegistryFactory::locked()) {
+    handle_ = nullptr;
+    return;
+  }
+
+  // Locate a well-known symbol in the module.
+  // This symbol name is protected against rewriting when the module uses the
+  // SDK's CREATE_MODULE macro.
+  auto initializer = (ModuleInitalizer)dlsym(handle_, "initModule");
+  if (initializer != nullptr) {
+    initializer();
+    VLOG(1) << "Initialized module: " << path_;
+  } else {
+    VLOG(1) << "Failed to initialize module: " << path_;
+    VLOG(1) << dlerror();
+    dlclose(handle_);
+    handle_ = nullptr;
+  }
+}
+
+RegistryModuleLoader::~RegistryModuleLoader() {
+  if (handle_ == nullptr) {
+    // The module was not loaded or did not initalize.
+    RegistryFactory::instance().modules_.erase(RegistryFactory::getModule());
+  }
+
+  // We do not close the module, and thus are OK with losing a reference to the
+  // module's handle. Attempting to close and clean up is very expensive for
+  // very little value/features.
+  if (!RegistryFactory::locked()) {
+    RegistryFactory::shutdownModule();
+  }
+  // No need to clean this resource.
+  handle_ = nullptr;
 }
 
 void Plugin::getResponse(const std::string& key,

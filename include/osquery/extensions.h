@@ -18,6 +18,11 @@ namespace osquery {
 
 DECLARE_int32(worker_threads);
 DECLARE_string(extensions_socket);
+DECLARE_string(extensions_autoload);
+DECLARE_string(extensions_timeout);
+
+/// A millisecond internal applied to extension initialization.
+extern const int kExtensionInitializeMLatency;
 
 /**
  * @brief Helper struct for managing extenion metadata.
@@ -71,6 +76,44 @@ Status getExtensions(const std::string& manager_path,
 
 /// Ping an extension manager or extension.
 Status pingExtension(const std::string& path);
+
+/**
+ * @brief Request the extensions API to autoload any appropriate extensions.
+ *
+ * Extensions may be 'autoloaded' using the `extensions_autoload` command line
+ * argument. loadExtensions should be called before any plugin or registry item
+ * is used. This allows appropriate extensions to expose plugin requirements.
+ *
+ * An 'appropriate' extension is one within the `extensions_autoload` search
+ * path with file ownership equivilent or greater (root) than the osquery
+ * process requesting autoload.
+ */
+void loadExtensions();
+
+/**
+ * @brief Load extensions from a delimited search path string.
+ *
+ * @param paths A colon-delimited path variable, e.g: '/path1:/path2'.
+ */
+Status loadExtensions(const std::string& loadfile);
+
+/**
+ * @brief Request the extensions API to autoload any appropriate modules.
+ *
+ * Extension modules are shared libraries that add Plugins to the osquery
+ * core's registry at runtime.
+ */
+void loadModules();
+
+/**
+ * @brief Load extenion modules from a delimited search path string.
+ *
+ * @param paths A colon-delimited path variable, e.g: '/path1:/path2'.
+ */
+Status loadModules(const std::string& loadfile);
+
+/// Load all modules in a direcotry.
+Status loadModuleFile(const std::string& path);
 
 /**
  * @brief Call a Plugin exposed by an Extension Registry route.

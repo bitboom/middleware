@@ -18,7 +18,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include <osquery/status.h>
+#include <osquery/core.h>
 
 namespace osquery {
 
@@ -41,22 +41,26 @@ namespace osquery {
  * @param type A typename that derives from Plugin.
  * @param name A string identifier for the registry.
  */
-#define CREATE_REGISTRY(type, name)                         \
-  namespace registry {                                      \
-  const auto type##Registry = Registry::create<type>(name); \
+#define CREATE_REGISTRY(type, name)                           \
+  namespace registry {                                        \
+  __attribute__((constructor)) static void type##Registry() { \
+    Registry::create<type>(name);                             \
+  }                                                           \
   }
 
 /**
  * @brief A boilerplate code helper to create a registry given a name and
- * plugin base class type. This 'lazy' registry does not automatically run
- * Plugin::setUp on all items.
+ * plugin base class type. This 'lazy' registry does not run
+ * Plugin::setUp on its items, so the registry will do it.
  *
  * @param type A typename that derives from Plugin.
  * @param name A string identifier for the registry.
  */
-#define CREATE_LAZY_REGISTRY(type, name)                           \
-  namespace registry {                                             \
-  const auto type##Registry = Registry::create<type>(name, false); \
+#define CREATE_LAZY_REGISTRY(type, name)                      \
+  namespace registry {                                        \
+  __attribute__((constructor)) static void type##Registry() { \
+    Registry::create<type>(name, true);                       \
+  }                                                           \
   }
 
 /**
@@ -71,12 +75,16 @@ namespace osquery {
  * @param registry The string name for the registry.
  * @param name A string identifier for this registry item.
  */
-#define REGISTER(type, registry, name) \
-  const auto type##RegistryItem = Registry::add<type>(registry, name);
+#define REGISTER(type, registry, name)                            \
+  __attribute__((constructor)) static void type##RegistryItem() { \
+    Registry::add<type>(registry, name);                          \
+  }
 
 /// The same as REGISTER but prevents the plugin item from being broadcasted.
-#define REGISTER_INTERNAL(type, registry, name) \
-  const auto type##RegistryItem = Registry::add<type>(registry, name, true);
+#define REGISTER_INTERNAL(type, registry, name)                   \
+  __attribute__((constructor)) static void type##RegistryItem() { \
+    Registry::add<type>(registry, name, true);                    \
+  }
 
 /**
  * @brief The request part of a plugin (registry item's) call.
@@ -105,6 +113,18 @@ typedef uint16_t RouteUUID;
 typedef std::function<Status(const std::string&, const PluginResponse&)>
     AddExternalCallback;
 typedef std::function<void(const std::string&)> RemoveExternalCallback;
+
+/// When a module is being initialized its information is kept in a transient
+/// RegistryFactory lookup location.
+struct ModuleInfo {
+  std::string path;
+  std::string name;
+  std::string version;
+  std::string sdk_version;
+};
+
+/// The call-in prototype for Registry modules.
+typedef void (*ModuleInitalizer)(void);
 
 class Plugin {
  public:
@@ -162,7 +182,7 @@ class Plugin {
 
 class RegistryHelperCore {
  public:
-  explicit RegistryHelperCore(bool auto_setup = true)
+  explicit RegistryHelperCore(bool auto_setup = false)
       : auto_setup_(auto_setup) {}
   virtual ~RegistryHelperCore() {}
 
@@ -195,6 +215,8 @@ class RegistryHelperCore {
                       const PluginRequest& request,
                       PluginResponse& response);
 
+  Status add(const std::string& item_name, bool internal = false);
+
   /**
    * @brief Allow a plugin to perform some setup functions when osquery starts.
    *
@@ -226,6 +248,23 @@ class RegistryHelperCore {
   /// Allow the registry to introspect into the registered name (for logging).
   void setName(const std::string& name);
 
+  /// Allow others to introspect into the registered name (for reporting).
+  const std::string& getName() const { return name_; }
+
+  /// Check if a given plugin name is considered internal.
+  bool isInternal(const std::string& item_name) const;
+
+  /// Allow others to introspect into the routes from extensions.
+  const std::map<std::string, RouteUUID>& getExternal() const {
+    return external_;
+  }
+
+  /// Set an 'active' plugin to receive registry calls when no item name given.
+  Status setActive(const std::string& item_name);
+
+  /// Get the 'active' plugin, return success with the active plugin name.
+  const std::string& getActive() const;
+
  protected:
   /// The identifier for this registry, used to register items.
   std::string name_;
@@ -244,6 +283,11 @@ class RegistryHelperCore {
   std::map<std::string, PluginResponse> routes_;
   /// Keep a lookup of registry items that are blacklisted from broadcast.
   std::vector<std::string> internal_;
+  /// Support an 'active' mode where calls without a specific item name will
+  /// be directed to the 'active' plugin.
+  std::string active_;
+  /// If a module was initialized/declared then store lookup information.
+  std::map<std::string, RouteUUID> modules_;
 };
 
 /**
@@ -259,7 +303,7 @@ class RegistryHelper : public RegistryHelperCore {
   typedef std::shared_ptr<RegistryType> RegistryTypeRef;
 
  public:
-  explicit RegistryHelper(bool auto_setup = true)
+  explicit RegistryHelper(bool auto_setup = false)
       : RegistryHelperCore(auto_setup),
         add_(&RegistryType::addExternal),
         remove_(&RegistryType::removeExternal) {}
@@ -331,13 +375,7 @@ class RegistryHelper : public RegistryHelperCore {
     std::shared_ptr<RegistryType> item((RegistryType*)new Item());
     item->setName(item_name);
     items_[item_name] = item;
-
-    // The item can be listed as internal, meaning it does not broadcast.
-    if (internal) {
-      internal_.push_back(item_name);
-    }
-
-    return Status(0, "OK");
+    return RegistryHelperCore::add(item_name, internal);
   }
 
   /**
@@ -369,9 +407,46 @@ class RegistryHelper : public RegistryHelperCore {
   RemoveExternalCallback remove_;
 };
 
+/// Helper defintion for a shared pointer to a Plugin.
 typedef std::shared_ptr<Plugin> PluginRef;
+/// Helper definition for a basic-templated Registry type using a base Plugin.
 typedef RegistryHelper<Plugin> PluginRegistryHelper;
+/// Helper definitions for a shared pointer to the basic Registry type.
 typedef std::shared_ptr<PluginRegistryHelper> PluginRegistryHelperRef;
+
+/**
+ * @basic A workflow manager for opening a module path and appending to the
+ * core registry.
+ *
+ * osquery Registry modules are part of the extensions API, in that they use
+ * the osquery SDK to expose additional features to the osquery core. Modules
+ * do not require the Thrift interface and may be compiled as shared objects
+ * and loaded late at run time once the core and internal registry has been
+ * initialized and setUp.
+ *
+ * A ModuleLoader interprets search paths, dynamically loads the modules,
+ * maintains identification within the RegistryFactory and any registries
+ * the module adds items into.
+ */
+class RegistryModuleLoader : private boost::noncopyable {
+ public:
+  /// Unlock the registry, open, construct, and allow the module to declare.
+  RegistryModuleLoader(const std::string& path);
+  /// Keep the symbol resolution/calling out of construction.
+  void init();
+
+  /// Clear module information, 'lock' the registry.
+  ~RegistryModuleLoader();
+
+ private:
+  // Keep the handle for symbol resolution/calling.
+  void* handle_;
+  // Keep the path for debugging/logging.
+  std::string path_;
+
+ private:
+  FRIEND_TEST(RegistryTests, test_registry_modules);
+};
 
 class RegistryFactory : private boost::noncopyable {
  public:
@@ -394,12 +469,12 @@ class RegistryFactory : private boost::noncopyable {
    * @endcode
    *
    * @param registry_name The canonical name for this registry.
-   * @param auto_setup Optionally set false if the registry handles setup
+   * @param auto_setup Set true if the registry does not setup itself
    * @return A non-sense int that must be casted const.
    */
   template <class Type>
-  static int create(const std::string& registry_name, bool auto_setup = true) {
-    if (instance().registries_.count(registry_name) > 0) {
+  static int create(const std::string& registry_name, bool auto_setup = false) {
+    if (locked() || instance().registries_.count(registry_name) > 0) {
       return 0;
     }
 
@@ -432,8 +507,11 @@ class RegistryFactory : private boost::noncopyable {
   static Status add(const std::string& registry_name,
                     const std::string& item_name,
                     bool internal = false) {
-    auto registry = instance().registry(registry_name);
-    return registry->template add<Item>(item_name, internal);
+    if (!locked()) {
+      auto registry = instance().registry(registry_name);
+      return registry->template add<Item>(item_name, internal);
+    }
+    return Status(0, "Registry locked");
   }
 
   /// Direct access to all registries.
@@ -497,6 +575,22 @@ class RegistryFactory : private boost::noncopyable {
                      const std::string& item_name,
                      const PluginRequest& request);
 
+  /// A helper call that uses the active plugin (if the registry has one).
+  static Status call(const std::string& registry_name,
+                     const PluginRequest& request,
+                     PluginResponse& response);
+
+  /// A helper call that uses the active plugin (if the registry has one).
+  static Status call(const std::string& registry_name,
+                     const PluginRequest& request);
+
+  /// Set a registry's active plugin.
+  static Status setActive(const std::string& registry_name,
+                          const std::string& item_name);
+
+  /// Get a registry's active plugin.
+  static const std::string& getActive(const std::string& registry_nane);
+
   /// Run `setUp` on every registry that is not marked 'lazy'.
   static void setUp();
 
@@ -504,6 +598,9 @@ class RegistryFactory : private boost::noncopyable {
   static bool exists(const std::string& registry_name,
                      const std::string& item_name,
                      bool local = false);
+
+  /// Get a list of the registry names.
+  static std::vector<std::string> names();
 
   /// Get a list of the registry item names for a given registry.
   static std::vector<std::string> names(const std::string& registry_name);
@@ -525,16 +622,73 @@ class RegistryFactory : private boost::noncopyable {
   /// Check if duplicate registry items using registry aliasing are allowed.
   static bool allowDuplicates() { return instance().allow_duplicates_; }
 
+  /// Declare a module for initialization and subsequent registration attempts
+  static void declareModule(const std::string& name,
+                            const std::string& version,
+                            const std::string& min_sdk_version,
+                            const std::string& sdk_version);
+
+  /// Access module metadata.
+  static const std::map<RouteUUID, ModuleInfo>& getModules();
+
+ private:
+  /// Access the current initializing module UUID.
+  static RouteUUID getModule();
+
+  /// Check if the registry is allowing module registrations.
+  static bool usingModule();
+
+  /// Initialize a module for lookup, resolution, and its registrations.
+  static void initModule(const std::string& path);
+
+  static void shutdownModule();
+
+  /// Check if the registries are locked.
+  static bool locked() { return instance().locked_; }
+
+  /// Set the registry locked status.
+  static void locked(bool locked) { instance().locked_ = locked; }
+
  protected:
-  RegistryFactory() : allow_duplicates_(false) {}
+  RegistryFactory() : allow_duplicates_(false), locked_(false) {}
   RegistryFactory(RegistryFactory const&);
   void operator=(RegistryFactory const&);
   virtual ~RegistryFactory() {}
 
  private:
+  /// Track duplicate registry item support, used for testing.
   bool allow_duplicates_;
+  /// Track registry "locking", while locked a registry cannot add/create.
+  bool locked_;
+
+  /// The primary storage for constructed registries.
   std::map<std::string, PluginRegistryHelperRef> registries_;
+  /**
+   * @brief The registry tracks the set of active extension routes.
+   *
+   * If an extension dies (the process ends or does not respond to a ping),
+   * the registry will be notified via the extension watcher.
+   * When an operation requests to use that extension route the extension
+   * manager will lazily check the registry for changes.
+   */
   std::set<RouteUUID> extensions_;
+
+  /**
+   * @brief The registry tracks loaded extension module metadata/info.
+   *
+   * Each extension module is assigned a transient RouteUUID for identification
+   * those route IDs are passed to each registry to identify which plugin
+   * items belong to modules, similarly to extensions.
+   */
+  std::map<RouteUUID, ModuleInfo> modules_;
+
+  // During module initialization store the current-working module ID.
+  RouteUUID module_uuid_;
+
+ private:
+  friend class RegistryHelperCore;
+  friend class RegistryModuleLoader;
+  FRIEND_TEST(RegistryTests, test_registry_modules);
 };
 
 /**

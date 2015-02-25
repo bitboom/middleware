@@ -520,6 +520,9 @@ class EventSubscriberPlugin : public Plugin {
   void operator=(EventSubscriberPlugin const&);
 
  private:
+  Status setUp() { return Status(0, "Setup never used"); }
+
+ private:
   /// Do not respond to periodic/scheduled/triggered event expiration requests.
   bool expire_events_;
 
@@ -770,6 +773,6 @@ void attachEvents();
 /// Sleep in a boost::thread interruptable state.
 void interruptableSleep(size_t milli);
 
-CREATE_LAZY_REGISTRY(EventPublisherPlugin, "event_publisher");
+CREATE_REGISTRY(EventPublisherPlugin, "event_publisher");
 CREATE_REGISTRY(EventSubscriberPlugin, "event_subscriber");
 }

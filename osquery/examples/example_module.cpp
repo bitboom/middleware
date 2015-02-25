@@ -12,14 +12,6 @@
 
 using namespace osquery;
 
-class ExampleConfigPlugin : public ConfigPlugin {
- public:
-  Status genConfig(std::map<std::string, std::string>& config) {
-    config["data"] = "{\"options\": [], \"scheduledQueries\": []}";
-    return Status(0, "OK");
-  }
-};
-
 class ExampleTable : public tables::TablePlugin {
  private:
   tables::TableColumns columns() const {
@@ -38,18 +30,15 @@ class ExampleTable : public tables::TablePlugin {
   }
 };
 
-REGISTER_EXTERNAL(ExampleConfigPlugin, "config", "example");
-REGISTER_EXTERNAL(ExampleTable, "table", "example");
+// Create the module if the environment variable TESTFAIL1 is not defined.
+// This allows the integration tests to, at run time, test the module
+// loading workflow.
+CREATE_MODULE_IF(getenv("TESTFAIL1") == nullptr, "example", "0.0.1", "0.0.0");
 
-int main(int argc, char* argv[]) {
-  osquery::Initializer runner(argc, argv, OSQUERY_EXTENSION);
-
-  auto status = startExtension("example", "0.0.1");
-  if (!status.ok()) {
-    LOG(ERROR) << status.getMessage();
+void initModule(void) {
+  // Register a plugin from a module if the environment variable TESTFAIL2
+  // is not defined.
+  if (getenv("TESTFAIL2") == nullptr) {
+    REGISTER_MODULE(ExampleTable, "table", "example");
   }
-
-  // Finally shutdown.
-  runner.shutdown();
-  return 0;
 }

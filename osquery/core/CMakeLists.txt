@@ -7,6 +7,7 @@ ADD_OSQUERY_LIBRARY(TRUE osquery_core init.cpp
 									  hash.cpp
 									  watcher.cpp)
 
+# TODO(Sangwan): Detach from core
 ADD_OSQUERY_LIBRARY(TRUE osquery_test_util test_util.cpp)
 
 ADD_OSQUERY_TEST(TRUE osquery_flags_tests flags_tests.cpp)

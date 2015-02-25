@@ -11,6 +11,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -26,6 +27,13 @@ namespace osquery {
  * this many wildcards.
  */
 const unsigned int kMaxDirectoryTraversalDepth = 40;
+typedef unsigned int ReturnSetting;
+enum {
+  REC_LIST_FILES = 0x1, // Return only files
+  REC_LIST_FOLDERS = 0x2, // Return only folders
+  REC_EVENT_OPT = 0x4, // Enable optimizations for file event resolutions
+  REC_LIST_ALL = REC_LIST_FILES | REC_LIST_FOLDERS
+};
 
 const std::string kWildcardCharacter = "%";
 const std::string kWildcardCharacterRecursive =
@@ -87,7 +95,8 @@ Status pathExists(const boost::filesystem::path& path);
  * of the operation.
  */
 Status listFilesInDirectory(const boost::filesystem::path& path,
-                            std::vector<std::string>& results);
+                            std::vector<std::string>& results,
+                            bool ignore_error = 1);
 
 /**
  * @brief List all of the directories in a specific directory, non-recursively.
@@ -101,7 +110,8 @@ Status listFilesInDirectory(const boost::filesystem::path& path,
  * of the operation.
  */
 Status listDirectoriesInDirectory(const boost::filesystem::path& path,
-                                  std::vector<std::string>& results);
+                                  std::vector<std::string>& results,
+                                  bool ignore_error = 1);
 
 /**
  * @brief Given a wildcard filesystem patten, resolve all possible paths
@@ -124,6 +134,30 @@ Status listDirectoriesInDirectory(const boost::filesystem::path& path,
  */
 Status resolveFilePattern(const boost::filesystem::path& fs_path,
                           std::vector<std::string>& results);
+
+/**
+ * @brief Given a wildcard filesystem patten, resolve all possible paths
+ *
+ * @code{.cpp}
+ *   std::vector<std::string> results;
+ *   auto s = resolveFilePattern("/Users/marpaia/Downloads/%", results);
+ *   if (s.ok()) {
+ *     for (const auto& result : results) {
+ *       LOG(INFO) << result;
+ *     }
+ *   }
+ * @endcode
+ *
+ * @param fs_path The filesystem pattern
+ * @param results The vector in which all results will be returned
+ * @param setting Do you want files returned, folders or both?
+ *
+ * @return An instance of osquery::Status which indicates the success or
+ * failure of the operation
+ */
+Status resolveFilePattern(const boost::filesystem::path& fs_path,
+                          std::vector<std::string>& results,
+                          ReturnSetting setting);
 
 /**
  * @brief Get directory portion of a path.
@@ -153,7 +187,24 @@ Status isDirectory(const boost::filesystem::path& path);
  *
  * @return a vector of strings representing the path of all home directories
  */
-std::vector<boost::filesystem::path> getHomeDirectories();
+std::set<boost::filesystem::path> getHomeDirectories();
+
+/**
+ * @brief Check the permissions of a file and it's directory.
+ *
+ * 'Safe' implies the directory is not a /tmp-like directory in that users
+ * cannot control super-user-owner files. The file should be owned by the
+ * process's UID or the file should be owned by root.
+ *
+ * @param dir the directory to check /tmp mode
+ * @param path a path to a file to check
+ * @param executable the file must also be executable
+ *
+ * @return true if the file is 'safe' else false
+ */
+bool safePermissions(const std::string& dir,
+                     const std::string& path,
+                     bool executable = false);
 
 /// Return bit-mask-style permissions.
 std::string lsperms(int mode);
