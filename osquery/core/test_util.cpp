@@ -92,12 +92,11 @@ std::vector<std::pair<std::string, QueryData> > getTestDBResultStream() {
   return results;
 }
 
-osquery::OsqueryScheduledQuery getOsqueryScheduledQuery() {
-  osquery::OsqueryScheduledQuery q;
-  q.name = "foobartest";
-  q.query = "SELECT filename FROM fs WHERE path = '/bin' ORDER BY filename";
-  q.interval = 5;
-  return q;
+osquery::ScheduledQuery getOsqueryScheduledQuery() {
+  ScheduledQuery sq;
+  sq.query = "SELECT filename FROM fs WHERE path = '/bin' ORDER BY filename";
+  sq.interval = 5;
+  return sq;
 }
 
 std::pair<boost::property_tree::ptree, Row> getSerializedRow() {
@@ -132,7 +131,7 @@ std::pair<boost::property_tree::ptree, DiffResults> getSerializedDiffResults() {
   return std::make_pair(root, diff_results);
 }
 
-std::pair<std::string, osquery::DiffResults> getSerializedDiffResultsJSON() {
+std::pair<std::string, DiffResults> getSerializedDiffResultsJSON() {
   auto results = getSerializedDiffResults();
 
   std::ostringstream ss;
@@ -141,7 +140,7 @@ std::pair<std::string, osquery::DiffResults> getSerializedDiffResultsJSON() {
   return std::make_pair(ss.str(), results.second);
 }
 
-std::pair<pt::ptree, osquery::HistoricalQueryResults>
+std::pair<pt::ptree, HistoricalQueryResults>
 getSerializedHistoricalQueryResults() {
   auto qd = getSerializedQueryData();
   auto dr = getSerializedDiffResults();
@@ -158,7 +157,7 @@ getSerializedHistoricalQueryResults() {
   return std::make_pair(root, r);
 }
 
-std::pair<std::string, osquery::HistoricalQueryResults>
+std::pair<std::string, HistoricalQueryResults>
 getSerializedHistoricalQueryResultsJSON() {
   auto results = getSerializedHistoricalQueryResults();
 
@@ -168,7 +167,7 @@ getSerializedHistoricalQueryResultsJSON() {
   return std::make_pair(ss.str(), results.second);
 }
 
-std::pair<boost::property_tree::ptree, osquery::ScheduledQueryLogItem>
+std::pair<boost::property_tree::ptree, ScheduledQueryLogItem>
 getSerializedScheduledQueryLogItem() {
   ScheduledQueryLogItem i;
   pt::ptree root;
@@ -186,7 +185,7 @@ getSerializedScheduledQueryLogItem() {
   return std::make_pair(root, i);
 }
 
-std::pair<std::string, osquery::ScheduledQueryLogItem>
+std::pair<std::string, ScheduledQueryLogItem>
 getSerializedScheduledQueryLogItemJSON() {
   auto results = getSerializedScheduledQueryLogItem();
 
@@ -224,7 +223,7 @@ std::string getEtcHostsContent() {
   return content;
 }
 
-osquery::QueryData getEtcHostsExpectedResults() {
+QueryData getEtcHostsExpectedResults() {
   Row row1;
   Row row2;
   Row row3;

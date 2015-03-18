@@ -123,18 +123,45 @@ void ExtensionManagerWatcher::watch() {
   }
 }
 
+inline Status socketWritable(const fs::path& path) {
+  if (pathExists(path).ok()) {
+    if (!isWritable(path).ok()) {
+      return Status(1, "Cannot write extension socket: " + path.string());
+    }
+
+    if (!remove(path).ok()) {
+      return Status(1, "Cannot remove extension socket: " + path.string());
+    }
+  } else {
+    if (!pathExists(path.parent_path()).ok()) {
+      return Status(1, "Extension socket directory missing: " + path.string());
+    }
+
+    if (!isWritable(path.parent_path()).ok()) {
+      return Status(1, "Cannot write extension socket: " + path.string());
+    }
+  }
+  return Status(0, "OK");
+}
+
 void loadExtensions() {
+  // Disabling extensions will disable autoloading.
+  if (FLAGS_disable_extensions) {
+    return;
+  }
+
   // Optionally autoload extensions
   auto status = loadExtensions(FLAGS_extensions_autoload);
   if (!status.ok()) {
-    LOG(WARNING) << "Could not autoload extensions: " << status.what();
+    VLOG(1) << "Could not autoload extensions: " << status.what();
   }
 }
 
 void loadModules() {
   auto status = loadModules(FLAGS_modules_autoload);
   if (!status.ok()) {
-    LOG(WARNING) << "Modules autoload contains invalid paths";
+    VLOG(1) << "Modules autoload contains invalid paths: "
+            << FLAGS_modules_autoload;
   }
 }
 
@@ -214,6 +241,7 @@ Status startExtension(const std::string& name, const std::string& version) {
 Status startExtension(const std::string& name,
                       const std::string& version,
                       const std::string& min_sdk_version) {
+  Registry::setExternal();
   auto latency = atoi(FLAGS_extensions_interval.c_str()) * 1000;
   auto status = startExtensionWatcher(FLAGS_extensions_socket, latency, true);
   if (!status.ok()) {
@@ -252,7 +280,6 @@ Status startExtension(const std::string& manager_path,
   // Make sure the extension manager path exists, and is writable.
   auto status = extensionPathActive(manager_path, true);
   if (!status.ok()) {
-    printf("bad path active\n");
     return status;
   }
 
@@ -287,14 +314,9 @@ Status startExtension(const std::string& manager_path,
 
   // Now that the uuid is known, try to clean up stale socket paths.
   auto extension_path = getExtensionSocket(ext_status.uuid, manager_path);
-  if (pathExists(extension_path).ok()) {
-    if (!isWritable(extension_path).ok()) {
-      return Status(1, "Cannot write extension socket: " + extension_path);
-    }
-
-    if (!remove(extension_path).ok()) {
-      return Status(1, "Cannot remove extension socket: " + extension_path);
-    }
+  status = socketWritable(extension_path);
+  if (!status) {
+    return status;
   }
 
   // Set the active config and logger plugins. The core will arbitrate if the
@@ -496,14 +518,9 @@ Status startExtensionManager() {
 
 Status startExtensionManager(const std::string& manager_path) {
   // Check if the socket location exists.
-  if (pathExists(manager_path).ok()) {
-    if (!isWritable(manager_path).ok()) {
-      return Status(1, "Cannot write extension socket: " + manager_path);
-    }
-
-    if (!remove(manager_path).ok()) {
-      return Status(1, "Cannot remove extension socket: " + manager_path);
-    }
+  auto status = socketWritable(manager_path);
+  if (!status.ok()) {
+    return status;
   }
 
   auto latency = atoi(FLAGS_extensions_interval.c_str()) * 1000;

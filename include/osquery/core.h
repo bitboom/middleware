@@ -67,7 +67,7 @@ class Initializer {
    * @param argv the command-line arguments passed to `main()`
    * @param tool the type of osquery main (daemon, shell, test, extension).
    */
-  Initializer(int argc, char* argv[], ToolType tool = OSQUERY_TOOL_TEST);
+  Initializer(int& argc, char**& argv, ToolType tool = OSQUERY_TOOL_TEST);
 
   /**
    * @brief Sets up the process as an osquery daemon.
@@ -111,8 +111,8 @@ class Initializer {
   void initConfigLogger();
 
  private:
-  int argc_;
-  char** argv_;
+  int* argc_;
+  char*** argv_;
   int tool_;
   std::string binary_;
 };
@@ -125,11 +125,54 @@ class Initializer {
  * @param s the string that you'd like to split
  * @param delim the delimiter which you'd like to split the string by
  *
- * @return a vector of strings which represent the split string that you
- * passed as the s parameter.
+ * @return a vector of strings split by delim.
  */
 std::vector<std::string> split(const std::string& s,
                                const std::string& delim = "\t ");
+
+/**
+ * @brief Split a given string based on an delimiter.
+ *
+ * @param s the string that you'd like to split.
+ * @param delim the delimiter which you'd like to split the string by.
+ * @param occurences the number of times to split by delim.
+ *
+ * @return a vector of strings split by delim for occurences.
+ */
+std::vector<std::string> split(const std::string& s,
+                               const std::string& delim,
+                               size_t occurences);
+
+/**
+ * @brief Inline replace all instances of from with to.
+ *
+ * @param str The input/output mutable string.
+ * @param from Search string
+ * @param to Replace string
+ */
+inline void replaceAll(std::string& str,
+                       const std::string& from,
+                       const std::string& to) {
+  if (from.empty()) {
+    return;
+  }
+
+  size_t start_pos = 0;
+  while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+    str.replace(start_pos, from.length(), to);
+    start_pos += to.length();
+  }
+}
+
+/**
+ * @brief Join a vector of strings using a tokenizer.
+ *
+ * @param s the string that you'd like to split.
+ * @param tok a token glue.
+ *
+ * @return a joined string.
+ */
+std::string join(const std::vector<std::string>& s, const std::string& tok);
 
 /**
  * @brief Getter for a host's current hostname

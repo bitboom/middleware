@@ -37,7 +37,6 @@ SET(${TARGET_OSQUERY_LIB}_DEP glog
 							# shell deps
 							  readline
 							# build-in tables deps
-							  procps
 							  systemd
 							  udev)
 SET(${TARGET_OSQUERY_LIB}_SRCS "")
@@ -104,7 +103,6 @@ ADD_SUBDIRECTORY(extensions)
 ADD_SUBDIRECTORY(filesystem)
 ADD_SUBDIRECTORY(logger)
 ADD_SUBDIRECTORY(registry)
-ADD_SUBDIRECTORY(scheduler)
 ADD_SUBDIRECTORY(sql)
 ADD_SUBDIRECTORY(tables)
 

@@ -67,7 +67,9 @@ Status writeTextFile(const boost::filesystem::path& path,
                      int permissions = 0660,
                      bool force_permissions = false);
 
+/// Check if a path is writable.
 Status isWritable(const boost::filesystem::path& path);
+/// Check if a path is readable.
 Status isReadable(const boost::filesystem::path& path);
 
 /**
@@ -206,6 +208,9 @@ bool safePermissions(const std::string& dir,
                      const std::string& path,
                      bool executable = false);
 
+/// The shell tooling may store local resources in an "osquery" home.
+const std::string& osqueryHomeDirectory();
+
 /// Return bit-mask-style permissions.
 std::string lsperms(int mode);
 
@@ -245,7 +250,7 @@ Status parsePlistContent(const std::string& fileContent,
  *
  * @return status of iteration.
  */
-Status procProcesses(std::vector<std::string>& processes);
+Status procProcesses(std::set<std::string>& processes);
 
 /**
  * @brief Iterate over a proc process's descriptors, return a list of fds.
