@@ -18,4 +18,5 @@ ADD_OSQUERY_LIBRARY(TRUE osquery_extensions ${OSQUERY_THRIFT_GENERATED_FILES}
 											extensions.cpp
 											interface.cpp)
 
-ADD_OSQUERY_TEST(TRUE osquery_extensions_test extensions_tests.cpp)
+FILE(GLOB OSQUERY_EXTENSIONS_TESTS "tests/*.cpp")
+ADD_OSQUERY_TEST(TRUE ${OSQUERY_EXTENSIONS_TESTS})

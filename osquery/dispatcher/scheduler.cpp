@@ -26,6 +26,8 @@ FLAG(string,
      "hostname",
      "Field used to identify the host running osquery (hostname, uuid)");
 
+FLAG(bool, enable_monitor, false, "Enable the schedule monitor");
+
 CLI_FLAG(uint64, schedule_timeout, 0, "Limit the schedule, 0 for no limit")
 
 Status getHostIdentifier(std::string& ident) {
@@ -46,8 +48,7 @@ Status getHostIdentifier(std::string& ident) {
   auto status = db->Scan(kConfigurations, results);
 
   if (!status.ok()) {
-    VLOG(1) << "Could not access database, using hostname as the host "
-               "identifier";
+    VLOG(1) << "Could not access database; using hostname as host identifier";
     ident = osquery::getHostname();
     return Status(0, "OK");
   }
@@ -56,8 +57,7 @@ Status getHostIdentifier(std::string& ident) {
       results.end()) {
     status = db->Get(kConfigurations, "hostIdentifier", ident);
     if (!status.ok()) {
-      VLOG(1) << "Could not access database, using hostname as the host "
-                 "identifier";
+      VLOG(1) << "Could not access database; using hostname as host identifier";
       ident = osquery::getHostname();
     }
     return status;
@@ -65,23 +65,72 @@ Status getHostIdentifier(std::string& ident) {
 
   // There was no uuid stored in the database, generate one and store it.
   ident = osquery::generateHostUuid();
-  VLOG(1) << "Using uuid " << ident << " to identify this host";
+  VLOG(1) << "Using uuid " << ident << " as host identifier";
   return db->Put(kConfigurations, "hostIdentifier", ident);
 }
 
-void launchQuery(const std::string& name, const ScheduledQuery& query) {
-  LOG(INFO) << "Executing query: " << query.query;
-  int unix_time = std::time(0);
+inline SQL monitor(const std::string& name, const ScheduledQuery& query) {
+  // Snapshot the performance and times for the worker before running.
+  auto pid = std::to_string(getpid());
+  auto r0 = SQL::selectAllFrom("processes", "pid", tables::EQUALS, pid);
+  auto t0 = time(nullptr);
   auto sql = SQL(query.query);
+  // Snapshot the performance after, and compare.
+  auto t1 = time(nullptr);
+  auto r1 = SQL::selectAllFrom("processes", "pid", tables::EQUALS, pid);
+  if (r0.size() > 0 && r1.size() > 0) {
+    size_t size = 0;
+    for (const auto& row : sql.rows()) {
+      for (const auto& column : row) {
+        size += column.first.size();
+        size += column.second.size();
+      }
+    }
+    Config::recordQueryPerformance(name, t1 - t0, size, r0[0], r1[0]);
+  }
+  return sql;
+}
+
+void launchQuery(const std::string& name, const ScheduledQuery& query) {
+  // Execute the scheduled query and create a named query object.
+  VLOG(1) << "Executing query: " << query.query;
+  auto sql = (FLAGS_enable_monitor) ? monitor(name, query) : SQL(query.query);
+
   if (!sql.ok()) {
     LOG(ERROR) << "Error executing query (" << query.query
                << "): " << sql.getMessageString();
     return;
   }
 
+  // Fill in a host identifier fields based on configuration or availability.
+  std::string ident;
+  auto status = getHostIdentifier(ident);
+  if (!status.ok() || ident.empty()) {
+    ident = "<unknown>";
+  }
+
+  // A query log item contains an optional set of differential results or
+  // a copy of the most-recent execution alongside some query metadata.
+  QueryLogItem item;
+  item.name = name;
+  item.identifier = ident;
+  item.time = osquery::getUnixTime();
+  item.calendar_time = osquery::getAsciiTime();
+
+  if (query.options.count("snapshot") && query.options.at("snapshot")) {
+    // This is a snapshot query, emit results with a differential or state.
+    item.snapshot_results = std::move(sql.rows());
+    logSnapshotQuery(item);
+    return;
+  }
+
+  // Create a database-backed set of query results.
   auto dbQuery = Query(name, query);
   DiffResults diff_results;
-  auto status = dbQuery.addNewResults(sql.rows(), diff_results, unix_time);
+  // Add this execution's set of results to the database-tracked named query.
+  // We can then ask for a differential from the last time this named query
+  // was executed by exact matching each row.
+  status = dbQuery.addNewResults(sql.rows(), diff_results);
   if (!status.ok()) {
     LOG(ERROR) << "Error adding new results to database: " << status.what();
     return;
@@ -92,32 +141,18 @@ void launchQuery(const std::string& name, const ScheduledQuery& query) {
     return;
   }
 
-  ScheduledQueryLogItem item;
-  item.diffResults = diff_results;
-  item.name = name;
-
-  std::string ident;
-  status = getHostIdentifier(ident);
-  if (status.ok()) {
-    item.hostIdentifier = ident;
-  } else if (ident.empty()) {
-    ident = "<unknown>";
-  }
-
-  item.unixTime = osquery::getUnixTime();
-  item.calendarTime = osquery::getAsciiTime();
-
-  VLOG(1) << "Found results for query " << name << " for host: " << ident;
-  status = logScheduledQueryLogItem(item);
+  VLOG(1) << "Found results for query (" << name << ") for host: " << ident;
+  item.results = diff_results;
+  status = logQueryLogItem(item);
   if (!status.ok()) {
-    LOG(ERROR) << "Error logging the results of query \"" << query.query << "\""
-               << ": " << status.toString();
+    LOG(ERROR) << "Error logging the results of query (" << query.query
+               << "): " << status.toString();
   }
 }
 
 void SchedulerRunner::enter() {
-  time_t t = time(0);
-  struct tm* local = localtime(&t);
+  time_t t = std::time(nullptr);
+  struct tm* local = std::localtime(&t);
   unsigned long int i = local->tm_sec;
   for (; (timeout_ == 0) || (i <= timeout_); ++i) {
     {
@@ -128,7 +163,7 @@ void SchedulerRunner::enter() {
         }
       }
     }
-    // Put the thread into an interruptable sleep without a config instance.
+    // Put the thread into an interruptible sleep without a config instance.
     osquery::interruptableSleep(interval_ * 1000);
   }
 }
@@ -142,8 +177,7 @@ Status startScheduler() {
 }
 
 Status startScheduler(unsigned long int timeout, size_t interval) {
-  Dispatcher::getInstance().addService(
-      std::make_shared<SchedulerRunner>(timeout, interval));
+  Dispatcher::addService(std::make_shared<SchedulerRunner>(timeout, interval));
   return Status(0, "OK");
 }
 }

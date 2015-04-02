@@ -1,5 +1,5 @@
 Name: osquery
-Version: 1.4.4
+Version: 1.4.5
 Release: 0
 License: Apache-2.0 and GPLv2
 Summary: A SQL powered operating system instrumentation, monitoring framework.
@@ -74,28 +74,4 @@ Testcases for osquery
 
 %files test
 %manifest %{name}.manifest
-%{_bindir}/osquery_hash_tests
-%{_bindir}/osquery_status_tests
-%{_bindir}/osquery_db_handle_tests
-%{_bindir}/osquery_results_tests
-%{_bindir}/osquery_config_tests
-%{_bindir}/osquery_filesystem_tests
-%{_bindir}/osquery_query_tests
-%{_bindir}/osquery_sql_tests
-%{_bindir}/osquery_sqlite_util_tests
-%{_bindir}/osquery_scheduler_tests
-%{_bindir}/osquery_tables_tests
-%{_bindir}/osquery_virtual_table_tests
-%{_bindir}/osquery_test_util_tests
-%{_bindir}/osquery_text_tests
-%{_bindir}/osquery_logger_tests
-%{_bindir}/osquery_conversions_tests
-%{_bindir}/osquery_dispatcher_tests
-%{_bindir}/osquery_distributed_tests
-%{_bindir}/osquery_events_tests
-%{_bindir}/osquery_events_database_tests
-%{_bindir}/osquery_inotify_tests
-%{_bindir}/osquery_etc_hosts_tests
-%{_bindir}/osquery_printer_tests
-%{_bindir}/osquery_extensions_test
-%{_bindir}/osquery_registry_tests
+%{_bindir}/osquery-test

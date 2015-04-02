@@ -41,11 +41,11 @@ namespace osquery {
  * @param type A typename that derives from Plugin.
  * @param name A string identifier for the registry.
  */
-#define CREATE_REGISTRY(type, name)                           \
-  namespace registry {                                        \
-  __attribute__((constructor)) static void type##Registry() { \
-    Registry::create<type>(name);                             \
-  }                                                           \
+#define CREATE_REGISTRY(type, name)              \
+  namespace registry {                           \
+  __constructor__ static void type##Registry() { \
+    Registry::create<type>(name);                \
+  }                                              \
   }
 
 /**
@@ -56,11 +56,11 @@ namespace osquery {
  * @param type A typename that derives from Plugin.
  * @param name A string identifier for the registry.
  */
-#define CREATE_LAZY_REGISTRY(type, name)                      \
-  namespace registry {                                        \
-  __attribute__((constructor)) static void type##Registry() { \
-    Registry::create<type>(name, true);                       \
-  }                                                           \
+#define CREATE_LAZY_REGISTRY(type, name)         \
+  namespace registry {                           \
+  __constructor__ static void type##Registry() { \
+    Registry::create<type>(name, true);          \
+  }                                              \
   }
 
 /**
@@ -75,15 +75,15 @@ namespace osquery {
  * @param registry The string name for the registry.
  * @param name A string identifier for this registry item.
  */
-#define REGISTER(type, registry, name)                            \
-  __attribute__((constructor)) static void type##RegistryItem() { \
-    Registry::add<type>(registry, name);                          \
+#define REGISTER(type, registry, name)               \
+  __constructor__ static void type##RegistryItem() { \
+    Registry::add<type>(registry, name);             \
   }
 
 /// The same as REGISTER but prevents the plugin item from being broadcasted.
-#define REGISTER_INTERNAL(type, registry, name)                   \
-  __attribute__((constructor)) static void type##RegistryItem() { \
-    Registry::add<type>(registry, name, true);                    \
+#define REGISTER_INTERNAL(type, registry, name)      \
+  __constructor__ static void type##RegistryItem() { \
+    Registry::add<type>(registry, name, true);       \
   }
 
 /**
@@ -126,9 +126,9 @@ struct ModuleInfo {
 /// The call-in prototype for Registry modules.
 typedef void (*ModuleInitalizer)(void);
 
-class Plugin {
+class Plugin : private boost::noncopyable {
  public:
-  Plugin() { name_ = "unnamed"; }
+  Plugin() : name_("unnamed") {}
   virtual ~Plugin() {}
 
  public:
@@ -162,6 +162,8 @@ class Plugin {
   /// Allow the plugin to introspect into the registered name (for logging).
   void setName(const std::string& name) { name_ = name; }
 
+  const std::string& getName() const { return name_; }
+
   /// Allow a specialized plugin type to act when an external plugin is
   /// registered (e.g., a TablePlugin will attach the table name).
   static Status addExternal(const std::string& name,
@@ -177,10 +179,10 @@ class Plugin {
 
  private:
   Plugin(Plugin const&);
-  void operator=(Plugin const&);
+  Plugin& operator=(Plugin const&);
 };
 
-class RegistryHelperCore {
+class RegistryHelperCore : private boost::noncopyable {
  public:
   explicit RegistryHelperCore(bool auto_setup = false)
       : auto_setup_(auto_setup) {}
@@ -431,7 +433,7 @@ typedef std::shared_ptr<PluginRegistryHelper> PluginRegistryHelperRef;
 class RegistryModuleLoader : private boost::noncopyable {
  public:
   /// Unlock the registry, open, construct, and allow the module to declare.
-  RegistryModuleLoader(const std::string& path);
+  explicit RegistryModuleLoader(const std::string& path);
   /// Keep the symbol resolution/calling out of construction.
   void init();
 
@@ -658,9 +660,12 @@ class RegistryFactory : private boost::noncopyable {
 
  protected:
   RegistryFactory()
-    : allow_duplicates_(false), locked_(false), external_(false) {}
+      : allow_duplicates_(false),
+        locked_(false),
+        module_uuid_(0),
+        external_(false) {}
   RegistryFactory(RegistryFactory const&);
-  void operator=(RegistryFactory const&);
+  RegistryFactory& operator=(RegistryFactory const&);
   virtual ~RegistryFactory() {}
 
  private:

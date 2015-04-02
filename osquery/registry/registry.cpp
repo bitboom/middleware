@@ -52,7 +52,12 @@ Status RegistryHelperCore::setActive(const std::string& item_name) {
   if (items_.count(item_name) == 0 && external_.count(item_name) == 0) {
     return Status(1, "Unknown registry item");
   }
+
   active_ = item_name;
+  // The active plugin is setup when initialized.
+  if (exists(item_name, true)) {
+    Registry::get(name_, item_name)->setUp();
+  }
   return Status(0, "OK");
 }
 
@@ -124,15 +129,15 @@ const std::string& RegistryHelperCore::getAlias(
 }
 
 void RegistryHelperCore::setUp() {
+  // If this registry does not auto-setup do NOT setup the registry items.
+  if (!auto_setup_) {
+    return;
+  }
+
   // If the registry is using a single 'active' plugin, setUp that plugin.
   // For config and logger, only setUp the selected plugin.
   if (active_.size() != 0 && exists(active_, true)) {
     items_.at(active_)->setUp();
-    return;
-  }
-
-  // If this registry does not auto-setup do NOT setup the registry items.
-  if (!auto_setup_) {
     return;
   }
 
@@ -289,7 +294,17 @@ Status RegistryFactory::call(const std::string& registry_name,
                              const PluginRequest& request,
                              PluginResponse& response) {
   // Forward factory call to the registry.
-  return registry(registry_name)->call(item_name, request, response);
+  try {
+    return registry(registry_name)->call(item_name, request, response);
+  } catch (const std::exception& e) {
+    LOG(ERROR) << registry_name << " registry " << item_name
+               << " plugin caused exception: " << e.what();
+    return Status(1, e.what());
+  } catch (...) {
+    LOG(ERROR) << registry_name << " registry " << item_name
+               << " plugin caused unknown exception";
+    return Status(2, "Unknown exception");
+  }
 }
 
 Status RegistryFactory::call(const std::string& registry_name,
@@ -304,7 +319,7 @@ Status RegistryFactory::call(const std::string& registry_name,
                              const PluginRequest& request,
                              PluginResponse& response) {
   auto& plugin = registry(registry_name)->getActive();
-  return registry(registry_name)->call(plugin, request, response);
+  return call(registry_name, plugin, request, response);
 }
 
 Status RegistryFactory::call(const std::string& registry_name,

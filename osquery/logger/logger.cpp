@@ -128,10 +128,14 @@ void deserializeIntermediateLog(const PluginRequest& request,
   }
 
   // Read the plugin request string into a JSON tree and enumerate.
-  std::stringstream input;
-  input << request.at("log");
   pt::ptree tree;
-  pt::read_json(input, tree);
+  try {
+    std::stringstream input;
+    input << request.at("log");
+    pt::read_json(input, tree);
+  } catch (const pt::json_parser::json_parser_error& e) {
+    return;
+  }
 
   for (const auto& item : tree.get_child("")) {
     log.push_back({
@@ -143,17 +147,13 @@ void deserializeIntermediateLog(const PluginRequest& request,
   }
 }
 
-void initStatusLogger(const std::string& name) {
-  FLAGS_alsologtostderr = true;
-  FLAGS_logbufsecs = 0; // flush the log buffer immediately
-  FLAGS_stop_logging_if_full_disk = true;
-  FLAGS_max_log_size = 10; // max size for individual log file is 10MB
-  FLAGS_logtostderr = true;
-
-  if (FLAGS_verbose) {
+void setVerboseLevel() {
+  if (Flag::getValue("verbose") == "true") {
     // Turn verbosity up to 1.
     // Do log DEBUG, INFO, WARNING, ERROR to their log files.
     // Do log the above and verbose=1 to stderr.
+    FLAGS_minloglevel = 0; // WARNING
+    FLAGS_stderrthreshold = 0;
     FLAGS_v = 1;
   } else {
     // Do NOT log INFO, WARNING, ERROR to stderr.
@@ -171,7 +171,16 @@ void initStatusLogger(const std::string& name) {
       FLAGS_minloglevel = 2; // ERROR
     }
   }
+}
 
+void initStatusLogger(const std::string& name) {
+  FLAGS_alsologtostderr = false;
+  FLAGS_logbufsecs = 0; // flush the log buffer immediately
+  FLAGS_stop_logging_if_full_disk = true;
+  FLAGS_max_log_size = 10; // max size for individual log file is 10MB
+  FLAGS_logtostderr = true;
+
+  setVerboseLevel();
   // Start the logging, and announce the daemon is starting.
   google::InitGoogleLogging(name.c_str());
 
@@ -195,13 +204,13 @@ void initLogger(const std::string& name, bool forward_all) {
     return;
   }
 
-  // Start the custom status logging facilities, which may instruct glog as is
+  // Start the custom status logging facilities, which may instruct Glog as is
   // the case with filesystem logging.
   PluginRequest request = {{"init", name}};
   serializeIntermediateLog(intermediate_logs, request);
   auto status = Registry::call("logger", request);
   if (status.ok() || forward_all) {
-    // When init returns success we reenabled the log sink in forwarding
+    // When `init` returns success we re-enabled the log sink in forwarding
     // mode. Now, Glog status logs are buffered and sent to logStatus.
     BufferedLogSink::forward(true);
     BufferedLogSink::enable();
@@ -236,9 +245,14 @@ void BufferedLogSink::send(google::LogSeverity severity,
 
 Status LoggerPlugin::call(const PluginRequest& request,
                           PluginResponse& response) {
+  QueryLogItem item;
   std::vector<StatusLogLine> intermediate_logs;
   if (request.count("string") > 0) {
     return this->logString(request.at("string"));
+  } else if (request.count("snapshot") > 0) {
+    return this->logSnapshot(request.at("snapshot"));
+  } else if (request.count("health") > 0) {
+    return this->logHealth(request.at("health"));
   } else if (request.count("init") > 0) {
     deserializeIntermediateLog(request, intermediate_logs);
     return this->init(request.at("init"), intermediate_logs);
@@ -250,36 +264,55 @@ Status LoggerPlugin::call(const PluginRequest& request,
   }
 }
 
-Status logString(const std::string& s) {
-  return logString(s, Registry::getActive("logger"));
+Status logString(const std::string& message, const std::string& category) {
+  return logString(message, category, Registry::getActive("logger"));
 }
 
-Status logString(const std::string& s, const std::string& receiver) {
+Status logString(const std::string& message,
+                 const std::string& category,
+                 const std::string& receiver) {
   if (!Registry::exists("logger", receiver)) {
     LOG(ERROR) << "Logger receiver " << receiver << " not found";
     return Status(1, "Logger receiver not found");
   }
 
-  auto status = Registry::call("logger", receiver, {{"string", s}});
+  auto status = Registry::call(
+      "logger", receiver, {{"string", message}, {"category", category}});
   return Status(0, "OK");
 }
 
-Status logScheduledQueryLogItem(const osquery::ScheduledQueryLogItem& results) {
-  return logScheduledQueryLogItem(results, Registry::getActive("logger"));
+Status logQueryLogItem(const QueryLogItem& results) {
+  return logQueryLogItem(results, Registry::getActive("logger"));
 }
 
-Status logScheduledQueryLogItem(const osquery::ScheduledQueryLogItem& results,
-                                const std::string& receiver) {
+Status logQueryLogItem(const QueryLogItem& results,
+                       const std::string& receiver) {
   std::string json;
   Status status;
   if (FLAGS_log_result_events) {
-    status = serializeScheduledQueryLogItemAsEventsJSON(results, json);
+    status = serializeQueryLogItemAsEventsJSON(results, json);
   } else {
-    status = serializeScheduledQueryLogItemJSON(results, json);
+    status = serializeQueryLogItemJSON(results, json);
   }
   if (!status.ok()) {
     return status;
   }
-  return logString(json, receiver);
+  return logString(json, "event", receiver);
+}
+
+Status logSnapshotQuery(const QueryLogItem& item) {
+  std::string json;
+  if (!serializeQueryLogItemJSON(item, json)) {
+    return Status(1, "Could not serialize snapshot");
+  }
+  return Registry::call("logger", {{"snapshot", json}});
+}
+
+Status logHealthStatus(const QueryLogItem& item) {
+  std::string json;
+  if (!serializeQueryLogItemJSON(item, json)) {
+    return Status(1, "Could not serialize health");
+  }
+  return Registry::call("logger", {{"health", json}});
 }
 }

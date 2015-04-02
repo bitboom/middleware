@@ -194,6 +194,10 @@ static int xFilter(sqlite3_vtab_cursor *pVtabCursor,
 
   for (size_t i = 0; i < argc; ++i) {
     auto expr = (const char *)sqlite3_value_text(argv[i]);
+    if (expr == nullptr) {
+      // SQLite did not expose the expression value.
+      continue;
+    }
     // Set the expression from SQLite's now-populated argv.
     pVtab->content->constraints[i].second.expr = std::string(expr);
     // Add the constraint to the column-sorted query request map.
@@ -235,28 +239,16 @@ static int xFilter(sqlite3_vtab_cursor *pVtabCursor,
 Status attachTableInternal(const std::string &name,
                            const std::string &statement,
                            sqlite3 *db) {
+  if (SQLiteDBManager::isDisabled(name)) {
+    VLOG(0) << "Table " << name << " is disabled, not attaching";
+    return Status(0, getStringForSQLiteReturnCode(0));
+  }
+
   // A static module structure does not need specific logic per-table.
   static sqlite3_module module = {
-      0,
-      xCreate,
-      xCreate,
-      xBestIndex,
-      xDestroy,
-      xDestroy,
-      xOpen,
-      xClose,
-      xFilter,
-      xNext,
-      xEof,
-      xColumn,
-      xRowid,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
+      0,      xCreate, xCreate, xBestIndex, xDestroy, xDestroy, xOpen,
+      xClose, xFilter, xNext,   xEof,       xColumn,  xRowid,   0,
+      0,      0,       0,       0,          0,        0,
   };
 
   // Note, if the clientData API is used then this will save a registry call
@@ -265,7 +257,7 @@ Status attachTableInternal(const std::string &name,
   if (rc == SQLITE_OK || rc == SQLITE_MISUSE) {
     auto format =
         "CREATE VIRTUAL TABLE temp." + name + " USING " + name + statement;
-    rc = sqlite3_exec(db, format.c_str(), 0, 0, 0);
+    rc = sqlite3_exec(db, format.c_str(), nullptr, nullptr, 0);
   } else {
     LOG(ERROR) << "Error attaching table: " << name << " (" << rc << ")";
   }
@@ -274,7 +266,7 @@ Status attachTableInternal(const std::string &name,
 
 Status detachTableInternal(const std::string &name, sqlite3 *db) {
   auto format = "DROP TABLE IF EXISTS temp." + name;
-  int rc = sqlite3_exec(db, format.c_str(), 0, 0, 0);
+  int rc = sqlite3_exec(db, format.c_str(), nullptr, nullptr, 0);
   if (rc != SQLITE_OK) {
     LOG(ERROR) << "Error detaching table: " << name << " (" << rc << ")";
   }

@@ -16,6 +16,7 @@
 
 #include <gtest/gtest.h>
 
+#include <osquery/database.h>
 #include <osquery/events.h>
 #include <osquery/tables.h>
 
@@ -36,6 +37,7 @@ class EventsTests : public ::testing::Test {
 // The most basic event publisher uses useless Subscription/Event.
 class BasicEventPublisher
     : public EventPublisher<SubscriptionContext, EventContext> {};
+
 class AnotherBasicEventPublisher
     : public EventPublisher<SubscriptionContext, EventContext> {};
 
@@ -139,7 +141,7 @@ TEST_F(EventsTests, test_create_subscription) {
 
   // Make sure a subscription cannot be added for a non-existent event type.
   // Note: It normally would not make sense to create a blank subscription.
-  auto subscription = Subscription::create();
+  auto subscription = Subscription::create("FakeSubscriber");
   auto status = EventFactory::addSubscription("FakePublisher", subscription);
   EXPECT_FALSE(status.ok());
 
@@ -158,7 +160,7 @@ TEST_F(EventsTests, test_multiple_subscriptions) {
   auto pub = std::make_shared<BasicEventPublisher>();
   EventFactory::registerEventPublisher(pub);
 
-  auto subscription = Subscription::create();
+  auto subscription = Subscription::create("subscriber");
   status = EventFactory::addSubscription("publisher", subscription);
   status = EventFactory::addSubscription("publisher", subscription);
 
@@ -234,7 +236,7 @@ TEST_F(EventsTests, test_custom_subscription) {
   sc->smallest = -1;
 
   // Step 3, add the subscription to the event type
-  status = EventFactory::addSubscription("TestPublisher", sc);
+  status = EventFactory::addSubscription("TestPublisher", "TestSubscriber", sc);
   EXPECT_TRUE(status.ok());
   EXPECT_EQ(pub->numSubscriptions(), 1);
 
@@ -274,14 +276,13 @@ Status TestTheeCallback(EventContextRef context, const void* user_data) {
 }
 
 class FakeEventSubscriber : public EventSubscriber<FakeEventPublisher> {
-  DECLARE_SUBSCRIBER("FakeSubscriber");
-
  public:
   bool bellHathTolled;
   bool contextBellHathTolled;
   bool shouldFireBethHathTolled;
 
   FakeEventSubscriber() {
+    setName("FakeSubscriber");
     bellHathTolled = false;
     contextBellHathTolled = false;
     shouldFireBethHathTolled = false;
@@ -316,7 +317,7 @@ class FakeEventSubscriber : public EventSubscriber<FakeEventPublisher> {
 TEST_F(EventsTests, test_event_sub) {
   auto sub = std::make_shared<FakeEventSubscriber>();
   EXPECT_EQ(sub->type(), "FakePublisher");
-  EXPECT_EQ(sub->name(), "FakeSubscriber");
+  EXPECT_EQ(sub->getName(), "FakeSubscriber");
 }
 
 TEST_F(EventsTests, test_event_sub_subscribe) {
@@ -357,7 +358,8 @@ TEST_F(EventsTests, test_fire_event) {
   auto pub = std::make_shared<BasicEventPublisher>();
   status = EventFactory::registerEventPublisher(pub);
 
-  auto subscription = Subscription::create();
+  auto sub = std::make_shared<FakeEventSubscriber>();
+  auto subscription = Subscription::create("FakeSubscriber");
   subscription->callback = TestTheeCallback;
   status = EventFactory::addSubscription("publisher", subscription);
 
@@ -366,7 +368,7 @@ TEST_F(EventsTests, test_fire_event) {
   pub->fire(ec, 0);
   EXPECT_EQ(kBellHathTolled, 1);
 
-  auto second_subscription = Subscription::create();
+  auto second_subscription = Subscription::create("FakeSubscriber");
   status = EventFactory::addSubscription("publisher", second_subscription);
 
   // Now there are two subscriptions (one sans callback).
@@ -378,11 +380,4 @@ TEST_F(EventsTests, test_fire_event) {
   pub->fire(ec, 0);
   EXPECT_EQ(kBellHathTolled, 4);
 }
-}
-
-int main(int argc, char* argv[]) {
-  testing::InitGoogleTest(&argc, argv);
-  int status = RUN_ALL_TESTS();
-  boost::filesystem::remove_all(osquery::kTestingEventsDBPath);
-  return status;
 }

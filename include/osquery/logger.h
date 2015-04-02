@@ -25,7 +25,7 @@ DECLARE_bool(disable_logging);
 DECLARE_string(logger_plugin);
 
 /**
- * @breif An internal severity set mapping to Glog's LogSeverity levels.
+ * @brief An internal severity set mapping to Glog's LogSeverity levels.
  */
 enum StatusLogSeverity {
   O_INFO = 0,
@@ -121,7 +121,7 @@ class LoggerPlugin : public Plugin {
    * logs generated between program launch and logger start.
    *
    * The logger initialization is called once CLI flags have been parsed, the
-   * registry items are constructed, extension routes broadcased and extension
+   * registry items are constructed, extension routes broadcasted and extension
    * plugins discovered (as a logger may be an extension plugin) and the config
    * has been loaded (which may include additional CLI flag-options).
    *
@@ -131,9 +131,9 @@ class LoggerPlugin : public Plugin {
    * osquery logger's `init` method is called.
    *
    * The return status of `init` is very important. If a success is returned
-   * then the glog log sink stays active and now forwards every status log
+   * then the Glog log sink stays active and now forwards every status log
    * to the logger's `logStatus` method. If a failure is returned this means
-   * the logger does not support status logging and glog should continue
+   * the logger does not support status logging and Glog should continue
    * as the only status log sink.
    *
    * @param binary_name The string name of the process (argv[0]).
@@ -148,19 +148,39 @@ class LoggerPlugin : public Plugin {
   }
 
   /**
-   * @brief If the active logger's `init` method returned success then glog
+   * @brief If the active logger's `init` method returned success then Glog
    * log lines will be collected, and forwarded to `logStatus`.
    *
    * `logStatus` and `init` are tightly coupled. Glog log lines will ONLY be
    * forwarded to `logStatus` if the logger's `init` method returned success.
    *
-   * @param log A vector of parsed glog log lines.
+   * @param log A vector of parsed Glog log lines.
    * @return Status non-op indicating success or failure.
    */
   virtual Status logStatus(const std::vector<StatusLogLine>& log) {
     return Status(1, "Not enabled");
   }
+
+  /**
+   * @brief Optionally handle snapshot query results separately from events.
+   *
+   * If a logger plugin wants to write snapshot query results (potentially
+   * large amounts of data) to a specific sink it should implement logSnapshot.
+   * Otherwise the serialized log item data will be forwarded to logString.
+   *
+   * @param s A special log item will complete results from a query.
+   * @return log status
+   */
+  virtual Status logSnapshot(const std::string& s) { return logString(s); }
+
+  /// An optional health logging facility.
+  virtual Status logHealth(const std::string& s) {
+    return Status(1, "Not used");
+  }
 };
+
+/// Set the verbose mode, changes Glog's sinking logic and will affect plugins.
+void setVerboseLevel();
 
 /// Start status logging to a buffer until the logger plugin is online.
 void initStatusLogger(const std::string& name);
@@ -190,11 +210,11 @@ void initLogger(const std::string& name, bool forward_all = false);
  * log normal osquery operations, use Google Logging.
  *
  * @param s the string to log
+ * @param category a category/metadata key
  *
- * @return an instance of osquery::Status, indicating the success or failure
- * of the operation.
+ * @return Status indicating the success or failure of the operation
  */
-Status logString(const std::string& s);
+Status logString(const std::string& message, const std::string& category);
 
 /**
  * @brief Log a string using a specific logger receiver.
@@ -202,35 +222,53 @@ Status logString(const std::string& s);
  * Note that this method should only be used to log results. If you'd like to
  * log normal osquery operations, use Google Logging.
  *
- * @param s the string to log
+ * @param message the string to log
+ * @param category a category/metadata key
  * @param receiver a string representing the log receiver to use
  *
- * @return an instance of osquery::Status, indicating the success or failure
- * of the operation.
+ * @return Status indicating the success or failure of the operation
  */
-Status logString(const std::string& s, const std::string& receiver);
+Status logString(const std::string& message,
+                 const std::string& category,
+                 const std::string& receiver);
 
 /**
- * @brief Directly log results of scheduled queries to the default receiver
+ * @brief Log results of scheduled queries to the default receiver
  *
  * @param item a struct representing the results of a scheduled query
  *
- * @return an instance of osquery::Status, indicating the success or failure
- * of the operation.
+ * @return Status indicating the success or failure of the operation
  */
-Status logScheduledQueryLogItem(const ScheduledQueryLogItem& item);
+Status logQueryLogItem(const QueryLogItem& item);
 
 /**
- * @brief Directly log results of scheduled queries to a specified receiver
+ * @brief Log results of scheduled queries to a specified receiver
  *
  * @param item a struct representing the results of a scheduled query
  * @param receiver a string representing the log receiver to use
  *
- * @return an instance of osquery::Status, indicating the success or failure
- * of the operation.
+ * @return Status indicating the success or failure of the operation
  */
-Status logScheduledQueryLogItem(const ScheduledQueryLogItem& item,
-                                const std::string& receiver);
+Status logQueryLogItem(const QueryLogItem& item, const std::string& receiver);
+
+/**
+ * @brief Log raw results from a query (or a snapshot scheduled query).
+ *
+ * @param results the unmangled results from the query planner.
+ *
+ * @return Status indicating the success or failure of the operation
+ */
+Status logSnapshotQuery(const QueryLogItem& item);
+
+/**
+ * @brief Log the worker's health along with health of each query.
+ *
+ * @param results the query results from the osquery schedule appended with a
+ * row of health from the worker.
+ *
+ * @return Status indicating the success or failure of the operation
+ */
+Status logHealthStatus(const QueryLogItem& item);
 
 /**
  * @brief Logger plugin registry.

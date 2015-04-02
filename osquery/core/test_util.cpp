@@ -19,13 +19,7 @@
 
 #include "osquery/core/test_util.h"
 
-namespace pt = boost::property_tree;
-
 namespace osquery {
-
-const std::string kTestQuery = "SELECT * FROM test_table";
-
-const std::string kTestDataPath = "../../../tools/tests/";
 
 QueryData getTestDBExpectedResults() {
   QueryData d;
@@ -92,14 +86,14 @@ std::vector<std::pair<std::string, QueryData> > getTestDBResultStream() {
   return results;
 }
 
-osquery::ScheduledQuery getOsqueryScheduledQuery() {
+ScheduledQuery getOsqueryScheduledQuery() {
   ScheduledQuery sq;
   sq.query = "SELECT filename FROM fs WHERE path = '/bin' ORDER BY filename";
   sq.interval = 5;
   return sq;
 }
 
-std::pair<boost::property_tree::ptree, Row> getSerializedRow() {
+std::pair<pt::ptree, Row> getSerializedRow() {
   Row r;
   r["foo"] = "bar";
   r["meaning_of_life"] = "42";
@@ -109,7 +103,7 @@ std::pair<boost::property_tree::ptree, Row> getSerializedRow() {
   return std::make_pair(arr, r);
 }
 
-std::pair<boost::property_tree::ptree, QueryData> getSerializedQueryData() {
+std::pair<pt::ptree, QueryData> getSerializedQueryData() {
   auto r = getSerializedRow();
   QueryData q = {r.second, r.second};
   pt::ptree arr;
@@ -118,7 +112,7 @@ std::pair<boost::property_tree::ptree, QueryData> getSerializedQueryData() {
   return std::make_pair(arr, q);
 }
 
-std::pair<boost::property_tree::ptree, DiffResults> getSerializedDiffResults() {
+std::pair<pt::ptree, DiffResults> getSerializedDiffResults() {
   auto qd = getSerializedQueryData();
   DiffResults diff_results;
   diff_results.added = qd.second;
@@ -133,50 +127,27 @@ std::pair<boost::property_tree::ptree, DiffResults> getSerializedDiffResults() {
 
 std::pair<std::string, DiffResults> getSerializedDiffResultsJSON() {
   auto results = getSerializedDiffResults();
-
   std::ostringstream ss;
   pt::write_json(ss, results.first, false);
-
   return std::make_pair(ss.str(), results.second);
 }
 
-std::pair<pt::ptree, HistoricalQueryResults>
-getSerializedHistoricalQueryResults() {
-  auto qd = getSerializedQueryData();
-  auto dr = getSerializedDiffResults();
-  HistoricalQueryResults r;
-  r.mostRecentResults.first = 2;
-  r.mostRecentResults.second = qd.second;
-
-  pt::ptree root;
-
-  pt::ptree mostRecentResults;
-  mostRecentResults.add_child("2", qd.first);
-  root.add_child("mostRecentResults", mostRecentResults);
-
-  return std::make_pair(root, r);
-}
-
-std::pair<std::string, HistoricalQueryResults>
-getSerializedHistoricalQueryResultsJSON() {
-  auto results = getSerializedHistoricalQueryResults();
-
+std::pair<std::string, QueryData> getSerializedQueryDataJSON() {
+  auto results = getSerializedQueryData();
   std::ostringstream ss;
   pt::write_json(ss, results.first, false);
-
   return std::make_pair(ss.str(), results.second);
 }
 
-std::pair<boost::property_tree::ptree, ScheduledQueryLogItem>
-getSerializedScheduledQueryLogItem() {
-  ScheduledQueryLogItem i;
+std::pair<pt::ptree, QueryLogItem> getSerializedQueryLogItem() {
+  QueryLogItem i;
   pt::ptree root;
   auto dr = getSerializedDiffResults();
-  i.diffResults = dr.second;
+  i.results = dr.second;
   i.name = "foobar";
-  i.calendarTime = "Mon Aug 25 12:10:57 2014";
-  i.unixTime = 1408993857;
-  i.hostIdentifier = "foobaz";
+  i.calendar_time = "Mon Aug 25 12:10:57 2014";
+  i.time = 1408993857;
+  i.identifier = "foobaz";
   root.add_child("diffResults", dr.first);
   root.put<std::string>("name", "foobar");
   root.put<std::string>("hostIdentifier", "foobaz");
@@ -185,9 +156,8 @@ getSerializedScheduledQueryLogItem() {
   return std::make_pair(root, i);
 }
 
-std::pair<std::string, ScheduledQueryLogItem>
-getSerializedScheduledQueryLogItemJSON() {
-  auto results = getSerializedScheduledQueryLogItem();
+std::pair<std::string, QueryLogItem> getSerializedQueryLogItemJSON() {
+  auto results = getSerializedQueryLogItem();
 
   std::ostringstream ss;
   pt::write_json(ss, results.first, false);
@@ -223,11 +193,19 @@ std::string getEtcHostsContent() {
   return content;
 }
 
+std::string getEtcProtocolsContent() {
+  std::string content;
+  readFile(kTestDataPath + "test_protocols.txt", content);
+  return content;
+}
+
 QueryData getEtcHostsExpectedResults() {
   Row row1;
   Row row2;
   Row row3;
   Row row4;
+  Row row5;
+  Row row6;
 
   row1["address"] = "127.0.0.1";
   row1["hostnames"] = "localhost";
@@ -237,11 +215,36 @@ QueryData getEtcHostsExpectedResults() {
   row3["hostnames"] = "localhost";
   row4["address"] = "fe80::1%lo0";
   row4["hostnames"] = "localhost";
-  return {row1, row2, row3, row4};
+  row5["address"] = "127.0.0.1";
+  row5["hostnames"] = "example.com example";
+  row6["address"] = "127.0.0.1";
+  row6["hostnames"] = "example.net";
+  return {row1, row2, row3, row4, row5, row6};
 }
 
 ::std::ostream& operator<<(::std::ostream& os, const Status& s) {
   return os << "Status(" << s.getCode() << ", \"" << s.getMessage() << "\")";
+}
+
+QueryData getEtcProtocolsExpectedResults() {
+  Row row1;
+  Row row2;
+  Row row3;
+
+  row1["name"] = "ip";
+  row1["number"] = "0";
+  row1["alias"] = "IP";
+  row1["comment"] = "internet protocol, pseudo protocol number";
+  row2["name"] = "icmp";
+  row2["number"] = "1";
+  row2["alias"] = "ICMP";
+  row2["comment"] = "internet control message protocol";
+  row3["name"] = "tcp";
+  row3["number"] = "6";
+  row3["alias"] = "TCP";
+  row3["comment"] = "transmission control protocol";
+
+  return {row1, row2, row3};
 }
 
 void createMockFileStructure() {

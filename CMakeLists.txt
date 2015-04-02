@@ -35,7 +35,7 @@ ADD_DEFINITIONS("-fPIC")
 #ADD_DEFINITIONS("-pedantic-errors")
 
 # TODO(sangwan.kwon): Get version from packing spec.
-SET(OSQUERY_BUILD_VERSION "1.4.4")
+SET(OSQUERY_BUILD_VERSION "1.4.5")
 
 # Set various platform/platform-version/build version/etc defines.
 ADD_DEFINITIONS(-DOSQUERY_BUILD_VERSION=${OSQUERY_BUILD_VERSION}

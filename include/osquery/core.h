@@ -29,6 +29,10 @@
 #endif
 // clang-format on
 
+#ifndef __constructor__
+#define __constructor__ __attribute__((constructor))
+#endif
+
 /// A configuration error is catastrophic and should exit the watcher.
 #define EXIT_CATASTROPHIC 78
 
@@ -107,8 +111,8 @@ class Initializer {
   void initWorker(const std::string& name);
   /// Initialize the osquery watcher, optionally spawn a worker.
   void initWatcher();
-  /// Set the config and logger plugins, optionally depend on an extension.
-  void initConfigLogger();
+  /// Set and wait for an active plugin optionally broadcasted.
+  void initActivePlugin(const std::string& type, const std::string& name);
 
  private:
   int* argc_;
@@ -137,7 +141,7 @@ std::vector<std::string> split(const std::string& s,
  * @param delim the delimiter which you'd like to split the string by.
  * @param occurences the number of times to split by delim.
  *
- * @return a vector of strings split by delim for occurences.
+ * @return a vector of strings split by delim for occurrences.
  */
 std::vector<std::string> split(const std::string& s,
                                const std::string& delim,

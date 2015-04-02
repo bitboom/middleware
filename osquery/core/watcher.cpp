@@ -21,6 +21,7 @@
 #include <osquery/sql.h>
 
 #include "osquery/core/watcher.h"
+#include "osquery/dispatcher/dispatcher.h"
 
 extern char** environ;
 
@@ -30,10 +31,10 @@ namespace osquery {
 
 const std::map<WatchdogLimitType, std::vector<size_t> > kWatchdogLimits = {
     // Maximum MB worker can privately allocate.
-    {MEMORY_LIMIT, {50, 30, 10, 10}},
+    {MEMORY_LIMIT, {50, 30, 10, 1000}},
     // Percent of user or system CPU worker can utilize for LATENCY_LIMIT
     // seconds.
-    {UTILIZATION_LIMIT, {90, 80, 60, 50}},
+    {UTILIZATION_LIMIT, {90, 80, 60, 1000}},
     // Number of seconds the worker should run, else consider the exit fatal.
     {RESPAWN_LIMIT, {20, 20, 20, 5}},
     // If the worker respawns too quickly, backoff on creating additional.
@@ -41,7 +42,8 @@ const std::map<WatchdogLimitType, std::vector<size_t> > kWatchdogLimits = {
     // Seconds of tolerable UTILIZATION_LIMIT sustained latency.
     {LATENCY_LIMIT, {12, 6, 3, 1}},
     // How often to poll for performance limit violations.
-    {INTERVAL, {3, 3, 3, 1}}, };
+    {INTERVAL, {3, 3, 3, 1}},
+};
 
 const std::string kExtensionExtension = ".ext";
 
@@ -215,7 +217,6 @@ bool WatcherRunner::watch(pid_t child) {
 
 void WatcherRunner::stopChild(pid_t child) {
   kill(child, SIGKILL);
-  child = 0;
 
   // Clean up the defunct (zombie) process.
   waitpid(-1, 0, WNOHANG);
@@ -234,7 +235,7 @@ bool WatcherRunner::isChildSane(pid_t child) {
   // Compare CPU utilization since last check.
   BIGINT_LITERAL footprint, user_time, system_time, parent;
   // IV is the check interval in seconds, and utilization is set per-second.
-  auto iv = getWorkerLimit(INTERVAL);
+  auto iv = std::max(getWorkerLimit(INTERVAL), (size_t)1);
 
   {
     WatcherLocker locker;
@@ -261,6 +262,20 @@ bool WatcherRunner::isChildSane(pid_t child) {
 
     // Check if the sustained difference exceeded the acceptable latency limit.
     sustained_latency = state.sustained_latency;
+
+    // Set the memory footprint as the amount of resident bytes allocated
+    // since the process image was created (estimate).
+    // A more-meaningful check would limit this to writable regions.
+    if (state.initial_footprint == 0) {
+      state.initial_footprint = footprint;
+    }
+
+    // Set the measured/limit-applied footprint to the post-launch allocations.
+    if (footprint < state.initial_footprint) {
+      footprint = 0;
+    } else {
+      footprint = footprint - state.initial_footprint;
+    }
   }
 
   // Only make a decision about the child sanity if it is still the watcher's
@@ -392,6 +407,8 @@ void WatcherWatcherRunner::enter() {
       // Watcher died, the worker must follow.
       VLOG(1) << "osqueryd worker (" << getpid()
               << ") detected killed watcher (" << watcher_ << ")";
+      Dispatcher::removeServices();
+      Dispatcher::joinServices();
       ::exit(EXIT_SUCCESS);
     }
     interruptableSleep(getWorkerLimit(INTERVAL) * 1000);

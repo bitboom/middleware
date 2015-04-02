@@ -1,6 +1,7 @@
 ADD_OSQUERY_LIBRARY(FALSE osquery_tables_linux events/linux/passwd_changes.cpp
-											   events/linux/file_changes.cpp
+											   events/linux/file_events.cpp
 											   events/linux/hardware_events.cpp
+											   networking/etc_protocols.cpp
 											   networking/linux/routes.cpp
 											   networking/linux/process_open_sockets.cpp
 											   networking/linux/arp_cache.cpp
@@ -36,4 +37,5 @@ ADD_OSQUERY_LIBRARY(TRUE osquery_tables  networking/utils.cpp
 										 system/system_controls.cpp
 										 system/logged_in_users.cpp)
 
-ADD_OSQUERY_TEST(FALSE osquery_etc_hosts_tests networking/etc_hosts_tests.cpp)
+FILE(GLOB OSQUERY_CROSS_TABLES_TESTS "[!u]*/tests/*.cpp")
+ADD_OSQUERY_TEST(FALSE ${OSQUERY_CROSS_TABLES_TESTS})

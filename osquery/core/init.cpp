@@ -9,13 +9,16 @@
  */
 
 #include <syslog.h>
+#include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
 
 #include <osquery/config.h>
 #include <osquery/core.h>
+#include <osquery/database.h>
 #include <osquery/events.h>
 #include <osquery/extensions.h>
 #include <osquery/flags.h>
@@ -25,11 +28,13 @@
 
 #include "osquery/core/watcher.h"
 
+namespace fs = boost::filesystem;
+
 namespace osquery {
 
 #define DESCRIPTION \
   "osquery %s, your OS as a high-performance relational database\n"
-#define EPILOG "\nosquery project page <http://osquery.io>.\n"
+#define EPILOG "\nosquery project page <https://osquery.io>.\n"
 #define OPTIONS \
   "\nosquery configuration options (set by config or CLI flags):\n\n"
 #define OPTIONS_SHELL "\nosquery shell-only CLI flags:\n\n"
@@ -44,7 +49,8 @@ namespace osquery {
   "been created. Please consider explicitly defining those "                  \
   "options as a different \n"                                                 \
   "path. Additionally, review the \"using osqueryd\" wiki page:\n"            \
-  " - https://github.com/facebook/osquery/wiki/using-osqueryd\n\n";
+  " - https://osquery.readthedocs.org/en/latest/introduction/using-osqueryd/" \
+  "\n\n";
 
 CLI_FLAG(bool,
          config_check,
@@ -54,8 +60,6 @@ CLI_FLAG(bool,
 #ifndef __APPLE__
 CLI_FLAG(bool, daemonize, false, "Run as daemon (osqueryd only)");
 #endif
-
-namespace fs = boost::filesystem;
 
 void printUsage(const std::string& binary, int tool) {
   // Parse help options before gflags. Only display osquery-related options.
@@ -94,11 +98,14 @@ Initializer::Initializer(int& argc, char**& argv, ToolType tool)
   std::srand(time(nullptr));
 
   // osquery implements a custom help/usage output.
-  std::string first_arg = (*argc_ > 1) ? std::string((*argv_)[1]) : "";
-  if ((first_arg == "--help" || first_arg == "-h" || first_arg == "-help") &&
-      tool != OSQUERY_TOOL_TEST) {
-    printUsage(binary_, tool_);
-    ::exit(0);
+  for (int i = 1; i < *argc_; i++) {
+    auto help = std::string((*argv_)[i]);
+    if ((help == "--help" || help == "-help" || help == "--h" ||
+         help == "-h") &&
+        tool != OSQUERY_TOOL_TEST) {
+      printUsage(binary_, tool_);
+      ::exit(0);
+    }
   }
 
 // To change the default config plugin, compile osquery with
@@ -113,10 +120,16 @@ Initializer::Initializer(int& argc, char**& argv, ToolType tool)
   FLAGS_logger_plugin = STR(OSQUERY_DEFAULT_LOGGER_PLUGIN);
 #endif
 
+  // Set version string from CMake build
+  GFLAGS_NAMESPACE::SetVersionString(OSQUERY_VERSION);
+
+  // Let gflags parse the non-help options/flags.
+  GFLAGS_NAMESPACE::ParseCommandLineFlags(
+      argc_, argv_, (tool == OSQUERY_TOOL_SHELL));
+
   if (tool == OSQUERY_TOOL_SHELL) {
     // The shell is transient, rewrite config-loaded paths.
-    osquery::FLAGS_disable_logging = true;
-
+    FLAGS_disable_logging = true;
     // Get the caller's home dir for temporary storage/state management.
     auto homedir = osqueryHomeDirectory();
     if (osquery::pathExists(homedir).ok() ||
@@ -126,13 +139,6 @@ Initializer::Initializer(int& argc, char**& argv, ToolType tool)
     }
   }
 
-  // Set version string from CMake build
-  GFLAGS_NAMESPACE::SetVersionString(OSQUERY_VERSION);
-
-  // Let gflags parse the non-help options/flags.
-  GFLAGS_NAMESPACE::ParseCommandLineFlags(
-      argc_, argv_, (tool == OSQUERY_TOOL_SHELL));
-
   // If the caller is checking configuration, disable the watchdog/worker.
   if (FLAGS_config_check) {
     FLAGS_disable_watchdog = true;
@@ -141,7 +147,12 @@ Initializer::Initializer(int& argc, char**& argv, ToolType tool)
   // Initialize the status and results logger.
   initStatusLogger(binary_);
   if (tool != OSQUERY_EXTENSION) {
-    VLOG(1) << "osquery initialized [version=" << OSQUERY_VERSION << "]";
+    if (isWorker()) {
+      VLOG(1) << "osquery worker initialized [watcher="
+              << getenv("OSQUERY_WORKER") << "]";
+    } else {
+      VLOG(1) << "osquery initialized [version=" << OSQUERY_VERSION << "]";
+    }
   } else {
     VLOG(1) << "osquery extension initialized [sdk=" << OSQUERY_SDK_VERSION
             << "]";
@@ -149,6 +160,11 @@ Initializer::Initializer(int& argc, char**& argv, ToolType tool)
 }
 
 void Initializer::initDaemon() {
+  if (FLAGS_config_check) {
+    // No need to daemonize, emit log lines, or create process mutexes.
+    return;
+  }
+
 #ifndef __APPLE__
   // OSX uses launchd to daemonize.
   if (osquery::FLAGS_daemonize) {
@@ -162,8 +178,8 @@ void Initializer::initDaemon() {
   syslog(
       LOG_NOTICE, "%s started [version=%s]", binary_.c_str(), OSQUERY_VERSION);
 
-  // check if /var/osquery exists
-  if ((Flag::isDefault("pidfile") || Flag::isDefault("db_path")) &&
+  // Check if /var/osquery exists
+  if ((Flag::isDefault("pidfile") || Flag::isDefault("database_path")) &&
       !isDirectory("/var/osquery")) {
     std::cerr << CONFIG_ERROR
   }
@@ -178,12 +194,12 @@ void Initializer::initDaemon() {
 
 void Initializer::initWatcher() {
   // The watcher takes a list of paths to autoload extensions from.
-  loadExtensions();
+  osquery::loadExtensions();
 
   // Add a watcher service thread to start/watch an optional worker and set
   // of optional extensions in the autoload paths.
   if (Watcher::hasManagedExtensions() || !FLAGS_disable_watchdog) {
-    Dispatcher::getInstance().addService(std::make_shared<WatcherRunner>(
+    Dispatcher::addService(std::make_shared<WatcherRunner>(
         *argc_, *argv_, !FLAGS_disable_watchdog));
   }
 
@@ -193,24 +209,27 @@ void Initializer::initWatcher() {
   // the extensions and worker process.
   if (!FLAGS_disable_watchdog) {
     Dispatcher::joinServices();
-    // Executation should never reach this point.
+    // Execution should never reach this point.
     ::exit(EXIT_FAILURE);
   }
 }
 
 void Initializer::initWorker(const std::string& name) {
-  // Set the worker's process name.
+  // Clear worker's arguments.
   size_t name_size = strlen((*argv_)[0]);
   for (int i = 0; i < *argc_; i++) {
     if ((*argv_)[i] != nullptr) {
       memset((*argv_)[i], 0, strlen((*argv_)[i]));
     }
   }
-  strncpy((*argv_)[0], name.c_str(), name_size);
+
+  // Set the worker's process name.
+  if (name.size() <= name_size) {
+    std::copy(name.begin(), name.end(), (*argv_)[0]);
+  }
 
   // Start a watcher watcher thread to exit the process if the watcher exits.
-  Dispatcher::getInstance().addService(
-      std::make_shared<WatcherWatcherRunner>(getppid()));
+  Dispatcher::addService(std::make_shared<WatcherWatcherRunner>(getppid()));
 }
 
 void Initializer::initWorkerWatcher(const std::string& name) {
@@ -224,26 +243,15 @@ void Initializer::initWorkerWatcher(const std::string& name) {
 
 bool Initializer::isWorker() { return (getenv("OSQUERY_WORKER") != nullptr); }
 
-void Initializer::initConfigLogger() {
+void Initializer::initActivePlugin(const std::string& type,
+                                   const std::string& name) {
   // Use a delay, meaning the amount of milliseconds waited for extensions.
   size_t delay = 0;
   // The timeout is the maximum time in seconds to wait for extensions.
   size_t timeout = atoi(FLAGS_extensions_timeout.c_str());
-  while (!Registry::setActive("config", FLAGS_config_plugin)) {
-    // If there is at least 1 autoloaded extension, it may broadcast a route
-    // to the active config plugin.
+  while (!Registry::setActive(type, name)) {
     if (!Watcher::hasManagedExtensions() || delay > timeout * 1000) {
-      LOG(ERROR) << "Config plugin not found: " << FLAGS_config_plugin;
-      ::exit(EXIT_CATASTROPHIC);
-    }
-    ::usleep(kExtensionInitializeMLatency * 1000);
-    delay += kExtensionInitializeMLatency;
-  }
-
-  // Try the same wait for a logger pluing too.
-  while (!Registry::setActive("logger", FLAGS_logger_plugin)) {
-    if (!Watcher::hasManagedExtensions() || delay > timeout * 1000) {
-      LOG(ERROR) << "Logger plugin not found: " << FLAGS_logger_plugin;
+      LOG(ERROR) << "Active " << type << " plugin not found: " << name;
       ::exit(EXIT_CATASTROPHIC);
     }
     ::usleep(kExtensionInitializeMLatency * 1000);
@@ -258,8 +266,8 @@ void Initializer::start() {
   // Bind to an extensions socket and wait for registry additions.
   osquery::startExtensionManager();
 
-  // Then set the config/logger plugins, which use a single/active plugin.
-  initConfigLogger();
+  // Then set the config plugin, which uses a single/active plugin.
+  initActivePlugin("config", FLAGS_config_plugin);
 
   // Run the setup for all lazy registries (tables, SQL).
   Registry::setUp();
@@ -288,11 +296,12 @@ void Initializer::start() {
   }
 
   // Initialize the status and result plugin logger.
+  initActivePlugin("logger", FLAGS_logger_plugin);
   initLogger(binary_);
 
   // Start event threads.
   osquery::attachEvents();
-  osquery::EventFactory::delay();
+  EventFactory::delay();
 }
 
 void Initializer::shutdown() {

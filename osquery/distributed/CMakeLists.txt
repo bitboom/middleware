@@ -1,3 +1,4 @@
 ADD_OSQUERY_LIBRARY(TRUE osquery_distributed distributed.cpp)
 
-ADD_OSQUERY_TEST(FALSE osquery_distributed_tests distributed_tests.cpp)
+FILE(GLOB OSQUERY_DISTRIBUTED_TESTS "tests/*.cpp")
+ADD_OSQUERY_TEST(FALSE ${OSQUERY_DISTRIBUTED_TESTS})

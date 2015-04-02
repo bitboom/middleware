@@ -15,6 +15,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <osquery/core.h>
+#include <osquery/database.h>
 #include <osquery/events.h>
 #include <osquery/flags.h>
 #include <osquery/logger.h>
@@ -65,11 +66,14 @@ void EventPublisherPlugin::fire(const EventContextRef& ec, EventTime time) {
     }
 
     // Set the optional string-verion of the time for DB columns.
-    ec->time_string = boost::lexical_cast<std::string>(ec->time);
+    ec->time_string = std::to_string(ec->time);
   }
 
   for (const auto& subscription : subscriptions_) {
-    fireCallback(subscription, ec);
+    auto es = EventFactory::getEventSubscriber(subscription->subscriber_name);
+    if (es->state() == SUBSCRIBER_RUNNING) {
+      fireCallback(subscription, ec);
+    }
   }
 }
 
@@ -479,32 +483,39 @@ Status EventFactory::registerEventSubscriber(const PluginRef& sub) {
   }
 
   if (specialized_sub == nullptr || specialized_sub.get() == nullptr) {
-    return Status(0, "Invalid subscriber");
+    return Status(1, "Invalid subscriber");
   }
 
   // Let the module initialize any Subscriptions.
-  specialized_sub->init();
+  auto status = specialized_sub->init();
 
   auto& ef = EventFactory::getInstance();
-  ef.event_subs_[specialized_sub->name()] = specialized_sub;
-  return Status(0, "OK");
+  ef.event_subs_[specialized_sub->getName()] = specialized_sub;
+
+  // Set state of subscriber.
+  if (!status.ok()) {
+    specialized_sub->state(SUBSCRIBER_FAILED);
+    return Status(1, status.getMessage());
+  } else {
+    specialized_sub->state(SUBSCRIBER_RUNNING);
+    return Status(0, "OK");
+  }
 }
 
 Status EventFactory::addSubscription(EventPublisherID& type_id,
+                                     EventSubscriberID& name_id,
                                      const SubscriptionContextRef& mc,
                                      EventCallback cb,
                                      void* user_data) {
-  auto subscription = Subscription::create(mc, cb, user_data);
+  auto subscription = Subscription::create(name_id, mc, cb, user_data);
   return EventFactory::addSubscription(type_id, subscription);
 }
 
 Status EventFactory::addSubscription(EventPublisherID& type_id,
                                      const SubscriptionRef& subscription) {
-  EventPublisherRef publisher;
-  try {
-    publisher = getInstance().getEventPublisher(type_id);
-  } catch (std::out_of_range& e) {
-    return Status(1, "No event type found");
+  EventPublisherRef publisher = getInstance().getEventPublisher(type_id);
+  if (publisher == nullptr) {
+    return Status(1, "Unknown event publisher");
   }
 
   // The event factory is responsible for configuring the event types.
@@ -526,16 +537,22 @@ size_t EventFactory::numSubscriptions(EventPublisherID& type_id) {
 EventPublisherRef EventFactory::getEventPublisher(EventPublisherID& type_id) {
   if (getInstance().event_pubs_.count(type_id) == 0) {
     LOG(ERROR) << "Requested unknown event publisher: " + type_id;
+    return nullptr;
   }
   return getInstance().event_pubs_.at(type_id);
 }
 
 EventSubscriberRef EventFactory::getEventSubscriber(
     EventSubscriberID& name_id) {
-  if (getInstance().event_subs_.count(name_id) == 0) {
+  if (!exists(name_id)) {
     LOG(ERROR) << "Requested unknown event subscriber: " + name_id;
+    return nullptr;
   }
   return getInstance().event_subs_.at(name_id);
+}
+
+bool EventFactory::exists(EventSubscriberID& name_id) {
+  return (getInstance().event_subs_.count(name_id) > 0);
 }
 
 Status EventFactory::deregisterEventPublisher(const EventPublisherRef& pub) {
@@ -614,7 +631,10 @@ void attachEvents() {
 
   const auto& subscribers = Registry::all("event_subscriber");
   for (const auto& subscriber : subscribers) {
-    EventFactory::registerEventSubscriber(subscriber.second);
+    auto status = EventFactory::registerEventSubscriber(subscriber.second);
+    if (!status.ok()) {
+      LOG(ERROR) << "Error registering subscriber: " << status.getMessage();
+    }
   }
 }
 }

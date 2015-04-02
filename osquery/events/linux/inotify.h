@@ -17,7 +17,6 @@
 #include <sys/stat.h>
 
 #include <osquery/events.h>
-#include <osquery/status.h>
 
 namespace osquery {
 
@@ -71,6 +70,10 @@ struct INotifyEventContext : public EventContext {
   std::string path;
   /// A string action representing the event action `inotify` bit.
   std::string action;
+  /// A no-op event transaction id.
+  uint32_t transaction_id;
+
+  INotifyEventContext() : event(nullptr), transaction_id(0) {}
 };
 
 typedef std::shared_ptr<INotifyEventContext> INotifyEventContextRef;
@@ -107,7 +110,8 @@ class INotifyEventPublisher
 
   Status run();
 
-  INotifyEventPublisher() : EventPublisher() { inotify_handle_ = -1; }
+  INotifyEventPublisher()
+      : EventPublisher(), inotify_handle_(-1), last_restart_(-1) {}
   /// Check if the application-global `inotify` handle is alive.
   bool isHandleOpen() { return inotify_handle_ > 0; }
 

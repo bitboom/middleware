@@ -27,14 +27,14 @@
 #error "Required -DOSQUERY_THRIFT=/path/to/thrift/gen-cpp"
 #endif
 
+namespace osquery {
+namespace extensions {
+
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
 using namespace apache::thrift::transport;
 using namespace apache::thrift::server;
 using namespace apache::thrift::concurrency;
-
-namespace osquery {
-namespace extensions {
 
 /**
  * @brief The Thrift API server used by an osquery Extension process.
@@ -123,8 +123,8 @@ class ExtensionManagerHandler : virtual public ExtensionManagerIf,
   /**
    * @brief Request an Extension removal and removal of Registry routes.
    *
-   * When an Extension process is gracefull killed it should deregister.
-   * Other priviledged tools may choose to deregister an Extension by
+   * When an Extension process is graceful killed it should deregister.
+   * Other privileged tools may choose to deregister an Extension by
    * the transient Extension's Route UUID, obtained using
    * ExtensionManagerHandler::extensions.
    *
@@ -165,7 +165,7 @@ class ExtensionManagerHandler : virtual public ExtensionManagerIf,
   /// removed.
   void refresh();
 
-  /// Maintain a map of extension UUID to metadata for tracking deregistrations.
+  /// Maintain a map of extension UUID to metadata for tracking deregistration.
   InternalExtensionList extensions_;
 };
 }
@@ -210,9 +210,9 @@ class ExtensionManagerWatcher : public ExtensionWatcher {
 class ExtensionRunner : public InternalRunnable {
  public:
   virtual ~ExtensionRunner();
-  ExtensionRunner(const std::string& manager_path, RouteUUID uuid) {
+  ExtensionRunner(const std::string& manager_path, RouteUUID uuid)
+      : uuid_(uuid) {
     path_ = getExtensionSocket(uuid, manager_path);
-    uuid_ = uuid;
   }
 
  public:
@@ -233,9 +233,8 @@ class ExtensionRunner : public InternalRunnable {
 class ExtensionManagerRunner : public InternalRunnable {
  public:
   virtual ~ExtensionManagerRunner();
-  explicit ExtensionManagerRunner(const std::string& manager_path) {
-    path_ = manager_path;
-  }
+  explicit ExtensionManagerRunner(const std::string& manager_path)
+      : path_(manager_path) {}
 
  public:
   void enter();
@@ -248,16 +247,16 @@ class ExtensionManagerRunner : public InternalRunnable {
 class EXInternal {
  public:
   explicit EXInternal(const std::string& path)
-      : socket_(new TSocket(path)),
-        transport_(new TBufferedTransport(socket_)),
-        protocol_(new TBinaryProtocol(transport_)) {}
+      : socket_(new extensions::TSocket(path)),
+        transport_(new extensions::TBufferedTransport(socket_)),
+        protocol_(new extensions::TBinaryProtocol(transport_)) {}
 
   virtual ~EXInternal() { transport_->close(); }
 
  protected:
-  OSQUERY_THRIFT_POINTER::shared_ptr<TSocket> socket_;
-  OSQUERY_THRIFT_POINTER::shared_ptr<TTransport> transport_;
-  OSQUERY_THRIFT_POINTER::shared_ptr<TProtocol> protocol_;
+  OSQUERY_THRIFT_POINTER::shared_ptr<extensions::TSocket> socket_;
+  OSQUERY_THRIFT_POINTER::shared_ptr<extensions::TTransport> transport_;
+  OSQUERY_THRIFT_POINTER::shared_ptr<extensions::TProtocol> protocol_;
 };
 
 /// Internal accessor for a client to an extension (from an extension manager).
