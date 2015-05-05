@@ -20,7 +20,7 @@
 
 #include <osquery/registry.h>
 #include <osquery/core.h>
-#include <osquery/database/results.h>
+#include <osquery/database.h>
 #include <osquery/status.h>
 
 /// Allow Tables to use "tracked" deprecated OS APIs.
@@ -33,7 +33,6 @@
   } while (0)
 
 namespace osquery {
-namespace tables {
 
 /**
  * @brief The SQLite type affinities are available as macros
@@ -52,6 +51,8 @@ namespace tables {
 #define BIGINT(x) boost::lexical_cast<std::string>(x)
 /// See the affinity type documentation for TEXT.
 #define UNSIGNED_BIGINT(x) boost::lexical_cast<std::string>(x)
+/// See the affinity type documentation for TEXT.
+#define DOUBLE(x) boost::lexical_cast<std::string>(x)
 
 /**
  * @brief The SQLite type affinities as represented as implementation literals.
@@ -68,6 +69,8 @@ namespace tables {
 #define BIGINT_LITERAL long long int
 /// See the literal type documentation for TEXT_LITERAL.
 #define UNSIGNED_BIGINT_LITERAL unsigned long long int
+/// See the literal type documentation for TEXT_LITERAL.
+#define DOUBLE_LITERAL double
 /// Cast an SQLite affinity type to the literal type.
 #define AS_LITERAL(literal, value) boost::lexical_cast<literal>(value)
 
@@ -82,13 +85,18 @@ typedef std::map<std::string, std::vector<std::string> > TableData;
  * If the query contains a join or where clause with a constraint operator and
  * expression the table generator may limit the data appropriately.
  */
-enum ConstraintOperator {
+enum ConstraintOperator : unsigned char {
   EQUALS = 2,
   GREATER_THAN = 4,
   LESS_THAN_OR_EQUALS = 8,
   LESS_THAN = 16,
   GREATER_THAN_OR_EQUALS = 32
 };
+
+/// Type for flags for what constraint operators are admissible.
+typedef unsigned char ConstraintOperatorFlag;
+/// Flag for any operator type.
+#define ANY_OP 0xFFU
 
 /**
  * @brief A Constraint is an operator and expression.
@@ -151,15 +159,28 @@ struct ConstraintList {
   }
 
   /**
-   * @brief Check and return if there are any constraints on this column.
+   * @brief Check and return if there are constraints on this column.
    *
    * A ConstraintList is used in a ConstraintMap with a column name as the
    * map index. Tables that act on optional constraints should check if any
-   * constraint was provided.
+   * constraint was provided.  The ops parameter serves to specify which
+   * operators we want to check existence for.
    *
+   * @param ops (Optional: default ANY_OP) The operators types to look for.
    * @return true if any constraint exists.
    */
-  bool exists() const { return (constraints_.size() > 0); }
+  bool exists(const ConstraintOperatorFlag ops = ANY_OP) const {
+    if (ops == ANY_OP) {
+      return (constraints_.size() > 0);
+    } else {
+      for (const struct Constraint &c : constraints_) {
+        if (c.op & ops) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
 
   /**
    * @brief Check if a constraint exist AND matches the type expression.
@@ -325,5 +346,4 @@ std::string columnDefinition(const TableColumns& columns);
 std::string columnDefinition(const PluginResponse& response);
 
 CREATE_LAZY_REGISTRY(TablePlugin, "table");
-}
 }

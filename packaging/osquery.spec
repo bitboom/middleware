@@ -1,5 +1,5 @@
 Name: osquery
-Version: 1.4.5
+Version: 1.4.7
 Release: 0
 License: Apache-2.0 and GPLv2
 Summary: A SQL powered operating system instrumentation, monitoring framework.
@@ -24,6 +24,7 @@ BuildRequires: readline-devel
 BuildRequires: pkgconfig(libprocps)
 BuildRequires: pkgconfig(libsystemd)
 BuildRequires: pkgconfig(openssl)
+BuildRequires: iptables-devel
 BuildRequires: python-jinja2
 Requires: glog
 Requires: gflag
@@ -38,6 +39,7 @@ Requires: thrift
 Requires: libreadline
 Requires: procps-ng
 Requires: libsystemd
+Requires: iptables
 
 %description
 Osquery exposes an operating system as a high-performance relational database.

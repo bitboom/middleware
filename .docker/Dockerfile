@@ -61,4 +61,4 @@ RUN apt-get install -qq python-pip && \
     pip install Jinja2
 
 # table dependencies
-RUN apt-get install -qq libprocps-dev libsystemd-dev libudev-dev
+RUN apt-get install -qq libprocps-dev libsystemd-dev libudev-dev iptables-dev

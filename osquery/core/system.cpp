@@ -22,7 +22,6 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include <osquery/core.h>
-#include <osquery/database/db_handle.h>
 #include <osquery/filesystem.h>
 #include <osquery/logger.h>
 #include <osquery/sql.h>
@@ -44,8 +43,7 @@ CLI_FLAG(bool,
          "Force osqueryd to kill previously-running daemons");
 
 std::string getHostname() {
-  char hostname[256]; // Linux max should be 64.
-  memset(hostname, 0, sizeof(hostname));
+  char hostname[256] = {0}; // Linux max should be 64.
   gethostname(hostname, sizeof(hostname) - 1);
   std::string hostname_string = std::string(hostname);
   boost::algorithm::trim(hostname_string);

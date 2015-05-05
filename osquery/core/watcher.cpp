@@ -10,6 +10,7 @@
 
 #include <cstring>
 
+#include <math.h>
 #include <sys/wait.h>
 #include <signal.h>
 
@@ -31,7 +32,7 @@ namespace osquery {
 
 const std::map<WatchdogLimitType, std::vector<size_t> > kWatchdogLimits = {
     // Maximum MB worker can privately allocate.
-    {MEMORY_LIMIT, {50, 30, 10, 1000}},
+    {MEMORY_LIMIT, {80, 50, 30, 1000}},
     // Percent of user or system CPU worker can utilize for LATENCY_LIMIT
     // seconds.
     {UTILIZATION_LIMIT, {90, 80, 60, 1000}},
@@ -171,7 +172,7 @@ bool WatcherRunner::ok() {
   return (Watcher::getWorker() >= 0 || Watcher::hasManagedExtensions());
 }
 
-void WatcherRunner::enter() {
+void WatcherRunner::start() {
   // Set worker performance counters to an initial state.
   Watcher::resetWorkerCounters(0);
   signal(SIGCHLD, childHandler);
@@ -223,8 +224,7 @@ void WatcherRunner::stopChild(pid_t child) {
 }
 
 bool WatcherRunner::isChildSane(pid_t child) {
-  auto rows =
-      SQL::selectAllFrom("processes", "pid", tables::EQUALS, INTEGER(child));
+  auto rows = SQL::selectAllFrom("processes", "pid", EQUALS, INTEGER(child));
   if (rows.size() == 0) {
     // Could not find worker process?
     return false;
@@ -233,13 +233,13 @@ bool WatcherRunner::isChildSane(pid_t child) {
   // Get the performance state for the worker or extension.
   size_t sustained_latency = 0;
   // Compare CPU utilization since last check.
-  BIGINT_LITERAL footprint, user_time, system_time, parent;
+  BIGINT_LITERAL footprint = 0, user_time = 0, system_time = 0, parent = 0;
   // IV is the check interval in seconds, and utilization is set per-second.
   auto iv = std::max(getWorkerLimit(INTERVAL), (size_t)1);
 
   {
     WatcherLocker locker;
-    auto state = Watcher::getState(child);
+    auto& state = Watcher::getState(child);
     try {
       parent = AS_LITERAL(BIGINT_LITERAL, rows[0].at("parent"));
       user_time = AS_LITERAL(BIGINT_LITERAL, rows[0].at("user_time")) / iv;
@@ -249,9 +249,9 @@ bool WatcherRunner::isChildSane(pid_t child) {
       state.sustained_latency = 0;
     }
 
-    // Check the different of CPU time used since last check.
-    if (state.user_time + getWorkerLimit(UTILIZATION_LIMIT) < user_time ||
-        state.system_time + getWorkerLimit(UTILIZATION_LIMIT) < system_time) {
+    // Check the difference of CPU time used since last check.
+    if (user_time - state.user_time > getWorkerLimit(UTILIZATION_LIMIT) ||
+        system_time - state.system_time > getWorkerLimit(UTILIZATION_LIMIT)) {
       state.sustained_latency++;
     } else {
       state.sustained_latency = 0;
@@ -292,7 +292,6 @@ bool WatcherRunner::isChildSane(pid_t child) {
     LOG(WARNING) << "osqueryd worker system performance limits exceeded";
     return false;
   }
-
   // Check if the private memory exceeds a memory limit.
   if (footprint > 0 && footprint > getWorkerLimit(MEMORY_LIMIT) * 1024 * 1024) {
     LOG(WARNING) << "osqueryd worker memory limits exceeded: " << footprint;
@@ -309,13 +308,15 @@ void WatcherRunner::createWorker() {
     if (Watcher::getState(Watcher::getWorker()).last_respawn_time >
         getUnixTime() - getWorkerLimit(RESPAWN_LIMIT)) {
       LOG(WARNING) << "osqueryd worker respawning too quickly";
+      Watcher::workerRestarted();
       interruptableSleep(getWorkerLimit(RESPAWN_DELAY) * 1000);
+      // Exponential back off for quickly-respawning clients.
+      interruptableSleep(pow(2, Watcher::workerRestartCount()) * 1000);
     }
   }
 
   // Get the path of the current process.
-  auto qd = SQL::selectAllFrom("processes", "pid", tables::EQUALS,
-    INTEGER(getpid()));
+  auto qd = SQL::selectAllFrom("processes", "pid", EQUALS, INTEGER(getpid()));
   if (qd.size() != 1 || qd[0].count("path") == 0 || qd[0]["path"].size() == 0) {
     LOG(ERROR) << "osquery watcher cannot determine process path";
     ::exit(EXIT_FAILURE);
@@ -327,6 +328,15 @@ void WatcherRunner::createWorker() {
     setenv("OSQUERY_EXTENSIONS", "true", 1);
   }
 
+  // Get the complete path of the osquery process binary.
+  auto exec_path = fs::system_complete(fs::path(qd[0]["path"]));
+  if (!safePermissions(
+          exec_path.parent_path().string(), exec_path.string(), true)) {
+    // osqueryd binary has become unsafe.
+    LOG(ERROR) << "osqueryd has unsafe permissions: " << exec_path.string();
+    ::exit(EXIT_FAILURE);
+  }
+
   auto worker_pid = fork();
   if (worker_pid < 0) {
     // Unrecoverable error, cannot create a worker process.
@@ -335,8 +345,6 @@ void WatcherRunner::createWorker() {
   } else if (worker_pid == 0) {
     // This is the new worker process, no watching needed.
     setenv("OSQUERY_WORKER", std::to_string(getpid()).c_str(), 1);
-    // Get the complete path of the osquery process binary.
-    auto exec_path = fs::system_complete(fs::path(qd[0]["path"]));
     execve(exec_path.string().c_str(), argv_, environ);
     // Code should never reach this point.
     LOG(ERROR) << "osqueryd could not start worker process";
@@ -401,14 +409,14 @@ bool WatcherRunner::createExtension(const std::string& extension) {
   return true;
 }
 
-void WatcherWatcherRunner::enter() {
+void WatcherWatcherRunner::start() {
   while (true) {
     if (getppid() != watcher_) {
       // Watcher died, the worker must follow.
       VLOG(1) << "osqueryd worker (" << getpid()
               << ") detected killed watcher (" << watcher_ << ")";
-      Dispatcher::removeServices();
-      Dispatcher::joinServices();
+      Dispatcher::stopServices();
+      // The watcher watcher is a thread. Do not join services after removing.
       ::exit(EXIT_SUCCESS);
     }
     interruptableSleep(getWorkerLimit(INTERVAL) * 1000);

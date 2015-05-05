@@ -21,6 +21,9 @@
 
 namespace osquery {
 
+/// Most tests will use binary or disk-backed content for parsing tests.
+std::string kTestDataPath = "../../tools/tests/";
+
 QueryData getTestDBExpectedResults() {
   QueryData d;
   Row row1;

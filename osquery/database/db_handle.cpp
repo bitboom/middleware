@@ -17,30 +17,69 @@
 #include <rocksdb/env.h>
 #include <rocksdb/options.h>
 
-#include <osquery/database/db_handle.h>
+#include <osquery/database.h>
 #include <osquery/filesystem.h>
 #include <osquery/logger.h>
 #include <osquery/status.h>
 
+#include "osquery/database/db_handle.h"
+
 namespace osquery {
+
+class RocksDatabasePlugin : public DatabasePlugin {
+ public:
+  /// Data retrieval method.
+  Status get(const std::string& domain,
+             const std::string& key,
+             std::string& value) const;
+
+  /// Data storage method.
+  Status put(const std::string& domain,
+             const std::string& key,
+             const std::string& value);
+
+  /// Data removal method.
+  Status remove(const std::string& domain, const std::string& k);
+
+  /// Key/index lookup method.
+  Status scan(const std::string& domain,
+              std::vector<std::string>& results) const;
+};
+
+/// Backing-storage provider for osquery internal/core.
+REGISTER_INTERNAL(RocksDatabasePlugin, "database", "rocks");
 
 /////////////////////////////////////////////////////////////////////////////
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
-const std::string kConfigurations = "configurations";
+const std::string kPersistentSettings = "configurations";
 const std::string kQueries = "queries";
 const std::string kEvents = "events";
+const std::string kLogs = "logs";
 
-const std::vector<std::string> kDomains = {kConfigurations, kQueries, kEvents};
+/**
+ * @brief A const vector of column families in RocksDB
+ *
+ * RocksDB has a concept of "column families" which are kind of like tables
+ * in other databases. kDomainds is populated with a list of all column
+ * families. If a string exists in kDomains, it's a column family in the
+ * database.
+ */
+const std::vector<std::string> kDomains = {
+    kPersistentSettings, kQueries, kEvents, kLogs
+};
 
-FLAG(string,
-     database_path,
-     "/var/osquery/osquery.db",
-     "If using a disk-based backing store, specify a path");
+CLI_FLAG(string,
+         database_path,
+         "/var/osquery/osquery.db",
+         "If using a disk-based backing store, specify a path");
 FLAG_ALIAS(std::string, db_path, database_path);
 
-FLAG(bool, database_in_memory, false, "Keep osquery backing-store in memory");
+CLI_FLAG(bool,
+         database_in_memory,
+         false,
+         "Keep osquery backing-store in memory");
 FLAG_ALIAS(bool, use_in_memory_database, database_in_memory);
 
 /////////////////////////////////////////////////////////////////////////////
@@ -50,6 +89,10 @@ FLAG_ALIAS(bool, use_in_memory_database, database_in_memory);
 DBHandle::DBHandle(const std::string& path, bool in_memory) {
   options_.create_if_missing = true;
   options_.create_missing_column_families = true;
+  options_.info_log_level = rocksdb::WARN_LEVEL;
+  options_.log_file_time_to_roll = 0;
+  options_.keep_log_file_num = 10;
+  options_.max_log_file_size = 1024 * 1024 * 1;
 
   if (in_memory) {
     // Remove when MemEnv is included in librocksdb
@@ -69,7 +112,7 @@ DBHandle::DBHandle(const std::string& path, bool in_memory) {
         cf_name, rocksdb::ColumnFamilyOptions()));
   }
 
-  VLOG(1) << "Opening DB handle: " << path;
+  VLOG(1) << "Opening RocksDB handle: " << path;
   auto s = rocksdb::DB::Open(options_, path, column_families_, &handles_, &db_);
   if (!s.ok()) {
     throw std::runtime_error(s.ToString());
@@ -91,7 +134,8 @@ DBHandle::~DBHandle() {
 /////////////////////////////////////////////////////////////////////////////
 // getInstance methods
 /////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<DBHandle> DBHandle::getInstance() {
+
+DBHandleRef DBHandle::getInstance() {
   return getInstance(FLAGS_database_path, FLAGS_database_in_memory);
 }
 
@@ -104,18 +148,16 @@ bool DBHandle::checkDB() {
   return true;
 }
 
-std::shared_ptr<DBHandle> DBHandle::getInstanceInMemory() {
+DBHandleRef DBHandle::getInstanceInMemory() {
   return getInstance("", true);
 }
 
-std::shared_ptr<DBHandle> DBHandle::getInstanceAtPath(const std::string& path) {
+DBHandleRef DBHandle::getInstanceAtPath(const std::string& path) {
   return getInstance(path, false);
 }
 
-std::shared_ptr<DBHandle> DBHandle::getInstance(const std::string& path,
-                                                bool in_memory) {
-  static std::shared_ptr<DBHandle> db_handle =
-      std::shared_ptr<DBHandle>(new DBHandle(path, in_memory));
+DBHandleRef DBHandle::getInstance(const std::string& path, bool in_memory) {
+  static DBHandleRef db_handle = DBHandleRef(new DBHandle(path, in_memory));
   return db_handle;
 }
 
@@ -143,9 +185,9 @@ rocksdb::ColumnFamilyHandle* DBHandle::getHandleForColumnFamily(
 // Data manipulation methods
 /////////////////////////////////////////////////////////////////////////////
 
-osquery::Status DBHandle::Get(const std::string& domain,
-                              const std::string& key,
-                              std::string& value) {
+Status DBHandle::Get(const std::string& domain,
+                     const std::string& key,
+                     std::string& value) {
   auto cfh = getHandleForColumnFamily(domain);
   if (cfh == nullptr) {
     return Status(1, "Could not get column family for " + domain);
@@ -154,9 +196,9 @@ osquery::Status DBHandle::Get(const std::string& domain,
   return Status(s.code(), s.ToString());
 }
 
-osquery::Status DBHandle::Put(const std::string& domain,
-                              const std::string& key,
-                              const std::string& value) {
+Status DBHandle::Put(const std::string& domain,
+                     const std::string& key,
+                     const std::string& value) {
   auto cfh = getHandleForColumnFamily(domain);
   if (cfh == nullptr) {
     return Status(1, "Could not get column family for " + domain);
@@ -165,8 +207,7 @@ osquery::Status DBHandle::Put(const std::string& domain,
   return Status(s.code(), s.ToString());
 }
 
-osquery::Status DBHandle::Delete(const std::string& domain,
-                                 const std::string& key) {
+Status DBHandle::Delete(const std::string& domain, const std::string& key) {
   auto cfh = getHandleForColumnFamily(domain);
   if (cfh == nullptr) {
     return Status(1, "Could not get column family for " + domain);
@@ -175,8 +216,8 @@ osquery::Status DBHandle::Delete(const std::string& domain,
   return Status(s.code(), s.ToString());
 }
 
-osquery::Status DBHandle::Scan(const std::string& domain,
-                               std::vector<std::string>& results) {
+Status DBHandle::Scan(const std::string& domain,
+                      std::vector<std::string>& results) {
   auto cfh = getHandleForColumnFamily(domain);
   if (cfh == nullptr) {
     return Status(1, "Could not get column family for " + domain);
@@ -190,5 +231,27 @@ osquery::Status DBHandle::Scan(const std::string& domain,
   }
   delete it;
   return Status(0, "OK");
+}
+
+Status RocksDatabasePlugin::get(const std::string& domain,
+                                const std::string& key,
+                                std::string& value) const {
+  return DBHandle::getInstance()->Get(domain, key, value);
+}
+
+Status RocksDatabasePlugin::put(const std::string& domain,
+                                const std::string& key,
+                                const std::string& value) {
+  return DBHandle::getInstance()->Put(domain, key, value);
+}
+
+Status RocksDatabasePlugin::remove(const std::string& domain,
+                                   const std::string& key) {
+  return DBHandle::getInstance()->Delete(domain, key);
+}
+
+Status RocksDatabasePlugin::scan(const std::string& domain,
+                                 std::vector<std::string>& results) const {
+  return DBHandle::getInstance()->Scan(domain, results);
 }
 }

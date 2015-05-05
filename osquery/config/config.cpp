@@ -8,6 +8,7 @@
  *
  */
 
+#include <chrono>
 #include <mutex>
 #include <random>
 #include <sstream>
@@ -18,13 +19,15 @@
 #include <osquery/filesystem.h>
 #include <osquery/logger.h>
 #include <osquery/registry.h>
+#include <osquery/tables.h>
 
 namespace pt = boost::property_tree;
 
+namespace osquery {
+
 typedef pt::ptree::value_type tree_node;
 typedef std::map<std::string, std::vector<std::string> > EventFileMap_t;
-
-namespace osquery {
+typedef std::chrono::high_resolution_clock chrono_clock;
 
 CLI_FLAG(string, config_plugin, "filesystem", "Config plugin name");
 
@@ -72,10 +75,14 @@ Status Config::update(const std::map<std::string, std::string>& config) {
 
   // Now merge all sources together.
   for (const auto& source : getInstance().raw_) {
-    mergeConfig(source.second, conf);
+    auto status = mergeConfig(source.second, conf);
+    if (getInstance().force_merge_success_ && !status.ok()) {
+      return Status(1, status.what());
+    }
   }
 
   // Call each parser with the optionally-empty, requested, top level keys.
+  getInstance().data_ = conf;
   for (const auto& plugin : Registry::all("config_parser")) {
     auto parser = std::static_pointer_cast<ConfigParserPlugin>(plugin.second);
     if (parser == nullptr || parser.get() == nullptr) {
@@ -94,7 +101,6 @@ Status Config::update(const std::map<std::string, std::string>& config) {
     parser->update(parser_config);
   }
 
-  getInstance().data_ = conf;
   return Status(0, "OK");
 }
 
@@ -131,15 +137,21 @@ inline void mergeOption(const tree_node& option, ConfigData& conf) {
   conf.all_data.add_child("options." + key, option.second);
 }
 
-inline void mergeScheduledQuery(const std::string& name,
-                                const tree_node& node,
-                                ConfigData& conf) {
+inline void additionalScheduledQuery(const std::string& name,
+                                     const tree_node& node,
+                                     ConfigData& conf) {
   // Read tree/JSON into a query structure.
   ScheduledQuery query;
   query.query = node.second.get<std::string>("query", "");
   query.interval = node.second.get<int>("interval", 0);
+  if (query.interval == 0) {
+    VLOG(1) << "Setting invalid interval=0 to 84600 for query: " << name;
+    query.interval = 86400;
+  }
+
   // This is a candidate for a catch-all iterator with a catch for boolean type.
   query.options["snapshot"] = node.second.get<bool>("snapshot", false);
+  query.options["removed"] = node.second.get<bool>("removed", true);
 
   // Check if this query exists, if so, check if it was changed.
   if (conf.schedule.count(name) > 0) {
@@ -153,6 +165,14 @@ inline void mergeScheduledQuery(const std::string& name,
       splayValue(query.interval, FLAGS_schedule_splay_percent);
   // Update the schedule map and replace the all_data node record.
   conf.schedule[name] = query;
+}
+
+inline void mergeScheduledQuery(const std::string& name,
+                                const tree_node& node,
+                                ConfigData& conf) {
+  // Add the new query to the configuration.
+  additionalScheduledQuery(name, node, conf);
+  // Replace the all_data node record.
   if (conf.all_data.count("schedule") > 0) {
     conf.all_data.get_child("schedule").erase(name);
   }
@@ -167,7 +187,15 @@ inline void mergeExtraKey(const std::string& name,
     if (node.second.count("") == 0 && conf.all_data.count(name) > 0) {
       conf.all_data.get_child(name).erase(subitem.first);
     }
-    conf.all_data.add_child(name + "." + subitem.first, subitem.second);
+
+    if (subitem.first.size() == 0) {
+      if (conf.all_data.count(name) == 0) {
+        conf.all_data.add_child(name, subitem.second);
+      }
+      conf.all_data.get_child(name).push_back(subitem);
+    } else {
+      conf.all_data.add_child(name + "." + subitem.first, subitem.second);
+    }
   }
 }
 
@@ -182,15 +210,15 @@ inline void mergeFilePath(const std::string& name,
   conf.all_data.add_child(name + "." + node.first, node.second);
 }
 
-void Config::mergeConfig(const std::string& source, ConfigData& conf) {
+Status Config::mergeConfig(const std::string& source, ConfigData& conf) {
   pt::ptree tree;
   try {
     std::stringstream json_data;
     json_data << source;
     pt::read_json(json_data, tree);
   } catch (const pt::json_parser::json_parser_error& e) {
-    VLOG(1) << "Error parsing config JSON: " << e.what();
-    return;
+    LOG(WARNING) << "Error parsing config JSON: " << e.what();
+    return Status(1, e.what());
   }
 
   if (tree.count("additional_monitoring") > 0) {
@@ -226,6 +254,8 @@ void Config::mergeConfig(const std::string& source, ConfigData& conf) {
       mergeExtraKey(key, item, conf);
     }
   }
+
+  return Status(0, "OK");
 }
 
 const pt::ptree& Config::getParsedData(const std::string& key) {
@@ -269,7 +299,36 @@ Status Config::getMD5(std::string& hash_string) {
   return Status(0, "OK");
 }
 
-Status Config::checkConfig() { return load(); }
+void Config::addScheduledQuery(const std::string& name,
+                               const std::string& query,
+                               const int interval) {
+  // Create structure to add to the schedule.
+  tree_node node;
+  node.second.put("query", query);
+  node.second.put("interval", interval);
+
+  // Call to the inline function.
+  additionalScheduledQuery(name, node, getInstance().data_);
+}
+
+Status Config::checkConfig() {
+  getInstance().force_merge_success_ = true;
+  return load();
+}
+
+bool Config::checkScheduledQuery(const std::string& query) {
+  for (const auto& scheduled_query : getInstance().data_.schedule) {
+    if (scheduled_query.second.query == query) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool Config::checkScheduledQueryName(const std::string& query_name) {
+  return (getInstance().data_.schedule.count(query_name) == 0) ? false : true;
+}
 
 void Config::recordQueryPerformance(const std::string& name,
                                     size_t delay,
@@ -285,17 +344,26 @@ void Config::recordQueryPerformance(const std::string& name,
 
   // Grab access to the non-const schedule item.
   auto& query = getInstance().data_.schedule.at(name);
-  auto diff = strtol(r1.at("user_time").c_str(), nullptr, 10) -
-              strtol(r0.at("user_time").c_str(), nullptr, 10);
-  query.user_time += diff;
-  diff = strtol(r1.at("system_time").c_str(), nullptr, 10) -
-         strtol(r0.at("system_time").c_str(), nullptr, 10);
-  query.system_time += diff;
-  diff = strtol(r1.at("resident_size").c_str(), nullptr, 10) -
-         strtol(r0.at("resident_size").c_str(), nullptr, 10);
-  // Memory is stored as an average of BSS changes between query executions.
-  query.memory =
-      (query.memory * query.executions + diff) / (query.executions + 1);
+  auto diff = AS_LITERAL(BIGINT_LITERAL, r1.at("user_time")) -
+              AS_LITERAL(BIGINT_LITERAL, r0.at("user_time"));
+  if (diff > 0) {
+    query.user_time += diff;
+  }
+
+  diff = AS_LITERAL(BIGINT_LITERAL, r1.at("system_time")) -
+         AS_LITERAL(BIGINT_LITERAL, r0.at("system_time"));
+  if (diff > 0) {
+    query.system_time += diff;
+  }
+
+  diff = AS_LITERAL(BIGINT_LITERAL, r1.at("resident_size")) -
+         AS_LITERAL(BIGINT_LITERAL, r0.at("resident_size"));
+  if (diff > 0) {
+    // Memory is stored as an average of RSS changes between query executions.
+    query.memory = (query.memory * query.executions) + diff;
+    query.memory = (query.memory / (query.executions + 1));
+  }
+
   query.wall_time += delay;
   query.output_size += size;
   query.executions += 1;
@@ -343,6 +411,7 @@ int splayValue(int original, int splayPercent) {
   }
 
   std::default_random_engine generator;
+  generator.seed(chrono_clock::now().time_since_epoch().count());
   std::uniform_int_distribution<int> distribution(min_value, max_value);
   return distribution(generator);
 }

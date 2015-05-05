@@ -28,7 +28,7 @@ namespace osquery {
 /// Any SQL-dependent tests should use kTestQuery for a pre-populated example.
 const std::string kTestQuery = "SELECT * FROM test_table";
 
-const std::string kTestDataPath = "../../tools/tests/";
+extern std::string kTestDataPath;
 
 /// Tests should limit intermediate input/output to a working directory.
 /// Config data, logging results, and intermediate database/caching usage.

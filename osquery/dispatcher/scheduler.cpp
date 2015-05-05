@@ -17,6 +17,7 @@
 #include <osquery/logger.h>
 #include <osquery/sql.h>
 
+#include "osquery/database/query.h"
 #include "osquery/dispatcher/scheduler.h"
 
 namespace osquery {
@@ -28,56 +29,42 @@ FLAG(string,
 
 FLAG(bool, enable_monitor, false, "Enable the schedule monitor");
 
-CLI_FLAG(uint64, schedule_timeout, 0, "Limit the schedule, 0 for no limit")
+FLAG(uint64, schedule_timeout, 0, "Limit the schedule, 0 for no limit")
 
 Status getHostIdentifier(std::string& ident) {
-  std::shared_ptr<DBHandle> db;
-  try {
-    db = DBHandle::getInstance();
-  } catch (const std::runtime_error& e) {
-    return Status(1, e.what());
-  }
-
   if (FLAGS_host_identifier != "uuid") {
     // use the hostname as the default machine identifier
     ident = osquery::getHostname();
     return Status(0, "OK");
   }
 
-  std::vector<std::string> results;
-  auto status = db->Scan(kConfigurations, results);
-
+  // Lookup the host identifier (UUID) previously generated and stored.
+  auto status = getDatabaseValue(kPersistentSettings, "hostIdentifier", ident);
   if (!status.ok()) {
+    // The lookup failed, there is a problem accessing the database.
     VLOG(1) << "Could not access database; using hostname as host identifier";
     ident = osquery::getHostname();
     return Status(0, "OK");
   }
 
-  if (std::find(results.begin(), results.end(), "hostIdentifier") !=
-      results.end()) {
-    status = db->Get(kConfigurations, "hostIdentifier", ident);
-    if (!status.ok()) {
-      VLOG(1) << "Could not access database; using hostname as host identifier";
-      ident = osquery::getHostname();
-    }
-    return status;
+  if (ident.size() == 0) {
+    // There was no uuid stored in the database, generate one and store it.
+    ident = osquery::generateHostUuid();
+    VLOG(1) << "Using uuid " << ident << " as host identifier";
+    return setDatabaseValue(kPersistentSettings, "hostIdentifier", ident);
   }
-
-  // There was no uuid stored in the database, generate one and store it.
-  ident = osquery::generateHostUuid();
-  VLOG(1) << "Using uuid " << ident << " as host identifier";
-  return db->Put(kConfigurations, "hostIdentifier", ident);
+  return status;
 }
 
 inline SQL monitor(const std::string& name, const ScheduledQuery& query) {
   // Snapshot the performance and times for the worker before running.
   auto pid = std::to_string(getpid());
-  auto r0 = SQL::selectAllFrom("processes", "pid", tables::EQUALS, pid);
+  auto r0 = SQL::selectAllFrom("processes", "pid", EQUALS, pid);
   auto t0 = time(nullptr);
   auto sql = SQL(query.query);
   // Snapshot the performance after, and compare.
   auto t1 = time(nullptr);
-  auto r1 = SQL::selectAllFrom("processes", "pid", tables::EQUALS, pid);
+  auto r1 = SQL::selectAllFrom("processes", "pid", EQUALS, pid);
   if (r0.size() > 0 && r1.size() > 0) {
     size_t size = 0;
     for (const auto& row : sql.rows()) {
@@ -143,6 +130,10 @@ void launchQuery(const std::string& name, const ScheduledQuery& query) {
 
   VLOG(1) << "Found results for query (" << name << ") for host: " << ident;
   item.results = diff_results;
+  if (query.options.count("removed") && !query.options.at("removed")) {
+    item.results.removed.clear();
+  }
+
   status = logQueryLogItem(item);
   if (!status.ok()) {
     LOG(ERROR) << "Error logging the results of query (" << query.query
@@ -150,7 +141,7 @@ void launchQuery(const std::string& name, const ScheduledQuery& query) {
   }
 }
 
-void SchedulerRunner::enter() {
+void SchedulerRunner::start() {
   time_t t = std::time(nullptr);
   struct tm* local = std::localtime(&t);
   unsigned long int i = local->tm_sec;

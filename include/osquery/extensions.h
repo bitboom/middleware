@@ -20,6 +20,7 @@ DECLARE_int32(worker_threads);
 DECLARE_string(extensions_socket);
 DECLARE_string(extensions_autoload);
 DECLARE_string(extensions_timeout);
+DECLARE_bool(disable_extensions);
 
 /// A millisecond internal applied to extension initialization.
 extern const int kExtensionInitializeMLatency;
@@ -51,8 +52,7 @@ inline std::string getExtensionSocket(
 Status queryExternal(const std::string& query, QueryData& results);
 
 /// External (extensions) SQL implementation of the osquery getQueryColumns API.
-Status getQueryColumnsExternal(const std::string& q,
-                               tables::TableColumns& columns);
+Status getQueryColumnsExternal(const std::string& q, TableColumns& columns);
 
 /// External (extensions) SQL implementation plugin provider for "sql" registry.
 class ExternalSQLPlugin : SQLPlugin {
@@ -61,8 +61,7 @@ class ExternalSQLPlugin : SQLPlugin {
     return queryExternal(q, results);
   }
 
-  Status getQueryColumns(const std::string& q,
-                         tables::TableColumns& columns) const {
+  Status getQueryColumns(const std::string& q, TableColumns& columns) const {
     return getQueryColumnsExternal(q, columns);
   }
 };

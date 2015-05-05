@@ -76,7 +76,7 @@ EXTENSION_FLAG_ALIAS(socket, extensions_socket);
 EXTENSION_FLAG_ALIAS(timeout, extensions_timeout);
 EXTENSION_FLAG_ALIAS(interval, extensions_interval);
 
-void ExtensionWatcher::enter() {
+void ExtensionWatcher::start() {
   // Watch the manager, if the socket is removed then the extension will die.
   while (true) {
     watch();
@@ -166,8 +166,7 @@ void loadExtensions() {
 void loadModules() {
   auto status = loadModules(FLAGS_modules_autoload);
   if (!status.ok()) {
-    VLOG(1) << "Modules autoload contains invalid paths: "
-            << FLAGS_modules_autoload;
+    VLOG(1) << "Could not autoload modules: " << status.what();
   }
 }
 
@@ -182,7 +181,7 @@ Status loadExtensions(const std::string& loadfile) {
     }
     return Status(0, "OK");
   }
-  return Status(1, "Cannot read extensions autoload file");
+  return Status(1, "Failed reading: " + loadfile);
 }
 
 Status loadModuleFile(const std::string& path) {
@@ -213,7 +212,7 @@ Status loadModules(const std::string& loadfile) {
     // Return an aggregate failure if any load fails (invalid search path).
     return status;
   }
-  return Status(1, "Cannot read modules autoload file");
+  return Status(1, "Failed reading: " + loadfile);
 }
 
 Status extensionPathActive(const std::string& path, bool use_timeout = false) {
@@ -370,7 +369,7 @@ Status queryExternal(const std::string& query, QueryData& results) {
 
 Status getQueryColumnsExternal(const std::string& manager_path,
                                const std::string& query,
-                               tables::TableColumns& columns) {
+                               TableColumns& columns) {
   // Make sure the extension path exists, and is writable.
   auto status = extensionPathActive(manager_path);
   if (!status.ok()) {
@@ -396,7 +395,7 @@ Status getQueryColumnsExternal(const std::string& manager_path,
 }
 
 Status getQueryColumnsExternal(const std::string& query,
-                               tables::TableColumns& columns) {
+                               TableColumns& columns) {
   return getQueryColumnsExternal(FLAGS_extensions_socket, query, columns);
 }
 
@@ -446,7 +445,7 @@ Status getExtensions(const std::string& manager_path,
   }
 
   // Add the extension manager to the list called (core).
-  extensions[0] = {"core", OSQUERY_VERSION, "0.0.0", OSQUERY_SDK_VERSION};
+  extensions[0] = {"core", kVersion, "0.0.0", kSDKVersion};
 
   // Convert from Thrift-internal list type to RouteUUID/ExtenionInfo type.
   for (const auto& ext : ext_list) {

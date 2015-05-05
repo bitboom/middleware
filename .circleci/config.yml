@@ -33,7 +33,7 @@ jobs:
       - run: cd /usr/src/rocksdb && sudo make static_lib && sudo make install
       # built-in table dependencies 
       - run: sudo apt-get install -qq python-pip && sudo pip install Jinja2
-      - run: sudo apt-get install -qq libprocps-dev libsystemd-dev libudev-dev 
+      - run: sudo apt-get install -qq libprocps-dev libsystemd-dev libudev-dev iptables-dev
 
       # Tizen osquery build & test
       - run: cd /home/circleci/project && sudo make

@@ -89,7 +89,7 @@ std::vector<std::string> ManagerImpl::columns(const std::string& table) noexcept
 	std::stringstream query;
 	query << "SELECT * FROM " << table;
 
-	tables::TableColumns columns;
+	TableColumns columns;
 	getQueryColumns(query.str(), columns);
 
 	// Extract column names
