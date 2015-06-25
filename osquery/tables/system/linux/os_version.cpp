@@ -22,17 +22,10 @@ namespace xp = boost::xpressive;
 namespace osquery {
 namespace tables {
 
-#ifdef CENTOS
 const std::string kLinuxOSRelease = "/etc/redhat-release";
 const std::string kLinuxOSRegex =
     "(?P<name>\\w+) .* "
-    "(?P<major>[0-9]+).(?P<minor>[0-9]+)[\\.]{0,1}(?P<patch>[0-9]+)";
-#else
-const std::string kLinuxOSRelease = "/etc/os-release";
-const std::string kLinuxOSRegex =
-    "VERSION=\"(?P<major>[0-9]+)\\.(?P<minor>[0-9]+)[\\.]{0,1}(?P<patch>[0-9]+)"
-    "?.*, (?P<name>[\\w ]*)\"$";
-#endif
+    "(?P<major>[0-9]+)\\.(?P<minor>[0-9]+)[\\.]{0,1}(?P<patch>[0-9]+).*";
 
 QueryData genOSVersion(QueryContext& context) {
   std::string content;

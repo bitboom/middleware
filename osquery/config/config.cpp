@@ -29,6 +29,7 @@ typedef pt::ptree::value_type tree_node;
 typedef std::map<std::string, std::vector<std::string> > EventFileMap_t;
 typedef std::chrono::high_resolution_clock chrono_clock;
 
+/// The config plugin must be known before reading options.
 CLI_FLAG(string, config_plugin, "filesystem", "Config plugin name");
 
 FLAG(int32, schedule_splay_percent, 10, "Percent to splay config times");
@@ -61,28 +62,31 @@ Status Config::update(const std::map<std::string, std::string>& config) {
   }
 
   // Request a unique write lock when updating config.
-  boost::unique_lock<boost::shared_mutex> unique_lock(getInstance().mutex_);
+  {
+    boost::unique_lock<boost::shared_mutex> unique_lock(getInstance().mutex_);
 
-  ConfigData conf;
-  for (const auto& source : config) {
-    if (Registry::external()) {
-      VLOG(1) << "Updating extension config with source: " << source.first;
-    } else {
-      VLOG(1) << "Updating config with source: " << source.first;
+    for (const auto& source : config) {
+      if (Registry::external()) {
+        VLOG(1) << "Updating extension config with source: " << source.first;
+      } else {
+        VLOG(1) << "Updating config with source: " << source.first;
+      }
+      getInstance().raw_[source.first] = source.second;
     }
-    getInstance().raw_[source.first] = source.second;
+
+    // Now merge all sources together.
+    ConfigData conf;
+    for (const auto& source : getInstance().raw_) {
+      auto status = mergeConfig(source.second, conf);
+      if (getInstance().force_merge_success_ && !status.ok()) {
+        return Status(1, status.what());
+      }
+    }
+
+    // Call each parser with the optionally-empty, requested, top level keys.
+    getInstance().data_ = std::move(conf);
   }
 
-  // Now merge all sources together.
-  for (const auto& source : getInstance().raw_) {
-    auto status = mergeConfig(source.second, conf);
-    if (getInstance().force_merge_success_ && !status.ok()) {
-      return Status(1, status.what());
-    }
-  }
-
-  // Call each parser with the optionally-empty, requested, top level keys.
-  getInstance().data_ = conf;
   for (const auto& plugin : Registry::all("config_parser")) {
     auto parser = std::static_pointer_cast<ConfigParserPlugin>(plugin.second);
     if (parser == nullptr || parser.get() == nullptr) {
@@ -92,12 +96,16 @@ Status Config::update(const std::map<std::string, std::string>& config) {
     // For each key requested by the parser, add a property tree reference.
     std::map<std::string, ConfigTree> parser_config;
     for (const auto& key : parser->keys()) {
-      if (conf.all_data.count(key) > 0) {
-        parser_config[key] = conf.all_data.get_child(key);
+      if (getInstance().data_.all_data.count(key) > 0) {
+        parser_config[key] = getInstance().data_.all_data.get_child(key);
       } else {
         parser_config[key] = pt::ptree();
       }
     }
+
+    // The config parser plugin will receive a copy of each property tree for
+    // each top-level-config key. The parser may choose to update the config's
+    // internal state by requesting and modifying a ConfigDataInstance.
     parser->update(parser_config);
   }
 
@@ -203,9 +211,10 @@ inline void mergeFilePath(const std::string& name,
                           const tree_node& node,
                           ConfigData& conf) {
   for (const auto& path : node.second) {
-    resolveFilePattern(path.second.data(),
-                       conf.files[node.first],
-                       REC_LIST_FOLDERS | REC_EVENT_OPT);
+    // Add the exact path after converting wildcards.
+    std::string pattern = path.second.data();
+    replaceGlobWildcards(pattern);
+    conf.files[node.first].push_back(std::move(pattern));
   }
   conf.all_data.add_child(name + "." + node.first, node.second);
 }
@@ -291,7 +300,11 @@ Status Config::getMD5(std::string& hash_string) {
   ConfigDataInstance config;
 
   std::stringstream out;
-  pt::write_json(out, config.data());
+  try {
+    pt::write_json(out, config.data(), false);
+  } catch (const pt::json_parser::json_parser_error& e) {
+    return Status(1, e.what());
+  }
 
   hash_string = osquery::hashFromBuffer(
       HASH_TYPE_MD5, (void*)out.str().c_str(), out.str().length());
@@ -360,8 +373,8 @@ void Config::recordQueryPerformance(const std::string& name,
          AS_LITERAL(BIGINT_LITERAL, r0.at("resident_size"));
   if (diff > 0) {
     // Memory is stored as an average of RSS changes between query executions.
-    query.memory = (query.memory * query.executions) + diff;
-    query.memory = (query.memory / (query.executions + 1));
+    query.average_memory = (query.average_memory * query.executions) + diff;
+    query.average_memory = (query.average_memory / (query.executions + 1));
   }
 
   query.wall_time += delay;

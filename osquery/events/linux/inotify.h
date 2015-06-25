@@ -23,13 +23,12 @@ namespace osquery {
 extern std::map<int, std::string> kMaskActions;
 
 /**
- * @brief Subscriptioning details for INotifyEventPublisher events.
+ * @brief Subscription details for INotifyEventPublisher events.
  *
  * This context is specific to INotifyEventPublisher. It allows the
- *subscriptioning
- * EventSubscriber to set a path (file or directory) and a limited action mask.
- * Events are passed to the subscriptioning EventSubscriber if they match the
- *context
+ * subscribing EventSubscriber to set a path (file or directory) and a
+ * limited action mask.
+ * Events are passed to the EventSubscriber if they match the context
  * path (or anything within a directory if the path is a directory) and if the
  * event action is part of the mask. If the mask is 0 then all actions are
  * passed to the EventSubscriber.
@@ -37,12 +36,13 @@ extern std::map<int, std::string> kMaskActions;
 struct INotifySubscriptionContext : public SubscriptionContext {
   /// Subscription the following filesystem path.
   std::string path;
-  /// Limit the `inotify` actions to the subscriptioned mask (if not 0).
+  /// Limit the `inotify` actions to the subscription mask (if not 0).
   uint32_t mask;
   /// Treat this path as a directory and subscription recursively.
   bool recursive;
 
-  INotifySubscriptionContext() : mask(0), recursive(false) {}
+  INotifySubscriptionContext()
+      : mask(0), recursive(false), recursive_match(false) {}
 
   /**
    * @brief Helper method to map a string action to `inotify` action mask bit.
@@ -58,6 +58,15 @@ struct INotifySubscriptionContext : public SubscriptionContext {
       }
     }
   }
+
+ private:
+  /// During configure the INotify publisher may modify/optimize the paths.
+  std::string discovered_;
+  /// A configure-time pattern was expanded to match absolute paths.
+  bool recursive_match;
+
+ private:
+  friend class INotifyEventPublisher;
 };
 
 /**
@@ -117,28 +126,43 @@ class INotifyEventPublisher
 
  private:
   INotifyEventContextRef createEventContextFrom(struct inotify_event* event);
+
   /// Check all added Subscription%s for a path.
   bool isPathMonitored(const std::string& path);
+
   /// Add an INotify watch (monitor) on this path.
   bool addMonitor(const std::string& path, bool recursive);
+
   /// Remove an INotify watch (monitor) from our tracking.
   bool removeMonitor(const std::string& path, bool force = false);
   bool removeMonitor(int watch, bool force = false);
+
   /// Given a SubscriptionContext and INotifyEventContext match path and action.
   bool shouldFire(const INotifySubscriptionContextRef& mc,
                   const INotifyEventContextRef& ec) const;
+
   /// Get the INotify file descriptor.
   int getHandle() { return inotify_handle_; }
+
   /// Get the number of actual INotify active descriptors.
   int numDescriptors() { return descriptors_.size(); }
+
   /// If we overflow, try and restart the monitor
   Status restartMonitoring();
 
   // Consider an event queue if separating buffering from firing/servicing.
   DescriptorVector descriptors_;
+
+  /// Map of watched path string to inotify watch file descriptor.
   PathDescriptorMap path_descriptors_;
+
+  /// Map of inotify watch file descriptor to watched path string.
   DescriptorPathMap descriptor_paths_;
+
+  /// The inotify file descriptor handle.
   int inotify_handle_;
+
+  /// Time in seconds of the last inotify restart.
   int last_restart_;
 
  public:

@@ -21,6 +21,8 @@
 
 namespace osquery {
 
+HIDDEN_FLAG(bool, registry_exceptions, false, "Allow plugin exceptions");
+
 void RegistryHelperCore::remove(const std::string& item_name) {
   if (items_.count(item_name) > 0) {
     items_[item_name]->tearDown();
@@ -299,10 +301,16 @@ Status RegistryFactory::call(const std::string& registry_name,
   } catch (const std::exception& e) {
     LOG(ERROR) << registry_name << " registry " << item_name
                << " plugin caused exception: " << e.what();
+    if (FLAGS_registry_exceptions) {
+      throw e;
+    }
     return Status(1, e.what());
   } catch (...) {
     LOG(ERROR) << registry_name << " registry " << item_name
                << " plugin caused unknown exception";
+    if (FLAGS_registry_exceptions) {
+      throw std::runtime_error(registry_name + ": " + item_name + " failed");
+    }
     return Status(2, "Unknown exception");
   }
 }
@@ -519,7 +527,11 @@ void Plugin::setResponse(const std::string& key,
                          const boost::property_tree::ptree& tree,
                          PluginResponse& response) {
   std::ostringstream output;
-  boost::property_tree::write_json(output, tree, false);
+  try {
+    boost::property_tree::write_json(output, tree, false);
+  } catch (const pt::json_parser::json_parser_error& e) {
+    // The plugin response could not be serialized.
+  }
   response.push_back({{key, output.str()}});
 }
 }

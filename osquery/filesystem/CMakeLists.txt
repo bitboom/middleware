@@ -12,8 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LIBRARY(osquery_filesystem filesystem.cpp
- 									   globbing.cpp)
+ADD_OSQUERY_LIBRARY(osquery_filesystem filesystem.cpp)
 
 ADD_OSQUERY_LIBRARY(osquery_filesystem_linux linux/proc.cpp
 											 linux/mem.cpp)

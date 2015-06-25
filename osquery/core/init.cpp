@@ -97,6 +97,8 @@ CLI_FLAG(bool,
 CLI_FLAG(bool, daemonize, false, "Run as daemon (osqueryd only)");
 #endif
 
+ToolType kToolType = OSQUERY_TOOL_UNKNOWN;
+
 void printUsage(const std::string& binary, int tool) {
   // Parse help options before gflags. Only display osquery-related options.
   fprintf(stdout, DESCRIPTION, kVersion.c_str());
@@ -163,6 +165,8 @@ Initializer::Initializer(int& argc, char**& argv, ToolType tool)
   GFLAGS_NAMESPACE::ParseCommandLineFlags(
       argc_, argv_, (tool == OSQUERY_TOOL_SHELL));
 
+  // Set the tool type to allow runtime decisions based on daemon, shell, etc.
+  kToolType = tool;
   if (tool == OSQUERY_TOOL_SHELL) {
     // The shell is transient, rewrite config-loaded paths.
     FLAGS_disable_logging = true;
@@ -206,7 +210,7 @@ void Initializer::initDaemon() {
   }
 
 #ifndef __APPLE__
-  // OSX uses launchd to daemonize.
+  // OS X uses launchd to daemonize.
   if (osquery::FLAGS_daemonize) {
     if (daemon(0, 0) == -1) {
       ::exit(EXIT_FAILURE);
@@ -235,7 +239,7 @@ void Initializer::initDaemon() {
   if (!FLAGS_disable_watchdog &&
       FLAGS_watchdog_level >= WATCHDOG_LEVEL_DEFAULT &&
       FLAGS_watchdog_level != WATCHDOG_LEVEL_DEBUG) {
-    // Set CPU scheduling IO limits.
+    // Set CPU scheduling I/O limits.
     setpriority(PRIO_PGRP, 0, 10);
 #ifdef __linux__
     // Using: ioprio_set(IOPRIO_WHO_PGRP, 0, IOPRIO_CLASS_IDLE);
@@ -306,15 +310,18 @@ void Initializer::initActivePlugin(const std::string& type,
                                    const std::string& name) {
   // Use a delay, meaning the amount of milliseconds waited for extensions.
   size_t delay = 0;
-  // The timeout is the maximum time in seconds to wait for extensions.
-  size_t timeout = atoi(FLAGS_extensions_timeout.c_str());
+  // The timeout is the maximum microseconds in seconds to wait for extensions.
+  size_t timeout = atoi(FLAGS_extensions_timeout.c_str()) * 1000000;
+  if (timeout < kExtensionInitializeLatencyUS * 10) {
+    timeout = kExtensionInitializeLatencyUS * 10;
+  }
   while (!Registry::setActive(type, name)) {
-    if (!Watcher::hasManagedExtensions() || delay > timeout * 1000) {
+    if (!Watcher::hasManagedExtensions() || delay > timeout) {
       LOG(ERROR) << "Active " << type << " plugin not found: " << name;
       ::exit(EXIT_CATASTROPHIC);
     }
-    ::usleep(kExtensionInitializeMLatency * 1000);
-    delay += kExtensionInitializeMLatency;
+    delay += kExtensionInitializeLatencyUS;
+    ::usleep(kExtensionInitializeLatencyUS);
   }
 }
 
