@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest>
+	<policy-version>0.1.0</policy-version>
+	<policy-group name="APPLICATION">
+		<policy name="SET_APP_INSTALLATION_MODE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_APP_UNINSTALLATION_MODE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+	</policy-group>
+
+	<policy-group name="ROAMING">
+		<policy name="ALLOW_SYNC" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="ALLOW_DATA" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="ALLOW_PUSH" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+	</policy-group>
+
+	<policy-group name="PASSWORD">
+		<policy name="SET_PASSWORD_QUALITY" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_PASSWORD_MINIMUM_LENGTH" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_PASSWORD_MAXIMUM_FAILED_FOR_WIPE" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_PASSWORD_EXPIRE" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_PASSWORD_MINIMUM_COMPLEX" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_PASSWORD_PATTERN" status="OFF" retry="DEFAULT" priority="DEFAULT">empty</policy>
+		<policy name="SET_HISTORY" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_PASSWORD_RECOVERY" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_PASSWORD_LOCK_DELAY" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_INACTIVITY_TIME_DEVICE_LOCK" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_PASSWORD_CHANGE_TIMEOUT" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_MAXIMUM_CHARACTER_OCCURRENCES" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_MAXIMUM_NUMERIC_SEQUENCES_LENGTH" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_FORBIDDEN_STRINGS" status="OFF" retry="DEFAULT" priority="DEFAULT">empty</policy>
+	</policy-group>
+
+	<policy-group name="SECURITY">
+		<policy name="INTERNAL_STORAGE_ENCRYPTION" status="OFF" retry="DEFAULT" priority="DEFAULT"/>
+		<policy name="EXTERNAL_STORAGE_ENCRYPTION" status="OFF" retry="DEFAULT" priority="DEFAULT"/>
+		<policy name="ALLOW_INTERNET_SHARING" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="ALLOW_DESKTOP_SYNC" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_REQUIRE_DEVICE_ENCRYPTION" status="OFF" retry="DEFAULT" priority="DEFAULT"/>
+		<policy name="SET_REQUIRE_STORAGE_CARD_ENCRYPTION" status="OFF" retry="DEFAULT" priority="DEFAULT"/>
+	</policy-group>
+
+	<policy-group name="WIFI">
+		<policy name="SET_ALLOW_WIFI" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_MINIMUM_REQUIRED_SECURITY" status="OFF" retry="DEFAULT" priority="DEFAULT">none</policy>
+		<policy name="SET_TLS_CERTIFICATE_SECURITY_LEVEL" status="OFF" retry="DEFAULT" priority="DEFAULT">none</policy>
+		<policy name="SET_PASSWORD_HIDDEN" status="OFF" retry="DEFAULT" priority="DEFAULT">disabled</policy>
+		<policy name="SET_ALLOW_USER_POLICY_CHANGES" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="ALLOW_WIFI_AP_SETTING_USER_MODIFICATION" status="OFF" retry="DEFAULT" priority="DEFAULT">enabled</policy>
+		<policy name="ACTIVATE_WIFI_SSID_RESTRICTION" status="OFF" retry="DEFAULT" priority="DEFAULT">disabled</policy>
+	</policy-group>
+
+	<policy-group name="BLUETOOTH">
+		<policy name="SET_ALLOW_BLUETOOTH" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_BLUETOOTH_OUTGOING_CALL" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_A2DP_PROFILE_STATE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_AVRCP_PROFILE_STATE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_BPP_PROFILE_STATE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_DUN_PROFILE_STATE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_FTP_PROFILE_STATE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_HFP_PROFILE_STATE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_HSP_PROFILE_STATE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_PBAP_PROFILE_STATE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_SAP_PROFILE_STATE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_SPP_PROFILE_STATE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_DESKTOP_CONNECTIVITY_STATE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_DISCOVERABLE_STATE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_PARINIG_STATE" satus="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_LIMITED_DISCOVERABLE_STATE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_BLUETOOTH_DATA_TRANSFER" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="ACTIVATE_BLUETOOTH_UUID_RESTRICTION" status="OFF" retry="DEFAULT" priority="DEFAULT">disabled</policy>
+		<policy name="ACTIVATE_BLUETOOTH_DEVICE_RESTRICTION" status="OFF" retry="DEFAULT" priority="DEFAULT">disabled</policy>
+	</policy-group>
+
+	<policy-group name="MISC">
+		<policy name="SET_ALLOW_CAMERA" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_MIC" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_LOCATION" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_SD_CARD" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_TEXT_MESSAGING" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_POP_IMAP_EMAIL" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_BROWSER" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+	</policy-group>
+
+	<policy-group name="DEVICE_INVENTORY">
+		<policy name="ENABLE_CALL_CAPTURE" status="OFF" retry="DEFAULT" priority="DEFAULT">disabled</policy>
+		<policy name="ENABLE_SMS_CAPTURE" status="OFF" retry="DEFAULT" priority="DEFAULT">disabled</policy>
+		<policy name="ENABLE_WIFI_STATISTICS" status="OFF" retry="DEFAULT" priority="DEFAULT">enabled</policy>
+		</policy-group>
+
+	<policy-group name="PHONE_RESTRICTION">
+		<policy name="ENABLE_LIMIT_NUMBER_OF_CALLS" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="ENALBE_LIMIT_NUMBER_OF_SMS" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="ENABLE_LIMIT_USAGE_OF_DATA_CALL" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="ENABLE_EMERGENCY_CALL_ONLY" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_INCOMING_CALL_RESTRICTION" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_INCOMING_SMS_RESTRICTION" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_LIMIT_OF_DATA_CALLS" status="OFF" retry="DEFAULT" priority="DEFAULT">0,0,0</policy>
+		<policy name="SET_LIMIT_OF_INCOMING_CALLS" status="OFF" retry="DEFAULT" priority="DEFAULT">0,0,0</policy>
+		<policy name="SET_LIMIT_OF_INCOMING_SMS" status="OFF" retry="DEFAULT" priority="DEFAULT">0,0,0</policy>
+		<policy name="SET_LIMIT_OF_OUTGOING_CALLS" status="OFF" retry="DEFAULT" priority="DEFAULT">0,0,0</policy>
+		<policy name="SET_LIMIT_OF_OUTGOING_SMS" status="OFF" retry="DEFAULT" priority="DEFAULT">0,0,0</policy>
+		<policy name="SET_OUTGOING_CALL_RESTRICTION" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+		<policy name="SET_OUTGOING_SMS_RESTRICTION" status="OFF" retry="DEFAULT" priority="DEFAULT">0</policy>
+	</policy-group>
+
+	<policy-group name="RESTRICTION">
+		<policy name="SET_ALLOW_LOCATION_METHOD_NETWORK" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_LOCATION_METHOD_GPS" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+ 		<policy name="SET_ALLOW_FACTORY_RESET" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_SETTINGS_CHANGES" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_NONMARKET_APPS" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_BACKGROUND_DATA" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_BACKUP" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_BLUETOOTH_TETHERING" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_CELLULAR_DATA" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_CLIPBOARD_ENABLED" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_ENABLE_NFC" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_HOME_KEY" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_MOCK_LOCATION" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_SCREEN_CAPTURE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_SDCARD" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_TETHERING" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_USB_DEBUGGING" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_USB_KIES_AVAILABILITY" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_USB_MASS_STORAGE" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_USB_MEDIA_PLAYER_AVAILABILITY" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_USB_TETHERING" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_WIFI_TETHERING" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_ALLOW_VPN" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+	</policy-group>
+
+	<policy-group name="BROWSER">
+		<policy name="SET_AUTOFILL_SETTING" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_COOKIES_SETTING" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_FORCE_FRAUD_WARNING_SETTING" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_JAVASCRIPT_SETTING" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_POPUP_S_SETTING" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+	</policy-group>
+
+	<policy-group name="FIREWALL">
+		<policy name="SET_IPTABLES_ALLOW_RULES" status="OFF" retry="DEFAULT" priority="DEFAULT">empty</policy>
+		<policy name="SET_IPTABLES_DENY_RULES" status="OFF" retry="DEFAULT" priority="DEFAULT">empty</policy>
+		<policy name="SET_IPTABLES_OPTION" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_IPTABLES_PROXY_OPTION" status="OFF" retry="DEFAULT" priority="DEFAULT">allowed</policy>
+		<policy name="SET_IPTABLES_PROXY_RULES" status="OFF" retry="DEFAULT" priority="DEFAULT">empty</policy>
+		<policy name="SET_IPTABLES_REROUTE_RULES" status="OFF" retry="DEFAULT" priority="DEFAULT">empty</policy>
+	</policy-group>
+</manifest>
