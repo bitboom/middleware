@@ -58,7 +58,6 @@ managing device policies.
 %attr(700,root,root) %{_bindir}/dpm-admin-cli
 %attr(711,security_fw,security_fw) %dir %{TZ_SYS_DATA}/dpm
 %attr(711,security_fw,security_fw) %dir %{TZ_SYS_ETC}/dpm/policy
-%attr(644,security_fw,security_fw) %{TZ_SYS_ETC}/dpm/policy/PolicyManifest.xml
 %{_unitdir}/device-policy-manager.service
 %{_unitdir}/multi-user.target.wants/device-policy-manager.service
 

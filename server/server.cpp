@@ -15,6 +15,7 @@
  */
 #include <functional>
 
+#include <aul.h>
 #include <cynara-client.h>
 #include <cynara-session.h>
 
@@ -31,7 +32,7 @@ const std::string POLICY_MANAGER_ADDRESS = "/tmp/.device-policy-manager.sock";
 
 Server::Server()
 {
-	policyStorage.reset(new PolicyStorage("/opt/etc/dpm/policy/PolicyManifest.xml"));
+	policyManager.reset(new PolicyManager(RUN_PATH "/dpm"));
 
 	service.reset(new rmi::Service(POLICY_MANAGER_ADDRESS));
 
@@ -68,19 +69,33 @@ int Server::unregisterNotificationSubscriber(const std::string& name, int id)
 	return service->unsubscribeNotification(name, id);
 }
 
+void Server::definePolicy(const std::string& name,
+							const std::string& defaultVal,
+					        PolicyStateComparator comparator)
+{
+
+	createNotification(name);
+	policyManager->definePolicy(name, defaultVal, comparator);
+}
+
 int Server::updatePolicy(const std::string& name, const std::string& value,
 						 const std::string& event, const std::string& info)
 {
 	try {
-		Policy& policy = policyStorage->getPolicy(name);
-		std::string old = policy.getContent();
-		policy.setContent(value);
-		if (old != value) {
-			if (event != "") {
-				service->notify(event, info);
-			}
+		std::string old = policyManager->getPolicy(name);
+		char pkgid[PATH_MAX];
+		uid_t uid;
 
-			policyStorage->flush();
+		if (old != value) {
+			uid =  getPeerUid();
+			aul_app_get_pkgid_bypid_for_uid(getPeerPid(), pkgid, PATH_MAX, uid);
+			try {
+				Client& client = ClientManager::instance().getClient(pkgid, uid);
+				policyManager->setPolicy(client, name, value);
+				if (event != "") {
+					service->notify(event, info);
+				}
+			} catch (runtime::Exception& e) {}
 		}
 	} catch (runtime::Exception& e) {
 		ERROR("Exception on access to policy: " + name);
@@ -93,11 +108,6 @@ int Server::updatePolicy(const std::string& name, const std::string& value,
 int Server::updatePolicy(const std::string& name, const std::string& value)
 {
 	return updatePolicy(name, value, name, value);
-}
-
-std::string Server::getPolicy(const std::string& name) const
-{
-	return policyStorage->getPolicy(name).getContent();
 }
 
 bool Server::checkPeerPrivilege(const rmi::Credentials& cred, const std::string& privilege)

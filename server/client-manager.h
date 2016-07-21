@@ -55,7 +55,13 @@ public:
 		return key;
 	}
 
-	void removePolicyStorage();
+	PolicyStorage& getPolicyStorage() {
+		return *policyStorage.get();
+	}
+
+	void removePolicyStorage() {
+		policyStorage.get()->remove();
+	}
 
 private:
 	std::string name;
@@ -67,11 +73,18 @@ private:
 
 class ClientManager {
 public:
+	typedef std::vector<Client> ClientList;
+
 	ClientManager(const ClientManager&) = delete;
 	ClientManager& operator=(const ClientManager&) = delete;
 
 	void registerClient(const std::string& name, uid_t uid);
 	void deregisterClient(const std::string& name, uid_t uid);
+	Client& getClient(const std::string& name, uid_t uid);
+
+	ClientList& getClients() {
+		return registeredClients;
+	}
 
 	std::string generateKey();
 
@@ -86,7 +99,6 @@ private:
 	std::string getPackageName(int pid);
 
 private:
-	typedef std::vector<Client> ClientList;
 	ClientList activatedClients;
 	ClientList registeredClients;
 

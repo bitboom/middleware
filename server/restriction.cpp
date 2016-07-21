@@ -65,16 +65,16 @@ RestrictionPolicy::RestrictionPolicy(PolicyControlContext& ctxt) :
 	context.registerParametricMethod(this, DPM_PRIVILEGE_BROWSER, (int)(RestrictionPolicy::setBrowserState)(int));
 	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getBrowserState));
 
-	context.createNotification("camera");
-	context.createNotification("clipboard");
-	context.createNotification("external-storage");
-	context.createNotification("microphone");
-	context.createNotification("settings-changes");
-	context.createNotification("usb-debugging");
-	context.createNotification("usb-tethering");
-	context.createNotification("popimap-email");
-	context.createNotification("messaging");
-	context.createNotification("browser");
+	DefineAllowablePolicy(context, "camera");
+	DefineAllowablePolicy(context, "clipboard");
+	DefineAllowablePolicy(context, "external-storage");
+	DefineAllowablePolicy(context, "microphone");
+	DefineAllowablePolicy(context, "settings-changes");
+	DefineAllowablePolicy(context, "usb-debugging");
+	DefineAllowablePolicy(context, "usb-tethering");
+	DefineAllowablePolicy(context, "popimap-email");
+	DefineAllowablePolicy(context, "messaging");
+	DefineAllowablePolicy(context, "browser");
 }
 
 RestrictionPolicy::~RestrictionPolicy()

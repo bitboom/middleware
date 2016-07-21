@@ -40,6 +40,7 @@ int AdministrationPolicy::registerPolicyClient(const std::string& name, uid_t ui
 
 	try {
 		manager.registerClient(name, uid);
+		context.flushPolicy();
 	} catch (runtime::Exception& e) {
 		ERROR("Failed to register policy client");
 		return -1;
@@ -54,6 +55,7 @@ int AdministrationPolicy::deregisterPolicyClient(const std::string& name, uid_t 
 
 	try {
 		manager.deregisterClient(name, uid);
+		context.flushPolicy();
 	} catch (runtime::Exception& e) {
 		ERROR("Failed to deregister policy client");
 		return -1;

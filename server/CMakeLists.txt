@@ -24,6 +24,7 @@ SET(FOUNDATION		main.cpp
 					policy.cpp
 					policy-builder.cpp
 					policy-storage.cpp
+					policy-manager.cpp
 					client-manager.cpp
 )
 
@@ -77,6 +78,7 @@ SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LINK_FLAGS "-pie")
 TARGET_COMPILE_DEFINITIONS(${TARGET} PRIVATE
 	CONF_PATH="${CONF_INSTALL_DIR}"
 	DATA_PATH="${DATA_INSTALL_DIR}"
+	RUN_PATH="${RUN_INSTALL_DIR}"
 	DB_PATH="${DB_INSTALL_DIR}"
 )
 
@@ -84,5 +86,5 @@ CONFIGURE_FILE(systemd/device-policy-manager.service.in systemd/device-policy-ma
 
 INSTALL(TARGETS ${TARGET} DESTINATION bin)
 INSTALL(FILES systemd/device-policy-manager.service DESTINATION ${SYSTEMD_UNIT_INSTALL_DIR})
-INSTALL(FILES data/PolicyManifest.xml DESTINATION ${CONF_INSTALL_DIR}/policy)
 INSTALL(DIRECTORY DESTINATION ${DATA_INSTALL_DIR})
+INSTALL(DIRECTORY DESTINATION ${CONF_INSTALL_DIR}/policy)

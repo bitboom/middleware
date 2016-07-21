@@ -113,12 +113,12 @@ BluetoothPolicy::BluetoothPolicy(PolicyControlContext& ctxt) :
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setUuidRestriction)(bool));
 	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::isUuidRestricted));
 
-	ctxt.createNotification("bluetooth");
-	ctxt.createNotification("bluetooth-tethering");
-	ctxt.createNotification("bluetooth-desktop-connectivity");
-	ctxt.createNotification("bluetooth-pairing");
-	ctxt.createNotification("bluetooth-uuid-restriction");
-	ctxt.createNotification("bluetooth-device-restriction");
+	DefineAllowablePolicy(ctxt, "bluetooth");
+	DefineAllowablePolicy(ctxt, "bluetooth-tethering");
+	DefineAllowablePolicy(ctxt, "bluetooth-desktop-connectivity");
+	DefineAllowablePolicy(ctxt, "bluetooth-pairing");
+	DefineEnablePolicy(ctxt, "bluetooth-uuid-restriction");
+	DefineEnablePolicy(ctxt, "bluetooth-device-restriction");
 
 	if (::bt_initialize() != BT_ERROR_NONE) {
 		return;

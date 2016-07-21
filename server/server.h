@@ -24,7 +24,7 @@
 #include <klay/file-descriptor.h>
 #include <klay/rmi/service.h>
 
-#include "policy-storage.h"
+#include "policy-manager.h"
 
 class Server {
 public:
@@ -67,10 +67,21 @@ public:
 		service->createNotification(name);
 	}
 
+	void definePolicy(const std::string& name, const std::string& defaultVal,
+						PolicyStateComparator comparator);
+
 	int updatePolicy(const std::string& name, const std::string& value);
 	int updatePolicy(const std::string& name, const std::string& value,
 					 const std::string& event, const std::string& info);
-	std::string getPolicy(const std::string& name) const;
+
+	std::string getPolicy(const std::string& name) const
+	{
+    	return policyManager->getPolicy(name);
+	}
+
+	void flushPolicy()
+	{
+	}
 
 	runtime::FileDescriptor registerNotificationSubscriber(const std::string& name);
 	int unregisterNotificationSubscriber(const std::string& name, int id);
@@ -79,7 +90,7 @@ public:
 
 private:
 	std::string securityLabel;
-	std::unique_ptr<PolicyStorage> policyStorage;
+	std::unique_ptr<PolicyManager> policyManager;
 	std::unique_ptr<rmi::Service> service;
 };
 

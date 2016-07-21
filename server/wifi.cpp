@@ -107,10 +107,10 @@ WifiPolicy::WifiPolicy(PolicyControlContext& ctx) :
 	context.registerParametricMethod(this, DPM_PRIVILEGE_WIFI, (int)(WifiPolicy::addSsidToBlocklist)(std::string));
 	context.registerParametricMethod(this, "", (int)(WifiPolicy::removeSsidFromBlocklist)(std::string));
 
-	context.createNotification("wifi");
-	context.createNotification("wifi-hotspot");
-	context.createNotification("wifi-profile-change");
-	context.createNotification("wifi-ssid-restriction");
+	DefineAllowablePolicy(context, "wifi");
+	DefineAllowablePolicy(context, "wifi-hotspot");
+	DefineAllowablePolicy(context, "wifi-profile-change");
+	DefineEnablePolicy(context, "wifi-ssid-restriction");
 
 	::wifi_initialize();
 	::wifi_set_connection_state_changed_cb(connectionStateChanged, this);
