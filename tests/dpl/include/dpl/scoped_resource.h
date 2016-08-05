@@ -22,26 +22,24 @@
 #ifndef DPL_SCOPED_RESOURCE_H
 #define DPL_SCOPED_RESOURCE_H
 
-#include <dpl/noncopyable.h>
-
 namespace VcoreDPL {
+
 template<typename ClassPolicy>
-class ScopedResource :
-	private Noncopyable {
+class ScopedResource {
 public:
 	typedef typename ClassPolicy::Type ValueType;
 	typedef ScopedResource<ClassPolicy> ThisType;
 
-protected:
-	ValueType m_value;
-
-public:
 	explicit ScopedResource(ValueType value) : m_value(value) { }
-
 	~ScopedResource()
 	{
 		ClassPolicy::Destroy(m_value);
 	}
+
+	ScopedResource(const ScopedResource &) = delete;
+	ScopedResource &operator=(const ScopedResource &) = delete;
+	ScopedResource(ScopedResource &&) = delete;
+	ScopedResource &operator=(ScopedResource &&) = delete;
 
 	ValueType Get() const
 	{
@@ -73,6 +71,10 @@ public:
 	{
 		return m_value == ClassPolicy::NullValue();
 	}
+
+protected:
+	ValueType m_value;
+
 };
 } // namespace VcoreDPL
 

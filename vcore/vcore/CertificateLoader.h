@@ -19,20 +19,25 @@
 #include <string>
 #include <string.h>
 
-#include <dpl/noncopyable.h>
 #include <openssl/ssl.h>
 
 #include <vcore/Certificate.h>
 
 namespace ValidationCore {
-class CertificateLoader : public VcoreDPL::Noncopyable {
+class CertificateLoader {
 public:
+	CertificateLoader() = default;
+	virtual ~CertificateLoader() = default;
+
+	CertificateLoader(const CertificateLoader &) = delete;
+	CertificateLoader &operator=(const CertificateLoader &) = delete;
+	CertificateLoader(CertificateLoader &&) = delete;
+	CertificateLoader &operator=(CertificateLoader &&) = delete;
+
 	class CertificateLoaderComparator {
 	public:
 		virtual bool compare(X509 *x509cert) = 0;
-		virtual ~CertificateLoaderComparator()
-		{
-		}
+		virtual ~CertificateLoaderComparator() = default;
 	};
 
 	enum CertificateLoaderResult {
@@ -43,14 +48,6 @@ public:
 		CERTIFICATE_SECURITY_ERROR,                  //!< there are some issues with certificate security (i.e. key too short)
 		UNKNOWN_ERROR
 	};
-
-	CertificateLoader()
-	{
-	}
-
-	virtual ~CertificateLoader()
-	{
-	}
 
 	CertificateLoaderResult loadCertificate(const std::string &storage,
 											CertificateLoaderComparator *cmp);

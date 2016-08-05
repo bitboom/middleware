@@ -27,15 +27,23 @@
 #include <xmlsec/keysmngr.h>
 
 #include <dpl/exception.h>
-#include <dpl/noncopyable.h>
 #include <dpl/singleton.h>
 
 #include <vcore/Certificate.h>
 #include <vcore/SignatureData.h>
 
 namespace ValidationCore {
-class XmlSec : public VcoreDPL::Noncopyable {
+class XmlSec {
+
 public:
+	XmlSec();
+	virtual ~XmlSec();
+
+	XmlSec(const XmlSec &) = delete;
+	XmlSec &operator=(const XmlSec &) = delete;
+	XmlSec(XmlSec &&) = delete;
+	XmlSec &operator=(XmlSec &&) = delete;
+
 	struct XmlSecContext {
 		/* You _must_ set one of the value: certificatePath or certificate. */
 		XmlSecContext()
@@ -97,10 +105,6 @@ public:
 	void validate(XmlSecContext &context);
 	void validateNoHash(XmlSecContext &context);
 	void validatePartialHash(XmlSecContext &context, const std::list<std::string> &targetUri);
-
-protected:
-	XmlSec();
-	~XmlSec();
 
 private:
 	enum class ValidateMode : int {

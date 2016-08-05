@@ -23,13 +23,11 @@
 #ifndef _VALIDATION_CORE_REFERENCEVALIDATOR_H_
 #define _VALIDATION_CORE_REFERENCEVALIDATOR_H_
 
-#include <dpl/noncopyable.h>
-
 #include <vcore/SignatureData.h>
 
 namespace ValidationCore {
 
-class ReferenceValidator : VcoreDPL::Noncopyable {
+class ReferenceValidator {
 public:
 	enum Result {
 		NO_ERROR = 0,
@@ -44,8 +42,12 @@ public:
 	};
 
 	ReferenceValidator(const std::string &dirpath);
-
 	virtual ~ReferenceValidator();
+
+	ReferenceValidator(const ReferenceValidator &) = delete;
+	ReferenceValidator &operator=(const ReferenceValidator &) = delete;
+	ReferenceValidator(ReferenceValidator &&) = delete;
+	ReferenceValidator &operator=(ReferenceValidator &&) = delete;
 
 	Result checkReferences(const SignatureData &signatureData);
 	Result checkOutbound(const std::string &linkPath, const std::string &appPath);

@@ -22,7 +22,6 @@ SET(VCORE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(VCORE_SOURCES
     ${VCORE_DIR}/dpl/core/src/assert.cpp
     ${VCORE_DIR}/dpl/core/src/exception.cpp
-    ${VCORE_DIR}/dpl/core/src/noncopyable.cpp
     ${VCORE_DIR}/dpl/core/src/singleton.cpp
     ${VCORE_DIR}/dpl/core/src/colors.cpp
 

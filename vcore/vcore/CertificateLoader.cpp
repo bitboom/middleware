@@ -16,7 +16,6 @@
 #include <dpl/assert.h>
 #include <openssl/x509v3.h>
 #include <dpl/log/log.h>
-#include <dpl/noncopyable.h>
 #include <openssl/ecdsa.h>
 #include <openssl/evp.h>
 

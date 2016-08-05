@@ -23,7 +23,6 @@
 #ifndef DPL_TEST_RESULTS_COLLECTOR_H
 #define DPL_TEST_RESULTS_COLLECTOR_H
 
-#include <dpl/noncopyable.h>
 #include <dpl/availability.h>
 #include <vector>
 #include <list>
@@ -37,8 +36,7 @@ class TestResultsCollectorBase;
 typedef std::shared_ptr<TestResultsCollectorBase>
 TestResultsCollectorBasePtr;
 
-class TestResultsCollectorBase :
-	private VcoreDPL::Noncopyable {
+class TestResultsCollectorBase {
 public:
 	typedef TestResultsCollectorBase *(*CollectorConstructorFunc)();
 	typedef std::list<std::string> TestCaseIdList;
@@ -51,7 +49,13 @@ public:
 		};
 	};
 
-	virtual ~TestResultsCollectorBase() {}
+	TestResultsCollectorBase() = default;
+	virtual ~TestResultsCollectorBase() = default;
+
+	TestResultsCollectorBase(const TestResultsCollectorBase &) = delete;
+	TestResultsCollectorBase &operator=(const TestResultsCollectorBase &) = delete;
+	TestResultsCollectorBase(TestResultsCollectorBase &&) = delete;
+	TestResultsCollectorBase &operator=(TestResultsCollectorBase &&) = delete;
 
 	virtual bool Configure()
 	{

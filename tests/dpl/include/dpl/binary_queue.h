@@ -24,7 +24,6 @@
 
 #include <dpl/abstract_input_output.h>
 #include <dpl/exception.h>
-#include <dpl/noncopyable.h>
 #include <memory>
 #include <list>
 
@@ -67,8 +66,7 @@ public:
 	};
 
 private:
-	struct Bucket :
-		private Noncopyable {
+	struct Bucket {
 		const void *buffer;
 		const void *ptr;
 		size_t size;
@@ -82,6 +80,11 @@ private:
 			   BufferDeleter deleter,
 			   void *userParam);
 		virtual ~Bucket();
+
+		Bucket(const Bucket &) = delete;
+		Bucket &operator=(const Bucket &) = delete;
+		Bucket(Bucket &&) = delete;
+		Bucket &operator=(const Bucket &&) = delete;
 	};
 
 	typedef std::list<Bucket *> BucketList;

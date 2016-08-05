@@ -25,22 +25,22 @@
 	_WRT_ENGINE_SRC_INSTALLER_CORE_VALIDATION_CORE_CERTIFICATEIDENTIFICATOR_H_
 
 #include <map>
-#include <dpl/noncopyable.h>
 
 #include <vcore/Certificate.h>
 #include <vcore/CertStoreType.h>
 
 namespace ValidationCore {
-class CertificateIdentifier : public VcoreDPL::Noncopyable {
+class CertificateIdentifier {
 public:
 	typedef std::map<Certificate::Fingerprint, CertStoreId::Set> FingerPrintMap;
 
-	CertificateIdentifier()
-	{
-	}
-	~CertificateIdentifier()
-	{
-	}
+	CertificateIdentifier() = default;
+	~CertificateIdentifier() = default;
+
+	CertificateIdentifier(const CertificateIdentifier &) = delete;
+	CertificateIdentifier &operator=(const CertificateIdentifier &) = delete;
+	CertificateIdentifier(CertificateIdentifier &&) = delete;
+	CertificateIdentifier &operator=(CertificateIdentifier &&) = delete;
 
 	void add(const Certificate::Fingerprint &fingerprint,
 			 CertStoreId::Type domain)

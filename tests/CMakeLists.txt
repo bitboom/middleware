@@ -32,7 +32,6 @@ SET(DPL_TEST_SOURCES
     ${TEST_DIR}/dpl/src/colors.cpp
     ${TEST_DIR}/dpl/src/errno_string.cpp
     ${TEST_DIR}/dpl/src/exception.cpp
-    ${TEST_DIR}/dpl/src/noncopyable.cpp
     ${TEST_DIR}/dpl/src/singleton.cpp
     ${TEST_DIR}/dpl/src/test_results_collector.cpp
     ${TEST_DIR}/dpl/src/test_runner.cpp

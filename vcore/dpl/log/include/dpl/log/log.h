@@ -28,7 +28,6 @@
 #include <string>
 
 #include <dpl/singleton.h>
-#include <dpl/noncopyable.h>
 
 #include <dpl/log/abstract_log_provider.h>
 
@@ -40,10 +39,15 @@ namespace Log {
  * To switch logs into old style, export
  * DPL_USE_OLD_STYLE_LOGS before application start
  */
-class LogSystem : private Noncopyable {
+class LogSystem {
 public:
 	LogSystem();
 	virtual ~LogSystem();
+
+	LogSystem(const LogSystem &) = delete;
+	LogSystem &operator=(const LogSystem &) = delete;
+	LogSystem(LogSystem &&) = delete;
+	LogSystem &operator=(LogSystem &&) = delete;
 
 	AbstractLogProvider::LogLevel GetLogLevel() const
 	{

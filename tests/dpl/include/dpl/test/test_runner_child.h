@@ -27,7 +27,7 @@
 namespace VcoreDPL {
 namespace Test {
 
-class PipeWrapper : VcoreDPL::Noncopyable {
+class PipeWrapper {
 public:
 	enum Usage {
 		READONLY,
@@ -41,12 +41,17 @@ public:
 	};
 
 	PipeWrapper();
+	virtual ~PipeWrapper();
+
+	PipeWrapper (const PipeWrapper &) = delete;
+	PipeWrapper &operator=(const PipeWrapper &) = delete;
+	PipeWrapper (PipeWrapper &&) = delete;
+	PipeWrapper &operator=(PipeWrapper &&) = delete;
 
 	bool isReady();
 
 	void setUsage(Usage usage);
 
-	virtual ~PipeWrapper();
 
 	Status send(int code, std::string &message);
 

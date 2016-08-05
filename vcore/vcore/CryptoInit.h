@@ -21,15 +21,19 @@
  */
 #pragma once
 
-#include <dpl/noncopyable.h>
 #include <dpl/singleton.h>
 
 namespace ValidationCore {
 
-class CryptoInit : public VcoreDPL::Noncopyable {
+class CryptoInit {
 public:
 	CryptoInit();
 	virtual ~CryptoInit();
+
+	CryptoInit(const CryptoInit &) = delete;
+	CryptoInit &operator=(const CryptoInit &) = delete;
+	CryptoInit(CryptoInit &&) = delete;
+	CryptoInit &operator=(CryptoInit &&) = delete;
 };
 
 typedef VcoreDPL::Singleton<CryptoInit> CryptoInitSingleton;
