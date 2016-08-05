@@ -63,23 +63,41 @@
 /*! \brief   indicating password mismatch */
 #define AUTH_PASSWD_API_ERROR_PASSWORD_MISMATCH -12
 
-/*! \brief   indicating password dose not meet password policies */
-#define AUTH_PASSWD_API_ERROR_PASSWORD_INVALID -13
-
 /*! \brief   indicating password retry timeout is not occurred yet */
-#define AUTH_PASSWD_API_ERROR_PASSWORD_RETRY_TIMER -14
+#define AUTH_PASSWD_API_ERROR_PASSWORD_RETRY_TIMER -13
 
 /*! \brief   indicating no other attempts are possible */
-#define AUTH_PASSWD_API_ERROR_PASSWORD_MAX_ATTEMPTS_EXCEEDED -15
+#define AUTH_PASSWD_API_ERROR_PASSWORD_MAX_ATTEMPTS_EXCEEDED -14
 
 /*! \brief   indicating password is expired */
-#define AUTH_PASSWD_API_ERROR_PASSWORD_EXPIRED -16
+#define AUTH_PASSWD_API_ERROR_PASSWORD_EXPIRED -15
 
 /*! \brief   indicating password is reused */
-#define AUTH_PASSWD_API_ERROR_PASSWORD_REUSED -17
+#define AUTH_PASSWD_API_ERROR_PASSWORD_REUSED -16
 
 /*! \brief   indicating password recovery is restricted because max attempts policy is set */
-#define AUTH_PASSWD_API_ERROR_RECOVERY_PASSWORD_RESTRICTED -18
+#define AUTH_PASSWD_API_ERROR_RECOVERY_PASSWORD_RESTRICTED -17
+
+/*! \brief   indicating password does not meet password min length policy */
+#define AUTH_PASSWD_API_ERROR_INVALID_MIN_LENGTH -18
+
+/*! \brief   indicating password does not meet min complex character number policy */
+#define AUTH_PASSWD_API_ERROR_INVALID_MIN_COMPLEX_CHAR_NUM -19
+
+/*! \brief   indicating password does not meet max character occurences policy */
+#define AUTH_PASSWD_API_ERROR_INVALID_MAX_CHAR_OCCURENCES -20
+
+/*! \brief   indicating password does not meet max number sequence length policy */
+#define AUTH_PASSWD_API_ERROR_INVALID_MAX_NUM_SEQ_LENGTH -21
+
+/*! \brief   indicating password does not meet forbidden passwords policy */
+#define AUTH_PASSWD_API_ERROR_INVALID_FORBIDDEN_PASSWORDS -22
+
+/*! \brief   indicating password does not meet quality type policy */
+#define AUTH_PASSWD_API_ERROR_INVALID_QUALITY_TYPE -23
+
+/*! \brief   indicating password does not meet pattern policy */
+#define AUTH_PASSWD_API_ERROR_INVALID_PATTERN -24
 
 /*! \brief   indicating the error with unknown reason */
 #define AUTH_PASSWD_API_ERROR_UNKNOWN -255

@@ -83,37 +83,37 @@ int PolicyManager::checkPolicy(unsigned int passwdType,
 
 	if (!itPolicy->second.checkMinLength(newPassword)) {
 		LogError("new passwd's minLength is invalid");
-		return AUTH_PASSWD_API_ERROR_PASSWORD_INVALID;
+		return AUTH_PASSWD_API_ERROR_INVALID_MIN_LENGTH;
 	}
 
 	if (!itPolicy->second.checkMinComplexCharNumber(newPassword)) {
 		LogError("new passwd's minComplexCharNumber is invalid");
-		return AUTH_PASSWD_API_ERROR_PASSWORD_INVALID;
+		return AUTH_PASSWD_API_ERROR_INVALID_MIN_COMPLEX_CHAR_NUM;
 	}
 
 	if (!itPolicy->second.checkMaxCharOccurrences(newPassword)) {
 		LogError("new passwd's maxCharOccurrences is invalid");
-		return AUTH_PASSWD_API_ERROR_PASSWORD_INVALID;
+		return AUTH_PASSWD_API_ERROR_INVALID_MAX_CHAR_OCCURENCES;
 	}
 
 	if (!itPolicy->second.checkMaxNumSeqLength(newPassword)) {
 		LogError("new passwd's maxNumSeqLength is invalid");
-		return AUTH_PASSWD_API_ERROR_PASSWORD_INVALID;
-	}
-
-	if (!itPolicy->second.checkQualityType(newPassword)) {
-		LogError("new passwd's qualityType is invalid");
-		return AUTH_PASSWD_API_ERROR_PASSWORD_INVALID;
-	}
-
-	if (!itPolicy->second.checkPattern(newPassword)) {
-		LogError("new passwd's pattern is invalid");
-		return AUTH_PASSWD_API_ERROR_PASSWORD_INVALID;
+		return AUTH_PASSWD_API_ERROR_INVALID_MAX_NUM_SEQ_LENGTH;
 	}
 
 	if (!itPolicy->second.checkForbiddenPasswds(newPassword)) {
 		LogError("new passwd is forbiddenPasswd");
-		return AUTH_PASSWD_API_ERROR_PASSWORD_INVALID;
+		return AUTH_PASSWD_API_ERROR_INVALID_FORBIDDEN_PASSWORDS;
+	}
+
+	if (!itPolicy->second.checkQualityType(newPassword)) {
+		LogError("new passwd's qualityType is invalid");
+		return AUTH_PASSWD_API_ERROR_INVALID_QUALITY_TYPE;
+	}
+
+	if (!itPolicy->second.checkPattern(newPassword)) {
+		LogError("new passwd's pattern is invalid");
+		return AUTH_PASSWD_API_ERROR_INVALID_PATTERN;
 	}
 
 	return AUTH_PASSWD_API_SUCCESS;
@@ -185,6 +185,9 @@ int PolicyManager::setPolicy(Policy policy)
 
 			break;
 
+		case POLICY_FORBIDDEN_PASSWDS:
+			break;
+
 		case POLICY_QUALITY_TYPE:
 			if (policy.qualityType > AUTH_PWD_QUALITY_LAST) {
 				LogError("Incorrect input param.");
@@ -199,9 +202,6 @@ int PolicyManager::setPolicy(Policy policy)
 				return AUTH_PASSWD_API_ERROR_INPUT_PARAM;
 			}
 
-			break;
-
-		case POLICY_FORBIDDEN_PASSWDS:
 			break;
 
 		default:
@@ -248,6 +248,11 @@ int PolicyManager::setPolicy(Policy policy)
 			itPolicy->second.setMaxNumSeqLength(policy.maxNumSeqLength);
 			break;
 
+		case POLICY_FORBIDDEN_PASSWDS:
+			LogSecureDebug("forbiddenPasswds number: " << policy.forbiddenPasswds.size());
+			itPolicy->second.setForbiddenPasswds(policy.forbiddenPasswds);
+			break;
+
 		case POLICY_QUALITY_TYPE:
 			LogSecureDebug("qualityType: " << policy.qualityType);
 			itPolicy->second.setQualityType(policy.qualityType);
@@ -256,11 +261,6 @@ int PolicyManager::setPolicy(Policy policy)
 		case POLICY_PATTERN:
 			LogSecureDebug("pattern: " << policy.pattern);
 			itPolicy->second.setPattern(policy.pattern);
-			break;
-
-		case POLICY_FORBIDDEN_PASSWDS:
-			LogSecureDebug("forbiddenPasswds number: " << policy.forbiddenPasswds.size());
-			itPolicy->second.setForbiddenPasswds(policy.forbiddenPasswds);
 			break;
 
 		default:

@@ -121,10 +121,10 @@ int PasswordService::processCheckFunctions(PasswordHdrs hdr, MessageBuffer &buff
 		unsigned int &max_att, unsigned int &exp_time)
 {
 	int result = AUTH_PASSWD_API_ERROR_SERVER_ERROR;
+	unsigned int passwdType = 0;
 
 	switch (hdr) {
 	case PasswordHdrs::HDR_CHK_PASSWD: {
-		unsigned int passwdType = 0;
 		std::string challenge;
 		Deserialization::Deserialize(buffer, passwdType);
 		Deserialization::Deserialize(buffer, challenge);
@@ -134,10 +134,16 @@ int PasswordService::processCheckFunctions(PasswordHdrs hdr, MessageBuffer &buff
 	}
 
 	case PasswordHdrs::HDR_CHK_PASSWD_STATE: {
-		unsigned int passwdType = 0;
 		Deserialization::Deserialize(buffer, passwdType);
 		result = m_pwdManager.isPwdValid(passwdType, cur_user, cur_att, max_att, exp_time);
 		break;
+	}
+
+	case PasswordHdrs::HDR_CHK_PASSWD_AVAILABLE: {
+		std::string challenge;
+		Deserialization::Deserialize(buffer, passwdType);
+		Deserialization::Deserialize(buffer, challenge);
+		result = m_policyManager.checkPolicy(passwdType, NO_PASSWORD, challenge, cur_user);
 	}
 
 	default:
@@ -338,18 +344,20 @@ bool PasswordService::processOne(const ConnectionID &conn, MessageBuffer &buffer
 		//Returning additional information should occur only when checking functions
 		//are called, and under certain return values
 		if (interfaceID == SOCKET_ID_CHECK) {
-			switch (retCode) {
-			case AUTH_PASSWD_API_ERROR_PASSWORD_MISMATCH:
-			case AUTH_PASSWD_API_ERROR_PASSWORD_MAX_ATTEMPTS_EXCEEDED:
-			case AUTH_PASSWD_API_ERROR_PASSWORD_EXPIRED:
-			case AUTH_PASSWD_API_SUCCESS:
-				Serialization::Serialize(sendBuffer, cur_att);
-				Serialization::Serialize(sendBuffer, max_att);
-				Serialization::Serialize(sendBuffer, exp_time);
-				break;
+			if (hdr != PasswordHdrs::HDR_CHK_PASSWD_AVAILABLE) {
+				switch (retCode) {
+				case AUTH_PASSWD_API_ERROR_PASSWORD_MISMATCH:
+				case AUTH_PASSWD_API_ERROR_PASSWORD_MAX_ATTEMPTS_EXCEEDED:
+				case AUTH_PASSWD_API_ERROR_PASSWORD_EXPIRED:
+				case AUTH_PASSWD_API_SUCCESS:
+					Serialization::Serialize(sendBuffer, cur_att);
+					Serialization::Serialize(sendBuffer, max_att);
+					Serialization::Serialize(sendBuffer, exp_time);
+					break;
 
-			default:
-				break;
+				default:
+					break;
+				}
 			}
 		} else if (interfaceID == SOCKET_ID_SET) {
 			if (hdr == PasswordHdrs::HDR_CHK_PASSWD_REUSED && retCode == AUTH_PASSWD_API_SUCCESS)

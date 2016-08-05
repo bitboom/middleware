@@ -207,6 +207,57 @@ int auth_passwd_check_passwd_state(password_type passwd_type,
 								   unsigned int *valid_secs);
 
 /**
+ *
+ * \par Description:
+ * This API checks only if typed string fulfills password policies.
+ *
+ * \par Purpose:
+ * This API should be used by setting application during typing a letter for new password.
+ *
+ * \par Typical use case:
+ * App could check whether typed password is available and notify user of helper message
+ * before calling password setting API.
+ *
+ * \par Method of function operation:
+ * Sends a check request to auth-fw and auth-fw replies with password availability.
+ *
+ * \par Sync (or) Async:
+ * This is a Synchronous API.
+ *
+ * \par Important notes:
+ *  You can't check password reusability.
+ *
+ * \param[in] passwd_type Password type, such as normal(lock) password, recovery password and so on.
+ * \param[in] passwd Null terminated inputted password string.
+ *
+ * \return AUTH_PASSWD_API_SUCCESS
+ * \return AUTH_PASSWD_API_ERROR_ACCESS_DENIED
+ * \return AUTH_PASSWD_API_ERROR_SOCKET
+ * \return AUTH_PASSWD_API_ERROR_INVALID_MIN_LENGTH
+ *              Typed string doesn't fulfill min length policy.
+ * \return AUTH_PASSWD_API_ERROR_INVALID_MIN_COMPLEX_CHAR_NUM
+ *              Typed string doesn't fulfill min complex character number policy.
+ * \return AUTH_PASSWD_API_ERROR_INVALID_MAX_CHAR_OCCURENCES
+ *              Typed string doesn't fulfill max character occurences policy.
+ * \return AUTH_PASSWD_API_ERROR_INVALID_MAX_NUM_SEQ_LENGTH
+ *              Typed string doesn't fulfill max number sequence length policy.
+ * \return AUTH_PASSWD_API_ERROR_INVALID_FORBIDDEN_PASSWORDS
+ *              Typed string doesn't fulfill forbidden passwords policy.
+ * \return AUTH_PASSWD_API_ERROR_INVALID_QUALITY_TYPE
+ *              Typed string doesn't fulfill qulity type policy
+ * \return AUTH_PASSWD_API_ERROR_INVALID_PATTERN
+ *              Typed string doesn't fulfill pattern policy.
+ * \par Known issues/bugs:
+ * None
+ *
+ * \pre None
+ *
+ * \post None
+ *
+ */
+int auth_passwd_check_passwd_available(password_type passwd_type, const char *passwd);
+
+/**
  * \par Description:
  * This API checks if password was used before.
  *

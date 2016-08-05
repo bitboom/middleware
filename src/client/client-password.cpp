@@ -149,6 +149,35 @@ int auth_passwd_check_passwd_state(password_type passwd_type,
 }
 
 AUTH_PASSWD_API
+int auth_passwd_check_passwd_available(password_type passwd_type, const char *passwd)
+{
+	using namespace AuthPasswd;
+	return try_catch([&] {
+		if (NULL == passwd) {
+			LogError("Wrong input param");
+			return AUTH_PASSWD_API_ERROR_INPUT_PARAM;
+		}
+
+		MessageBuffer send, recv;
+
+		Serialization::Serialize(send, static_cast<int>(PasswordHdrs::HDR_CHK_PASSWD_AVAILABLE));
+		Serialization::Serialize(send, passwd_type);
+		Serialization::Serialize(send, std::string(passwd));
+
+		int retCode = sendToServer(SERVICE_SOCKET_PASSWD_CHECK, send.Pop(), recv);
+
+		if (AUTH_PASSWD_API_SUCCESS != retCode) {
+			LogDebug("Error in sendToServer. Error code: " << retCode);
+			return retCode;
+		}
+
+		Deserialization::Deserialize(recv, retCode);
+
+		return retCode;
+	});
+}
+
+AUTH_PASSWD_API
 int auth_passwd_check_passwd_reused(password_type passwd_type,
 									const char *passwd,
 									int *is_reused)
