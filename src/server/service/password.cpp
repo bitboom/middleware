@@ -144,6 +144,7 @@ int PasswordService::processCheckFunctions(PasswordHdrs hdr, MessageBuffer &buff
 		Deserialization::Deserialize(buffer, passwdType);
 		Deserialization::Deserialize(buffer, challenge);
 		result = m_policyManager.checkPolicy(passwdType, NO_PASSWORD, challenge, cur_user);
+		break;
 	}
 
 	default:

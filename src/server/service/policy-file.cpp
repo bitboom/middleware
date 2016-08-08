@@ -194,7 +194,7 @@ bool PolicyFile::checkMinComplexCharNumber(const std::string &password) const
 	for (i = 0; i < password.size(); i++) {
 		ch = password[i];
 
-		if (ch < 'A' || ('Z' < ch && ch < 'a')  || 'z' < ch)
+		if (ch < '0' || ('9' < ch && ch < 'A') || ('Z' < ch && ch < 'a')  || 'z' < ch)
 			cnt++;
 	}
 
