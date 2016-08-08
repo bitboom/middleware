@@ -1,0 +1,81 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "Portapapeles"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "Aceptar"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "Cancelar"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "Captura de pantalla"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "Contraseña"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "Hotspot"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "Cámara"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "La política de seguridad impide el uso de %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "La política de seguridad restringe el uso de %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "Se ha aplicado la política de seguridad."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "Política seguridad en vigor"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "La política de seguridad impide la instalación de aplicaciones."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "La política de seguridad impide la instalación de esta aplicación."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "La política de seguridad impide la desinstalación de aplicaciones."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "La política de seguridad impide la desinstalación de esta aplicación."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "La política de seguridad requiere que cambie la contraseña"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "La política de seguridad restringe el uso del micrófono."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "La política de seguridad restringe el uso de información de ubicación."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "La política de seguridad impide el uso de Bluetooth."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "La política de seguridad impide el envío de mensajes."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "La política de seguridad restringe la recuperación de mensajes."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "La política de seguridad impide el uso de aplicaciones de navegador."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "La política de seguridad restringe el uso de tarjeta SD."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "La política de seguridad impide el descifrado del teléfono."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "La política de seguridad impide el uso de Wi-Fi."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "La política de seguridad impide que se cambien los ajustes."
+

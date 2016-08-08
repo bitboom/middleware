@@ -1,0 +1,81 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "ბუფერული მეხს."
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "კი"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "გაუქმება"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "ეკრანის სურათი"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "პაროლი"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "Hotspot"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "კამერა"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "უსაფრთხოების პოლიტიკა კრძალავს %s-ის გამოყენებას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "უსაფრთხოების პოლიტიკა ზღუდავს %s-ის გამოყენებას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "გამოიყენება უსაფრთხოების პოლიტიკა."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "უსაფრთხოება ძალაშია"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "უსაფრთხოების პოლიტიკა კრძალავს აპლიკაციების დაინსტალირებას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "უსაფრთხოების პოლიტიკა კრძალავს ამ აპლიკაციის დაინსტალირებას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "უსაფრთხოების პოლიტიკა კრძალავს აპლიკაციების ინსტალაციის გაუქმებას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "უსაფრთხოების პოლიტიკა კრძალავს ამ აპლიკაციის ინსტალაციის გაუქმებას."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "უსაფრთხოების პოლიტიკით მოგეთხოვებათ შეცვალოთ პაროლი."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "უსაფრთხოების პოლიტიკა ზღუდავს, მიკროფონის გამოყენებას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "უსაფრთხოების პოლიტიკა ზღუდავს ლოკაციის ინფორმაციის გამოყენებას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "უსაფრთხოების პოლიტიკა კრძალავს Bluetooth-ის გამოყენებას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "უსაფრთხოების პოლიტიკა კრძალავს შეტყობინებების გაგზავნას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "უსაფრთხოების პოლიტიკა ზღუდავს შეტყობინებების მიღებას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "უსაფრთხოების პოლიტიკა კრძალავს ბრაუზერი აპლიკაციების გამოყენებას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "უსაფრთხოების პოლიტიკა ზღუდავს SD ბარათის გამოყენებას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "უსაფრთხოების პოლიტიკა კრძალავს ტელეფონის გაშიფვრას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "უსაფრთხოების პოლიტიკა კრძალავს Wi-Fi-ის გამოყენებას."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "უსაფრთხოების პოლიტიკა კრძალავს პარამეტრების შეცვლას."
+

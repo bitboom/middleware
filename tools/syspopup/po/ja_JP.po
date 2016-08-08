@@ -1,0 +1,81 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "クリップボード"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "OK"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "キャンセル"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "画面キャプチャ"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "パスワード"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "ホットスポット"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "カメラ"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "%sの使用は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "%sの使用は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "セキュリティポリシーを適用しました。"
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "ｾｷｭﾘﾃｨﾎﾟﾘｼｰを適用中"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "アプリのインストールは、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "このアプリのインストールは、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "アプリのアンインストールは、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "このアプリのアンインストールは、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "セキュリティポリシーにより、パスワードを変更する必要があります。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "マイクの使用は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "位置情報の使用は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "Bluetoothの使用は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "メッセージの送信は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "メッセージの受信は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "ブラウザアプリの使用は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "外部SDカードの使用は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "端末の復号は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "Wi-Fiの使用は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "設定の変更は、セキュリティポリシーによって制限されています。"
+

@@ -1,0 +1,81 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "Utklippstavle"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "OK"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "Avbryt"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "Ta et skjermbilde"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "Passord"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "Hotspot"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "Kamera"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "Sikkerhetspolicyen hindrer bruk av %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "Sikkerhetspolicy begrenser bruk av %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "Sikkerhetspolicy er tatt i bruk."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "Sikkerhetspolicy i bruk"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "Sikkerhetspolicy hindrer installasjon av apper."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "Sikkerhetspolicy hindrer installasjon av denne appen."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "Sikkerhetspolicy hindrer avinstallering av apper."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "Sikkerhetspolicy hindrer avinstallering av denne appen."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "Sikkerhetspolicyen krever at du endrer passordet."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "Sikkerhetspolicy begrenser bruk av mikrofon."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "Sikkerhetspolicy begrenser bruk av posisjonsinformasjon."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "Sikkerhetspolicy hindrer bruk av Bluetooth."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "Sikkerhetspolicy hindrer sending av meldinger."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "Sikkerhetspolicy begrenser henting av meldinger."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "Sikkerhetspolicy hindrer bruk av nettleserapper."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "Sikkerhetspolicy begrenser bruk av SD-kort."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "Sikkerhetspolicy hindrer dekryptering av telefonen."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "Sikkerhetspolicy hindrer bruk av Wi-Fi."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "Sikkerhetspolicy hindrer endring av innstillinger."
+

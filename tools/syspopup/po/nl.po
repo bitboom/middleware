@@ -1,0 +1,81 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "Klembord"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "OK"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "Annul."
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "Schermafbeelding"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "Wachtwoord"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "Hotspot"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "Camera"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "Beveiligingsbeleid verhindert gebruik van %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "Gebruik van %s beperkt door beveiligingsbeleid."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "Beveiligingsbeleid toegepast."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "Geldende beveilig.beleid"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "Beveiligingsbeleid verhindert de installatie van deze apps."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "Beveiligingsbeleid verhindert de installatie van deze app."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "Beveiligingsbeleid verhindert het verwijderen van deze apps."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "Beveiligingsbeleid verhindert het verwijderen van deze app."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "Het beveiligingsbeleid vereist dat u uw wachtwoord wijzigt."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "Beveiligingsbeleid beperkt gebruik van microfoon."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "Beveiligingsbeleid beperkt het gebruik van locatiegegevens."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "Gebruik van Bluetooth wordt voorkomen door beveiligingsbeleid."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "Beveiligingsbeleid verhindert het verzenden van berichten."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "Beveiligingsbeleid beperkt het ophalen van berichten."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "Beveiligingsbeleid verhindert gebruik van browser-apps."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "Beveiligingsbeleid beperkt gebruik van SD-kaart."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "Beveiligingsbeleid verhindert decodering van telefoon."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "Gebruik van Wi-Fi wordt voorkomen door beveiligingsbeleid."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "Wijzigen van instellingen wordt voorkomen door beveiligingsbeleid."
+

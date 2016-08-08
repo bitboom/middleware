@@ -1,0 +1,81 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "Gearrthaisce"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "OK"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "Cuir ar ceal"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "Gabháil scáileáin"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "Pasfhocal"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "Hotspot"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "Ceam."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "Cuireann an beartas slándála cosc ar úsáid %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "Cuireann an polasaí slándála srian ar úsáid %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "Beartas slándála curtha i bhfeidhm."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "Bear. slándála i bhfeidhm"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "Cuireann an beartas slándála cosc ar shuiteáil feidhmchlár."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "Cuireann an beartas slándála cosc ar shuiteáil an fheidhmchláir seo."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "Cuireann an beartas slándála cosc ar dhíshuiteáil feidhmchlár."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "Cuireann an beartas slándála cosc ar dhíshuiteáil an fheidhmchláir seo."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "Éilíonn an beartas slándála ort do phasfhocal a athrú"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "Cuireann an beartas slándála srian ar úsáid an mhicreafóin."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "Cuireann an beartas slándála srian ar úsáid faisnéis suímh."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "Cuireann an beartas slándála cosc ar Bluetooth a úsáid."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "Cuireann an beartas slándála cosc ar sheoladh teachtaireachtaí."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "Cuireann an beartas slándála srian ar aisghabháil teachtaireachtaí."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "Cuireann an beartas slándála bac ar úsáid feidhmchláir bhrabhsálaí."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "Cuireann an polasaí slándála srian ar úsáid an chárta SD."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "Cuireann an beartas slándála cosc ar dhíchriptiú an fhóin."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "Cuireann an beartas slándála cosc ar Wi-Fi a úsáid."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "Cuireann an beartas slándála cosc ar shocruithe a athrú."
+

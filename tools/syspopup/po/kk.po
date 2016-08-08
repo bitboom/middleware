@@ -1,0 +1,81 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "Буфер"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "OK"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "Бас тарту"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "Экранды түсіру"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "Кілтсөз"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "Hotspot"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "Камера"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "Қауіпсіздік саясаты %s қолданбасын пайдалануға жол бермеді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "Қауіпсіздің саясаты %s мүмкіндігін пайдалануды шектейді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "Қауіпсіздік саясаты қолданылды."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "Қауіпсіз. саясаты күшінде"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "Қауіпсіздік саясаты қолданбаларды орнатуға жол бермейді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "Қауіпсіздік саясаты осы қолданбаны орнатуға жол бермейді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "Қауіпсіздік саясаты қолданбаларды жоюға жол бермейді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "Қауіпсіздік саясаты осы қолданбаны жоюға жол бермейді."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "Қауіпсіздік саясаты құпиясөздің өзгеруін қажет етеді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "Қауіпсіздік саясаты микрофонды пайдалануды шектейді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "Қауіпсіздік саясаты орын ақпаратын пайдалануды шектейді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "Қауіпсіздік саясаты Bluetooth пайдалануды шектейді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "Қауіпсіздік саясаты хабарларды жіберуге жол бермейді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "Қауіпсіздік саясаты хабарларды қалпына келтіруді шектейді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "Қауіпсіздік саясаты браузер қолданбаларын пайдалануға жол бермейді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "Қауіпсіздік саясаты SD картаны пайдалануды шектейді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "Қауіпсіздік саясаты телефонды шифрсыздандыруға жол бермейді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "Қауіпсіздік саясаты Wi-Fi пайдалануға жол бермейді."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "Қауіпсіздік саясаты параметрлерді өзгертуді болдырмайды."
+

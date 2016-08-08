@@ -79,26 +79,3 @@ msgstr "Security policy prevents use of Wi-Fi."
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Security policy prevents changing settings."
 
-msgid "IDS_DPM_NOTI_BODY_KRATE_REMOVE"
-msgstr "Tap here to delete Separated Krate."
-
-msgid "IDS_DPM_NOTI_KRATE_REMOVE"
-msgstr "Separated Krate deletion"
-
-msgid "IDS_DPM_BODY_KRATE_REMOVE"
-msgstr "Security policy prevent the use of the Separated Krate. Tap OK to remove Separated krate."
-
-msgid "IDS_DPM_KRATE_REMOVE"
-msgstr "Remove Separated Krate"
-
-msgid "IDS_DPM_NOTI_BODY_KRATE_CREATE"
-msgstr "Tap here to create Separated Krate."
-
-msgid "IDS_DPM_NOTI_KRATE_CREATE"
-msgstr "Separated krate creation"
-
-msgid "IDS_DPM_BODY_KRATE_CREATE"
-msgstr "Security policy force to use of the Separated Krate. Tap OK to create Separated krate."
-
-msgid "IDS_DPM_KRATE_CREATE"
-msgstr "Create Separated Krate"

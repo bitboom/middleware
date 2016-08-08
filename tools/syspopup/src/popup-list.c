@@ -29,38 +29,144 @@ popup_info_s popup_list[] = {
 	/* ID | TEXT_PREFIX | TITLE_TEXT | CONTENT_TEXT | POPUP_STYLE | LEFT_BUTTON | RIGHT_BUTTON | NOTI_TITLE | NOTI_CONTENT */
 
 	/* Application Policy */
-	{"package-installation-mode",   true,  "IDS_DPM_PACKAGE_INSTALLATION",   NULL, "toast", NULL, NULL, NULL, NULL},
-	{"package-uninstallation-mode", true, "IDS_DPM_PACKAGE_UNINSTALLATION", NULL, "toast", NULL, NULL, NULL, NULL},
+	{"package-installation-mode",
+		false,
+		NULL,
+		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS",
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
+	{"package-uninstallation-mode",
+		false,
+		NULL,
+		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS",
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
 
 	/* Password Policy */
-	{"password-expires",        true, "IDS_DPM_PASSWORD", "IDS_DPM_BODY_PASSWORD_EXPIRES", "toast", NULL, NULL, NULL, NULL},
-	{"password-reset",          true, "IDS_DPM_PASSWORD", "IDS_DPM_BODY_PASSWORD_RESET", "toast", NULL, NULL, NULL, NULL},
-	{"password-enforce-change", false, "IDS_DPM_PASSWORD", "IDS_DPM_BODY_PASSWORD_ENFORCE_CHANGE", "default", NULL, "IDS_DPM_OK", NULL, NULL},
+	{"password-enforce-change",
+		false,
+		"IDS_ST_BODY_PASSWORD",
+		"IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD",
+		"default",
+		NULL, "IDS_TPLATFORM_BUTTON_OK", NULL, NULL
+	},
 
 	/* Restriction Policy */
-	{"wifi",                    true, "IDS_DPM_WIFI",              NULL, "toast", NULL, NULL, NULL, NULL},
-	{"wifi-hotspot",            true, "IDS_DPM_WIFI_HOTSPOT",      NULL, "toast", NULL, NULL, NULL, NULL},
-	{"camera",                  true, "IDS_DPM_CAMERA",            NULL, "toast", NULL, NULL, NULL, NULL},
-	{"microphone",              true, "IDS_DPM_MICROPHONE",        NULL, "toast", NULL, NULL, NULL, NULL},
-	{"location",                true, "IDS_DPM_LOCATION",          NULL, "toast", NULL, NULL, NULL, NULL},
-	{"settings-changes",        true, "IDS_DPM_SETTINGS_CHANGES",  NULL, "toast", NULL, NULL, NULL, NULL},
-	{"bluetooth",               true, "IDS_DPM_BLUETOOTH",         NULL, "toast", NULL, NULL, NULL, NULL},
-	{"clipboard",               true, "IDS_DPM_CLIPBOARD",         NULL, "toast", NULL, NULL, NULL, NULL},
-	{"usb-debugging",           true, "IDS_DPM_USB_DEBUGGING",     NULL, "toast", NULL, NULL, NULL, NULL},
-	{"nfc",                     true, "IDS_DPM_NFC",               NULL, "toast", NULL, NULL, NULL, NULL},
-	{"message-sending",         true, "IDS_DPM_MESSAGE_SENDING",   NULL, "toast", NULL, NULL, NULL, NULL},
-	{"message-receiving",       true, "IDS_DPM_MESSAGE_RECEIVING", NULL, "toast", NULL, NULL, NULL, NULL},
-	{"browser",                 true, "IDS_DPM_BROWSER",           NULL, "toast", NULL, NULL, NULL, NULL},
-	{"screen-capture",          true, "IDS_DPM_SCREEN_CAPTURE",    NULL, "toast", NULL, NULL, NULL, NULL},
+	{"wifi",
+		false,
+		NULL,
+		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI",
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
+	{"wifi-hotspot",
+		true,
+		"IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT",
+		NULL,
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
+	{"camera",
+		true,
+		"IDS_IDLE_TAB4_CAMERA",
+		NULL,
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
+	{"microphone",
+		false,
+		NULL,
+		"IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC",
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
+	{"location",
+		false,
+		NULL,
+		"IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO",
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
+	{"settings-changes",
+		false,
+		NULL,
+		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS",
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
+	{"bluetooth",
+		false,
+		NULL,
+		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH",
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
+	{"clipboard",
+		true,
+		"IDS_TPLATFORM_OPT_CLIPBOARD",
+		NULL,
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
+	{"nfc",
+		true,
+		"IDS_ST_BODY_NFC",
+		NULL,
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
+	{"message-sending",
+		false,
+		NULL,
+		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES",
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
+	{"message-receiving",
+		false,
+		NULL,
+		"IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES",
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
+	{"browser",
+		false,
+		NULL,
+		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS",
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
+	{"screen-capture",
+		true,
+		"IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN",
+		NULL,
+		"toast",
+		NULL, NULL, NULL, NULL
+	},
 
 	/* Storage Policy */
 	{"external-storage",   true, "IDS_DPM_EXTERNAL_STORAGE",   NULL, "toast", NULL, NULL, NULL, NULL},
 	{"storage-decryption", true, "IDS_DPM_STORAGE_DECRYPTION", NULL, "toast", NULL, NULL, NULL, NULL},
-	{"wipe-data",          true, "IDS_DPM_WIPE_DATA",          NULL, "default", "IDS_DPM_CANCEL", "IDS_DPM_OK", NULL, NULL},
 
 	/* Krate Policy */
-	{"krate-create", false, "IDS_DPM_KRATE_CREATE", "IDS_DPM_BODY_KRATE_CREATE", "default", "IDS_DPM_CANCEL", "IDS_DPM_OK", "IDS_DPM_NOTI_KRATE_CREATE", "IDS_DPM_NOTI_BODY_KRATE_CREATE"},
-	{"krate-remove", false, "IDS_DPM_KRATE_REMOVE", "IDS_DPM_BODY_KRATE_REMOVE", "default", "IDS_DPM_CANCEL", "IDS_DPM_OK", "IDS_DPM_NOTI_KRATE_REMOVE", "IDS_DPM_NOTI_BODY_KRATE_REMOVE"},
+	{"krate-create",
+		false,
+		"IDS_DPM_KRATE_CREATE",
+		"IDS_DPM_BODY_KRATE_CREATE",
+		"default",
+		"IDS_TPLATFORM_BUTTON2_CANCEL", "IDS_TPLATFORM_BUTTON_OK",
+		"IDS_DPM_NOTI_KRATE_CREATE", "IDS_DPM_NOTI_BODY_KRATE_CREATE"
+	},
+	{"krate-remove",
+		false,
+		"IDS_DPM_KRATE_REMOVE",
+		"IDS_DPM_BODY_KRATE_REMOVE",
+		"default",
+		"IDS_TPLATFORM_BUTTON2_CANCEL", "IDS_TPLATFORM_BUTTON_OK",
+		"IDS_DPM_NOTI_KRATE_REMOVE", "IDS_DPM_NOTI_BODY_KRATE_REMOVE"
+	},
 };
 
 popup_info_s *_get_popup_info(const char *id)
@@ -92,25 +198,24 @@ int _get_popup_text(const char *id, const char *status, char *header, char *body
 	if (info == NULL)
 		return -1;
 
-	lp_policy = __(info->title);
-
-	if (info->content == NULL) {
-		if (!strcmp(status, "ongoing"))
-			lp_body = __("IDS_DPM_BODY_ONGOING_PREVENT_TEXT");
-		else
-			lp_body = __("IDS_DPM_BODY_PREVENT_TEXT");
-
-		snprintf(body, PATH_MAX, lp_body, lp_policy);
-	} else {
-		lp_body = __(info->content);
-		snprintf(body, PATH_MAX, "%s", lp_body);
+	if (info->title != NULL) {
+		lp_policy = __(info->title);
+		if (info->text_prefix) {
+			lp_header = __("IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS");
+	                snprintf(header, PATH_MAX, lp_header, lp_policy);
+		} else {
+			snprintf(header, PATH_MAX, "%s", lp_policy);
+		}
 	}
 
-	if (info->title_prefix) {
-		lp_header = __("IDS_DPM_HEADER_PREVENT_TEXT");
-		snprintf(header, PATH_MAX, lp_header, lp_policy);
-	} else {
-		snprintf(header, PATH_MAX, "%s", lp_policy);
+	if (info->content != NULL) {
+		if (info->text_prefix) {
+			lp_body = __("IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS");
+			snprintf(body, PATH_MAX, lp_body, lp_policy);
+		} else {
+			lp_body = __(info->content);
+			snprintf(body, PATH_MAX, "%s", lp_body);
+		}
 	}
 
 	return 0;

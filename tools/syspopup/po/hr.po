@@ -1,0 +1,81 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "Međuspremnik"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "U redu"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "Prekid"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "Snimka zaslona"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "Lozinka"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "Hotspot"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "Kamera"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "Sigurnosne odredbe sprečavaju upotrebu aplikacije %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "Sigurnosna pravila ograničavaju upotrebu značajke %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "Sigurnosna pravila primijenjena."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "Sigurn. pravila na snazi"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "Sigurnosna pravila sprečavaju instalaciju aplikacija."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "Sigurnosna pravila sprečavaju instalaciju ove aplikacije."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "Sigurnosna pravila sprečavaju deinstaliranje aplikacija."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "Sigurnosna pravila sprečavaju deinstaliranje ove aplikacije."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "Zbog sigurnosnih pravila morate promijeniti lozinku."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "Sigurnosna pravila ograničavaju upotrebu mikrofona."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "Sigurnosna pravila ograničavaju uporabu podataka o lokaciji."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "Sigurnosna pravila sprečavaju upotrebu Bluetootha."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "Sigurnosna pravila sprečavaju slanje poruka."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "Sigurnosna pravila ograničavaju preuzimanje poruka."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "Sigurnosna pravila sprečavaju upotrebu aplikacija preglednika."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "Sigurnosna pravila ograničavaju upotrebu SD kartice."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "Sigurnosna pravila sprečavaju dešifriranje telefona."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "Sigurnosna pravila sprečavaju upotrebu Wi-Fi-a."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "Sigurnosna pravila sprečavaju promjenu postavki."
+

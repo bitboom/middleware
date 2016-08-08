@@ -201,10 +201,13 @@ void _create_syspopup(const char *id, char *style, const char *status, app_contr
 	eext_object_event_callback_add(popup, EEXT_CALLBACK_BACK, eext_popup_back_cb, win);
 
 	if (!strcmp(info->style, "default")) {
-		elm_object_part_text_set(popup, "title,text", header);
-		elm_object_item_part_text_translatable_set(popup, "title,text", EINA_TRUE);
+		if (header != NULL) {
+			elm_object_part_text_set(popup, "title,text", header);
+			elm_object_item_part_text_translatable_set(popup, "title,text", EINA_TRUE);
+		}
 
-		elm_object_text_set(popup, body);
+		if (body != NULL)
+			elm_object_text_set(popup, body);
 		elm_popup_align_set(popup, ELM_NOTIFY_ALIGN_FILL, 1.0);
 
 		evas_object_event_callback_add(popup, EVAS_CALLBACK_DEL, __default_popup_del_cb, info);

@@ -1,3 +1,84 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "클립보드"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "확인"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "취소"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "화면 캡처"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "비밀번호"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "핫스팟"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "카메라"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "보안정책에 따라 %s 앱을 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "보안정책에 따라 %s 기능을 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "보안정책을 적용하였습니다."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "보안정책 적용 중"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "보안정책에 따라 앱을 설치할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "보안정책에 따라 이 앱을 설치할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "보안정책에 따라 앱을 삭제할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "보안정책에 따라 이 앱을 삭제할 수 없습니다."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "보안정책에 따라 비밀번호를 변경하세요."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "보안정책에 따라 마이크를 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "보안정책에 따라 위치정보를 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "보안정책에 따라 [블루투스]를 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "보안정책에 따라 메시지를 보낼 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "보안정책에 따라 메시지를 가져올 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "보안정책에 따라 브라우저 앱을 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "보안정책에 따라 SD 카드를 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "보안정책에 따라 휴대전화를 암호화를 해제할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "보안정책에 따라 Wi-Fi를 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "보안정책에 따라 설정을 변경할 수 없습니다."
+
 msgid "IDS_DPM_NOTI_BODY_KRATE_REMOVE"
 msgstr "여기를 누르면 Separated Krate을 제거합니다."
 
@@ -22,86 +103,3 @@ msgstr "보안정책에 따라 Separated Krate을 사용합니다. OK 버튼을 
 msgid "IDS_DPM_KRATE_CREATE"
 msgstr "Separated Krate 생성"
 
-msgid "IDS_DPM_CANCEL"
-msgstr "취소"
-
-msgid "IDS_DPM_OK"
-msgstr "확인"
-
-msgid "IDS_DPM_BODY_WIPE_DATA"
-msgstr "보안정책에 따라 기기 저장공간의 데이터를 삭제합니다."
-
-msgid "IDS_DPM_BODY_PASSWORD_EXPIRES"
-msgstr "만료된 비밀번호입니다."
-
-msgid "IDS_DPM_BODY_PASSWORD_RESET"
-msgstr "보안정책에 따라 새로운 비밀번호를 설정합니다."
-
-msgid "IDS_DPM_BODY_PASSWORD_ENFORCE_CHANGE"
-msgstr "계속하려면 비밀번호를 변경해야 합니다."
-
-msgid "IDS_DPM_PASSWORD"
-msgstr "비밀번호 재설정"
-
-msgid "IDS_DPM_SCREEN_CAPTURE"
-msgstr "화면 캡처"
-
-msgid "IDS_DPM_BROWSER"
-msgstr "브라우저"
-
-msgid "IDS_DPM_MESSAGE_RECEIVING"
-msgstr "문자 메시지 및 MMS 수신"
-
-msgid "IDS_DPM_MESSAGE_SENDING"
-msgstr "문자 메시지 및 MMS 전송"
-
-msgid "IDS_DPM_USB_DEBUGGING"
-msgstr "USB 디버깅"
-
-msgid "IDS_DPM_SETTINGS_CHANGES"
-msgstr "셋팅 변경"
-
-msgid "IDS_DPM_CLIPBOARD"
-msgstr "클립보드"
-
-msgid "IDS_DPM_STORAGE_DECRYPTION"
-msgstr "저장공간 암호화 해제"
-
-msgid "IDS_DPM_EXTERNAL_STORAGE"
-msgstr "외부 저장공간"
-
-msgid "IDS_DPM_BLUETOOTH"
-msgstr "블루투스"
-
-msgid "IDS_DPM_NFC"
-msgstr "NFC"
-
-msgid "IDS_DPM_WIFI_HOTSPOT"
-msgstr "핫스팟"
-
-msgid "IDS_DPM_WIFI"
-msgstr "와이파이"
-
-msgid "IDS_DPM_MICROPHONE"
-msgstr "녹음"
-
-msgid "IDS_DPM_LOCATION"
-msgstr "위치"
-
-msgid "IDS_DPM_CAMERA"
-msgstr "카메라"
-
-msgid "IDS_DPM_PACKAGE_UNINSTALLATION"
-msgstr "어플리케이션 삭제"
-
-msgid "IDS_DPM_PACKAGE_INSTALLATION"
-msgstr "어플리케이션 설치"
-
-msgid "IDS_DPM_HEADER_PREVENT_TEXT"
-msgstr "%s 제한"
-
-msgid "IDS_DPM_BODY_PREVENT_TEXT"
-msgstr "보안 정책에 따라 %s 기능 사용을 제한합니다."
-
-msgid "IDS_DPM_BODY_ONGOING_PREVENT_TEXT"
-msgstr "보안 정책에 따라 %s 기능 사용을 제한합니다. 모든 프로세스가 종료됩니다."

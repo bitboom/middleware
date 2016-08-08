@@ -48,7 +48,7 @@ typedef struct {
 
 typedef struct {
 	const char *id;
-	bool title_prefix;
+	bool text_prefix;
 	char *title;
 	char *content;
 	char *style;
