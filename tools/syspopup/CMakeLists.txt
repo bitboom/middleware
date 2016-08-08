@@ -14,6 +14,7 @@ PKG_CHECK_MODULES(dpm_syspopup_pkgs REQUIRED
 	capi-system-system-settings
 	capi-ui-efl-util
 	notification
+	vconf
 )
 
 INCLUDE_DIRECTORIES(${dpm_syspopup_pkgs_INCLUDE_DIRS} ${DPM_LIBS})
