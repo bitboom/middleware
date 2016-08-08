@@ -233,6 +233,8 @@ int auth_passwd_check_passwd_state(password_type passwd_type,
  * \return AUTH_PASSWD_API_SUCCESS
  * \return AUTH_PASSWD_API_ERROR_ACCESS_DENIED
  * \return AUTH_PASSWD_API_ERROR_SOCKET
+ * \return AUTH_PASSWD_API_ERROR_PASSWORD_REUSED
+ *              Typed string is an used password before
  * \return AUTH_PASSWD_API_ERROR_INVALID_MIN_LENGTH
  *              Typed string doesn't fulfill min length policy.
  * \return AUTH_PASSWD_API_ERROR_INVALID_MIN_COMPLEX_CHAR_NUM

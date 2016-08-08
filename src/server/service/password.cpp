@@ -141,9 +141,18 @@ int PasswordService::processCheckFunctions(PasswordHdrs hdr, MessageBuffer &buff
 
 	case PasswordHdrs::HDR_CHK_PASSWD_AVAILABLE: {
 		std::string challenge;
+		bool isPwdReused;
 		Deserialization::Deserialize(buffer, passwdType);
 		Deserialization::Deserialize(buffer, challenge);
-		result = m_policyManager.checkPolicy(passwdType, NO_PASSWORD, challenge, cur_user);
+		result = m_pwdManager.isPwdReused(passwdType, challenge, cur_user, isPwdReused);
+
+		if (result == AUTH_PASSWD_API_SUCCESS) {
+			if(!isPwdReused)
+				result = m_policyManager.checkPolicy(passwdType, NO_PASSWORD, challenge, cur_user);
+			else
+				result = AUTH_PASSWD_API_ERROR_PASSWORD_REUSED;
+		}
+
 		break;
 	}
 
