@@ -17,7 +17,7 @@
 #ifndef __CAPI_STORAGE_POLICY_H__
 #define __CAPI_STORAGE_POLICY_H__
 
-#include <dpm/context.h>
+#include <dpm/device-policy-manager.h>
 
 /**
  * @file storage.h
@@ -66,7 +66,7 @@ typedef void* dpm_storage_policy_h;
  * @see         dpm_context_release_storage_policy()
  * @see         get_last_result()
  */
-DPM_API dpm_storage_policy_h dpm_context_acquire_storage_policy(dpm_context_h handle);
+dpm_storage_policy_h dpm_context_acquire_storage_policy(dpm_context_h handle);
 
 /**
  * @brief       Releases the storage policy handle.
@@ -82,7 +82,7 @@ DPM_API dpm_storage_policy_h dpm_context_acquire_storage_policy(dpm_context_h ha
  * @pre         The handle must be created by dpm_context_acquire_storage_policy().
  * @see         dpm_context_acquire_storage_policy()
  */
-DPM_API int dpm_context_release_storage_policy(dpm_context_h context, dpm_storage_policy_h handle);
+int dpm_context_release_storage_policy(dpm_context_h context, dpm_storage_policy_h handle);
 
 /**
  * @brief       API to selectively wipe external memory, internal memory,
@@ -101,7 +101,7 @@ DPM_API int dpm_context_release_storage_policy(dpm_context_h context, dpm_storag
  * @see         dpm_context_acquire_storage_policy()
  * @see         dpm_context_release_storage_policy()
  */
-DPM_API int dpm_storage_wipe_data(dpm_storage_policy_h handle, const dpm_wipe_type_e type);
+int dpm_storage_wipe_data(dpm_storage_policy_h handle, const dpm_wipe_type_e type);
 
 #ifdef __cplusplus
 }

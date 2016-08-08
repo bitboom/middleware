@@ -35,42 +35,42 @@ static int restriction_##__name__(struct testcase *tc)                 \
 	}                                                                  \
 	if (dpm_restriction_get_##__name__##_state(NULL, &state) == 0) {   \
 		printf("NULL handle test in getter failed\n");                 \
-		dpm_context_destroy(handle);                                   \
+		dpm_manager_destroy(handle);                                   \
 		return TEST_FAILED;                                            \
 	}                                                                  \
 	if (dpm_restriction_get_##__name__##_state(handle, NULL) == 0) {   \
 		printf("NULL param test failed\n");                            \
-		dpm_context_destroy(handle);                                   \
+		dpm_manager_destroy(handle);                                   \
 		return TEST_FAILED;                                            \
 	}                                                                  \
 	if (dpm_restriction_set_##__name__##_state(NULL, false) == 0) {    \
 		printf("NULL handle test in setter failed\n");                 \
-		dpm_context_destroy(handle);                                   \
+		dpm_manager_destroy(handle);                                   \
 		return TEST_FAILED;                                            \
 	}                                                                  \
 	if (dpm_restriction_get_##__name__##_state(handle, &state) != 0) { \
 		printf("Policy query failed\n");                               \
-		dpm_context_destroy(handle);                                   \
+		dpm_manager_destroy(handle);                                   \
 		return TEST_FAILED;                                            \
 	}                                                                  \
 	enable = !state;                                                   \
 	if (dpm_restriction_set_##__name__##_state(handle, enable) != 0) { \
 		printf("Policy enforce failed\n");                             \
-		dpm_context_destroy(handle);                                   \
+		dpm_manager_destroy(handle);                                   \
 		return TEST_FAILED;                                            \
 	}                                                                  \
 	dpm_restriction_get_##__name__##_state(handle, &enable);           \
 	if (enable != !state) {                                            \
 		printf("Policy check failed\n");                               \
-		dpm_context_destroy(handle);                                   \
+		dpm_manager_destroy(handle);                                   \
 		return TEST_FAILED;                                            \
 	}                                                                  \
 	if (dpm_restriction_set_##__name__##_state(handle, state) != 0) {  \
 		printf("Policy recovery failed\n");                            \
-		dpm_context_destroy(handle);                                   \
+		dpm_manager_destroy(handle);                                   \
 		return TEST_FAILED;                                            \
 	}                                                                  \
-	dpm_context_destroy(handle);                                       \
+	dpm_manager_destroy(handle);                                       \
 	return TEST_SUCCESSED;                                             \
 }                                                                      \
 struct testcase restriction_testcase_##__name__ = {                    \

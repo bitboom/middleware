@@ -18,7 +18,6 @@
 #define __CAPI_RESTRICTION_POLICY_H__
 
 #include <dpm/device-policy-manager.h>
-#include <dpm/context.h>
 
 /**
  * @file restriction.h
