@@ -16,7 +16,7 @@
 
 SET(POLICY      ${POLICY}
 				password.cpp
-				zone.cpp
+				krate.cpp
 				dpm/password.cpp
 				dpm/zone.cpp
 )
