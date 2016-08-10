@@ -21,12 +21,19 @@
  */
 #include "smack-check.h"
 
-#include <stdlib.h>
+#include <fstream>
 #include <sys/smack.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
 #include <dpl/log/log.h>
+#include <error-description.h>
 
 namespace AuthPasswd {
+
+const char COMMENT = '#';
+const std::string CLIENT_WHITELIST = "/etc/auth-fw/client-whitelist";
+const std::string ADMIN_CLIENT_WHITELIST = "/etc/auth-fw/admin-client-whitelist";
 
 int smack_runtime_check(void)
 {
@@ -52,6 +59,56 @@ int smack_check(void)
 #else
 	return smack_runtime_check();
 #endif
+}
+
+bool checkClientOnWhitelist(int sockfd, std::string whitelistPath)
+{
+	struct ucred cr;
+	socklen_t len = sizeof(struct ucred);
+
+	// get client smack label from socket
+	if (getsockopt(sockfd, SOL_SOCKET, SO_PEERCRED, &cr, &len)) {
+		int err = errno;
+		LogError("getsockopt() failed: " << errnoToString(err));
+		return false;
+	}
+
+	std::string clientSmackLabel;
+	std::string path("/proc/" + std::to_string(cr.pid) + "/attr/current");
+	std::ifstream file(path.c_str());
+	if (!file.is_open()) {
+		LogError("failed to open " << path);
+		return false;
+	}
+
+	std::getline(file, clientSmackLabel);
+	file.close();
+	if (clientSmackLabel.empty())
+		return false;
+
+	// compare with whitelist labels
+	std::string line;
+	std::ifstream whitelistFile(whitelistPath.c_str());
+	if (!whitelistFile.is_open()) {
+		LogError("failed to open " << whitelistPath);
+		return false;
+	}
+
+	while (std::getline(whitelistFile, line)) {
+		if (line.empty())
+			continue;
+		if (line.at(0) == COMMENT)
+			continue;
+		if (line.compare(clientSmackLabel) == 0) {
+			whitelistFile.close();
+			LogDebug("Client " << clientSmackLabel << " is on whitelist");
+			return true;
+		}
+	}
+	whitelistFile.close();
+	LogError("Client " << clientSmackLabel << " is not on whitelist");
+
+	return false;
 }
 
 } // namespace AuthPasswd

@@ -1,0 +1,5 @@
+# subject labels allowed to use password checking/setting
+# put each allowed label in new line
+System
+System::Privileged
+User

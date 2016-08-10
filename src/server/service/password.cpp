@@ -30,6 +30,7 @@
 #include <dpl/log/log.h>
 #include <dpl/serialization.h>
 
+#include <smack-check.h>
 #include <user-check.h>
 
 #include <password.h>
@@ -313,27 +314,35 @@ bool PasswordService::processOne(const ConnectionID &conn, MessageBuffer &buffer
 		try {   //try..catch for internal service errors, assigns error code for returning.
 			switch (interfaceID) {
 			case SOCKET_ID_CHECK:
-				if (socket_get_user(conn.sock, cur_user))
+				if (!checkClientOnWhitelist(conn.sock, CLIENT_WHITELIST))
+					retCode = AUTH_PASSWD_API_ERROR_ACCESS_DENIED;
+				else if (socket_get_user(conn.sock, cur_user))
 					retCode = AUTH_PASSWD_API_ERROR_NO_USER;
 				else
 					retCode = processCheckFunctions(hdr, buffer, cur_user, cur_att, max_att, exp_time);
-
 				break;
 
 			case SOCKET_ID_SET:
-				if (socket_get_user(conn.sock, cur_user))
+				if (!checkClientOnWhitelist(conn.sock, CLIENT_WHITELIST))
+					retCode = AUTH_PASSWD_API_ERROR_ACCESS_DENIED;
+				else if (socket_get_user(conn.sock, cur_user))
 					retCode = AUTH_PASSWD_API_ERROR_NO_USER;
 				else
 					retCode = processSetFunctions(hdr, buffer, cur_user, isPwdReused);
-
 				break;
 
 			case SOCKET_ID_RESET:
-				retCode = processResetFunctions(hdr, buffer);
+				if (!checkClientOnWhitelist(conn.sock, ADMIN_CLIENT_WHITELIST))
+					retCode = AUTH_PASSWD_API_ERROR_ACCESS_DENIED;
+				else
+					retCode = processResetFunctions(hdr, buffer);
 				break;
 
 			case SOCKET_ID_POLICY:
-				retCode = processPolicyFunctions(hdr, buffer);
+				if (!checkClientOnWhitelist(conn.sock, ADMIN_CLIENT_WHITELIST))
+					retCode = AUTH_PASSWD_API_ERROR_ACCESS_DENIED;
+				else
+					retCode = processPolicyFunctions(hdr, buffer);
 				break;
 
 			default:

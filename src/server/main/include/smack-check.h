@@ -21,7 +21,12 @@
 #ifndef _SMACK_CHECK_H_
 #define _SMACK_CHECK_H_
 
+#include <string>
+
 namespace AuthPasswd {
+
+extern const std::string CLIENT_WHITELIST;
+extern const std::string ADMIN_CLIENT_WHITELIST;
 
 /*
  * A very simple runtime check for SMACK on the platform
@@ -29,6 +34,12 @@ namespace AuthPasswd {
  * It returns 0.
  */
 int smack_check(void);
+
+/*
+ * Check whether client is allowed or not on whitelist.
+ * Returns true if client label is present, fail otherwise.
+ */
+bool checkClientOnWhitelist(int sockfd, std::string whitelistPath);
 
 } // namespace AuthPasswd
 

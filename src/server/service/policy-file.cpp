@@ -122,7 +122,7 @@ std::string PolicyFile::createDir(const std::string &dir, unsigned int user) con
 void PolicyFile::writeMemoryToFile() const
 {
 	PasswordFileBuffer policyBuffer;
-	LogSecureDebug("User: " << m_user << "Policy: " << m_policy.info());
+	LogSecureDebug("User: " << m_user << " Policy: " << m_policy.info());
 	// serialize policy attributes
 	Serialization::Serialize(policyBuffer, CURRENT_FILE_VERSION);
 	Serialization::Serialize(policyBuffer, m_enable);

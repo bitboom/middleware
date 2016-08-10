@@ -84,6 +84,7 @@ export LDFLAGS+="-Wl,--rpath=%{_libdir}"
         -DSERVICE_NAME=%{name} \
         -DBIN_DIR:PATH=%{bin_dir} \
         -DSBIN_DIR:PATH=%{sbin_dir} \
+        -DSYS_CONFIG_DIR:PATH=%{_sysconfdir} \
         -DRUN_DIR:PATH=%{run_dir} \
         -DRW_DATA_DIR:PATH=%{rw_data_dir} \
         -DSYSTEMD_UNIT_DIR:PATH=%{_unitdir} \
@@ -91,7 +92,8 @@ export LDFLAGS+="-Wl,--rpath=%{_libdir}"
         -DSOCK_PASSWD_CHECK=%{sock_passwd_check} \
         -DSOCK_PASSWD_SET=%{sock_passwd_set} \
         -DSOCK_PASSWD_RESET=%{sock_passwd_reset} \
-        -DSOCK_PASSWD_POLICY=%{sock_passwd_policy}
+        -DSOCK_PASSWD_POLICY=%{sock_passwd_policy} \
+        -DPROFILE=%{profile}
 
 make %{?jobs:-j%jobs}
 
@@ -156,6 +158,8 @@ fi
 %{_unitdir}/sockets.target.wants/%{sock_passwd_set}
 %{_unitdir}/sockets.target.wants/%{sock_passwd_reset}
 %{_unitdir}/sockets.target.wants/%{sock_passwd_policy}
+%{_sysconfdir}/%{name}/client-whitelist
+%{_sysconfdir}/%{name}/admin-client-whitelist
 %dir %attr(770, %{user_name}, %{group_name}) %{rw_data_dir}
 
 %files -n lib%{name}-client

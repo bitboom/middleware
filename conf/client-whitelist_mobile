@@ -1,0 +1,9 @@
+# subject labels allowed to use password checking/setting
+# put each allowed label in new line
+System
+System::Privileged
+User
+User::App::org.tizen.keyguard
+User::App::org.tizen.lockscreen
+User::App::setting-password-efl
+User::App::setting-locktype-efl
