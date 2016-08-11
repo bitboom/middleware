@@ -18,6 +18,7 @@
  */
 
 #include <notification.h>
+#include <app_control_internal.h>
 #include <efl_util.h>
 #include <vconf.h>
 
@@ -129,10 +130,9 @@ static void password_enforce_event_handler(void *data, Evas_Object *obj, void *e
 	int lock_type = 0;
 	Evas_Object *popup = (Evas_Object *) data;
 
-	elm_win_lower(main_window);
-
 	evas_object_data_set(popup, "selected", "ok");
 	app_control_h app_control = (app_control_h)evas_object_data_get(popup, "app-control");
+	app_control_add_extra_data(app_control, APP_CONTROL_DATA_SHIFT_WINDOW, "true");
 
 	vconf_get_int(VCONFKEY_SETAPPL_SCREEN_LOCK_TYPE_INT, &lock_type);
 
