@@ -15,6 +15,7 @@
  *    limitations under the License.
  */
 #include <string>
+#include <vector>
 #include <iostream>
 
 #include <dpl/test/test_runner.h>
@@ -22,8 +23,74 @@
 #include <vcore/SignatureValidator.h>
 
 #include "test-common.h"
+#include "test-util.h"
 
 using namespace ValidationCore;
+
+namespace {
+
+std::vector<VCerr> runCheck(const std::string &contentPath,
+								   bool checkOcsp,
+								   bool checkReferences)
+{
+	SignatureFileInfoSet signatureSet;
+	SignatureFinder signatureFinder(contentPath);
+	RUNNER_ASSERT_MSG(
+		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
+		"SignatureFinder failed");
+
+	std::vector<VCerr> retVector;
+	for (auto &sig : signatureSet) {
+		SignatureValidator validator(sig);
+		SignatureData outData;
+		retVector.push_back(validator.check(contentPath,
+											checkOcsp,
+											checkReferences,
+											outData));
+	}
+	return retVector;
+}
+
+std::vector<VCerr> runCheckList(const std::string &contentPath,
+									   bool checkOcsp,
+									   const UriList &uriList)
+{
+	SignatureFileInfoSet signatureSet;
+	SignatureFinder signatureFinder(contentPath);
+	RUNNER_ASSERT_MSG(
+		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
+		"SignatureFinder failed");
+
+	std::vector<VCerr> retVector;
+	for (auto &sig : signatureSet) {
+		SignatureValidator validator(sig);
+		SignatureData outData;
+		retVector.push_back(validator.checkList(checkOcsp,
+												uriList,
+												outData));
+	}
+	return retVector;
+}
+
+VCerr runCheckAll(const std::string &contentPath,
+						 bool checkOcsp,
+						 bool checkReferences)
+{
+	SignatureValidator validator(contentPath);
+	SignatureDataMap sigDataMap;
+	return validator.checkAll(checkOcsp, checkReferences, sigDataMap);
+}
+
+VCerr runCheckListAll(const std::string &contentPath,
+							 bool checkOcsp,
+							 const UriList &uriList)
+{
+	SignatureValidator validator(contentPath);
+	SignatureDataMap sigDataMap;
+	return validator.checkListAll(checkOcsp, uriList, sigDataMap);
+}
+
+} // anonymous namespace
 
 RUNNER_TEST_GROUP_INIT(T0010_SIGNATURE_VALIDATOR)
 
@@ -631,6 +698,69 @@ RUNNER_TEST(T00161_positive_checkListAll)
 				  << certPtr->getBase64() << std::endl;
 	 *
 	 */
+}
+
+RUNNER_TEST(T00162_compare_time_between_check_and_checkAll)
+{
+	for(int i = 0; i < 3; i++) {
+		std::cout << "Start to validate : "
+				  << TestData::tpk_sdk_sample_path[i] << std::endl;
+
+		Test::cmpFuncTime(
+			[&]() { // func1
+				auto retVector = runCheck(TestData::tpk_sdk_sample_path[i],
+										  true,
+										  true);
+
+				for (auto &ret : retVector)
+					RUNNER_ASSERT_MSG(ret == E_SIG_NONE,
+									  "sig validation should be success: "
+									  << ret);
+			},
+			[&]() { // func2
+				auto ret = runCheckAll(TestData::tpk_sdk_sample_path[i],
+									   true,
+									   true);
+
+				RUNNER_ASSERT_MSG(ret == E_SIG_NONE,
+								  "sig validation should be success: "
+								  << ret);
+			});
+	}
+}
+
+RUNNER_TEST(T00163_compare_time_between_checkList_and_checkListAll)
+{
+	UriList uriList;
+	uriList.emplace_back("bin/player");
+	uriList.emplace_back("res/sample.3gp");
+	uriList.emplace_back("res/test0.3gp");
+	uriList.emplace_back("res/test1.wav");
+	uriList.emplace_back("res/test2.wav");
+
+	std::cout << "Start to validate : "
+			  << TestData::tpk_sdk_sample_path[2] << std::endl;
+
+	Test::cmpFuncTime(
+		[&]() { // func1
+			auto retVector = runCheckList(TestData::tpk_sdk_sample_path[2],
+										  true,
+										  uriList);
+
+			for (auto &ret : retVector)
+				RUNNER_ASSERT_MSG(ret == E_SIG_NONE,
+								  "sig validation should be success: "
+								  << ret);
+		},
+		[&]() { // func2
+			auto ret = runCheckListAll(TestData::tpk_sdk_sample_path[2],
+									   true,
+									   uriList);
+
+			RUNNER_ASSERT_MSG(ret == E_SIG_NONE,
+							  "sig validation should be success: "
+							  << ret);
+		});
 }
 
 RUNNER_TEST_GROUP_INIT(T0020_SigVal_errorstring)

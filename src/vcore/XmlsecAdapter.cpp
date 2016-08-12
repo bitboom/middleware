@@ -317,6 +317,8 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 			if(xmlSecProxyCtxAdd(&(dsigCtx.get()->skipReferences),
 								 reinterpret_cast<const xmlChar *>(data.c_str())))
 				ThrowMsg(Exception::InternalError, "Failed to add proxy data.");
+			else
+				LogDebug("Add [" << data << "] to proxy.");
 
 		}
 	}

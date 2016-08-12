@@ -27,12 +27,13 @@ extern const std::string widget_negative_certificate_path;
 extern const std::string widget_partner_path;
 extern const std::string widget_platform_path;
 extern const std::string widget_positive_link_path;
-extern const std::string widget_negative_link_path;;
+extern const std::string widget_negative_link_path;
 
 extern const std::string tpk_path;
 extern const std::string attacked_tpk_path;
 extern const std::string tpk_with_userdata_path;
 extern const std::string attacked_tpk_with_userdata_path;
+extern const std::string tpk_sdk_sample_path[3];
 
 extern const std::string certEE;   /* MBANK,    signed by SYMANTEC, expires 04 Feb 2016 */
 extern const std::string certIM;   /* SYMANTEC, signed by VERISIGN, expires 30 Oct 2023 */

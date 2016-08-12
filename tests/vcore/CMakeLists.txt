@@ -22,6 +22,7 @@
 #
 SET(VCORE_TESTS_SOURCES
     main.cpp
+    test-util.cpp
     test-common.cpp
     test-signature-validator.cpp
     test-certificate.cpp
@@ -68,6 +69,7 @@ INSTALL(
         resource/attacked-tpk
         resource/tpk-with-userdata
         resource/attacked-tpk-with-userdata
+        resource/tpk-sdk-sample
 
     DESTINATION
         ${CERT_SVC_TESTS}/apps
