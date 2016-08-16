@@ -202,7 +202,7 @@ int _get_popup_text(const char *id, const char *status, char *header, char *body
 		lp_policy = __(info->title);
 		if (info->text_prefix) {
 			lp_header = __("IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS");
-	                snprintf(header, PATH_MAX, lp_header, lp_policy);
+			snprintf(header, PATH_MAX, lp_header, lp_policy);
 		} else {
 			snprintf(header, PATH_MAX, "%s", lp_policy);
 		}
