@@ -66,10 +66,8 @@ void PolicyManager::flushEffectivePolicy(const std::string& name)
 		if (isFirstClient) {
 			isFirstClient = false;
 			result = newState;
-		}
-
-		if (comparator(result, newState)) {
-			result = comparator(result, newState);
+		} else if (comparator(result, newState)) {
+			result = newState;
 		}
 	}
 
