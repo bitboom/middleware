@@ -16,57 +16,33 @@
 
 #include <string>
 #include <climits>
-#include <stdexcept>
 #include <klay/exception.h>
 
-#include "policy.h"
+#include <klay/exception.h>
 
 #include "client-manager.h"
 
-namespace {
-
-const std::string clientPolicyStorage = CONF_PATH "/policy";
-
-} //namespace
-
-Client::Client(const std::string& pkgname, uid_t puid, const std::string& pk) :
-	name(pkgname), uid(puid), key(pk), policyStorage(nullptr)
-{
-	std::string storagePath = clientPolicyStorage + "/" + name + "-" + std::to_string(uid) + ".xml";
-	policyStorage.reset(new PolicyStorage(storagePath));
-}
-
-Client::~Client()
+DeviceAdministrator::DeviceAdministrator(const std::string& pkgname, uid_t puid, const std::string& pk) :
+	name(pkgname), uid(puid), key(pk)
 {
 }
 
-namespace {
-
-const std::string dataStorageLocation = DB_PATH;
-const std::string clientDBName = ".client.db";
-
-} //namespace
-
-ClientManager::ClientManager() :
-	clientRepository(nullptr)
+DeviceAdministrator::~DeviceAdministrator()
 {
-	std::string location = dataStorageLocation + "/" + clientDBName;
-	clientRepository.reset(new database::Connection(location, database::Connection::ReadWrite |
-						   database::Connection::Create));
+}
+
+DeviceAdministratorManager::DeviceAdministratorManager(const std::string& path) :
+	repository(path + "/.client.db")
+{
 	prepareRepository();
-	loadClients();
 }
 
-ClientManager::~ClientManager()
+DeviceAdministrator DeviceAdministratorManager::enroll(const std::string& name, uid_t uid)
 {
-}
-
-void ClientManager::registerClient(const std::string& name, uid_t uid)
-{
-	std::lock_guard<Mutex> lock(mutex);
+	database::Connection connection(repository, database::Connection::ReadWrite);
 
 	std::string selectQuery = "SELECT * FROM CLIENT WHERE PKG = \"" + name + "\"" + " AND UID = \"" + std::to_string(uid) + "\"";
-	database::Statement stmt0(*clientRepository, selectQuery);
+	database::Statement stmt0(connection, selectQuery);
 	if (stmt0.step()) {
 		throw runtime::Exception("Client already registered");
 	}
@@ -74,7 +50,7 @@ void ClientManager::registerClient(const std::string& name, uid_t uid)
 	std::string key = generateKey();
 
 	std::string insertQuery = "INSERT INTO CLIENT (PKG, UID, KEY, VALID) VALUES (?, ?, ?, ?)";
-	database::Statement stmt(*clientRepository, insertQuery);
+	database::Statement stmt(connection, insertQuery);
 	stmt.bind(1, name);
 	stmt.bind(2, static_cast<int>(uid));
 	stmt.bind(3, key);
@@ -84,71 +60,30 @@ void ClientManager::registerClient(const std::string& name, uid_t uid)
 		throw runtime::Exception("Failed to insert client data");
 	}
 
-	registeredClients.push_back(Client(name, uid, key));
+	return DeviceAdministrator(name, uid, key);
 }
 
-void ClientManager::deregisterClient(const std::string& name, uid_t uid)
+void DeviceAdministratorManager::disenroll(const std::string& name, uid_t uid)
 {
-	auto removeClient = [](ClientList & list, const std::string& name, uid_t uid) {
-		ClientList::iterator iter = list.begin();
-		while (iter != list.end()) {
-			Client& client = *iter;
-			if (client.getName() == name && client.getUid() == uid) {
-				client.removePolicyStorage();
-				list.erase(iter);
-				return true;
-			}
-			++iter;
-		}
-
-		return false;
-	};
-
-	std::lock_guard<Mutex> lock(mutex);
+	database::Connection connection(repository, database::Connection::ReadWrite);
 
 	std::string query = "DELETE FROM CLIENT WHERE PKG = \"" + name + "\"" + " AND UID = \"" + std::to_string(uid) + "\"";
-	if (!clientRepository->exec(query)) {
+	if (!connection.exec(query)) {
 		throw runtime::Exception("Failed to delete client data");
 	}
-
-	if (!removeClient(registeredClients, name, uid)) {
-		removeClient(activatedClients, name, uid);
-	}
 }
 
-Client& ClientManager::getClient(const std::string& name, uid_t uid)
-{
-	for (Client& client : getClients()) {
-		if (client.getName() == name && client.getUid() == uid) {
-			return client;
-		}
-	}
-	throw runtime::Exception("Client doesn't exist");
-}
-
-std::string ClientManager::generateKey()
+std::string DeviceAdministratorManager::generateKey()
 {
 	std::string key = "TestKey";
 	return key;
 }
 
-void ClientManager::loadClients()
+void DeviceAdministratorManager::prepareRepository()
 {
-	std::lock_guard<Mutex> lock(mutex);
+	database::Connection connection(repository, database::Connection::ReadWrite |
+												database::Connection::Create);
 
-	database::Statement stmt(*clientRepository, "SELECT * FROM CLIENT");
-	while (stmt.step()) {
-		std::string name = stmt.getColumn(1).getText();
-		uid_t uid = static_cast<uid_t>(stmt.getColumn(2).getInt());
-		std::string key = stmt.getColumn(3).getText();
-
-		registeredClients.push_back(Client(name, uid, key));
-	}
-	registeredClients.push_back(Client("org.tizen.dpm-toolkit", 5001, "TestKey"));
-}
-
-void ClientManager::prepareRepository()
-{
 	std::string query = "CREATE TABLE IF NOT EXISTS CLIENT ("    \
 						"ID INTEGER PRIMARY KEY AUTOINCREMENT, " \
 						"PKG TEXT, "                             \
@@ -156,11 +91,14 @@ void ClientManager::prepareRepository()
 						"KEY TEXT, "                             \
 						"VALID INTEGER)";
 
-	clientRepository->exec(query);
-}
+	connection.exec(query);
 
-ClientManager& ClientManager::instance()
-{
-	static ClientManager __instance__;
-	return __instance__;
+	database::Statement stmt(connection, "SELECT * FROM CLIENT");
+	while (stmt.step()) {
+		std::string name = stmt.getColumn(1).getText();
+		uid_t uid = static_cast<uid_t>(stmt.getColumn(2).getInt());
+		std::string key = stmt.getColumn(3).getText();
+
+		deviceAdministratorList.push_back(DeviceAdministrator(name, uid, key));
+	}
 }

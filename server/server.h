@@ -20,11 +20,14 @@
 #include <string>
 #include <memory>
 
+#include "policy-manager.h"
+#include "client-manager.h"
+
 #include <klay/filesystem.h>
 #include <klay/file-descriptor.h>
 #include <klay/rmi/service.h>
 
-#include "policy-manager.h"
+typedef std::function<bool(const std::string&, const std::string&)> PolicyComparator;
 
 class Server {
 public:
@@ -67,22 +70,39 @@ public:
 		service->createNotification(name);
 	}
 
-	void definePolicy(const std::string& name, const std::string& defaultVal,
-						PolicyStateComparator comparator);
-
-	int updatePolicy(const std::string& name, const std::string& value);
-	int updatePolicy(const std::string& name, const std::string& value,
-					 const std::string& event, const std::string& info);
-
-	std::string getPolicy(const std::string& name) const
+	void createNotification(const std::vector<std::string>& notification)
 	{
-    	return policyManager->getPolicy(name);
+		for (const std::string& name : notification) {
+			service->createNotification(name);
+		}
 	}
 
-	void flushPolicy()
+	int setPolicy(const std::string& name, int value, const std::string& event, const std::string& info);
+
+	int setPolicy(const std::string& name, int value, const std::string& info)
 	{
+		return setPolicy(name, value, name, info);
 	}
 
+	int getPolicy(const std::string& name, uid_t uid)
+	{
+		return policyManager->getUserPolicy(name, uid);
+	}
+
+	int getPolicy(const std::string& name)
+	{
+		return policyManager->getGlobalPolicy(name);
+	}
+
+	int enroll(const std::string& pkgid, uid_t user);
+	int disenroll(const std::string& pkgid, uid_t user);
+
+	PolicyManager& getPolicyManager()
+	{
+		return *policyManager;
+	}
+
+private:
 	runtime::FileDescriptor registerNotificationSubscriber(const std::string& name);
 	int unregisterNotificationSubscriber(const std::string& name, int id);
 
@@ -90,8 +110,12 @@ public:
 
 private:
 	std::string securityLabel;
+	std::string location;
+
 	std::unique_ptr<PolicyManager> policyManager;
+	std::unique_ptr<DeviceAdministratorManager> adminManager;
 	std::unique_ptr<rmi::Service> service;
+	std::unordered_map<std::string, PolicyComparator> policyComparators;
 };
 
 #endif //__DPM_SERVER_H__

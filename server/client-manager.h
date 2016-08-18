@@ -16,29 +16,26 @@
 
 #ifndef __DPM_CLIENT_MANAGER_H__
 #define __DPM_CLIENT_MANAGER_H__
+#include <unistd.h>
+#include <sys/types.h>
 
-#include <memory>
-#include <stdexcept>
 #include <string>
-#include <mutex>
+#include <vector>
 
 #include <klay/db/column.h>
 #include <klay/db/statement.h>
 #include <klay/db/connection.h>
 
-#include "policy.h"
-#include "policy-storage.h"
-
-class Client {
+class DeviceAdministrator {
 public:
-	Client(const Client&) = delete;
-	Client(Client&&) = default;
-	Client(const std::string& name, uid_t uid, const std::string& key);
+	DeviceAdministrator(const DeviceAdministrator&) = delete;
+	DeviceAdministrator(DeviceAdministrator&&) = default;
+	DeviceAdministrator(const std::string& name, uid_t uid, const std::string& key);
 
-	~Client();
+	~DeviceAdministrator();
 
-	Client& operator=(Client&&) = default;
-	Client& operator=(const Client&) = delete;
+	DeviceAdministrator& operator=(DeviceAdministrator&&) = default;
+	DeviceAdministrator& operator=(const DeviceAdministrator&) = delete;
 
 	inline std::string getName() const
 	{
@@ -55,57 +52,40 @@ public:
 		return key;
 	}
 
-	PolicyStorage& getPolicyStorage() {
-		return *policyStorage.get();
-	}
-
-	void removePolicyStorage() {
-		policyStorage.get()->remove();
-	}
-
 private:
 	std::string name;
 	uid_t uid;
 	std::string key;
-
-	std::unique_ptr<PolicyStorage> policyStorage;
 };
 
-class ClientManager {
+class DeviceAdministratorManager {
 public:
-	typedef std::vector<Client> ClientList;
+	typedef std::vector<DeviceAdministrator> DeviceAdministratorList;
 
-	ClientManager(const ClientManager&) = delete;
-	ClientManager& operator=(const ClientManager&) = delete;
+	DeviceAdministratorManager(const std::string& path);
+	DeviceAdministratorManager(const DeviceAdministratorManager&) = delete;
+	DeviceAdministratorManager& operator=(const DeviceAdministratorManager&) = delete;
 
-	void registerClient(const std::string& name, uid_t uid);
-	void deregisterClient(const std::string& name, uid_t uid);
-	Client& getClient(const std::string& name, uid_t uid);
+	DeviceAdministrator enroll(const std::string& name, uid_t uid);
+	void disenroll(const std::string& name, uid_t uid);
 
-	ClientList& getClients() {
-		return registeredClients;
+	DeviceAdministratorList::iterator begin()
+	{
+		return deviceAdministratorList.begin();
 	}
 
+	DeviceAdministratorList::iterator end()
+	{
+		return deviceAdministratorList.end();
+	}
+
+private:
+	void prepareRepository();
 	std::string generateKey();
 
-	static ClientManager& instance();
-
 private:
-	ClientManager();
-	~ClientManager();
-
-	void loadClients();
-	void prepareRepository();
-	std::string getPackageName(int pid);
-
-private:
-	ClientList activatedClients;
-	ClientList registeredClients;
-
-	std::unique_ptr<database::Connection> clientRepository;
-
-	typedef std::recursive_mutex Mutex;
-	Mutex mutex;
+	std::string repository;
+	DeviceAdministratorList deviceAdministratorList;
 };
 
 #endif //__DPM_CLIENT_MANAGER_H__

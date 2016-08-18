@@ -33,8 +33,8 @@ const std::string defaultPolicyTemplate =
 "<manifest>\n"
 "	<policy-version>0.1.0</policy-version>\n"
 "	<policy-group name=\"application\">\n"
-"		<policy name=\"package-installation-mode\">allowed</policy>\n"
-"		<policy name=\"package-uninstallation-mode\">allowed</policy>\n"
+"		<policy name=\"package-installation-mode\">0</policy>\n"
+"		<policy name=\"package-uninstallation-mode\">0</policy>\n"
 "	</policy-group>\n"
 "	<policy-group name=\"password\">\n"
 "		<policy name=\"password-quality\">0</policy>\n"
@@ -42,7 +42,6 @@ const std::string defaultPolicyTemplate =
 "		<policy name=\"password-maximum-failure-count\">0</policy>\n"
 "		<policy name=\"password-expired\">0</policy>\n"
 "		<policy name=\"password-minimum-complexity\">0</policy>\n"
-"		<policy name=\"password-pattern\"></policy>\n"
 "		<policy name=\"password-history\">0</policy>\n"
 "		<policy name=\"password-recovery\">0</policy>\n"
 "		<policy name=\"password-lock-delay\">0</policy>\n"
@@ -51,70 +50,65 @@ const std::string defaultPolicyTemplate =
 "		<policy name=\"password-change-timeout\">0</policy>\n"
 "		<policy name=\"password-maximum-character-occurrences\">0</policy>\n"
 "		<policy name=\"password-numeric-sequences-length\">0</policy>\n"
-"		<policy name=\"password-forbidden-strings\"></policy>\n"
 "	</policy-group>\n"
 "	<policy-group name=\"security\">\n"
-"		<policy name=\"internal-storage-encryption\"></policy>\n"
-"		<policy name=\"external-storage-encryption\"></policy>\n"
-"		<policy name=\"internet-sharing\">allowed</policy>\n"
+"		<policy name=\"internal-storage-encryption\">0</policy>\n"
+"		<policy name=\"external-storage-encryption\">0</policy>\n"
 "	</policy-group>\n"
 "	<policy-group name=\"wifi\">\n"
-"		<policy name=\"wifi-profile-change\">allowed</policy>\n"
-"		<policy name=\"wifi-ssid-restriction\">disabled</policy>\n"
+"		<policy name=\"wifi-profile-change\">1</policy>\n"
+"		<policy name=\"wifi-ssid-restriction\">0</policy>\n"
 "	</policy-group>\n"
 "	<policy-group name=\"bluetooth\">\n"
-"		<policy name=\"bluetooth-pairing\">allowed</policy>\n"
-"		<policy name=\"bluetooth-outgoing-call\">allowed</policy>\n"
-"		<policy name=\"bluetooth-profile-a2dp\">allowed</policy>\n"
-"		<policy name=\"bluetooth-profile-avrcp\">allowed</policy>\n"
-"		<policy name=\"bluetooth-profile-bpp\">allowed</policy>\n"
-"		<policy name=\"bluetooth-profile-dun\">allowed</policy>\n"
-"		<policy name=\"bluetooth-profile-ftp\">allowed</policy>\n"
-"		<policy name=\"bluetooth-profile-hfp\">allowed</policy>\n"
-"		<policy name=\"bluetooth-profile-hsp\">allowed</policy>\n"
-"		<policy name=\"bluetooth-profile-pbap\">allowed</policy>\n"
-"		<policy name=\"bluetooth-profile-sap\">allowed</policy>\n"
-"		<policy name=\"bluetooth-profile-spp\">allowed</policy>\n"
-"		<policy name=\"bluetooth-desktop-connectivity\">allowed</policy>\n"
-"		<policy name=\"bluetooth-descoverable\">allowed</policy>\n"
-"		<policy name=\"bluetooth-limited-discoverable\">allowed</policy>\n"
-"		<policy name=\"bluetooth-data-transfer\">allowed</policy>\n"
-"		<policy name=\"bluetooth-uuid-restriction\">disabled</policy>\n"
-"		<policy name=\"bluetooth-device-restriction\">disabled</policy>\n"
+"		<policy name=\"bluetooth-pairing\">1</policy>\n"
+"		<policy name=\"bluetooth-outgoing-call\">1</policy>\n"
+"		<policy name=\"bluetooth-profile-a2dp\">1</policy>\n"
+"		<policy name=\"bluetooth-profile-avrcp\">1</policy>\n"
+"		<policy name=\"bluetooth-profile-bpp\">1</policy>\n"
+"		<policy name=\"bluetooth-profile-dun\">1</policy>\n"
+"		<policy name=\"bluetooth-profile-ftp\">1</policy>\n"
+"		<policy name=\"bluetooth-profile-hfp\">1</policy>\n"
+"		<policy name=\"bluetooth-profile-hsp\">1</policy>\n"
+"		<policy name=\"bluetooth-profile-pbap\">1</policy>\n"
+"		<policy name=\"bluetooth-profile-sap\">1</policy>\n"
+"		<policy name=\"bluetooth-profile-spp\">1</policy>\n"
+"		<policy name=\"bluetooth-desktop-connectivity\">1</policy>\n"
+"		<policy name=\"bluetooth-descoverable\">1</policy>\n"
+"		<policy name=\"bluetooth-limited-discoverable\">1</policy>\n"
+"		<policy name=\"bluetooth-data-transfer\">1</policy>\n"
+"		<policy name=\"bluetooth-uuid-restriction\">0</policy>\n"
+"		<policy name=\"bluetooth-device-restriction\">0</policy>\n"
 "	</policy-group>\n"
 "	<policy-group name=\"restriction\">\n"
-"		<policy name=\"wifi\">allowed</policy>\n"
-"		<policy name=\"wifi-hotspot\">allowed</policy>\n"
-"		<policy name=\"bluetooth\">allowed</policy>\n"
-"		<policy name=\"camera\">allowed</policy>\n"
-"		<policy name=\"microphone\">allowed</policy>\n"
-"		<policy name=\"location\">allowed</policy>\n"
-"		<policy name=\"external-storage\">allowed</policy>\n"
-"		<policy name=\"messaging\">allowed</policy>\n"
-"		<policy name=\"popimap-email\">allowed</policy>\n"
-"		<policy name=\"browser\">allowed</policy>\n"
-"		<policy name=\"settings-changes\">allowed</policy>\n"
-"		<policy name=\"tethering\">allowed</policy>\n"
-"		<policy name=\"bluetooth-tethering\">allowed</policy>\n"
-"		<policy name=\"clipboard\">allowed</policy>\n"
-"		<policy name=\"screen-capture\">allowed</policy>\n"
-"		<policy name=\"usb-debugging\">allowed</policy>\n"
-"		<policy name=\"usb-tethering\">allowed</policy>\n"
-"	</policy-group>\n"
-"	<policy-group name=\"browser\">\n"
-"		<policy name=\"browser-autofill-setting\">allowed</policy>\n"
-"		<policy name=\"browser-cookies-setting\">allowed</policy>\n"
-"		<policy name=\"force-fraud-warning_setting\">allowed</policy>\n"
-"		<policy name=\"javascript-setting\">allowed</policy>\n"
-"		<policy name=\"popup-setting\">allowed</policy>\n"
+"		<policy name=\"wifi\">1</policy>\n"
+"		<policy name=\"wifi-hotspot\">1</policy>\n"
+"		<policy name=\"bluetooth\">1</policy>\n"
+"		<policy name=\"camera\">1</policy>\n"
+"		<policy name=\"microphone\">1</policy>\n"
+"		<policy name=\"location\">1</policy>\n"
+"		<policy name=\"external-storage\">1</policy>\n"
+"		<policy name=\"messaging\">1</policy>\n"
+"		<policy name=\"popimap-email\">1</policy>\n"
+"		<policy name=\"browser\">1</policy>\n"
+"		<policy name=\"bluetooth-tethering\">1</policy>\n"
+"		<policy name=\"clipboard\">1</policy>\n"
+"		<policy name=\"screen-capture\">1</policy>\n"
+"		<policy name=\"usb-debugging\">1</policy>\n"
+"		<policy name=\"usb-tethering\">1</policy>\n"
 "	</policy-group>\n"
 "</manifest>\n";
 
+const std::string clientPolicyStorage = DATA_PATH "/policy";
+
+std::string StorageLocator(const std::string& name, uid_t uid)
+{
+	return clientPolicyStorage + "/" + name + "-" + std::to_string(uid) + ".xml";
 }
 
-PolicyStorage::PolicyStorage(const std::string& path, bool create) :
-	location(path),
-	data(nullptr)
+} // namespace
+
+PolicyStorage::PolicyStorage(const std::string& name, uid_t uid, bool create) :
+	user(uid), owner(name), location(StorageLocator(name, uid)), data(nullptr)
 {
 	bool useDefaultPolicyTemplate = false;
 
@@ -149,13 +143,24 @@ PolicyStorage::~PolicyStorage()
 {
 }
 
-Policy& PolicyStorage::getPolicy(const std::string& name)
+int PolicyStorage::getPolicy(const std::string& name)
 {
 	if (policyMap.count(name) == 0) {
 		throw runtime::Exception("Failed to find policy");
 	}
 
-	return policyMap.at(name);
+	return policyMap.at(name).getContent();
+}
+
+void PolicyStorage::setPolicy(const std::string& name, int value)
+{
+	if (policyMap.count(name) == 0) {
+		throw runtime::Exception("Failed to find policy");
+	}
+
+	policyMap.at(name).setContent(value);
+
+	flush();
 }
 
 void PolicyStorage::flush()

@@ -74,7 +74,7 @@ public:
 	std::vector<std::string> getForbiddenStrings();
 
 private:
-	PolicyControlContext &__context;
+	PolicyControlContext &context;
 };
 
 } /* namespace DevicePolicyManager */

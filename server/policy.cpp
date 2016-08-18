@@ -20,4 +20,6 @@ Policy::Policy(xml::Node&& node) :
 	data(std::move(node))
 {
 	updateLock.reset(new std::mutex());
+	std::string state = data.getContent();
+	value = std::stoi(state);
 }

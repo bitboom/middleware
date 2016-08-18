@@ -46,6 +46,8 @@
 
 namespace DevicePolicyManager {
 
+namespace {
+
 struct BluetoothPolicyContext {
 	BluetoothPolicyContext(BluetoothPolicy* p, PolicyControlContext* c) :
 		policy(p), context(c)
@@ -56,7 +58,7 @@ struct BluetoothPolicyContext {
 	PolicyControlContext* context;
 };
 
-static void bluetoothAdapterStateChangedCallback(int result, bt_adapter_state_e state, void *user_data)
+void bluetoothAdapterStateChangedCallback(int result, bt_adapter_state_e state, void *user_data)
 {
 	if (state != BT_ADAPTER_ENABLED) {
 		return;
@@ -66,66 +68,67 @@ static void bluetoothAdapterStateChangedCallback(int result, bt_adapter_state_e 
 	BluetoothPolicy &policy = *bluetooth->policy;
 	PolicyControlContext &context = *bluetooth->context;
 
-	bool allowed = IsPolicyAllowed(context, "bluetooth");
+	bool allowed = context.getPolicy("bluetooth");
 	if (policy.setModeChangeState(allowed) != BLUETOOTH_DPM_RESULT_SUCCESS) {
-		// TODO(seok85.hong): we can notify to admin client with this notification.
 	}
 
-	allowed = IsPolicyAllowed(context, "bluetooth-desktop-connectivity");
+	allowed = context.getPolicy("bluetooth-desktop-connectivity");
 	if (policy.setDesktopConnectivityState(allowed) != BLUETOOTH_DPM_RESULT_SUCCESS) {
-		// TODO(seok85.hong): we can notify to admin client with this notification.
 	}
 
-	allowed = IsPolicyAllowed(context, "bluetooth-pairing");
+	allowed = context.getPolicy("bluetooth-pairing");
 	if (policy.setPairingState(allowed) != BLUETOOTH_DPM_RESULT_SUCCESS) {
-		// TODO(seok85.hong): we can notify to admin client with this notification.
 	}
 
-	bool enabled = IsPolicyEnabled(context, "bluetooth-device-restriction");
+	bool enabled = context.getPolicy("bluetooth-device-restriction");
 	if (policy.setDeviceRestriction(enabled) != BLUETOOTH_DPM_RESULT_SUCCESS) {
-		// TODO(seok85.hong): we can notify to admin client with this notification.
 	}
 
-	enabled = IsPolicyEnabled(context, "bluetooth-uuid-restriction");
+	enabled = context.getPolicy("bluetooth-uuid-restriction");
 	if (policy.setUuidRestriction(enabled) != BLUETOOTH_DPM_RESULT_SUCCESS) {
-		// TODO(seok85.hong): we can notify to admin client with this notification.
 	}
 }
+
+std::vector<std::string> bluetoothNotifications = {
+	"bluetooth",
+	"bluetooth-tethering",
+	"bluetooth-desktop-connectivity",
+	"bluetooth-pairing",
+	"bluetooth-uuid-restriction",
+	"bluetooth-device-restriction"
+};
+
+} // namespace
 
 BluetoothPolicy::BluetoothPolicy(PolicyControlContext& ctxt) :
 	context(ctxt)
 {
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setModeChangeState)(bool));
-	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::getModeChangeState));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setDesktopConnectivityState)(bool));
-	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::getDesktopConnectivityState));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setTetheringState)(bool));
-	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::getTetheringState));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setPairingState)(bool));
-	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::getPairingState));
-
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::addDeviceToBlacklist)(std::string));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::removeDeviceFromBlacklist)(std::string));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setDeviceRestriction)(bool));
-	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::isDeviceRestricted));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::addUuidToBlacklist)(std::string));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::removeUuidFromBlacklist)(std::string));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setUuidRestriction)(bool));
+
+	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::getModeChangeState));
+	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::getDesktopConnectivityState));
+	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::getTetheringState));
+	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::getPairingState));
+	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::isDeviceRestricted));
 	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::isUuidRestricted));
 
-	DefineAllowablePolicy(ctxt, "bluetooth");
-	DefineAllowablePolicy(ctxt, "bluetooth-tethering");
-	DefineAllowablePolicy(ctxt, "bluetooth-desktop-connectivity");
-	DefineAllowablePolicy(ctxt, "bluetooth-pairing");
-	DefineEnablePolicy(ctxt, "bluetooth-uuid-restriction");
-	DefineEnablePolicy(ctxt, "bluetooth-device-restriction");
+	ctxt.createNotification(bluetoothNotifications);
 
 	if (::bt_initialize() != BT_ERROR_NONE) {
 		return;
 	}
 
-	if (bt_adapter_set_state_changed_cb(bluetoothAdapterStateChangedCallback,
-										new BluetoothPolicyContext(this, &ctxt)) != BT_ERROR_NONE) {
+	if (::bt_adapter_set_state_changed_cb(bluetoothAdapterStateChangedCallback,
+										  new BluetoothPolicyContext(this, &ctxt)) != BT_ERROR_NONE) {
 		return;
 	}
 }
@@ -147,7 +150,7 @@ int BluetoothPolicy::setModeChangeState(const bool enable)
 
 bool BluetoothPolicy::getModeChangeState()
 {
-	return IsPolicyAllowed(context, "bluetooth");
+	return context.getPolicy("bluetooth");
 }
 
 int BluetoothPolicy::setDesktopConnectivityState(const bool enable)
@@ -162,7 +165,7 @@ int BluetoothPolicy::setDesktopConnectivityState(const bool enable)
 
 bool BluetoothPolicy::getDesktopConnectivityState()
 {
-	return IsPolicyAllowed(context, "bluetooth-desktop-connectivity");
+	return context.getPolicy("bluetooth-desktop-connectivity");
 }
 
 int BluetoothPolicy::setPairingState(const bool enable)
@@ -177,7 +180,7 @@ int BluetoothPolicy::setPairingState(const bool enable)
 
 bool BluetoothPolicy::getPairingState()
 {
-	return IsPolicyAllowed(context, "bluetooth-pairing");
+	return context.getPolicy("bluetooth-pairing");
 }
 
 
@@ -212,9 +215,8 @@ int BluetoothPolicy::setTetheringState(bool enable)
 
 bool BluetoothPolicy::getTetheringState()
 {
-	return IsPolicyAllowed(context, "bluetooth-tethering");
+	return context.getPolicy("bluetooth-tethering");
 }
-
 
 int BluetoothPolicy::removeDeviceFromBlacklist(const std::string& mac)
 {
@@ -238,7 +240,7 @@ int BluetoothPolicy::setDeviceRestriction(const bool enable)
 
 bool BluetoothPolicy::isDeviceRestricted()
 {
-	return IsPolicyEnabled(context, "bluetooth-device-restriction");
+	return context.getPolicy("bluetooth-device-restriction");
 }
 
 int BluetoothPolicy::addUuidToBlacklist(const std::string& uuid)
@@ -273,7 +275,7 @@ int BluetoothPolicy::setUuidRestriction(const bool enable)
 
 bool BluetoothPolicy::isUuidRestricted()
 {
-	return IsPolicyEnabled(context, "bluetooth-uuid-restriction");
+	return context.getPolicy("bluetooth-uuid-restriction");
 }
 
 DEFINE_POLICY(BluetoothPolicy);

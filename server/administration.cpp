@@ -17,7 +17,6 @@
 #include <klay/audit/logger.h>
 
 #include "policy-builder.h"
-#include "client-manager.h"
 
 #include "administration.hxx"
 
@@ -36,32 +35,22 @@ AdministrationPolicy::~AdministrationPolicy()
 
 int AdministrationPolicy::registerPolicyClient(const std::string& name, uid_t uid)
 {
-	ClientManager& manager = ClientManager::instance();
-
 	try {
-		manager.registerClient(name, uid);
-		context.flushPolicy();
+		return context.enroll(name, uid);
 	} catch (runtime::Exception& e) {
 		ERROR("Failed to register policy client");
 		return -1;
 	}
-
-	return 0;
 }
 
 int AdministrationPolicy::deregisterPolicyClient(const std::string& name, uid_t uid)
 {
-	ClientManager& manager = ClientManager::instance();
-
 	try {
-		manager.deregisterClient(name, uid);
-		context.flushPolicy();
+		return context.disenroll(name, uid);
 	} catch (runtime::Exception& e) {
 		ERROR("Failed to deregister policy client");
 		return -1;
 	}
-
-	return 0;
 }
 
 DEFINE_POLICY(AdministrationPolicy);

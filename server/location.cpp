@@ -29,7 +29,7 @@ LocationPolicy::LocationPolicy(PolicyControlContext& ctxt) :
 	context.registerParametricMethod(this, DPM_PRIVILEGE_LOCATION, (int)(LocationPolicy::setLocationState)(int));
 	context.registerNonparametricMethod(this, "", (int)(LocationPolicy::getLocationState));
 
-	DefineAllowablePolicy(context, "location");
+	context.createNotification("location");
 }
 
 LocationPolicy::~LocationPolicy()
@@ -46,7 +46,7 @@ int LocationPolicy::setLocationState(int enable)
 
 int LocationPolicy::getLocationState()
 {
-	return IsPolicyAllowed(context, "location");
+	return context.getPolicy("location");
 }
 
 DEFINE_POLICY(LocationPolicy);

@@ -39,85 +39,15 @@ struct PolicyBuilder {
 	std::unique_ptr<T> instance;
 };
 
-
-bool policyAllowableComparator(const std::string& old_val, const std::string& new_val);
-
-inline void DefineAllowablePolicy(PolicyControlContext& context, const std::string& name)
-{
-	context.definePolicy(name, "allowed", policyAllowableComparator);
-}
-
-inline bool IsPolicyAllowed(PolicyControlContext& context, const std::string& name)
-{
-	return context.getPolicy(name) == "allowed" ? true : false;
-}
-
 inline int SetPolicyAllowed(PolicyControlContext& context, const std::string& name, bool allow)
 {
-	return context.updatePolicy(name, allow ? "allowed" : "disallowed");
-}
-
-
-bool policyEnableComparator(const std::string& old_val, const std::string& new_val);
-
-inline void DefineEnablePolicy(PolicyControlContext& context, const std::string& name)
-{
-	context.definePolicy(name, "enabled", policyAllowableComparator);
-}
-
-inline bool IsPolicyEnabled(PolicyControlContext& context, const std::string& name)
-{
-	return context.getPolicy(name) == "enabled" ? true : false;
+	return context.setPolicy(name, allow, name, allow ? "allowed" : "disallowed");
 }
 
 inline int SetPolicyEnabled(PolicyControlContext& context, const std::string& name, bool enable)
 {
-	return context.updatePolicy(name, enable ? "enabled" : "disabled");
+	return context.setPolicy(name, enable, name, enable ? "enabled" : "disabled");
 }
-
-
-bool policyLastComparator(const std::string& old_val, const std::string& new_val);
-
-inline void DefineLastPolicy(PolicyControlContext& context, const std::string& name, const std::string& initial)
-{
-	context.definePolicy(name, initial, policyLastComparator);
-}
-
-inline const std::string GetPolicy(PolicyControlContext& context, const std::string& name)
-{
-	return context.getPolicy(name);
-}
-
-inline int SetPolicy(PolicyControlContext& context, const std::string& name, const std::string& state)
-{
-	return context.updatePolicy(name, state);
-}
-
-
-bool policyMaxComparator(const std::string& old_val, const std::string& new_val);
-
-bool policyMinComparator(const std::string& old_val, const std::string& new_val);
-
-inline void DefineUintMaxPolicy(PolicyControlContext& context, const std::string& name, unsigned int initial = UINT_MAX)
-{
-	context.definePolicy(name, std::to_string(initial), policyMaxComparator);
-}
-
-inline void DefineUintMinPolicy(PolicyControlContext& context, const std::string& name, unsigned int initial = 0)
-{
-	context.definePolicy(name, std::to_string(initial), policyMinComparator);
-}
-
-inline unsigned int GetUintPolicy(PolicyControlContext& context, const std::string& name)
-{
-	return (unsigned int)std::stoul(context.getPolicy(name));
-}
-
-inline int SetUintPolicy(PolicyControlContext& context, const std::string& name, unsigned int value)
-{
-	return context.updatePolicy(name, std::to_string(value));
-}
-
 
 inline void PolicyBuild(PolicyControlContext& context)
 {

@@ -17,35 +17,61 @@
 #ifndef __DPM_POLICY_MANAGER_H__
 #define __DPM_POLICY_MANAGER_H__
 
+#include <unistd.h>
+#include <sys/types.h>
+
 #include <string>
+#include <vector>
+#include <unordered_map>
 
-#include "client-manager.h"
-typedef std::function<bool(const std::string&, const std::string&)> PolicyStateComparator;
-
-bool policyAllowableComparator(const std::string& new_val, const std::string& old_val);
+#include "policy.h"
+#include "policy-storage.h"
 
 class PolicyManager {
 public:
+	typedef std::function<bool(int, int)> PolicyComparator;
+
 	PolicyManager(const std::string& path);
 	~PolicyManager();
 
 	PolicyManager(const PolicyManager&) = delete;
 	PolicyManager& operator=(const PolicyManager&) = delete;
 
-	void definePolicy(const std::string& name, const std::string& defaultVal,
-				        PolicyStateComparator comparator);
+	void prepareGlobalPolicy();
+	void removeGlobalPolicy();
+	void prepareUserPolicy(uid_t user);
+	void removeUserPolicy(uid_t user);
 
-	const std::string getPolicy(const std::string& name);
-	void setPolicy(Client& client, const std::string& name, const std::string& state);
+	void populateStorage(const std::string& name, uid_t uid, bool create);
+	void removeStorage(const std::string& name, uid_t uid);
+	bool setGlobalPolicy(const std::string& pkgid, uid_t uid, const std::string& name, int value, PolicyComparator& pred);
+	bool setUserPolicy(const std::string& pkgid, uid_t uid, const std::string& name, int value, PolicyComparator& pred);
+	bool setPolicy(const std::string& client, uid_t uid, const std::string& name, int value);
+	int getGlobalPolicy(const std::string& name);
+	int getUserPolicy(const std::string& name, uid_t uid);
 
-	void flushEffectivePolicy(const std::string& policy);
+private:
+	std::string buildLocation(uid_t uid, const std::string& name)
+	{
+		return location + "/" + std::to_string(uid) + "/" + name;
+	}
 
-	void remove();
+	std::string buildLocation(const std::string& name)
+	{
+		return location + "/" + name;
+	}
+
+	bool updateClientStorage(const std::string& pkgid, uid_t uid, const std::string& name, int value);
+	int getStrictGlobalPolicy(const std::string& name, int pivot, PolicyComparator& pred);
+	int getStrictUserPolicy(const std::string& name, uid_t uid, int pivot, PolicyComparator& pred);
+	void createEffectivePolicy(const std::string& path, int value);
+	void setEffectivePolicy(const std::string& path, int value);
+	int getEffectivePolicy(const std::string& path);
+	void cleanup();
 
 private:
 	std::string location;
-
-	void initialize();
+	std::vector<std::unique_ptr<PolicyStorage>> storageList;
 };
 
 #endif //__DPM_POLICY_MANAGER_H__

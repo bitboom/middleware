@@ -17,6 +17,9 @@
 #ifndef __DPM_POLICY_STORAGE_H__
 #define __DPM_POLICY_STORAGE_H__
 
+#include <sys/types.h>
+#include <unistd.h>
+
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -27,19 +30,44 @@
 
 class PolicyStorage {
 public:
-	PolicyStorage(const std::string& path, bool create = true);
+	typedef std::unordered_map<std::string, Policy>::iterator PolicyIterator;
+
+	PolicyStorage(const std::string& pkgid, uid_t uid, bool create = true);
 	~PolicyStorage();
 
 	PolicyStorage(const PolicyStorage&) = delete;
 	PolicyStorage& operator=(const PolicyStorage&) = delete;
 
-	Policy& getPolicy(const std::string& name);
+	void setPolicy(const std::string& name, int value);
+	int getPolicy(const std::string& name);
+
+	bool isAssociated(uid_t uid) const
+	{
+		return (uid == user);
+	}
+
+	bool isAssociated(const std::string& pkgid, uid_t uid) const
+	{
+		return ((pkgid == owner) && (uid == user));
+	}
+
+	PolicyIterator begin()
+	{
+		return policyMap.begin();
+	}
+
+	PolicyIterator end()
+	{
+		return policyMap.end();
+	}
 
 	void flush();
 
 	void remove();
 
 private:
+	uid_t user;
+	std::string owner;
 	std::string location;
 	std::unique_ptr<xml::Document> data;
 	std::unordered_map<std::string, Policy> policyMap;

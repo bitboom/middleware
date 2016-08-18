@@ -57,7 +57,7 @@ managing device policies.
 %attr(700,root,root) %{_bindir}/factory-reset
 %attr(700,root,root) %{_bindir}/dpm-admin-cli
 %attr(711,security_fw,security_fw) %dir %{TZ_SYS_DATA}/dpm
-%attr(711,security_fw,security_fw) %dir %{TZ_SYS_ETC}/dpm/policy
+%attr(700,security_fw,security_fw) %dir %{TZ_SYS_DATA}/dpm/policy
 %{_unitdir}/device-policy-manager.service
 %{_unitdir}/multi-user.target.wants/device-policy-manager.service
 
@@ -80,7 +80,6 @@ managing device policies.
          -DSCRIPT_INSTALL_DIR=%{_scriptdir} \
          -DSYSTEMD_UNIT_INSTALL_DIR=%{_unitdir} \
          -DDATA_INSTALL_DIR=%{TZ_SYS_DATA}/dpm \
-         -DCONF_INSTALL_DIR=%{TZ_SYS_ETC}/dpm \
          -DDB_INSTALL_DIR=%{TZ_SYS_DB} \
          -DRUN_INSTALL_DIR=%{TZ_SYS_RUN} \
          -DAPP_INSTALL_PREFIX="%{TZ_SYS_RO_APP}" \

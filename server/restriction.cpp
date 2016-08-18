@@ -40,41 +40,48 @@
 	"/MobileapAgent",                       \
 	"org.tizen.tethering"
 
-
 namespace DevicePolicyManager {
+
+namespace {
+
+std::vector<std::string> restrictionNotifications = {
+	"camera",
+	"clipboard",
+	"external-storage",
+	"microphone",
+	"usb-debugging",
+	"usb-tethering",
+	"popimap-email",
+	"messaging",
+	"browser"
+};
+
+} // namespace
 
 RestrictionPolicy::RestrictionPolicy(PolicyControlContext& ctxt) :
 	context(ctxt)
 {
 	context.registerParametricMethod(this, DPM_PRIVILEGE_CAMERA, (int)(RestrictionPolicy::setCameraState)(int));
-	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getCameraState));
 	context.registerParametricMethod(this, DPM_PRIVILEGE_MICROPHONE, (int)(RestrictionPolicy::setMicrophoneState)(int));
-	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getMicrophoneState));
 	context.registerParametricMethod(this, DPM_PRIVILEGE_CLIPBOARD, (int)(RestrictionPolicy::setClipboardState)(int));
-	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getClipboardState));
 	context.registerParametricMethod(this, DPM_PRIVILEGE_DEBUGGING, (int)(RestrictionPolicy::setUsbDebuggingState)(int));
-	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getUsbDebuggingState));
 	context.registerParametricMethod(this, DPM_PRIVILEGE_USB, (int)(RestrictionPolicy::setUsbTetheringState)(int));
-	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getUsbTetheringState));
 	context.registerParametricMethod(this, DPM_PRIVILEGE_STORAGE, (int)(RestrictionPolicy::setExternalStorageState)(int));
-	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getExternalStorageState));
 	context.registerParametricMethod(this, DPM_PRIVILEGE_EMAIL, (int)(RestrictionPolicy::setPopImapEmailState)(int));
-	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getPopImapEmailState));
 	context.registerParametricMethod(this, DPM_PRIVILEGE_MESSAGING, (int)(RestrictionPolicy::setMessagingState)(int));
-	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getMessagingState));
 	context.registerParametricMethod(this, DPM_PRIVILEGE_BROWSER, (int)(RestrictionPolicy::setBrowserState)(int));
+
+	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getCameraState));
+	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getMicrophoneState));
+	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getClipboardState));
+	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getUsbDebuggingState));
+	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getUsbTetheringState));
+	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getExternalStorageState));
+	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getPopImapEmailState));
+	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getMessagingState));
 	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getBrowserState));
 
-	DefineAllowablePolicy(context, "camera");
-	DefineAllowablePolicy(context, "clipboard");
-	DefineAllowablePolicy(context, "external-storage");
-	DefineAllowablePolicy(context, "microphone");
-	DefineAllowablePolicy(context, "settings-changes");
-	DefineAllowablePolicy(context, "usb-debugging");
-	DefineAllowablePolicy(context, "usb-tethering");
-	DefineAllowablePolicy(context, "popimap-email");
-	DefineAllowablePolicy(context, "messaging");
-	DefineAllowablePolicy(context, "browser");
+	context.createNotification(restrictionNotifications);
 }
 
 RestrictionPolicy::~RestrictionPolicy()
@@ -88,7 +95,7 @@ int RestrictionPolicy::setCameraState(int enable)
 
 int RestrictionPolicy::getCameraState()
 {
-	return IsPolicyAllowed(context, "camera");
+	return context.getPolicy("camera");
 }
 
 int RestrictionPolicy::setMicrophoneState(int enable)
@@ -117,7 +124,7 @@ int RestrictionPolicy::setMicrophoneState(int enable)
 
 int RestrictionPolicy::getMicrophoneState()
 {
-	return IsPolicyAllowed(context, "microphone");
+	return context.getPolicy("microphone");
 }
 
 int RestrictionPolicy::setClipboardState(int enable)
@@ -127,7 +134,7 @@ int RestrictionPolicy::setClipboardState(int enable)
 
 int RestrictionPolicy::getClipboardState()
 {
-	return IsPolicyAllowed(context, "clipboard");
+	return context.getPolicy("clipboard");
 }
 
 int RestrictionPolicy::setUsbDebuggingState(int enable)
@@ -137,7 +144,7 @@ int RestrictionPolicy::setUsbDebuggingState(int enable)
 
 int RestrictionPolicy::getUsbDebuggingState()
 {
-	return IsPolicyAllowed(context, "usb-debugging");
+	return context.getPolicy("usb-debugging");
 }
 
 int RestrictionPolicy::setUsbTetheringState(bool enable)
@@ -161,7 +168,7 @@ int RestrictionPolicy::setUsbTetheringState(bool enable)
 
 bool RestrictionPolicy::getUsbTetheringState()
 {
-	return IsPolicyAllowed(context, "usb-tethering");
+	return context.getPolicy("usb-tethering");
 }
 
 int RestrictionPolicy::setExternalStorageState(int enable)
@@ -189,7 +196,7 @@ int RestrictionPolicy::setExternalStorageState(int enable)
 
 int RestrictionPolicy::getExternalStorageState()
 {
-	return IsPolicyAllowed(context, "external-storage");
+	return context.getPolicy("external-storage");
 }
 
 int RestrictionPolicy::setPopImapEmailState(int enable)
@@ -199,7 +206,7 @@ int RestrictionPolicy::setPopImapEmailState(int enable)
 
 int RestrictionPolicy::getPopImapEmailState()
 {
-	return IsPolicyAllowed(context, "popimap-email");
+	return context.getPolicy("popimap-email");
 }
 
 int RestrictionPolicy::setMessagingState(int enable)
@@ -209,7 +216,7 @@ int RestrictionPolicy::setMessagingState(int enable)
 
 int RestrictionPolicy::getMessagingState()
 {
-	return IsPolicyAllowed(context, "messaging");
+	return context.getPolicy("messaging");
 }
 
 int RestrictionPolicy::setBrowserState(int enable)
@@ -219,7 +226,7 @@ int RestrictionPolicy::setBrowserState(int enable)
 
 int RestrictionPolicy::getBrowserState()
 {
-	return IsPolicyAllowed(context, "browser");
+	return context.getPolicy("browser");
 }
 
 DEFINE_POLICY(RestrictionPolicy);

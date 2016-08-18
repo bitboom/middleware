@@ -13,17 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/reboot.h>
-#include <unistd.h>
-#include <pwd.h>
-#include <grp.h>
-#include <dirent.h>
-
-#include <aul.h>
-#include <vconf.h>
-#include <vconf-keys.h>
 #include <dd-deviced.h>
 #include <dd-control.h>
 #include <klay/process.h>
@@ -43,18 +32,17 @@ namespace {
 const std::string APPID_DEVICE_ENCRYPTION = "org.tizen.ode";
 const std::string APPID_LOCKSCREEN = "org.tizen.lockscreen";
 
-const std::string PROG_POWEROFF = "/usr/sbin/poweroff";
-
 } // namespace
 
 SecurityPolicy::SecurityPolicy(PolicyControlContext& ctxt) :
 	context(ctxt)
 {
 	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_LOCK, (int)(SecurityPolicy::lockoutScreen));
-	ctxt.registerNonparametricMethod(this, "", (int)(SecurityPolicy::isInternalStorageEncrypted));
-	ctxt.registerNonparametricMethod(this, "", (int)(SecurityPolicy::isExternalStorageEncrypted));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_SECURITY, (int)(SecurityPolicy::setInternalStorageEncryption)(bool));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_SECURITY, (int)(SecurityPolicy::setExternalStorageEncryption)(bool));
+
+	ctxt.registerNonparametricMethod(this, "", (int)(SecurityPolicy::isInternalStorageEncrypted));
+	ctxt.registerNonparametricMethod(this, "", (int)(SecurityPolicy::isExternalStorageEncrypted));
 }
 
 SecurityPolicy::~SecurityPolicy()
@@ -71,7 +59,7 @@ int SecurityPolicy::lockoutScreen()
 		}
 
 		launchpad.launch(APPID_LOCKSCREEN);
-   } catch (runtime::Exception &e) {
+	} catch (runtime::Exception &e) {
 		ERROR("Failed to launch lockscreen: " + APPID_LOCKSCREEN);
 		return -1;
 	}
@@ -81,10 +69,10 @@ int SecurityPolicy::lockoutScreen()
 
 int SecurityPolicy::setInternalStorageEncryption(bool encrypt)
 {
-	std::string policy = context.getPolicy("internal-storage-encryption");
-	if ((encrypt == true) && (policy == "encrypted")) {
+	int policy = context.getPolicy("internal-storage-encryption");
+	if ((encrypt == true) && (policy == true)) {
 		return 0;
-	} else if ((encrypt == false) && (policy == "decrypted")) {
+	} else if ((encrypt == false) && (policy == false)) {
 		return 0;
 	}
 
@@ -109,8 +97,8 @@ int SecurityPolicy::setInternalStorageEncryption(bool encrypt)
 
 int SecurityPolicy::isInternalStorageEncrypted()
 {
-	std::string policy = context.getPolicy("internal-storage-encryption");
-	if (policy == "encrypted") {
+	int policy = context.getPolicy("internal-storage-encryption");
+	if (policy == true) {
 		return true;
 	}
 
@@ -119,10 +107,10 @@ int SecurityPolicy::isInternalStorageEncrypted()
 
 int SecurityPolicy::setExternalStorageEncryption(bool encrypt)
 {
-	std::string policy = context.getPolicy("external-storage-encryption");
-	if ((encrypt == true) && (policy == "encrypted")) {
+	int policy = context.getPolicy("external-storage-encryption");
+	if ((encrypt == true) && (policy == true)) {
 		return 0;
-	} else if ((encrypt == false) && (policy == "decrypted")) {
+	} else if ((encrypt == false) && (policy == false)) {
 		return 0;
 	}
 
@@ -147,8 +135,8 @@ int SecurityPolicy::setExternalStorageEncryption(bool encrypt)
 
 int SecurityPolicy::isExternalStorageEncrypted()
 {
-	std::string policy = context.getPolicy("external-storage-encryption");
-	if (policy == "encrypted") {
+	int policy = context.getPolicy("external-storage-encryption");
+	if (policy == true) {
 		return true;
 	}
 

@@ -13,6 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include <functional>
 
 #include <aul.h>
@@ -21,19 +27,37 @@
 
 #include "server.h"
 #include "policy-builder.h"
+#include "client-manager.h"
+
+#include "exception.h"
+#include "filesystem.h"
+#include "audit/logger.h"
 
 using namespace std::placeholders;
 
 namespace {
 
 const std::string POLICY_MANAGER_ADDRESS = "/tmp/.device-policy-manager.sock";
+const std::string POLICY_ACCESS_POINT_PATH = "/var/run/dpm";
+const std::string DEVICE_ADMIN_REPOSITORY = DB_PATH;
+
+std::string GetPackageId(uid_t uid, pid_t pid)
+{
+	char pkgid[PATH_MAX];
+
+	if (aul_app_get_pkgid_bypid_for_uid(pid, pkgid, PATH_MAX, uid) != 0) {
+		throw runtime::Exception("Unknown PID");
+	}
+
+	return pkgid;
+}
 
 } // namespace
 
 Server::Server()
 {
-	policyManager.reset(new PolicyManager(RUN_PATH "/dpm"));
-
+	policyManager.reset(new PolicyManager(POLICY_ACCESS_POINT_PATH));
+	adminManager.reset(new DeviceAdministratorManager(DEVICE_ADMIN_REPOSITORY));
 	service.reset(new rmi::Service(POLICY_MANAGER_ADDRESS));
 
 	service->setPrivilegeChecker(std::bind(&Server::checkPeerPrivilege, this, _1, _2));
@@ -48,9 +72,28 @@ Server::~Server()
 
 void Server::run()
 {
+	policyManager->prepareGlobalPolicy();
+
+	int index = 0;
+	uid_t uids[32];
+	DeviceAdministratorManager::DeviceAdministratorList::iterator iter = adminManager->begin();
+	while (iter != adminManager->end()) {
+		int i = 0;
+		const DeviceAdministrator& admin = *iter;
+		uid_t uid = admin.getUid();
+		while ((i < index) && (uids[i] != uid)) i++;
+
+		if (i == index) {
+			uids[index++] = uid;
+			policyManager->prepareUserPolicy(uid);
+		}
+
+		policyManager->populateStorage(admin.getName(), admin.getUid(), true);
+		++iter;
+	}
+
 	PolicyBuild(*this);
 
-	// Prepare execution environment
 	service->start(true);
 }
 
@@ -69,45 +112,21 @@ int Server::unregisterNotificationSubscriber(const std::string& name, int id)
 	return service->unsubscribeNotification(name, id);
 }
 
-void Server::definePolicy(const std::string& name,
-							const std::string& defaultVal,
-					        PolicyStateComparator comparator)
+int Server::setPolicy(const std::string& name, int value, const std::string& event, const std::string& info)
 {
-
-	createNotification(name);
-	policyManager->definePolicy(name, defaultVal, comparator);
-}
-
-int Server::updatePolicy(const std::string& name, const std::string& value,
-						 const std::string& event, const std::string& info)
-{
+	uid_t uid = getPeerUid();
 	try {
-		std::string old = policyManager->getPolicy(name);
-		char pkgid[PATH_MAX];
-		uid_t uid;
-
-		if (old != value) {
-			uid =  getPeerUid();
-			aul_app_get_pkgid_bypid_for_uid(getPeerPid(), pkgid, PATH_MAX, uid);
-			try {
-				Client& client = ClientManager::instance().getClient(pkgid, uid);
-				policyManager->setPolicy(client, name, value);
-				if (event != "") {
-					service->notify(event, info);
-				}
-			} catch (runtime::Exception& e) {}
+		std::string pkgid = GetPackageId(uid, getPeerPid());
+		if (policyManager->setPolicy(pkgid, uid, name, value)) {
+			if (event.empty() == false) {
+				service->notify(event, info);
+			}
 		}
 	} catch (runtime::Exception& e) {
-		ERROR("Exception on access to policy: " + name);
 		return -1;
 	}
 
 	return 0;
-}
-
-int Server::updatePolicy(const std::string& name, const std::string& value)
-{
-	return updatePolicy(name, value, name, value);
 }
 
 bool Server::checkPeerPrivilege(const rmi::Credentials& cred, const std::string& privilege)
@@ -134,4 +153,21 @@ bool Server::checkPeerPrivilege(const rmi::Credentials& cred, const std::string&
 	::cynara_finish(p_cynara);
 
 	return true;
+}
+
+int Server::enroll(const std::string& name, uid_t uid)
+{
+	adminManager->enroll(name, uid);
+	policyManager->prepareUserPolicy(uid);
+	policyManager->populateStorage(name, uid, true);
+
+	return 0;
+}
+
+int Server::disenroll(const std::string& name, uid_t uid)
+{
+	adminManager->disenroll(name, uid);
+	policyManager->removeStorage(name, uid);
+
+	return 0;
 }

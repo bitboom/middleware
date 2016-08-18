@@ -28,19 +28,21 @@ public:
 	Policy() = delete;
 	Policy(xml::Node&& node);
 
-	const std::string getContent() const
+	int getContent() const
 	{
-		return data.getContent();
+		return value;
 	}
 
-	void setContent(const std::string& content)
+	void setContent(int content)
 	{
 		updateLock->lock();
-		data.setContent(content);
+		value = content;
+		data.setContent(std::to_string(content));
 		updateLock->unlock();
 	}
 
 private:
+	int value;
 	xml::Node data;
 	std::unique_ptr<std::mutex> updateLock;
 };
