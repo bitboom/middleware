@@ -406,6 +406,22 @@ int dpm_password_get_max_inactivity_time_device_lock(device_policy_manager_h han
 int dpm_password_set_status(device_policy_manager_h handle, dpm_password_status_e status);
 
 /**
+ * @brief       Gets password status
+ * @details     An administrator can know password status for this API.
+ * @since_tizen 3.0
+ * @param[in]   handle Device policy manager handle
+ * @param[out]   status Password status
+ * @return      #DPM_ERROR_NONE on success, otherwise a negative value
+ * @retval      #DPM_ERROR_NONE Successful
+ * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
+ * @pre         The handle must be created by dpm_manager_create().
+ * @see         dpm_manager_create()
+ */
+int dpm_password_get_status(device_policy_manager_h handle, dpm_password_status_e *status);
+
+
+/**
  * @partner
  * @brief       Removes all password patterns.
  * @details     An administrator can remove all password patterns.

@@ -273,6 +273,24 @@ EXPORT_API int dpm_password_set_status(device_policy_manager_h handle, dpm_passw
 	return password.setPasswordPolicyStatus(status);
 }
 
+EXPORT_API int dpm_password_get_status(device_policy_manager_h handle, dpm_password_status_e *status)
+{
+	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(status, DPM_ERROR_INVALID_PARAMETER);
+
+	DevicePolicyContext &client = GetDevicePolicyContext(handle);
+	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
+
+	int ret = password.getPasswordPolicyStatus();
+	if (ret < 0) {
+		return -1;
+	}
+
+	*status = (dpm_password_status_e)ret;
+
+	return DPM_ERROR_NONE;
+}
+
 EXPORT_API int dpm_password_delete_pattern(device_policy_manager_h handle)
 {
 	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);

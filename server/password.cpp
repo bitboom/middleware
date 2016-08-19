@@ -200,6 +200,7 @@ PasswordPolicy::PasswordPolicy(PolicyControlContext &ctxt) :
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaxInactivityTimeDeviceLock)(int));
 	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getMaxInactivityTimeDeviceLock));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setPasswordPolicyStatus)(int));
+	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getPasswordPolicyStatus));
 	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::deletePasswordPolicyPattern));
 	ctxt.registerNonparametricMethod(this, "", (std::string)(PasswordPolicy::getPasswordPolicyPattern));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumCharacterOccurrences)(int));
@@ -211,15 +212,15 @@ PasswordPolicy::PasswordPolicy(PolicyControlContext &ctxt) :
 
 	ctxt.createNotification("password");
 
-    DefineUintMaxPolicy(ctxt, "password-history");
+	DefineUintMaxPolicy(ctxt, "password-history");
 	DefineUintMaxPolicy(ctxt, "password-minimum-length");
-    DefineUintMaxPolicy(ctxt, "password-minimum-complexity");
-    DefineUintMaxPolicy(ctxt, "password-inactivity-timeout", 1000);
+	DefineUintMaxPolicy(ctxt, "password-minimum-complexity");
+	DefineUintMaxPolicy(ctxt, "password-inactivity-timeout", 1000);
 
-    DefineUintMinPolicy(ctxt, "password-expired");
-    DefineUintMinPolicy(ctxt, "password-maximum-failure-count");
-    DefineUintMinPolicy(ctxt, "password-numeric-sequences-length");
-    DefineUintMinPolicy(ctxt, "password-maximum-character-occurrences");
+	DefineUintMinPolicy(ctxt, "password-expired");
+	DefineUintMinPolicy(ctxt, "password-maximum-failure-count");
+	DefineUintMinPolicy(ctxt, "password-numeric-sequences-length");
+	DefineUintMinPolicy(ctxt, "password-maximum-character-occurrences");
 
 	DefineLastPolicy(ctxt, "password-status", "0");
 	DefineLastPolicy(ctxt, "password-quality", "");
@@ -377,13 +378,13 @@ int PasswordPolicy::setMaximumFailedPasswordPolicyForWipe(const int value)
 
 	auth_passwd_free_policy(p_policy);
 
-	return SetUintPolicy(__context, "password-maximum-failure-count", (value == 0)? UINT_MAX : value);
+	return SetUintPolicy(__context, "password-maximum-failure-count", (value == 0) ? UINT_MAX : value);
 }
 
 int PasswordPolicy::getMaximumFailedPasswordPolicyForWipe()
 {
 	unsigned int result = GetUintPolicy(__context, "password-maximum-failure-count");
-	return (result == UINT_MAX)? 0 : result;
+	return (result == UINT_MAX) ? 0 : result;
 }
 
 int PasswordPolicy::setPasswordPolicyExpires(const int value)
@@ -411,13 +412,13 @@ int PasswordPolicy::setPasswordPolicyExpires(const int value)
 
 	auth_passwd_free_policy(p_policy);
 
-	return SetUintPolicy(__context, "password-expired", (value == 0)? UINT_MAX : value);
+	return SetUintPolicy(__context, "password-expired", (value == 0) ? UINT_MAX : value);
 }
 
 int PasswordPolicy::getPasswordPolicyExpires()
 {
 	unsigned int result = GetUintPolicy(__context, "password-expired");
-	return (result == UINT_MAX)? 0 : result;
+	return (result == UINT_MAX) ? 0 : result;
 }
 
 int PasswordPolicy::setPasswordPolicyHistory(const int value)
@@ -559,6 +560,12 @@ int PasswordPolicy::setPasswordPolicyStatus(const int status)
 	return -1;
 }
 
+int PasswordPolicy::getPasswordPolicyStatus()
+{
+	int status = std::stoi(GetPolicy(__context, "password-status"));
+	return status;
+}
+
 int PasswordPolicy::deletePasswordPolicyPattern()
 {
 	policy_h *p_policy;
@@ -622,14 +629,14 @@ int PasswordPolicy::setMaximumCharacterOccurrences(const int value)
 
 	auth_passwd_free_policy(p_policy);
 
-	return SetUintPolicy(__context, "password-maximum-character-occurrences", (value == 0)? UINT_MAX : value);
+	return SetUintPolicy(__context, "password-maximum-character-occurrences", (value == 0) ? UINT_MAX : value);
 }
 
 int PasswordPolicy::getMaximumCharacterOccurrences()
 {
 
-    unsigned int result = GetUintPolicy(__context, "password-maximum-character-occurrences");
-	return (result == UINT_MAX)? 0 : result;
+	unsigned int result = GetUintPolicy(__context, "password-maximum-character-occurrences");
+	return (result == UINT_MAX) ? 0 : result;
 }
 
 int PasswordPolicy::setMaximumNumericSequenceLength(const int value)
@@ -657,13 +664,13 @@ int PasswordPolicy::setMaximumNumericSequenceLength(const int value)
 
 	auth_passwd_free_policy(p_policy);
 
-	return SetUintPolicy(__context, "password-numeric-sequences-length", (value == 0)? UINT_MAX : value);
+	return SetUintPolicy(__context, "password-numeric-sequences-length", (value == 0) ? UINT_MAX : value);
 }
 
 int PasswordPolicy::getMaximumNumericSequenceLength()
 {
 	unsigned int result = GetUintPolicy(__context, "password-numeric-sequences-length");
-	return (result == UINT_MAX)? 0 : result;
+	return (result == UINT_MAX) ? 0 : result;
 }
 
 int PasswordPolicy::setForbiddenStrings(const std::vector<std::string> &forbiddenStrings)

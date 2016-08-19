@@ -63,6 +63,7 @@ public:
 	int getMaxInactivityTimeDeviceLock();
 	std::string getPasswordPolicyPolicy();
 	int setPasswordPolicyStatus(const int status);
+	int getPasswordPolicyStatus();
 	int deletePasswordPolicyPattern();
 	std::string getPasswordPolicyPattern();
 	int setMaximumCharacterOccurrences(const int value);

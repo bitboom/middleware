@@ -187,6 +187,15 @@ int PasswordPolicy::setPasswordPolicyStatus(const int status)
 	}
 }
 
+int PasswordPolicy::getPasswordPolicyStatus()
+{
+	try {
+		return __context->methodCall<int>("PasswordPolicy::getPasswordPolicyStatus");
+	} catch (runtime::Exception& e) {
+		return -1;
+	}
+}
+
 int PasswordPolicy::deletePasswordPolicyPattern()
 {
 	try {
