@@ -8,6 +8,7 @@ Group:   Security/Certificate Management
 License: Apache-2.0
 Source0: %{name}-%{version}.tar.gz
 BuildRequires: cmake
+BuildRequires: coreutils
 BuildRequires: findutils
 BuildRequires: openssl
 BuildRequires: pkgconfig(dlog)

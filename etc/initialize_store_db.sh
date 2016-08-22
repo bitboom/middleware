@@ -36,7 +36,7 @@ function get_common_name()
 
 function initialize_store()
 {
-	for fname in `find $SYSTEM_SSL_DIR/*`
+	for fname in `find $SYSTEM_SSL_DIR/* | sort`
 	do
 		gname=`echo ${fname##*/}`
 		if [[ ! $gname =~ ^[0-9a-z]{8}\.[0-9]$ ]]; then
