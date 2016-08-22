@@ -36,6 +36,7 @@ function get_common_name()
 
 function initialize_store()
 {
+	echo "BEGIN TRANSACTION;" >> $ROOT_CERT_SQL
 	for fname in `find $SYSTEM_SSL_DIR/* | sort`
 	do
 		gname=`echo ${fname##*/}`
@@ -54,6 +55,7 @@ function initialize_store()
 				(\"$gname\", \"$cert\", \"$subject_hash\", \"$subject_hash_old\", \
 				\"$common_name\", 1, 1);" >> $ROOT_CERT_SQL
 	done
+	echo "END TRANSACTION;" >> $ROOT_CERT_SQL
 }
 
 touch $ROOT_CERT_SQL
