@@ -33,6 +33,5 @@ ENDIF (ERROR_CODE)
 
 INSTALL(FILES
     ${ETC_DIR}/certs-meta.db
-    ${ETC_DIR}/certs-meta.db-journal
     DESTINATION ${CERT_SVC_DB}
     )

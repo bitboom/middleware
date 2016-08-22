@@ -154,7 +154,10 @@ fi
 %_unitdir/sockets.target.wants/cert-server.socket
 %_libdir/libcert-svc-vcore.so.*
 %TZ_SYS_BIN/cert-server
-%attr(-, security_fw, security_fw) %CERT_SVC_PATH
+%dir %attr(-, security_fw, security_fw) %CERT_SVC_PATH
+%dir %attr(-, security_fw, security_fw) %CERT_SVC_PKCS12
+%attr(-, security_fw, security_fw) %CERT_SVC_CA_BUNDLE
+%attr(-, security_fw, security_fw) %CERT_SVC_DB/certs-meta.db
 %attr(-, security_fw, security_fw) %CERT_SVC_RO_PATH
 
 %files devel
