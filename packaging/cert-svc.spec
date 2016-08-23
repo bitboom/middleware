@@ -123,7 +123,9 @@ make %{?_smp_mflags}
 %install_service sockets.target.wants cert-server.socket
 
 mkdir -p %buildroot%CERT_SVC_PKCS12
-mkdir -p %buildroot%CERT_SVC_DB
+
+touch %buildroot%CERT_SVC_DB/certs-meta.db-journal
+
 ln -sf %TZ_SYS_CA_BUNDLE %buildroot%CERT_SVC_CA_BUNDLE
 
 %preun
@@ -158,6 +160,7 @@ fi
 %dir %attr(-, security_fw, security_fw) %CERT_SVC_PKCS12
 %attr(-, security_fw, security_fw) %CERT_SVC_CA_BUNDLE
 %attr(-, security_fw, security_fw) %CERT_SVC_DB/certs-meta.db
+%attr(-, security_fw, security_fw) %CERT_SVC_DB/certs-meta.db-journal
 %attr(-, security_fw, security_fw) %CERT_SVC_RO_PATH
 
 %files devel
