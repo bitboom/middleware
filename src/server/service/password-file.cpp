@@ -54,7 +54,7 @@ const std::string OLD_VERSION_PASSWORD_FILE = "/password.old";
 const std::string ATTEMPT_FILE = "/attempt";
 const double RETRY_TIMEOUT = 0.5;
 const mode_t FILE_MODE = S_IRUSR | S_IWUSR;
-const unsigned int CURRENT_FILE_VERSION = 1;
+const unsigned int CURRENT_FILE_VERSION = 4;
 } // namespace anonymous
 
 namespace AuthPasswd {
@@ -330,64 +330,30 @@ bool PasswordFile::tryLoadMemoryFromOldFormatFile()
 	if (stat(oldVersionPwdFile.c_str(), &oldFileStat) != 0)
 		return false;
 
-	static const int ELEMENT_SIZE = sizeof(unsigned) + SHA256_DIGEST_LENGTH;
-	static const int VERSION_1_REMAINING = sizeof(unsigned) * 4;
-	static const int VERSION_2_REMAINING = VERSION_1_REMAINING + sizeof(bool);
-	int remaining = oldFileStat.st_size % ELEMENT_SIZE;
+	PasswordFileBuffer pwdBuffer;
+	pwdBuffer.Load(oldVersionPwdFile);
+	unsigned int fileVersion = 0;
+	Deserialization::Deserialize(pwdBuffer, fileVersion);
 
-	if (remaining != VERSION_1_REMAINING && remaining != VERSION_2_REMAINING)
-		return false;
-
-	try {
-		PasswordFileBuffer pwdBuffer;
-		pwdBuffer.Load(oldVersionPwdFile);
+	switch (fileVersion) {
+	case 1:
+	case 2:
+	case 3:
 		Deserialization::Deserialize(pwdBuffer, m_maxAttempt);
 		Deserialization::Deserialize(pwdBuffer, m_maxHistorySize);
 		Deserialization::Deserialize(pwdBuffer, m_expireTimeLeft);
-
-		if (m_expireTimeLeft == 0)
-			m_expireTimeLeft = PASSWORD_INFINITE_EXPIRATION_TIME;
-
-		if (remaining == VERSION_2_REMAINING)
-			Deserialization::Deserialize(pwdBuffer, m_passwordActive);
-		else
-			m_passwordActive = true;
-
-		// deserialize passwords in old format
-		struct OldPassword {
-			OldPassword() {}
-			OldPassword(IStream &stream) {
-				Deserialization::Deserialize(stream, m_hash);
-			}
-			IPassword::RawHash m_hash;
-		};
-		std::list<OldPassword> oldFormatPasswords;
-		Deserialization::Deserialize(pwdBuffer, oldFormatPasswords);
-		// convert passwords to new format
-		m_passwordHistory.clear();
-
-		if (oldFormatPasswords.empty()) {
-			m_passwordCurrent.reset(new NoPassword());
-			m_passwordActive = false;
-		} else {
-			m_passwordCurrent.reset(new SHA256Password(oldFormatPasswords.front().m_hash));
-			std::for_each(
-				++oldFormatPasswords.begin(),
-				oldFormatPasswords.end(),
-				[&](const OldPassword & pwd) {
-					m_passwordHistory.push_back(IPasswordPtr(new SHA256Password(pwd.m_hash)));
-				});
-		}
+		Deserialization::Deserialize(pwdBuffer, m_passwordActive);
+		Deserialization::Deserialize(pwdBuffer, m_passwordCurrent);
+		Deserialization::Deserialize(pwdBuffer, m_passwordHistory);
 
 		m_expireTime = PASSWORD_INFINITE_EXPIRATION_DAYS;
 		m_passwordRcvActive = false;
 		m_passwordRecovery.reset(new NoPassword());
-	} catch (...) {
-		LogWarning("Invalid " << oldVersionPwdFile << " file format");
-		resetState();
-		return false;
+		break;
+	default:
+		LogError("Invaild password version: " << fileVersion);
+		Throw(PasswordException::FStreamReadError);
 	}
-
 	return true;
 }
 
