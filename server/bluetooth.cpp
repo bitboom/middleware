@@ -58,6 +58,31 @@ struct BluetoothPolicyContext {
 	PolicyControlContext* context;
 };
 
+inline int __setModeChangeState(const bool enable)
+{
+	return bluetooth_dpm_set_allow_mode(STATE_CHANGE_IS_ALLOWED(enable));
+}
+
+inline int __setDesktopConnectivityState(const bool enable)
+{
+	return bluetooth_dpm_set_desktop_connectivity_state(POLICY_IS_ALLOWED(enable));
+}
+
+inline int __setPairingState(const bool enable)
+{
+	return bluetooth_dpm_set_pairing_state(POLICY_IS_ALLOWED(enable));
+}
+
+inline int __setDeviceRestriction(const bool enable)
+{
+	return bluetooth_dpm_activate_device_restriction(POLICY_IS_ALLOWED(!enable));
+}
+
+inline int __setUuidRestriction(const bool enable)
+{
+	return bluetooth_dpm_activate_uuid_restriction(POLICY_IS_ALLOWED(!enable));
+}
+
 void bluetoothAdapterStateChangedCallback(int result, bt_adapter_state_e state, void *user_data)
 {
 	if (state != BT_ADAPTER_ENABLED) {
@@ -65,27 +90,26 @@ void bluetoothAdapterStateChangedCallback(int result, bt_adapter_state_e state, 
 	}
 
 	BluetoothPolicyContext *bluetooth = (BluetoothPolicyContext *)user_data;
-	BluetoothPolicy &policy = *bluetooth->policy;
 	PolicyControlContext &context = *bluetooth->context;
 
-	bool allowed = context.getPolicy("bluetooth");
-	if (policy.setModeChangeState(allowed) != BLUETOOTH_DPM_RESULT_SUCCESS) {
+	int ret = __setModeChangeState(context.getPolicy("bluetooth"));
+	if (POLICY_ENFORCING_FAILED(ret)) {
 	}
 
-	allowed = context.getPolicy("bluetooth-desktop-connectivity");
-	if (policy.setDesktopConnectivityState(allowed) != BLUETOOTH_DPM_RESULT_SUCCESS) {
+	ret = __setDesktopConnectivityState(context.getPolicy("bluetooth-desktop-connectivity"));
+	if (POLICY_ENFORCING_FAILED(ret)) {
 	}
 
-	allowed = context.getPolicy("bluetooth-pairing");
-	if (policy.setPairingState(allowed) != BLUETOOTH_DPM_RESULT_SUCCESS) {
+	ret = __setPairingState(context.getPolicy("bluetooth-pairing"));
+	if (POLICY_ENFORCING_FAILED(ret)) {
 	}
 
-	bool enabled = context.getPolicy("bluetooth-device-restriction");
-	if (policy.setDeviceRestriction(enabled) != BLUETOOTH_DPM_RESULT_SUCCESS) {
+	ret = __setDeviceRestriction(context.getPolicy("bluetooth-device-restriction"));
+	if (POLICY_ENFORCING_FAILED(ret)) {
 	}
 
-	enabled = context.getPolicy("bluetooth-uuid-restriction");
-	if (policy.setUuidRestriction(enabled) != BLUETOOTH_DPM_RESULT_SUCCESS) {
+	ret = __setUuidRestriction(context.getPolicy("bluetooth-uuid-restriction"));
+	if (POLICY_ENFORCING_FAILED(ret)) {
 	}
 }
 
@@ -140,10 +164,9 @@ BluetoothPolicy::~BluetoothPolicy()
 
 int BluetoothPolicy::setModeChangeState(const bool enable)
 {
-	int ret = bluetooth_dpm_set_allow_mode(STATE_CHANGE_IS_ALLOWED(enable));
-	if (POLICY_ENFORCING_FAILED(ret)) {
+	int ret = __setModeChangeState(enable);
+	if (POLICY_ENFORCING_FAILED(ret))
 		return -1;
-	}
 
 	return SetPolicyAllowed(context, "bluetooth", enable);
 }
@@ -155,10 +178,9 @@ bool BluetoothPolicy::getModeChangeState()
 
 int BluetoothPolicy::setDesktopConnectivityState(const bool enable)
 {
-	int ret = bluetooth_dpm_set_desktop_connectivity_state(POLICY_IS_ALLOWED(enable));
-	if (POLICY_ENFORCING_FAILED(ret)) {
+	int ret = __setDesktopConnectivityState(enable);
+	if (POLICY_ENFORCING_FAILED(ret))
 		return -1;
-	}
 
 	return SetPolicyAllowed(context, "bluetooth-desktop-connectivity", enable);
 }
@@ -170,10 +192,9 @@ bool BluetoothPolicy::getDesktopConnectivityState()
 
 int BluetoothPolicy::setPairingState(const bool enable)
 {
-	int ret = bluetooth_dpm_set_pairing_state(POLICY_IS_ALLOWED(enable));
-	if (POLICY_ENFORCING_FAILED(ret)) {
+	int ret = __setPairingState(enable);
+	if (POLICY_ENFORCING_FAILED(ret))
 		return -1;
-	}
 
 	return SetPolicyAllowed(context, "bluetooth-pairing", enable);
 }
@@ -230,10 +251,9 @@ int BluetoothPolicy::removeDeviceFromBlacklist(const std::string& mac)
 
 int BluetoothPolicy::setDeviceRestriction(const bool enable)
 {
-	int ret = bluetooth_dpm_activate_device_restriction(POLICY_IS_ALLOWED(!enable));
-	if (POLICY_ENFORCING_FAILED(ret)) {
+	int ret = __setDeviceRestriction(enable);
+	if (POLICY_ENFORCING_FAILED(ret))
 		return -1;
-	}
 
 	return SetPolicyEnabled(context, "bluetooth-device-restriction", enable);
 }
@@ -265,10 +285,9 @@ int BluetoothPolicy::removeUuidFromBlacklist(const std::string& uuid)
 
 int BluetoothPolicy::setUuidRestriction(const bool enable)
 {
-	int ret = bluetooth_dpm_activate_uuid_restriction(POLICY_IS_ALLOWED(!enable));
-	if (POLICY_ENFORCING_FAILED(ret)) {
+	int ret = __setUuidRestriction(enable);
+	if (POLICY_ENFORCING_FAILED(ret))
 		return -1;
-	}
 
 	return SetPolicyEnabled(context, "bluetooth-uuid-restriction", enable);
 }
