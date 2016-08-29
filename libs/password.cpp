@@ -26,145 +26,145 @@ PasswordPolicy::~PasswordPolicy()
 {
 }
 
-int PasswordPolicy::setPasswordPolicyQuality(const int quality)
+int PasswordPolicy::setQuality(const int quality)
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::setPasswordPolicyQuality", quality);
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::setQuality", quality);
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::getPasswordPolicyQuality()
+int PasswordPolicy::getQuality()
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::getPasswordPolicyQuality");
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::getQuality");
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::setPasswordPolicyMinimumLength(const int value)
+int PasswordPolicy::setMinimumLength(int value)
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::setPasswordPolicyMinimumLength", value);
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::setMinimumLength", value);
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::getPasswordPolicyMinimumLength()
+int PasswordPolicy::getMinimumLength()
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::getPasswordPolicyMinimumLength");
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::getMinimumLength");
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::setMinPasswordPolicyComplexChars(const int value)
+int PasswordPolicy::setMinComplexChars(int value)
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::setMinPasswordPolicyComplexChars", value);
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::setMinComplexChars", value);
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::getMinPasswordPolicyComplexChars()
+int PasswordPolicy::getMinComplexChars()
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::getMinPasswordPolicyComplexChars");
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::getMinComplexChars");
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::setMaximumFailedPasswordPolicyForWipe(const int value)
+int PasswordPolicy::setMaximumFailedForWipe(int value)
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::setMaximumFailedPasswordPolicyForWipe", value);
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::setMaximumFailedForWipe", value);
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
-int PasswordPolicy::getMaximumFailedPasswordPolicyForWipe()
+int PasswordPolicy::getMaximumFailedForWipe()
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::getMaximumFailedPasswordPolicyForWipe");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
-}
-
-int PasswordPolicy::setPasswordPolicyExpires(const int value)
-{
-	try {
-		return context->methodCall<int>("PasswordPolicy::setPasswordPolicyExpires", value);
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::getMaximumFailedForWipe");
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::getPasswordPolicyExpires()
+int PasswordPolicy::setExpires(int value)
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::getPasswordPolicyExpires");
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::setExpires", value);
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::setPasswordPolicyHistory(const int value)
+int PasswordPolicy::getExpires()
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::setPasswordPolicyHistory", value);
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::getExpires");
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::getPasswordPolicyHistory()
+int PasswordPolicy::setHistory(int value)
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::getPasswordPolicyHistory");
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::setHistory", value);
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::setPasswordPolicyPattern(const std::string& pattern)
+int PasswordPolicy::getHistory()
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::setPasswordPolicyPattern", pattern);
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::getHistory");
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::resetPasswordPolicy(const std::string& passwd)
+int PasswordPolicy::setPattern(const std::string &pattern)
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::resetPasswordPolicy", passwd);
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::setPattern", pattern);
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::enforcePasswordPolicyChange()
+int PasswordPolicy::reset(const std::string &passwd)
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::enforcePasswordPolicyChange");
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::reset", passwd);
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::setMaxInactivityTimeDeviceLock(const int value)
+int PasswordPolicy::enforceChange()
+{
+	try {
+		return context->methodCall<int>("PasswordPolicy::enforceChange");
+	} catch (runtime::Exception &e) {
+		return -1;
+	}
+}
+
+int PasswordPolicy::setMaxInactivityTimeDeviceLock(int value)
 {
 	try {
 		return context->methodCall<int>("PasswordPolicy::setMaxInactivityTimeDeviceLock", value);
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
@@ -173,53 +173,53 @@ int PasswordPolicy::getMaxInactivityTimeDeviceLock()
 {
 	try {
 		return context->methodCall<int>("PasswordPolicy::getMaxInactivityTimeDeviceLock");;
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::setPasswordPolicyStatus(const int status)
+int PasswordPolicy::setStatus(int status)
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::setPasswordPolicyStatus", status);
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::setStatus", status);
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::getPasswordPolicyStatus()
+int PasswordPolicy::getStatus()
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::getPasswordPolicyStatus");
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::getStatus");
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::deletePasswordPolicyPattern()
+int PasswordPolicy::deletePattern()
 {
 	try {
-		return context->methodCall<int>("PasswordPolicy::deletePasswordPolicyPattern");
-	} catch (runtime::Exception& e) {
+		return context->methodCall<int>("PasswordPolicy::deletePattern");
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-std::string PasswordPolicy::getPasswordPolicyPattern()
+std::string PasswordPolicy::getPattern()
 {
 	std::string error("Error");
 	try {
-		return context->methodCall<std::string>("PasswordPolicy::getPasswordPolicyPattern");
-	} catch (runtime::Exception& e) {
+		return context->methodCall<std::string>("PasswordPolicy::getPattern");
+	} catch (runtime::Exception &e) {
 		return error;
 	}
 }
 
-int PasswordPolicy::setMaximumCharacterOccurrences(const int value)
+int PasswordPolicy::setMaximumCharacterOccurrences(int value)
 {
 	try {
 		return context->methodCall<int>("PasswordPolicy::setMaximumCharacterOccurrences", value);
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
@@ -228,16 +228,16 @@ int PasswordPolicy::getMaximumCharacterOccurrences()
 {
 	try {
 		return context->methodCall<int>("PasswordPolicy::getMaximumCharacterOccurrences");
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::setMaximumNumericSequenceLength(const int value)
+int PasswordPolicy::setMaximumNumericSequenceLength(int value)
 {
 	try {
 		return context->methodCall<int>("PasswordPolicy::setMaximumNumericSequenceLength", value);
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
@@ -246,16 +246,16 @@ int PasswordPolicy::getMaximumNumericSequenceLength()
 {
 	try {
 		return context->methodCall<int>("PasswordPolicy::getMaximumNumericSequenceLength");
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
 
-int PasswordPolicy::setForbiddenStrings(const std::vector<std::string>& forbiddenStrings)
+int PasswordPolicy::setForbiddenStrings(const std::vector<std::string> &forbiddenStrings)
 {
 	try {
 		return context->methodCall<int>("PasswordPolicy::setForbiddenStrings", forbiddenStrings);
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		return -1;
 	}
 }
@@ -265,7 +265,7 @@ std::vector<std::string> PasswordPolicy::getForbiddenStrings()
 	std::vector<std::string> error;
 	try {
 		return context->methodCall<std::vector<std::string>>("PasswordPolicy::getForbiddenStrings");
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		return error;
 	}
 }

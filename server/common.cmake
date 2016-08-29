@@ -19,6 +19,7 @@ SET(POLICY      ${POLICY}
 				location.cpp
 				password.cpp
 				krate.cpp
+				password-manager.cpp
 )
 
 SET(DEPENDENCY  ${DEPENDENCY}

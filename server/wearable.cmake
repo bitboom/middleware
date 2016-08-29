@@ -17,6 +17,7 @@ SET(POLICY      ${POLICY}
 				bluetooth.cpp
 				location.cpp
 				password.cpp
+				password-manager.cpp
 )
 
 SET(DEPENDENCY  ${DEPENDENCY}

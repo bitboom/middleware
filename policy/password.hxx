@@ -33,44 +33,43 @@ public:
 	} PasswordPolicyQuality;
 
 	typedef enum {
-		DPM_PASSWORD_STATUS_NORMAL,                           /**< Password normal status */
+		DPM_PASSWORD_STATUS_NORMAL,                  /**< Password normal status */
 		DPM_PASSWORD_STATUS_CHANGED,                 /**< Password successfully changed */
 		DPM_PASSWORD_STATUS_NOT_CHANGED,             /**< Password not changed */
 		DPM_PASSWORD_STATUS_CHANGE_REQUIRED ,        /**< Password change required */
-		DPM_PASSWORD_STATUS_MAX_ATTEMPTS_EXCEEDED,  /**< Password Max Attempts Exceeded*/
+		DPM_PASSWORD_STATUS_MAX_ATTEMPTS_EXCEEDED,   /**< Password Max Attempts Exceeded*/
 		DPM_PASSWORD_STATUS_MAX
 	} PasswordPolicyStatus;
 
 	PasswordPolicy(PolicyControlContext &ctxt);
 	~PasswordPolicy();
 
-	int setPasswordPolicyQuality(const int quality);
-	int getPasswordPolicyQuality();
-	int setPasswordPolicyMinimumLength(const int value);
-	int getPasswordPolicyMinimumLength();
-	int setMinPasswordPolicyComplexChars(const int value);
-	int getMinPasswordPolicyComplexChars();
-	int setMaximumFailedPasswordPolicyForWipe(const int value);
-	int getMaximumFailedPasswordPolicyForWipe();
-	int setPasswordPolicyExpires(const int value);
-	int getPasswordPolicyExpires();
-	int setPasswordPolicyHistory(const int value);
-	int getPasswordPolicyHistory();
-	int setPasswordPolicyPattern(const std::string &pattern);
-	int resetPasswordPolicy(const std::string &passwd);
-	int enforcePasswordPolicyChange();
-	int setMaxInactivityTimeDeviceLock(const int value);
+	int setQuality(int quality);
+	int getQuality();
+	int setMinimumLength(int value);
+	int getMinimumLength();
+	int setMinComplexChars(int value);
+	int getMinComplexChars();
+	int setMaximumFailedForWipe(int value);
+	int getMaximumFailedForWipe();
+	int setExpires(int value);
+	int getExpires();
+	int setHistory(int value);
+	int getHistory();
+	int setPattern(const std::string &pattern);
+	int reset(const std::string &passwd);
+	int enforceChange();
+	int setMaxInactivityTimeDeviceLock(int value);
 	int getMaxInactivityTimeDeviceLock();
-	std::string getPasswordPolicyPolicy();
-	int setPasswordPolicyStatus(const int status);
-	int getPasswordPolicyStatus();
-	int deletePasswordPolicyPattern();
-	std::string getPasswordPolicyPattern();
-	int setMaximumCharacterOccurrences(const int value);
+	int setStatus(int status);
+	int getStatus();
+	int deletePattern();
+	std::string getPattern();
+	int setMaximumCharacterOccurrences(int value);
 	int getMaximumCharacterOccurrences();
-	int setMaximumNumericSequenceLength(const int value);
+	int setMaximumNumericSequenceLength(int value);
 	int getMaximumNumericSequenceLength();
-	int setForbiddenStrings(const std::vector<std::string> &forbiddenPasswds);
+	int setForbiddenStrings(const std::vector<std::string> &forbiddenStrings);
 	std::vector<std::string> getForbiddenStrings();
 
 private:
