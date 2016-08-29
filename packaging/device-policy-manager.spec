@@ -94,6 +94,8 @@ make %{?jobs:-j%jobs}
 mkdir -p %{buildroot}/%{_unitdir}/multi-user.target.wants
 ln -s ../device-policy-manager.service %{buildroot}/%{_unitdir}/multi-user.target.wants/device-policy-manager.service
 
+%find_lang dpm-syspopup
+
 %clean
 rm -rf %{buildroot}
 
@@ -195,10 +197,10 @@ BuildRequires: pkgconfig(capi-ui-efl-util)
 %description -n org.tizen.dpm-syspopup
 Tizen DPM system popup interface package
 
-%files -n org.tizen.dpm-syspopup
+%files -n org.tizen.dpm-syspopup -f dpm-syspopup.lang
 %defattr(-,root,root,-)
 %manifest tools/syspopup/org.tizen.dpm-syspopup.manifest
 %{TZ_SYS_RO_APP}/org.tizen.dpm-syspopup/bin/*
-%{TZ_SYS_RO_APP}/org.tizen.dpm-syspopup/res/locale/*
+%{TZ_SYS_RO_APP}/org.tizen.dpm-syspopup/res/locale/*/LC_MESSAGES/*
 %{TZ_SYS_RO_PACKAGES}/org.tizen.dpm-syspopup.xml
 /usr/share/icons/default/small/org.tizen.dpm-syspopup.png
