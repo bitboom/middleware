@@ -1,10 +1,9 @@
-
 PRAGMA foreign_keys = ON;
 
 BEGIN TRANSACTION;
 
 CREATE TABLE ssl (
-    gname               TEXT not null,
+    gname               TEXT PRIMARY KEY not null,
     certificate         TEXT not null,
     file_hash           TEXT not null,
     subject_hash        TEXT not null,
@@ -44,4 +43,3 @@ CREATE TABLE disabled_certs (
     certificate         TEXT not null);
 
 COMMIT;
-
