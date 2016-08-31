@@ -33,6 +33,10 @@ Requires: security-config
 BuildRequires: pkgconfig(cert-checker)
 %endif
 
+%global USER_NAME security_fw
+%global GROUP_NAME security_fw
+%global SMACK_DONMAIN_NAME System
+
 %global TZ_SYS_BIN              %{?TZ_SYS_BIN:%TZ_SYS_BIN}%{!?TZ_SYS_BIN:%_bindir}
 %global TZ_SYS_ETC              %{?TZ_SYS_ETC:%TZ_SYS_ETC}%{!?TZ_SYS_ETC:/opt/etc}
 %global TZ_SYS_SHARE            %{?TZ_SYS_SHARE:%TZ_SYS_SHARE}%{!?TZ_SYS_SHARE:/opt/share}
@@ -45,10 +49,14 @@ BuildRequires: pkgconfig(cert-checker)
 
 %global CERT_SVC_PATH           %TZ_SYS_SHARE/cert-svc
 %global CERT_SVC_RO_PATH        %TZ_SYS_RO_SHARE/cert-svc
-%global CERT_SVC_DB             %CERT_SVC_PATH/dbspace
+%global CERT_SVC_DB_PATH        %CERT_SVC_PATH/dbspace
 %global CERT_SVC_PKCS12         %CERT_SVC_PATH/pkcs12
 %global CERT_SVC_CA_BUNDLE      %CERT_SVC_PATH/ca-certificate.crt
 %global CERT_SVC_TESTS          %TZ_SYS_RW_APP/cert-svc-tests
+
+%global CERT_SVC_OLD_DB_PATH    /opt/share/cert-svc/dbspace
+%global UPGRADE_SCRIPT_PATH     %TZ_SYS_RO_SHARE/upgrade/scripts
+%global UPGRADE_DATA_PATH       %TZ_SYS_RO_SHARE/upgrade/data
 
 %description
 Certification service
@@ -93,6 +101,9 @@ export FFLAGS="$FFLAGS -DTIZEN_EMULATOR_MODE"
 %{!?build_type:%define build_type "Release"}
 %cmake . -DVERSION=%version \
          -DINCLUDEDIR=%_includedir \
+         -DUSER_NAME=%USER_NAME \
+         -DGROUP_NAME=%GROUP_NAME \
+         -DSMACK_DOMAIN_NAME=%SMACK_DOMAIN_NAME \
          -DTZ_SYS_SHARE=%TZ_SYS_SHARE \
          -DTZ_SYS_RO_SHARE=%TZ_SYS_RO_SHARE \
          -DTZ_SYS_BIN=%TZ_SYS_BIN \
@@ -102,8 +113,11 @@ export FFLAGS="$FFLAGS -DTIZEN_EMULATOR_MODE"
          -DFINGERPRINT_LIST_RW_PATH=%TZ_SYS_REVOKED_CERTS_FINGERPRINTS_RUNTIME \
          -DCERT_SVC_PATH=%CERT_SVC_PATH \
          -DCERT_SVC_RO_PATH=%CERT_SVC_RO_PATH \
-         -DCERT_SVC_DB=%CERT_SVC_DB \
          -DCERT_SVC_PKCS12=%CERT_SVC_PKCS12 \
+         -DCERT_SVC_DB_PATH=%CERT_SVC_DB_PATH \
+         -DCERT_SVC_OLD_DB_PATH=%CERT_SVC_OLD_DB_PATH \
+         -DUPGRADE_SCRIPT_PATH=%UPGRADE_SCRIPT_PATH \
+         -DUPGRADE_DATA_PATH=%UPGRADE_DATA_PATH \
 %if "%{?profile}" == "mobile"
          -DTIZEN_PROFILE_MOBILE:BOOL=ON \
 %else
@@ -124,7 +138,9 @@ make %{?_smp_mflags}
 
 mkdir -p %buildroot%CERT_SVC_PKCS12
 
-touch %buildroot%CERT_SVC_DB/certs-meta.db-journal
+touch %buildroot%CERT_SVC_DB_PATH/certs-meta.db-journal
+mkdir -p %buildroot%UPGRADE_DATA_PATH
+cp %buildroot%CERT_SVC_DB_PATH/certs-meta.db %buildroot%UPGRADE_DATA_PATH
 
 ln -sf %TZ_SYS_CA_BUNDLE %buildroot%CERT_SVC_CA_BUNDLE
 
@@ -156,12 +172,16 @@ fi
 %_unitdir/sockets.target.wants/cert-server.socket
 %_libdir/libcert-svc-vcore.so.*
 %TZ_SYS_BIN/cert-server
-%dir %attr(-, security_fw, security_fw) %CERT_SVC_PATH
-%dir %attr(-, security_fw, security_fw) %CERT_SVC_PKCS12
-%attr(-, security_fw, security_fw) %CERT_SVC_CA_BUNDLE
-%attr(-, security_fw, security_fw) %CERT_SVC_DB/certs-meta.db
-%attr(-, security_fw, security_fw) %CERT_SVC_DB/certs-meta.db-journal
-%attr(-, security_fw, security_fw) %CERT_SVC_RO_PATH
+%dir %attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_PATH
+%dir %attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_PKCS12
+%attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_CA_BUNDLE
+%attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_DB_PATH/certs-meta.db
+%attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_DB_PATH/certs-meta.db-journal
+%attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_RO_PATH
+
+%attr(755, root, root) %{UPGRADE_SCRIPT_PATH}/cert-svc-db-upgrade.sh
+%attr(755, root, root) %{UPGRADE_SCRIPT_PATH}/cert-svc-disabled-certs-upgrade.sh
+%{UPGRADE_DATA_PATH}/certs-meta.db
 
 %files devel
 %_includedir/*

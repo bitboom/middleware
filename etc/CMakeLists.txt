@@ -33,5 +33,17 @@ ENDIF (ERROR_CODE)
 
 INSTALL(FILES
     ${ETC_DIR}/certs-meta.db
-    DESTINATION ${CERT_SVC_DB}
+    DESTINATION ${CERT_SVC_DB_PATH}
+    )
+
+CONFIGURE_FILE(cert-svc-db-upgrade.sh.in cert-svc-db-upgrade.sh @ONLY)
+CONFIGURE_FILE(
+    cert-svc-disabled-certs-upgrade.sh.in
+    cert-svc-disabled-certs-upgrade.sh @ONLY
+    )
+
+INSTALL(FILES
+    ${ETC_DIR}/cert-svc-db-upgrade.sh
+    ${ETC_DIR}/cert-svc-disabled-certs-upgrade.sh
+    DESTINATION ${UPGRADE_SCRIPT_PATH}
     )
