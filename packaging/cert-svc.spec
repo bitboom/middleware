@@ -179,8 +179,8 @@ fi
 %attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_DB_PATH/certs-meta.db-journal
 %attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_RO_PATH
 
-%attr(755, root, root) %{UPGRADE_SCRIPT_PATH}/cert-svc-db-upgrade.sh
-%attr(755, root, root) %{UPGRADE_SCRIPT_PATH}/cert-svc-disabled-certs-upgrade.sh
+%attr(755, root, root) %UPGRADE_SCRIPT_PATH/cert-svc-db-upgrade.sh
+%attr(755, root, root) %UPGRADE_SCRIPT_PATH/cert-svc-disabled-certs-upgrade.sh
 %{UPGRADE_DATA_PATH}/certs-meta.db
 
 %files devel
@@ -193,4 +193,6 @@ fi
 %TZ_SYS_BIN/cert-svc-test*
 %CERT_SVC_TESTS
 %_libdir/libcert-svc-validator-plugin.so
+%attr(755, root, root) %UPGRADE_SCRIPT_PATH/cert-svc-test-upgrade.sh
+%{UPGRADE_DATA_PATH}/certs-meta-old.db
 %endif

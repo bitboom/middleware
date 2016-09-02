@@ -1,0 +1,44 @@
+#!/bin/bash
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+
+# Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+#
+# @file        cert-svc-test-upgrade.sh.in
+# @author      Sangwan Kwon (sangwan.kwon@samsung.com)
+# @brief       test script for platform upgrade Tizen 2.4 -> 3.0
+#
+
+NEW_DB=@CERT_SVC_DB_PATH@/certs-meta.db
+
+# set test old database
+rm -rf @CERT_SVC_OLD_DB_PATH@/*
+cp @UPGRADE_DATA_PATH@/certs-meta-old.db @CERT_SVC_OLD_DB_PATH@/certs-meta.db
+
+# run db upgrade
+@UPGRADE_SCRIPT_PATH@/cert-svc-db-upgrade.sh
+
+# testcase 1. disabled_certs table should have 2 column
+disabled_certs_cnt=`sqlite3 $NEW_DB "SELECT count(*) FROM disabled_certs;"`
+if [ "$disabled_certs_cnt" != "2" ]
+then
+	echo "Failed to upgrade disabled_cers table."
+fi
+
+# testcase 2. below gname's enabled column should off
+enabled_column=`sqlite3 $NEW_DB "SELECT enabled from ssl WHERE gname='6410666e.0';"`
+if [ "$enabled_column" != "0" ]
+then
+	echo "Failed to upgrade ssl table."
+fi
