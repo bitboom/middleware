@@ -35,7 +35,7 @@ BuildRequires: pkgconfig(cert-checker)
 
 %global USER_NAME security_fw
 %global GROUP_NAME security_fw
-%global SMACK_DONMAIN_NAME System
+%global SMACK_DOMAIN_NAME System
 
 %global TZ_SYS_BIN              %{?TZ_SYS_BIN:%TZ_SYS_BIN}%{!?TZ_SYS_BIN:%_bindir}
 %global TZ_SYS_ETC              %{?TZ_SYS_ETC:%TZ_SYS_ETC}%{!?TZ_SYS_ETC:/opt/etc}
@@ -174,6 +174,7 @@ fi
 %TZ_SYS_BIN/cert-server
 %dir %attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_PATH
 %dir %attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_PKCS12
+%dir %attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_DB_PATH
 %attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_CA_BUNDLE
 %attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_DB_PATH/certs-meta.db
 %attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_DB_PATH/certs-meta.db-journal
