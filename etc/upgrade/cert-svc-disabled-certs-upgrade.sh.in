@@ -77,5 +77,16 @@ do
 	fi
 done
 
+# re-make bundle file
+if [ -s @TZ_SYS_CA_BUNDLE@ ]
+then
+	rm @TZ_SYS_CA_BUNDLE@
+fi
+
+for i in `find @TZ_SYS_CA_CERTS@ -maxdepth 1 -type l | sort`
+do
+	openssl x509 -in $i -outform PEM >> @TZ_SYS_CA_BUNDLE@
+done
+
 rm -rf $OLD_GNAME_LIST
 rm -rf $OLD_CERTS_DIR

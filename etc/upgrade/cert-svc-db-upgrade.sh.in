@@ -42,6 +42,10 @@ rm -rf $OLD_DB
 # generate blank journal file newly
 touch $NEW_DB-journal
 
+# support backward compatablity
+ln -sf @TZ_SYS_CA_BUNDLE@ @CERT_SVC_CA_BUNDLE@
+chown -h @USER_NAME@:@GROUP_NAME@ @CERT_SVC_CA_BUNDLE@
+
 # change permission
 chsmack -a @SMACK_DOMAIN_NAME@ @CERT_SVC_DB_PATH@/*
 chown @USER_NAME@:@GROUP_NAME@ @CERT_SVC_DB_PATH@/*

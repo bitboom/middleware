@@ -29,6 +29,7 @@ BuildRequires: ca-certificates-tizen-devel
 Requires: ca-certificates
 Requires: ca-certificates-tizen
 Requires: security-config
+Requires: openssl
 %if "%{?profile}" == "mobile"
 BuildRequires: pkgconfig(cert-checker)
 %endif
@@ -110,6 +111,7 @@ export FFLAGS="$FFLAGS -DTIZEN_EMULATOR_MODE"
          -DTZ_SYS_CA_CERTS=%TZ_SYS_CA_CERTS \
          -DTZ_SYS_CA_CERTS_ORIG=%TZ_SYS_CA_CERTS_ORIG \
          -DTZ_SYS_CA_BUNDLE=%TZ_SYS_CA_BUNDLE \
+         -DCERT_SVC_CA_BUNDLE=%CERT_SVC_CA_BUNDLE \
          -DFINGERPRINT_LIST_RW_PATH=%TZ_SYS_REVOKED_CERTS_FINGERPRINTS_RUNTIME \
          -DCERT_SVC_PATH=%CERT_SVC_PATH \
          -DCERT_SVC_RO_PATH=%CERT_SVC_RO_PATH \
