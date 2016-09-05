@@ -26,6 +26,8 @@ NEW_DB=@CERT_SVC_DB_PATH@/certs-meta.db
 rm -rf @CERT_SVC_OLD_DB_PATH@/*
 cp @UPGRADE_DATA_PATH@/certs-meta-old.db @CERT_SVC_OLD_DB_PATH@/certs-meta.db
 
+before_upgrade_certs_cnt=`ls -l @TZ_SYS_CA_CERTS@ | grep ^l | wc -l`
+
 # run db upgrade
 @UPGRADE_SCRIPT_PATH@/cert-svc-db-upgrade.sh
 
@@ -33,12 +35,50 @@ cp @UPGRADE_DATA_PATH@/certs-meta-old.db @CERT_SVC_OLD_DB_PATH@/certs-meta.db
 disabled_certs_cnt=`sqlite3 $NEW_DB "SELECT count(*) FROM disabled_certs;"`
 if [ "$disabled_certs_cnt" != "2" ]
 then
-	echo "Failed to upgrade disabled_cers table."
+	echo "[-] Failed to upgrade disabled_certs table."
+else
+	echo "[+] Success to upgrade disabled_certs table."
 fi
 
 # testcase 2. below gname's enabled column should off
-enabled_column=`sqlite3 $NEW_DB "SELECT enabled from ssl WHERE gname='6410666e.0';"`
-if [ "$enabled_column" != "0" ]
+enabled_column1=`sqlite3 $NEW_DB "SELECT enabled from ssl WHERE gname='6410666e.0';"`
+if [ "$enabled_column1" != "0" ]
 then
-	echo "Failed to upgrade ssl table."
+	echo "[-] Failed to upgrade ssl table."
+else
+	echo "[+] Success to upgrade ssl table."
+fi
+enabled_column2=`sqlite3 $NEW_DB "SELECT enabled from ssl WHERE gname='790a7190.0';"`
+if [ "$enabled_column2" != "0" ]
+then
+	echo "[-] Failed to upgrade ssl table."
+else
+	echo "[+] Success to upgrade ssl table."
+fi
+
+# testcase 3. check to exist disabeld certs on rw area
+link_path1="@TZ_SYS_CA_CERTS@/6410666e.0"
+if [ -f $link_path1 ]
+then
+	echo "[-] Failed to unlink disabled certs."
+else
+	echo "[+] Success to unlink disabled certs."
+fi
+link_path2="@TZ_SYS_CA_CERTS@/790a7190.0"
+if [ -f $link_path1 ]
+then
+	echo "[-] Failed to unlink disabled certs."
+else
+	echo "[+] Success to unlink disabled certs."
+fi
+
+# check certificate's count was reduced
+after_upgrade_certs_cnt=`ls -l @TZ_SYS_CA_CERTS@ | grep ^l | wc -l`
+diff=$(expr $before_upgrade_certs_cnt - $after_upgrade_certs_cnt)
+if [ "$diff" != "2" ]
+then
+	echo "[-] Failed to unlink disabled certs."
+	echo "[-] Check ca-certificate package's upgrade has done."
+else
+	echo "[+] Success to unlink disabled certs."
 fi

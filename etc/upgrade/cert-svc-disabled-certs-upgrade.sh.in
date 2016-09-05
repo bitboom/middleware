@@ -66,7 +66,14 @@ do
 		sqlite3 $NEW_DB "INSERT INTO disabled_certs VALUES ('$gname', '$certs');"
 		sqlite3 $NEW_DB "UPDATE ssl SET enabled=0 WHERE gname='$gname';"
 
-		# TODO(sangwan.kwon) unlink file between rw & ro area
+		# unlink disabled certs on rw area(symbol file)
+		link_path="@TZ_SYS_CA_CERTS@/$gname"
+		if [ -h $link_path ]
+		then
+			unlink $link_path
+		else
+			echo "Failed to find $link_path."
+		fi
 	fi
 done
 
