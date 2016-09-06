@@ -196,34 +196,6 @@ void certsvc_certificate_free(CertSvcCertificate certificate);
 int certsvc_certificate_save_file(CertSvcCertificate certificate, const char *location);
 
 /**
- * Search certificate with specific data. Result is stored in CertSvcInstance.
- * This function will erase all preverious results stored in CertSvcInstance but
- * it will not erase any CertSvcCertificate.
- *
- * You can search by fields: CERTSVC_SUBJECT, CERTSVC_ISSUER, CERTSVC_SUBJECT_COMMON_NAME
- *
- * @param[in]  instance  CertSvcInstance object
- * @param[in]  field     Certificate field to find with
- * @param[in]  value     Value to search for
- * @param[out] handler   Handler to search result. Must be freed by
- *                       certsvc_certificate_list_free() after use
- *
- * @return #CERTSVC_SUCCESS on success, otherwise a zero or negative error value
- *
- * @see certsvc_instance_new()
- * @see certsvc_instance_free()
- * @see certsvc_certificate_list_free()
- * @see certsvc_certificate_list_get_one()
- * @see certsvc_certificate_list_get_length()
- * @see #CertSvcCertificateField
- * @see #CertSvcCertificateList
- */
-int certsvc_certificate_search(CertSvcInstance instance,
-							   CertSvcCertificateField field,
-							   const char *value,
-							   CertSvcCertificateList *handler);
-
-/**
  * Get certificate from list founded by certsvc_certificate_search().
  * Can be called multiple times to get all results.
  * Returned certificate can be freed. certsvc_certificate_list_free() doesn't
