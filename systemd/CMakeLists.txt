@@ -1,5 +1,6 @@
 SET(CERT_SERVER "cert-server")
 
+CONFIGURE_FILE(${CERT_SERVER}.socket.in ${CERT_SERVER}.socket @ONLY)
 CONFIGURE_FILE(${CERT_SERVER}.service.in ${CERT_SERVER}.service @ONLY)
 
 INSTALL(

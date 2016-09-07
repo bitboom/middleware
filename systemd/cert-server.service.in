@@ -1,9 +1,10 @@
 [Unit]
-Description=Start cert server for cert-svc managing root ssl certs
+Description=cert server for cert-svc managing root ssl certs
+Wants=cert-server.socket
 
 [Service]
 ExecStart=@TZ_SYS_BIN@/cert-server
-User=security_fw
-Group=security_fw
-SmackProcessLabel=System
+User=@USER_NAME@
+Group=@GROUP_NAME@
+SmackProcessLabel=@SMACK_DOMAIN_NAME@
 Sockets=cert-server.socket
