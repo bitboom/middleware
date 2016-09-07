@@ -95,11 +95,10 @@ static void reply_password_enforce_event_handler(app_control_h ug, app_control_h
 			return;
 		}
 
-		free(result_string);
-
 		if (strcmp(result_string, "SETTING_PW_TYPE_ENTER_LOCK_TYPE") ||
 				 strcmp(result_string, "SETTING_PW_TYPE_VERIFY_FP_ALT_PASSWORD")) {
 
+			free(result_string);
 			app_control_get_extra_data(reply, "current", &current);
 			if (current != NULL) {
 				app_control_h app_control;
@@ -243,8 +242,8 @@ void _create_syspopup(const char *id, char *style, const char *status, app_contr
 	Evas_Smart_Cb ok_button_handler = NULL;
 	popup_info_s *info = NULL;
 	int ret = 0;
-	char header[PATH_MAX] = "\0";
-	char body[PATH_MAX] = "\0";
+	char header[PATH_MAX] = "";
+	char body[PATH_MAX] = "";
 
 	if (!strcmp(id, "password-enforce-change"))
 		ok_button_handler = password_enforce_event_handler;
@@ -272,12 +271,12 @@ void _create_syspopup(const char *id, char *style, const char *status, app_contr
 	eext_object_event_callback_add(popup, EEXT_CALLBACK_BACK, eext_popup_back_cb, main_window);
 
 	if (!strcmp(info->style, "default")) {
-		if (header != NULL) {
+		if (strcmp(header, "")) {
 			elm_object_part_text_set(popup, "title,text", header);
 			elm_object_item_part_text_translatable_set(popup, "title,text", EINA_TRUE);
 		}
 
-		if (body != NULL)
+		if (strcmp(body, ""))
 			elm_object_text_set(popup, body);
 		elm_popup_align_set(popup, ELM_NOTIFY_ALIGN_FILL, 1.0);
 
