@@ -2,6 +2,10 @@ PRAGMA foreign_keys = ON;
 
 BEGIN TRANSACTION;
 
+CREATE TABLE schema_info (
+    version             INT PRIMARY KEY not null,
+    description         TEXT);
+
 CREATE TABLE ssl (
     gname               TEXT PRIMARY KEY not null,
     certificate         TEXT not null,

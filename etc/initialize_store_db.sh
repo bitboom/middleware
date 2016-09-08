@@ -34,7 +34,13 @@ function get_common_name()
 	echo "${common_name:1}" # cut first whitespace
 }
 
-function initialize_store()
+function initialize_store_version()
+{
+	sqlite3 $DB_PATH "INSERT INTO schema_info (version, description) \
+					  VALUES (2, 'Tizen 3.0');"
+}
+
+function initialize_store_data()
 {
 	echo "BEGIN TRANSACTION;" >> $ROOT_CERT_SQL
 	for fname in `find $SYSTEM_SSL_DIR/* | sort`
@@ -51,7 +57,7 @@ function initialize_store()
 
 		echo "INSERT INTO ssl \
 				(gname, certificate, file_hash, subject_hash, \
-				common_name, enabled, is_root_app_enabled) values \
+				common_name, enabled, is_root_app_enabled) VALUES \
 				(\"$gname\", \"$cert\", \"$subject_hash\", \"$subject_hash_old\", \
 				\"$common_name\", 1, 1);" >> $ROOT_CERT_SQL
 	done
@@ -60,7 +66,8 @@ function initialize_store()
 
 touch $ROOT_CERT_SQL
 
-initialize_store
+initialize_store_version
+initialize_store_data
 
 cat $ROOT_CERT_SQL | sqlite3 $DB_PATH
 

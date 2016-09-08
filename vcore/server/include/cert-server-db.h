@@ -28,6 +28,11 @@
 
 extern sqlite3 *cert_store_db;
 
+typedef enum schema_version_t {
+	TIZEN_2_4 =  1,
+	TIZEN_3_0 =  2
+} schema_version;
+
 int initialize_db(void);
 void deinitialize_db(void);
 int execute_insert_update_query(const char *query);

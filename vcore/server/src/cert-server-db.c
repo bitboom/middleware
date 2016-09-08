@@ -26,6 +26,33 @@
 
 sqlite3 *cert_store_db = NULL;
 
+
+void check_schema_version(void)
+{
+	sqlite3_stmt *stmt = NULL;
+	char *query = NULL;
+
+	query = sqlite3_mprintf("SELECT version FROM schema_info WHERE version=%d",
+							TIZEN_3_0);
+
+	int result = execute_select_query(query, &stmt);
+
+	if (result != CERTSVC_SUCCESS) {
+		SLOGE("Failed to get schema version.");
+		return;
+	}
+
+	if (sqlite3_step(stmt) == SQLITE_ROW)
+		SLOGI("Database version is 2(Tizen 3.0)");
+	else
+		SLOGW("Database should be upgrade.");
+
+	if (query)
+		sqlite3_free(query);
+	if (stmt)
+		sqlite3_finalize(stmt);
+}
+
 int initialize_db(void)
 {
 	int result = CERTSVC_SUCCESS;
@@ -39,6 +66,9 @@ int initialize_db(void)
 		cert_store_db = NULL;
 		return CERTSVC_FAIL;
 	}
+
+	/* Check schema version for consistent on platform upgrade */
+	check_schema_version();
 
 	return CERTSVC_SUCCESS;
 }
