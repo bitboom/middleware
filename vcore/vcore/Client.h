@@ -37,7 +37,7 @@ extern "C" {
 #define VCORE_MAX_APPID_SIZE        32
 #define VCORE_MAX_PASSWORD_SIZE     32
 #define VCORE_SOCKET_ERROR          (-0x01C10000) // TIZEN_ERROR_CONNECTION  /*Connection error*/
-#define VCORE_SOCK_PATH             "/tmp/CertSocket"
+#define VCORE_SOCK_PATH             SERVER_STREAM
 #define VCORE_PKEY_TEMP_PATH        "/tmp/tmpData"
 
 typedef enum {

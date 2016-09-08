@@ -3,7 +3,7 @@ Wants=cert-server.service
 Before=cert-server.service
 
 [Socket]
-ListenStream=/tmp/.cert-server.socket
+ListenStream=@SERVER_STREAM@
 SocketUser=@USER_NAME@
 SocketGroup=@GROUP_NAME@
 SocketMode=0777

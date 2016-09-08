@@ -34,30 +34,27 @@ Requires: openssl
 BuildRequires: pkgconfig(cert-checker)
 %endif
 
-%global USER_NAME security_fw
-%global GROUP_NAME security_fw
-%global SMACK_DOMAIN_NAME System
+%global user_name security_fw
+%global group_name security_fw
+%global server_stream /tmp/.cert-server.socket
+%global smack_domain_name System
 
-%global TZ_SYS_BIN              %{?TZ_SYS_BIN:%TZ_SYS_BIN}%{!?TZ_SYS_BIN:%_bindir}
-%global TZ_SYS_ETC              %{?TZ_SYS_ETC:%TZ_SYS_ETC}%{!?TZ_SYS_ETC:/opt/etc}
-%global TZ_SYS_SHARE            %{?TZ_SYS_SHARE:%TZ_SYS_SHARE}%{!?TZ_SYS_SHARE:/opt/share}
-%global TZ_SYS_RO_SHARE         %{?TZ_SYS_RO_SHARE:%TZ_SYS_RO_SHARE}%{!?TZ_SYS_RO_SHARE:%_datadir}
-%global TZ_SYS_RW_APP           %{?TZ_SYS_RW_APP:%TZ_SYS_RW_APP}%{!?TZ_SYS_RW_APP:/opt/usr/apps}
+%global bin_dir                 %{?TZ_SYS_BIN:%TZ_SYS_BIN}%{!?TZ_SYS_BIN:%_bindir}
+%global etc_dir                 %{?TZ_SYS_ETC:%TZ_SYS_ETC}%{!?TZ_SYS_ETC:/opt/etc}
+%global rw_data_dir             %{?TZ_SYS_SHARE:%TZ_SYS_SHARE}%{!?TZ_SYS_SHARE:/opt/share}
+%global ro_data_dir             %{?TZ_SYS_RO_SHARE:%TZ_SYS_RO_SHARE}%{!?TZ_SYS_RO_SHARE:%_datadir}
+%global rw_app_dir              %{?TZ_SYS_RW_APP:%TZ_SYS_RW_APP}%{!?TZ_SYS_RW_APP:/opt/usr/apps}
 
-%global TZ_SYS_CA_CERTS         %{?TZ_SYS_CA_CERTS:%TZ_SYS_CA_CERTS}%{!?TZ_SYS_CA_CERTS:%TZ_SYS_ETC/ssl/certs}
-%global TZ_SYS_RO_CA_CERTS_ORIG %{?TZ_SYS_RO_CA_CERTS_ORIG:%TZ_SYS_RO_CA_CERTS_ORIG}%{!?TZ_SYS_CA_RO_CERTS_ORGIN:%TZ_SYS_RO_SHARE/ca-certificates/certs}
-%global TZ_SYS_CA_BUNDLE        %{?TZ_SYS_CA_BUNDLE:%TZ_SYS_CA_BUNDLE}%{!?TZ_SYS_CA_BUNDLE:/var/lib/ca-certificates/ca-bundle.pem}
+%global cert_svc_path           %rw_data_dir/cert-svc
+%global cert_svc_ro_path        %ro_data_dir/cert-svc
+%global cert_svc_db_path        %cert_svc_path/dbspace
+%global cert_svc_pkcs12         %cert_svc_path/pkcs12
+%global cert_svc_ca_bundle      %cert_svc_path/ca-certificate.crt
+%global cert_svc_tests          %rw_app_dir/cert-svc-tests
 
-%global CERT_SVC_PATH           %TZ_SYS_SHARE/cert-svc
-%global CERT_SVC_RO_PATH        %TZ_SYS_RO_SHARE/cert-svc
-%global CERT_SVC_DB_PATH        %CERT_SVC_PATH/dbspace
-%global CERT_SVC_PKCS12         %CERT_SVC_PATH/pkcs12
-%global CERT_SVC_CA_BUNDLE      %CERT_SVC_PATH/ca-certificate.crt
-%global CERT_SVC_TESTS          %TZ_SYS_RW_APP/cert-svc-tests
-
-%global CERT_SVC_OLD_DB_PATH    /opt/share/cert-svc/dbspace
-%global UPGRADE_SCRIPT_PATH     %TZ_SYS_RO_SHARE/upgrade/scripts
-%global UPGRADE_DATA_PATH       %TZ_SYS_RO_SHARE/upgrade/data
+%global cert_svc_old_db_path    /opt/share/cert-svc/dbspace
+%global upgrade_script_path     %ro_data_dir/upgrade/scripts
+%global upgrade_data_path       %ro_data_dir/upgrade/data
 
 %description
 Certification service
@@ -102,24 +99,24 @@ export FFLAGS="$FFLAGS -DTIZEN_EMULATOR_MODE"
 %{!?build_type:%define build_type "Release"}
 %cmake . -DVERSION=%version \
          -DINCLUDEDIR=%_includedir \
-         -DUSER_NAME=%USER_NAME \
-         -DGROUP_NAME=%GROUP_NAME \
-         -DSMACK_DOMAIN_NAME=%SMACK_DOMAIN_NAME \
-         -DTZ_SYS_SHARE=%TZ_SYS_SHARE \
-         -DTZ_SYS_RO_SHARE=%TZ_SYS_RO_SHARE \
-         -DTZ_SYS_BIN=%TZ_SYS_BIN \
+         -DUSER_NAME=%user_name \
+         -DGROUP_NAME=%group_name \
+         -DSERVER_STREAM=%server_stream \
+         -DSMACK_DOMAIN_NAME=%smack_domain_name \
+         -DRO_DATA_DIR=%ro_data_dir \
+         -DBIN_DIR=%bin_dir \
          -DTZ_SYS_CA_CERTS=%TZ_SYS_CA_CERTS \
          -DTZ_SYS_CA_CERTS_ORIG=%TZ_SYS_CA_CERTS_ORIG \
          -DTZ_SYS_CA_BUNDLE=%TZ_SYS_CA_BUNDLE \
-         -DCERT_SVC_CA_BUNDLE=%CERT_SVC_CA_BUNDLE \
+         -DCERT_SVC_CA_BUNDLE=%cert_svc_ca_bundle \
          -DFINGERPRINT_LIST_RW_PATH=%TZ_SYS_REVOKED_CERTS_FINGERPRINTS_RUNTIME \
-         -DCERT_SVC_PATH=%CERT_SVC_PATH \
-         -DCERT_SVC_RO_PATH=%CERT_SVC_RO_PATH \
-         -DCERT_SVC_PKCS12=%CERT_SVC_PKCS12 \
-         -DCERT_SVC_DB_PATH=%CERT_SVC_DB_PATH \
-         -DCERT_SVC_OLD_DB_PATH=%CERT_SVC_OLD_DB_PATH \
-         -DUPGRADE_SCRIPT_PATH=%UPGRADE_SCRIPT_PATH \
-         -DUPGRADE_DATA_PATH=%UPGRADE_DATA_PATH \
+         -DCERT_SVC_PATH=%cert_svc_path \
+         -DCERT_SVC_RO_PATH=%cert_svc_ro_path \
+         -DCERT_SVC_PKCS12=%cert_svc_pkcs12 \
+         -DCERT_SVC_DB_PATH=%cert_svc_db_path \
+         -DCERT_SVC_OLD_DB_PATH=%cert_svc_old_db_path \
+         -DUPGRADE_SCRIPT_PATH=%upgrade_script_path \
+         -DUPGRADE_DATA_PATH=%upgrade_data_path \
 %if "%{?profile}" == "mobile"
          -DTIZEN_PROFILE_MOBILE:BOOL=ON \
 %else
@@ -127,7 +124,7 @@ export FFLAGS="$FFLAGS -DTIZEN_EMULATOR_MODE"
 %endif
 %if 0%{?certsvc_test_build}
          -DCERTSVC_TEST_BUILD=1 \
-         -DCERT_SVC_TESTS=%CERT_SVC_TESTS \
+         -DCERT_SVC_TESTS=%cert_svc_tests \
 %endif
          -DCMAKE_BUILD_TYPE=%build_type \
          -DSYSTEMD_UNIT_DIR=%_unitdir
@@ -138,13 +135,11 @@ make %{?_smp_mflags}
 %make_install
 %install_service sockets.target.wants cert-server.socket
 
-mkdir -p %buildroot%CERT_SVC_PKCS12
+mkdir -p %buildroot%cert_svc_pkcs12
 
-touch %buildroot%CERT_SVC_DB_PATH/certs-meta.db-journal
-mkdir -p %buildroot%UPGRADE_DATA_PATH
-cp %buildroot%CERT_SVC_DB_PATH/certs-meta.db %buildroot%UPGRADE_DATA_PATH
+touch %buildroot%cert_svc_db_path/certs-meta.db-journal
 
-ln -sf %TZ_SYS_CA_BUNDLE %buildroot%CERT_SVC_CA_BUNDLE
+ln -sf %TZ_SYS_CA_BUNDLE %buildroot%cert_svc_ca_bundle
 
 %preun
 # erase
@@ -173,18 +168,18 @@ fi
 %_unitdir/cert-server.socket
 %_unitdir/sockets.target.wants/cert-server.socket
 %_libdir/libcert-svc-vcore.so.*
-%TZ_SYS_BIN/cert-server
-%dir %attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_PATH
-%dir %attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_PKCS12
-%dir %attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_DB_PATH
-%attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_CA_BUNDLE
-%attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_DB_PATH/certs-meta.db
-%attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_DB_PATH/certs-meta.db-journal
-%attr(-, %{USER_NAME}, %{GROUP_NAME}) %CERT_SVC_RO_PATH
+%bin_dir/cert-server
+%dir %attr(-, %{user_name}, %{group_name}) %cert_svc_path
+%dir %attr(-, %{user_name}, %{group_name}) %cert_svc_pkcs12
+%dir %attr(-, %{user_name}, %{group_name}) %cert_svc_db_path
+%attr(-, %{user_name}, %{group_name}) %cert_svc_ca_bundle
+%attr(-, %{user_name}, %{group_name}) %cert_svc_db_path/certs-meta.db
+%attr(-, %{user_name}, %{group_name}) %cert_svc_db_path/certs-meta.db-journal
+%attr(-, %{user_name}, %{group_name}) %cert_svc_ro_path
 
-%attr(755, root, root) %UPGRADE_SCRIPT_PATH/cert-svc-db-upgrade.sh
-%attr(755, root, root) %UPGRADE_SCRIPT_PATH/cert-svc-disabled-certs-upgrade.sh
-%{UPGRADE_DATA_PATH}/certs-meta.db
+%attr(755, root, root) %upgrade_script_path/cert-svc-db-upgrade.sh
+%attr(755, root, root) %upgrade_script_path/cert-svc-disabled-certs-upgrade.sh
+%upgrade_data_path/certs-meta.db
 
 %files devel
 %_includedir/*
@@ -193,9 +188,9 @@ fi
 
 %if 0%{?certsvc_test_build}
 %files test
-%TZ_SYS_BIN/cert-svc-test*
-%CERT_SVC_TESTS
+%bin_dir/cert-svc-test*
+%cert_svc_tests
 %_libdir/libcert-svc-validator-plugin.so
-%attr(755, root, root) %UPGRADE_SCRIPT_PATH/cert-svc-test-upgrade.sh
-%{UPGRADE_DATA_PATH}/certs-meta-old.db
+%attr(755, root, root) %upgrade_script_path/cert-svc-test-upgrade.sh
+%upgrade_data_path/certs-meta-old.db
 %endif
