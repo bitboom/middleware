@@ -23,12 +23,24 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin
 OLD_DB=@CERT_SVC_OLD_DB_PATH@/certs-meta-old.db
 NEW_DB=@CERT_SVC_DB_PATH@/certs-meta.db
 
+MIGRATION_USER_TABLE=migration-user-table.sql
+
 # backup old database
 mv @CERT_SVC_OLD_DB_PATH@/certs-meta.db $OLD_DB
 rm -rf @CERT_SVC_OLD_DB_PATH@/certs-meta.db-journal
 
 # install new database
 cp @UPGRADE_DATA_PATH@/certs-meta.db $NEW_DB
+
+# migration user certs db
+touch $MIGRATION_USER_TABLE
+echo "ATTACH DATABASE '$OLD_DB' as 'tmp';" >> $MIGRATION_USER_TABLE
+echo "INSERT INTO wifi SELECT * FROM tmp.wifi;" >> $MIGRATION_USER_TABLE
+echo "INSERT INTO vpn SELECT * FROM tmp.vpn;" >> $MIGRATION_USER_TABLE
+echo "INSERT INTO email SELECT * FROM tmp.email;" >> $MIGRATION_USER_TABLE
+echo "DETACH DATABASE 'tmp';" >> $MIGRATION_USER_TABLE
+sqlite3 $NEW_DB ".read $MIGRATION_USER_TABLE"
+rm -rf $MIGRATION_USER_TABLE
 
 # update disabled certs on db
 disabled_certs_cnt=`sqlite3 $OLD_DB "SELECT count(*) FROM disabled_certs;"`

@@ -105,3 +105,28 @@ then
 else
 	echo "[+] Success to sync bundle file with CERT_SVC_CA_BUNDLE."
 fi
+
+# testcase 5. user table migration
+wifi_certs_cnt=`sqlite3 $NEW_DB "SELECT count(*) FROM wifi;"`
+if [ "$wifi_certs_cnt" != "1" ]
+then
+	echo "[-] Failed to migrate wifi table."
+else
+	echo "[+] Success to migrate wifi table."
+fi
+
+vpn_certs_cnt=`sqlite3 $NEW_DB "SELECT count(*) FROM vpn;"`
+if [ "$vpn_certs_cnt" != "1" ]
+then
+	echo "[-] Failed to migrate vpn table."
+else
+	echo "[+] Success to migrate vpn table."
+fi
+
+email_certs_cnt=`sqlite3 $NEW_DB "SELECT count(*) FROM email;"`
+if [ "$email_certs_cnt" != "1" ]
+then
+	echo "[-] Failed to migrate email table."
+else
+	echo "[+] Success to migrate email table."
+fi
