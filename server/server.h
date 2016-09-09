@@ -86,7 +86,7 @@ public:
 
 	int getPolicy(const std::string& name, uid_t uid)
 	{
-		return policyManager->getUserPolicy(name, uid);
+		return policyManager->getGlobalPolicy(name);
 	}
 
 	int getPolicy(const std::string& name)
