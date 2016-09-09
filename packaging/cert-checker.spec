@@ -45,6 +45,11 @@ Check OCSP validation at app install/uninstall time.
 %global popup_env        /run/tizen-system-env
 %global popup_unitdir    %{_unitdir_user}
 
+# upgrade macro
+%define upgrade_dir         %{ro_data_dir}/upgrade
+%define upgrade_script_dir  %{upgrade_dir}/scripts
+%define upgrade_data_dir    %{upgrade_dir}/data
+
 %package -n lib%{name}-common
 Summary:    Common Library package for %{name}
 License:    Apache-2.0
@@ -112,7 +117,9 @@ export LDFLAGS+="-Wl,--rpath=%{_libdir} "
     -DDB_INSTALL_DIR=%{db_dir} \
     -DPOPUP_ENV_PATH=%{popup_env} \
     -DPOPUP_STREAM=%{popup_stream} \
-    -DPOPUP_SYSTEMD_UNIT_DIR=%{popup_unitdir}
+    -DPOPUP_SYSTEMD_UNIT_DIR=%{popup_unitdir} \
+    -DUPGRADE_SCRIPT_DIR=%upgrade_script_dir \
+    -DUPGRADE_DATA_DIR=%upgrade_data_dir
 
 make %{?_smp_mflags}
 
@@ -166,6 +173,9 @@ fi
 %{popup_unitdir}/%{name}-popup.service
 %{popup_unitdir}/%{name}-popup.socket
 %{popup_unitdir}/sockets.target.wants/%{name}-popup.socket
+
+%attr(755, root, root) %{upgrade_script_dir}/cert-checker-upgrade.sh
+%{upgrade_data_dir}/.%{name}.db
 
 %files -n lib%{name}-common
 %manifest %{name}-common.manifest
