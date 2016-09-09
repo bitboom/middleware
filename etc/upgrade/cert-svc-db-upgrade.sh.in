@@ -29,6 +29,9 @@ MIGRATION_USER_TABLE=migration-user-table.sql
 mv @CERT_SVC_OLD_DB_PATH@/certs-meta.db $OLD_DB
 rm -rf @CERT_SVC_OLD_DB_PATH@/certs-meta.db-journal
 
+# remove deprecated dir
+rm -rf @CERT_SVC_PKCS12@/storage
+
 # install new database
 cp @UPGRADE_DATA_PATH@/certs-meta.db $NEW_DB
 
