@@ -77,6 +77,8 @@ License: Apache-2.0
 Group:   Security/Development
 BuildRequires: pkgconfig(capi-base-common)
 Requires:      %{name} = %{version}-%{release}
+Requires:      lib%{name}-common = %{version}-%{release}
+Requires:      lib%{name}-client = %{version}-%{release}
 
 %description devel
 cert-checker development files.
