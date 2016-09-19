@@ -45,6 +45,10 @@ echo "DETACH DATABASE 'tmp';" >> $MIGRATION_USER_TABLE
 sqlite3 $NEW_DB ".read $MIGRATION_USER_TABLE"
 rm -rf $MIGRATION_USER_TABLE
 
+# update schema version to 2.4 (this is for bundle upgrade)
+sqlite3 $NEW_DB "UPDATE schema_info SET version='1', description='Tizen 2.4' \
+				 WHERE version='2';"
+
 # update disabled certs on db
 disabled_certs_cnt=`sqlite3 $OLD_DB "SELECT count(*) FROM disabled_certs;"`
 if [ "$disabled_certs_cnt" != "0" ]

@@ -37,5 +37,7 @@ int initialize_db(void);
 void deinitialize_db(void);
 int execute_insert_update_query(const char *query);
 int execute_select_query(const char *query, sqlite3_stmt **stmt);
+int get_schema_version(schema_version *version);
+int set_schema_version(schema_version version);
 
 #endif // CERT_SERVER_DB_H_

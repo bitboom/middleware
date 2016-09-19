@@ -103,6 +103,31 @@ void CertSvcServerComm(void)
 		goto Error_close_exit;
 	}
 
+	// check schema version for consistent on platform upgrade
+	SLOGI("Start to check schema version.");
+	schema_version version;
+	result = get_schema_version(&version);
+	if (result != CERTSVC_SUCCESS) {
+		SLOGE("Failed to check schema version.");
+		result = CERTSVC_IO_ERROR;
+		goto Error_close_exit;
+	}
+
+	if (version != TIZEN_3_0) {
+		SLOGI("Start to update schema version and bundle.");
+		// remake bundle according to new DB
+		result = update_ca_certificate_file(NULL);
+		if (result != CERTSVC_SUCCESS) {
+			SLOGE("Failed to migrate bundle.");
+			result = CERTSVC_IO_ERROR;
+			goto Error_close_exit;
+		}
+
+		// set DB schema version to TIZEN_3_O
+		set_schema_version(TIZEN_3_0);
+	}
+	SLOGI("Finish checking DB schema version.");
+
 	fd_set fd;
 	struct timeval tv;
 	while (1) {

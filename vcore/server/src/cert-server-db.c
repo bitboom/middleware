@@ -26,49 +26,17 @@
 
 sqlite3 *cert_store_db = NULL;
 
-
-void check_schema_version(void)
-{
-	sqlite3_stmt *stmt = NULL;
-	char *query = NULL;
-
-	query = sqlite3_mprintf("SELECT version FROM schema_info WHERE version=%d",
-							TIZEN_3_0);
-
-	int result = execute_select_query(query, &stmt);
-
-	if (result != CERTSVC_SUCCESS) {
-		SLOGE("Failed to get schema version.");
-		return;
-	}
-
-	if (sqlite3_step(stmt) == SQLITE_ROW)
-		SLOGI("Database version is 2(Tizen 3.0)");
-	else
-		SLOGW("Database should be upgrade.");
-
-	if (query)
-		sqlite3_free(query);
-	if (stmt)
-		sqlite3_finalize(stmt);
-}
-
 int initialize_db(void)
 {
-	int result = CERTSVC_SUCCESS;
-
 	if (cert_store_db != NULL)
 		return CERTSVC_SUCCESS;
 
-	result = db_util_open(CERTSVC_SYSTEM_STORE_DB, &cert_store_db, 0);
+	int result = db_util_open(CERTSVC_SYSTEM_STORE_DB, &cert_store_db, 0);
 	if (result != SQLITE_OK) {
 		SLOGE("opening %s failed!", CERTSVC_SYSTEM_STORE_DB);
 		cert_store_db = NULL;
 		return CERTSVC_FAIL;
 	}
-
-	/* Check schema version for consistent on platform upgrade */
-	check_schema_version();
 
 	return CERTSVC_SUCCESS;
 }
@@ -137,4 +105,65 @@ int execute_select_query(const char *query, sqlite3_stmt **stmt)
 
 	*stmt = stmts;
 	return CERTSVC_SUCCESS;
+}
+
+int get_schema_version(schema_version *version)
+{
+	sqlite3_stmt *stmt = NULL;
+	char *query = NULL;
+
+	query = sqlite3_mprintf("SELECT version FROM schema_info WHERE version=%d",
+							TIZEN_3_0);
+
+	if (!query) {
+		SLOGE("Failed to generate query");
+		return CERTSVC_BAD_ALLOC;
+	}
+
+	int result = execute_select_query(query, &stmt);
+	if (result != CERTSVC_SUCCESS) {
+		SLOGE("Failed to get schema version.");
+		goto exit;
+	}
+
+	if (sqlite3_step(stmt) == SQLITE_ROW) {
+		SLOGI("Database version is 2(Tizen 3.0)");
+		*version = TIZEN_3_0;
+	} else {
+		SLOGW("Database should be upgrade.");
+		*version = TIZEN_2_4;
+	}
+
+exit:
+
+	if (query)
+		sqlite3_free(query);
+	if (stmt)
+		sqlite3_finalize(stmt);
+
+	return result;
+}
+
+int set_schema_version(schema_version version)
+{
+	if (version != TIZEN_3_0) {
+		SLOGE("Schema version should be set as TIZEN_3_0");
+		return CERTSVC_WRONG_ARGUMENT;
+	}
+
+	char *query = sqlite3_mprintf("INSERT INTO schema_info (version, description)"
+								"VALUES (%d, 'Tizen 3.0')", (int)version);
+	if (!query) {
+		SLOGE("Failed to generate query");
+		return CERTSVC_BAD_ALLOC;
+	}
+
+	int result = execute_insert_update_query(query);
+	if (result != CERTSVC_SUCCESS)
+		SLOGE("Insert schema version to database failed.");
+
+	if (query)
+		sqlite3_free(query);
+
+	return result;
 }
