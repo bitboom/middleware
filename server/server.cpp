@@ -123,6 +123,7 @@ int Server::setPolicy(const std::string& name, int value, const std::string& eve
 			}
 		}
 	} catch (runtime::Exception& e) {
+		ERROR(e.what());
 		return -1;
 	}
 

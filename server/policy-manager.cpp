@@ -36,11 +36,6 @@
 namespace {
 
 struct ManagedPolicy {
-	ManagedPolicy(int sc, int val) :
-		scope(sc), value(val)
-	{
-	}
-
 	ManagedPolicy(int sc, int val, PolicyManager::PolicyComparator pred) :
 		scope(sc), value(val), compare(pred)
 	{
@@ -75,11 +70,11 @@ std::unordered_map<std::string, ManagedPolicy> managedPolicyMap = {
 	DEFINE_GLOBAL_POLICY("password-history", 0, MaximizeIntegerComparator),
 	DEFINE_GLOBAL_POLICY("password-minimum-length", 0, MaximizeIntegerComparator),
 	DEFINE_GLOBAL_POLICY("password-minimum-complexity", 0, MaximizeIntegerComparator),
-	DEFINE_GLOBAL_POLICY("password-inactivity-timeout", 1000, MaximizeIntegerComparator),
-	DEFINE_GLOBAL_POLICY("password-expired",0, MinimizeIntegerComparator),
-	DEFINE_GLOBAL_POLICY("password-maximum-failure-count", 0, MinimizeIntegerComparator),
-	DEFINE_GLOBAL_POLICY("password-numeric-sequences-length", 0, MinimizeIntegerComparator),
-	DEFINE_GLOBAL_POLICY("password-maximum-character-occurrences", 0, MinimizeIntegerComparator),
+	DEFINE_GLOBAL_POLICY("password-inactivity-timeout", INT_MAX, MinimizeIntegerComparator),
+	DEFINE_GLOBAL_POLICY("password-expired", INT_MAX, MinimizeIntegerComparator),
+	DEFINE_GLOBAL_POLICY("password-maximum-failure-count", INT_MAX, MinimizeIntegerComparator),
+	DEFINE_GLOBAL_POLICY("password-numeric-sequences-length", INT_MAX, MinimizeIntegerComparator),
+	DEFINE_GLOBAL_POLICY("password-maximum-character-occurrences", INT_MAX, MinimizeIntegerComparator),
 	DEFINE_GLOBAL_POLICY("password-quality", 0, MaximizeIntegerComparator),
 	DEFINE_GLOBAL_POLICY("bluetooth", 1, StateComparator),
 	DEFINE_GLOBAL_POLICY("bluetooth-tethering", 1, StateComparator),
@@ -376,6 +371,7 @@ bool PolicyManager::setPolicy(const std::string& pkgid, uid_t uid,
 							  const std::string& name, int value)
 {
 	if (managedPolicyMap.count(name) == 0) {
+		ERROR("Unknown policy: " + name);
 		return false;
 	}
 

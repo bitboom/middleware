@@ -265,13 +265,13 @@ int PasswordPolicy::setMaximumFailedForWipe(int value)
 		return -1;
 	}
 
-	return setPasswordPolicy(context, "password-maximum-failure-count", (value == 0) ? UINT_MAX : value);
+	return setPasswordPolicy(context, "password-maximum-failure-count", (value == 0) ? INT_MAX : value);
 }
 
 int PasswordPolicy::getMaximumFailedForWipe()
 {
 	unsigned int result = getPasswordPolicy(context, "password-maximum-failure-count");
-	return (result == UINT_MAX) ? 0 : result;
+	return (result == INT_MAX) ? 0 : result;
 }
 
 int PasswordPolicy::setExpires(int value)
@@ -285,13 +285,13 @@ int PasswordPolicy::setExpires(int value)
 		return -1;
 	}
 
-	return setPasswordPolicy(context, "password-expired", (value == 0) ? UINT_MAX : value);
+	return setPasswordPolicy(context, "password-expired", (value == 0) ? INT_MAX : value);
 }
 
 int PasswordPolicy::getExpires()
 {
 	unsigned int result = getPasswordPolicy(context, "password-expired");
-	return (result == UINT_MAX) ? 0 : result;
+	return (result == INT_MAX) ? 0 : result;
 }
 
 int PasswordPolicy::setHistory(int value)
@@ -443,14 +443,14 @@ int PasswordPolicy::setMaximumCharacterOccurrences(int value)
 		return -1;
 	}
 
-	return setPasswordPolicy(context, "password-maximum-character-occurrences", (value == 0) ? UINT_MAX : value);
+	return setPasswordPolicy(context, "password-maximum-character-occurrences", (value == 0) ? INT_MAX : value);
 }
 
 int PasswordPolicy::getMaximumCharacterOccurrences()
 {
 
 	unsigned int result = getPasswordPolicy(context, "password-maximum-character-occurrences");
-	return (result == UINT_MAX) ? 0 : result;
+	return (result == INT_MAX) ? 0 : result;
 }
 
 int PasswordPolicy::setMaximumNumericSequenceLength(int value)
@@ -464,13 +464,13 @@ int PasswordPolicy::setMaximumNumericSequenceLength(int value)
 		return -1;
 	}
 
-	return setPasswordPolicy(context, "password-numeric-sequences-length", (value == 0) ? UINT_MAX : value);
+	return setPasswordPolicy(context, "password-numeric-sequences-length", (value == 0) ? INT_MAX : value);
 }
 
 int PasswordPolicy::getMaximumNumericSequenceLength()
 {
 	unsigned int result = getPasswordPolicy(context, "password-numeric-sequences-length");
-	return (result == UINT_MAX) ? 0 : result;
+	return (result == INT_MAX) ? 0 : result;
 }
 
 int PasswordPolicy::setForbiddenStrings(const std::vector<std::string> &forbiddenStrings)
