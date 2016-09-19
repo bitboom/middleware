@@ -163,7 +163,7 @@ void File::create(mode_t mode)
 	while (1) {
 		descriptor = ::creat(path.c_str(), mode);
 		if (descriptor == -1) {
-			if (errno != EINTR) {
+			if (errno == EINTR) {
 				continue;
 			}
 			throw runtime::Exception(runtime::GetSystemErrorMessage());
@@ -177,7 +177,7 @@ void File::open(int flags)
 	while (1) {
 		descriptor = ::open(path.c_str(), flags);
 		if (descriptor == -1) {
-			if (errno != EINTR) {
+			if (errno == EINTR) {
 				continue;
 			}
 			throw runtime::Exception(runtime::GetSystemErrorMessage());
