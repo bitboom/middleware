@@ -50,82 +50,6 @@ inline int setPasswordPolicy(PolicyControlContext &ctx, const std::string &name,
 	return ctx.setPolicy(name, value, "password", name);
 }
 
-int createNotificationLaunch(void)
-{
-	int lock_type = 0, view_type = 0, ret;
-	app_control_h app_control = NULL;
-	static notification_h passwdNoti = NULL;
-	char sViewtype[][40] = {"SETTING_PW_TYPE_SET_SIMPLE_PASSWORD", "SETTING_PW_TYPE_SET_PASSWORD"};
-
-	vconf_get_int(VCONFKEY_SETAPPL_SCREEN_LOCK_TYPE_INT, &lock_type);
-	if (lock_type == SETTING_SCREEN_LOCK_TYPE_SIMPLE_PASSWORD)
-		view_type = 0;
-	else
-		view_type = 1;
-
-	passwdNoti = notification_create(NOTIFICATION_TYPE_NOTI);
-	if (passwdNoti == NULL) {
-		return -1;
-	}
-
-	ret = app_control_create(&app_control);
-	if (ret != APP_CONTROL_ERROR_NONE) {
-		notification_free(passwdNoti);
-		return -1;
-	}
-
-	ret = 0;
-	try {
-		ret = notification_set_text(passwdNoti, NOTIFICATION_TEXT_TYPE_TITLE, "Change password", NULL, NOTIFICATION_VARIABLE_TYPE_NONE);
-		if (ret != NOTIFICATION_ERROR_NONE) {
-			throw runtime::Exception("notification_set_text1 error");
-		}
-
-		ret = notification_set_text(passwdNoti, NOTIFICATION_TEXT_TYPE_CONTENT, "Tap here to change password", NULL, NOTIFICATION_VARIABLE_TYPE_NONE);
-		if (ret != NOTIFICATION_ERROR_NONE) {
-			throw runtime::Exception("notification_set_text2 error");
-		}
-
-		ret = notification_set_display_applist(passwdNoti, NOTIFICATION_DISPLAY_APP_ALL);
-		if (ret != NOTIFICATION_ERROR_NONE) {
-			throw runtime::Exception("notification_set_display_applist error");
-		}
-
-		ret = app_control_set_app_id(app_control, "setting-password-efl");
-		if (ret != APP_CONTROL_ERROR_NONE) {
-			throw runtime::Exception("app_control_set_app_id error");
-		}
-
-		ret = app_control_add_extra_data(app_control, "viewtype", sViewtype[view_type]);
-		if (ret != APP_CONTROL_ERROR_NONE) {
-			throw runtime::Exception("app_control_add_extra_data1 error");
-		}
-
-		ret = app_control_add_extra_data(app_control, "caller", "DPM");
-		if (ret != APP_CONTROL_ERROR_NONE) {
-			throw runtime::Exception("app_control_add_extra_data2 error");
-		}
-
-		ret = notification_set_launch_option(passwdNoti, NOTIFICATION_LAUNCH_OPTION_APP_CONTROL, (void *)app_control);
-		if (ret != NOTIFICATION_ERROR_NONE) {
-			throw runtime::Exception("notification_set_launch_option error");
-		}
-
-		ret = notification_post(passwdNoti);
-		if (ret != NOTIFICATION_ERROR_NONE) {
-			throw runtime::Exception("notification_post error");
-		}
-	} catch (runtime::Exception e) {
-		ERROR(e.what());
-		ret = -1;
-	}
-
-	app_control_destroy(app_control);
-	notification_free(passwdNoti);
-
-	return ret;
-}
-
 inline PasswordManager::QualityType getPasswordQualityType(int quality)
 {
 	switch (quality) {
@@ -197,7 +121,7 @@ int PasswordPolicy::setQuality(int quality)
 			passwordManager.setMinimumLength(SIMPLE_PASSWORD_LENGTH);
 		}
 		passwordManager.enforce();
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		ERROR(e.what());
 		return -1;
 	}
@@ -222,7 +146,7 @@ int PasswordPolicy::setMinimumLength(int value)
 
 		passwordManager.setMinimumLength(value);
 		passwordManager.enforce();
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		ERROR("Failed to set minimum length");
 		return -1;
 	}
@@ -241,7 +165,7 @@ int PasswordPolicy::setMinComplexChars(int value)
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setMinimumComplexCharacters(value);
 		passwordManager.enforce();
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		ERROR("Failed to set minimum complex characters");
 		return -1;
 	}
@@ -260,7 +184,7 @@ int PasswordPolicy::setMaximumFailedForWipe(int value)
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setMaximumFailedForWipe(value);
 		passwordManager.enforce();
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		ERROR("Failed to set maximum failed count for wipe");
 		return -1;
 	}
@@ -280,7 +204,7 @@ int PasswordPolicy::setExpires(int value)
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setExpires(value);
 		passwordManager.enforce();
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		ERROR("Failed to set expire");
 		return -1;
 	}
@@ -300,7 +224,7 @@ int PasswordPolicy::setHistory(int value)
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setHistory(value);
 		passwordManager.enforce();
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		ERROR("Failed to set history size");
 		return -1;
 	}
@@ -319,7 +243,7 @@ int PasswordPolicy::setPattern(const std::string &pattern)
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setPattern(pattern.c_str());
 		passwordManager.enforce();
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		ERROR("Failed to set pattern");
 		return -1;
 	}
@@ -334,7 +258,7 @@ int PasswordPolicy::reset(const std::string &passwd)
 	try {
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.resetPassword(passwd);
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		ERROR(e.what());
 		return -1;
 	}
@@ -387,19 +311,22 @@ int PasswordPolicy::setStatus(int status)
 
 	if (status == DPM_PASSWORD_STATUS_MAX_ATTEMPTS_EXCEEDED) {
 		ERROR("Max Attempts Exceeded.");
+		context.notify("password", "DPM_PASSWORD_STATUS_MAX_ATTEMPTS_EXCEEDED");
 		return -1;
 	}
 
 	if (PasswordStatus == DPM_PASSWORD_STATUS_CHANGE_REQUIRED) {
 		if (status == DPM_PASSWORD_STATUS_CHANGED) {
 			PasswordStatus = DPM_PASSWORD_STATUS_NORMAL;
+			context.notify("password", "DPM_PASSWORD_STATUS_NORMAL");
 			return 0;
 		} else if (status == DPM_PASSWORD_STATUS_NOT_CHANGED) {
-			return createNotificationLaunch();
+			return 0;
 		}
 	} else if (PasswordStatus == DPM_PASSWORD_STATUS_NORMAL) {
 		if (status == DPM_PASSWORD_STATUS_CHANGE_REQUIRED) {
 			PasswordStatus = status;
+			context.notify("password", "DPM_PASSWORD_STATUS_CHANGE_REQUIRED");
 			return 0;
 		}
 	}
@@ -419,7 +346,7 @@ int PasswordPolicy::deletePattern()
 		passwordManager.deletePatern();
 		passwordManager.enforce();
 		PasswordPattern.clear();
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		ERROR(e.what());
 		return -1;
 	}
@@ -438,7 +365,7 @@ int PasswordPolicy::setMaximumCharacterOccurrences(int value)
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setMaximumCharacterOccurrences(value);
 		passwordManager.enforce();
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		ERROR(e.what());
 		return -1;
 	}
@@ -459,7 +386,7 @@ int PasswordPolicy::setMaximumNumericSequenceLength(int value)
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setMaximumNumericSequenceLength(value);
 		passwordManager.enforce();
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		ERROR(e.what());
 		return -1;
 	}
@@ -480,7 +407,7 @@ int PasswordPolicy::setForbiddenStrings(const std::vector<std::string> &forbidde
 
 		passwordManager.setForbiddenStrings(forbiddenStrings);
 		passwordManager.enforce();
-	} catch (runtime::Exception& e) {
+	} catch (runtime::Exception &e) {
 		ERROR(e.what());
 		return -1;
 	}
