@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 {
 	::signal(SIGINT, signalHandler);
 
-	::umask(0);
+	::umask(022);
 
 	try {
 		Server server;

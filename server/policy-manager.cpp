@@ -100,8 +100,8 @@ std::unordered_map<std::string, ManagedPolicy> managedPolicyMap = {
 
 } // namespace
 
-PolicyManager::PolicyManager(const std::string& path) :
-	location(path)
+PolicyManager::PolicyManager(const std::string& base, const std::string& path) :
+	store(base), location(path)
 {
 	runtime::File policyDirectory(location);
 
@@ -110,6 +110,11 @@ PolicyManager::PolicyManager(const std::string& path) :
 	}
 
 	policyDirectory.makeDirectory(true);
+
+	runtime::File policyStore(store);
+	if (!policyStore.exists()) {
+		policyStore.makeDirectory(true);
+	}
 }
 
 PolicyManager::~PolicyManager()
@@ -190,7 +195,7 @@ void PolicyManager::prepareUserPolicy(uid_t user)
 
 void PolicyManager::populateStorage(const std::string& name, uid_t uid, bool create)
 {
-	std::unique_ptr<PolicyStorage> storage(new PolicyStorage(name, uid, create));
+	std::unique_ptr<PolicyStorage> storage(new PolicyStorage(store, name, uid, create));
 	for (auto it = storage->begin(); it != storage->end(); ++it) {
 		if (managedPolicyMap.count(it->first)) {
 			const ManagedPolicy& policy = managedPolicyMap.at(it->first);

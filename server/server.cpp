@@ -39,6 +39,7 @@ namespace {
 
 const std::string POLICY_MANAGER_ADDRESS = "/tmp/.device-policy-manager.sock";
 const std::string POLICY_ACCESS_POINT_PATH = "/var/run/dpm";
+const std::string POLICY_STORAGE_PATH = "/opt/etc/dpm/policy";
 const std::string DEVICE_ADMIN_REPOSITORY = DB_PATH;
 
 std::string GetPackageId(uid_t uid, pid_t pid)
@@ -56,7 +57,7 @@ std::string GetPackageId(uid_t uid, pid_t pid)
 
 Server::Server()
 {
-	policyManager.reset(new PolicyManager(POLICY_ACCESS_POINT_PATH));
+	policyManager.reset(new PolicyManager(POLICY_STORAGE_PATH, POLICY_ACCESS_POINT_PATH));
 	adminManager.reset(new DeviceAdministratorManager(DEVICE_ADMIN_REPOSITORY));
 	service.reset(new rmi::Service(POLICY_MANAGER_ADDRESS));
 

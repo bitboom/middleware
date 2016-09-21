@@ -56,8 +56,6 @@ managing device policies.
 %attr(755,root,root) %{_bindir}/device-policy-manager
 %attr(700,root,root) %{_bindir}/factory-reset
 %attr(700,root,root) %{_bindir}/dpm-admin-cli
-%attr(711,security_fw,security_fw) %dir %{TZ_SYS_DATA}/dpm
-%attr(700,security_fw,security_fw) %dir %{TZ_SYS_DATA}/dpm/policy
 %{_unitdir}/device-policy-manager.service
 %{_unitdir}/multi-user.target.wants/device-policy-manager.service
 

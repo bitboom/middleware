@@ -32,7 +32,7 @@ class PolicyStorage {
 public:
 	typedef std::unordered_map<std::string, Policy>::iterator PolicyIterator;
 
-	PolicyStorage(const std::string& pkgid, uid_t uid, bool create = true);
+	PolicyStorage(const std::string& storage, const std::string& pkgid, uid_t uid, bool create = true);
 	~PolicyStorage();
 
 	PolicyStorage(const PolicyStorage&) = delete;

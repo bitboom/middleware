@@ -31,7 +31,7 @@ class PolicyManager {
 public:
 	typedef std::function<bool(int, int)> PolicyComparator;
 
-	PolicyManager(const std::string& path);
+	PolicyManager(const std::string& base, const std::string& path);
 	~PolicyManager();
 
 	PolicyManager(const PolicyManager&) = delete;
@@ -70,6 +70,7 @@ private:
 	void cleanup();
 
 private:
+	std::string store;
 	std::string location;
 	std::vector<std::unique_ptr<PolicyStorage>> storageList;
 };

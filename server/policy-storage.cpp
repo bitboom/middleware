@@ -98,17 +98,15 @@ const std::string defaultPolicyTemplate =
 "	</policy-group>\n"
 "</manifest>\n";
 
-const std::string clientPolicyStorage = DATA_PATH "/policy";
-
-std::string StorageLocator(const std::string& name, uid_t uid)
+std::string StorageLocator(const std::string& base, const std::string& name, uid_t uid)
 {
-	return clientPolicyStorage + "/" + name + "-" + std::to_string(uid) + ".xml";
+	return base + "/" + name + "-" + std::to_string(uid) + ".xml";
 }
 
 } // namespace
 
-PolicyStorage::PolicyStorage(const std::string& name, uid_t uid, bool create) :
-	user(uid), owner(name), location(StorageLocator(name, uid)), data(nullptr)
+PolicyStorage::PolicyStorage(const std::string& storage, const std::string& name, uid_t uid, bool create) :
+	user(uid), owner(name), location(StorageLocator(storage, name, uid)), data(nullptr)
 {
 	bool useDefaultPolicyTemplate = false;
 
