@@ -90,7 +90,13 @@ RestrictionPolicy::~RestrictionPolicy()
 
 int RestrictionPolicy::setCameraState(int enable)
 {
-	return SetPolicyAllowed(context, "camera", enable);
+	try {
+		SetPolicyAllowed(context, "camera", enable);
+	} catch (runtime::Exception& e) {
+		ERROR("Failed to enforce camera policy");
+		return -1;
+	}
+	return 0;
 }
 
 int RestrictionPolicy::getCameraState()
@@ -102,6 +108,10 @@ int RestrictionPolicy::setMicrophoneState(int enable)
 {
 	char *result = NULL;
 	try {
+		if (!SetPolicyAllowed(context, "microphone", enable)) {
+			return 0;
+		}
+
 		dbus::Connection &systemDBus = dbus::Connection::getSystem();
 		systemDBus.methodcall(PULSEAUDIO_LOGIN_INTERFACE,
 							  "UpdateRestriction",
@@ -111,15 +121,15 @@ int RestrictionPolicy::setMicrophoneState(int enable)
 							  "block_recording_media",
 							  !enable).get("(s)", &result);
 	} catch (runtime::Exception& e) {
-		ERROR("Failed to enforce location policy");
+		ERROR("Failed to enforce microphone policy");
 		return -1;
 	}
 
-	if (strcmp(result, "STREAM_MANAGER_RETURN_OK") == 0) {
-		return SetPolicyAllowed(context, "microphone", enable);
+	if (strcmp(result, "STREAM_MANAGER_RETURN_OK") != 0) {
+		return -1;
 	}
 
-	return -1;
+	return 0;
 }
 
 int RestrictionPolicy::getMicrophoneState()
@@ -129,7 +139,13 @@ int RestrictionPolicy::getMicrophoneState()
 
 int RestrictionPolicy::setClipboardState(int enable)
 {
-	return SetPolicyAllowed(context, "clipboard", enable);
+	try {
+		SetPolicyAllowed(context, "clipboard", enable);
+	} catch (runtime::Exception& e) {
+		ERROR("Failed to enforce clipboard policy");
+		return -1;
+	}
+	return 0;
 }
 
 int RestrictionPolicy::getClipboardState()
@@ -139,7 +155,13 @@ int RestrictionPolicy::getClipboardState()
 
 int RestrictionPolicy::setUsbDebuggingState(int enable)
 {
-	return SetPolicyAllowed(context, "usb-debugging", enable);
+	try {
+		SetPolicyAllowed(context, "usb-debugging", enable);
+	} catch (runtime::Exception& e) {
+		ERROR("Failed to enforce usb debugging policy");
+		return -1;
+	}
+	return 0;
 }
 
 int RestrictionPolicy::getUsbDebuggingState()
@@ -150,6 +172,10 @@ int RestrictionPolicy::getUsbDebuggingState()
 int RestrictionPolicy::setUsbTetheringState(bool enable)
 {
 	try {
+		if (!SetPolicyAllowed(context, "usb-tethering", enable)) {
+			return 0;
+		}
+
 		dbus::Connection &systemDBus = dbus::Connection::getSystem();
 		systemDBus.methodcall(MOBILEAP_INTERFACE,
 							  "change_policy",
@@ -162,8 +188,7 @@ int RestrictionPolicy::setUsbTetheringState(bool enable)
 		ERROR("Failed to change USB tethering state");
 		return -1;
 	}
-
-	return SetPolicyAllowed(context, "usb-tethering", enable);
+	return 0;
 }
 
 bool RestrictionPolicy::getUsbTetheringState()
@@ -175,9 +200,12 @@ int RestrictionPolicy::setExternalStorageState(int enable)
 {
 	int ret;
 	try {
+		if (!SetPolicyAllowed(context, "external-storage", enable)) {
+			return 0;
+		}
+
 		std::string pid(std::to_string(::getpid()));
 		std::string state(std::to_string(enable));
-
 		dbus::Connection &systemDBus = dbus::Connection::getSystem();
 		systemDBus.methodcall(DEVICED_SYSNOTI_INTERFACE,
 							  -1, "(i)", "(sisss)",
@@ -187,11 +215,11 @@ int RestrictionPolicy::setExternalStorageState(int enable)
 		return -1;
 	}
 
-	if (ret == 0) {
-		return SetPolicyAllowed(context, "external-storage", enable);
+	if (ret != 0) {
+		return -1;
 	}
 
-	return -1;
+	return 0;
 }
 
 int RestrictionPolicy::getExternalStorageState()
@@ -201,7 +229,13 @@ int RestrictionPolicy::getExternalStorageState()
 
 int RestrictionPolicy::setPopImapEmailState(int enable)
 {
-	return SetPolicyAllowed(context, "popimap-email", enable);
+	try {
+		SetPolicyAllowed(context, "popimap-email", enable);
+    } catch (runtime::Exception& e) {
+        ERROR("Failed to enforce pop/imap email policy");
+        return -1;
+    }
+    return 0;
 }
 
 int RestrictionPolicy::getPopImapEmailState()
@@ -211,7 +245,13 @@ int RestrictionPolicy::getPopImapEmailState()
 
 int RestrictionPolicy::setMessagingState(int enable)
 {
-	return SetPolicyAllowed(context, "messaging", enable);
+	try {
+		SetPolicyAllowed(context, "messaging", enable);
+    } catch (runtime::Exception& e) {
+        ERROR("Failed to enforce messaging policy");
+        return -1;
+    }
+	return 0;
 }
 
 int RestrictionPolicy::getMessagingState()
@@ -221,7 +261,13 @@ int RestrictionPolicy::getMessagingState()
 
 int RestrictionPolicy::setBrowserState(int enable)
 {
-	return SetPolicyAllowed(context, "browser", enable);
+	try {
+		SetPolicyAllowed(context, "browser", enable);
+	} catch (runtime::Exception& e) {
+        ERROR("Failed to enforce browser [olicy");
+        return -1;
+    }
+	return 0;
 }
 
 int RestrictionPolicy::getBrowserState()

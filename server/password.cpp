@@ -45,7 +45,7 @@ inline int getPasswordPolicy(PolicyControlContext &ctx, const std::string &name)
 	return ctx.getPolicy(name, ctx.getPeerUid());
 }
 
-inline int setPasswordPolicy(PolicyControlContext &ctx, const std::string &name, int value)
+inline bool setPasswordPolicy(PolicyControlContext &ctx, const std::string &name, int value)
 {
 	return ctx.setPolicy(name, value, "password", name);
 }
@@ -114,6 +114,14 @@ PasswordPolicy::~PasswordPolicy()
 int PasswordPolicy::setQuality(int quality)
 {
 	try {
+		if (!setPasswordPolicy(context, "password-quality", quality)) {
+			return 0;
+		}
+
+		if (quality == DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD) {
+			setPasswordPolicy(context, "password-minimum-length", SIMPLE_PASSWORD_LENGTH);
+		}
+
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setQuality(getPasswordQualityType(quality));
 
@@ -125,12 +133,6 @@ int PasswordPolicy::setQuality(int quality)
 		ERROR(e.what());
 		return -1;
 	}
-
-	setPasswordPolicy(context, "password-quality", quality);
-	if (quality == DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD) {
-		setPasswordPolicy(context, "password-minimum-length", SIMPLE_PASSWORD_LENGTH);
-	}
-
 	return 0;
 }
 
@@ -142,8 +144,11 @@ int PasswordPolicy::getQuality()
 int PasswordPolicy::setMinimumLength(int value)
 {
 	try {
-		PasswordManager passwordManager(context.getPeerUid());
+		if (!setPasswordPolicy(context, "password-minimum-length", value)) {
+			return 0;
+		}
 
+		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setMinimumLength(value);
 		passwordManager.enforce();
 	} catch (runtime::Exception &e) {
@@ -151,7 +156,7 @@ int PasswordPolicy::setMinimumLength(int value)
 		return -1;
 	}
 
-	return setPasswordPolicy(context, "password-minimum-length", value);
+	return 0;
 }
 
 int PasswordPolicy::getMinimumLength()
@@ -162,6 +167,10 @@ int PasswordPolicy::getMinimumLength()
 int PasswordPolicy::setMinComplexChars(int value)
 {
 	try {
+		if (!setPasswordPolicy(context, "password-minimum-complexity", value)) {
+			return 0;
+		}
+
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setMinimumComplexCharacters(value);
 		passwordManager.enforce();
@@ -169,8 +178,7 @@ int PasswordPolicy::setMinComplexChars(int value)
 		ERROR("Failed to set minimum complex characters");
 		return -1;
 	}
-
-	return setPasswordPolicy(context, "password-minimum-complexity", value);
+	return 0;
 }
 
 int PasswordPolicy::getMinComplexChars()
@@ -181,6 +189,10 @@ int PasswordPolicy::getMinComplexChars()
 int PasswordPolicy::setMaximumFailedForWipe(int value)
 {
 	try {
+		if (!setPasswordPolicy(context, "password-maximum-failure-count", (value == 0) ? INT_MAX : value)) {
+			return 0;
+		}
+
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setMaximumFailedForWipe(value);
 		passwordManager.enforce();
@@ -188,8 +200,7 @@ int PasswordPolicy::setMaximumFailedForWipe(int value)
 		ERROR("Failed to set maximum failed count for wipe");
 		return -1;
 	}
-
-	return setPasswordPolicy(context, "password-maximum-failure-count", (value == 0) ? INT_MAX : value);
+	return 0;
 }
 
 int PasswordPolicy::getMaximumFailedForWipe()
@@ -201,6 +212,10 @@ int PasswordPolicy::getMaximumFailedForWipe()
 int PasswordPolicy::setExpires(int value)
 {
 	try {
+		if (!setPasswordPolicy(context, "password-expired", (value == 0) ? INT_MAX : value)) {
+			return 0;
+		}
+
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setExpires(value);
 		passwordManager.enforce();
@@ -208,8 +223,8 @@ int PasswordPolicy::setExpires(int value)
 		ERROR("Failed to set expire");
 		return -1;
 	}
+	return 0;
 
-	return setPasswordPolicy(context, "password-expired", (value == 0) ? INT_MAX : value);
 }
 
 int PasswordPolicy::getExpires()
@@ -221,6 +236,10 @@ int PasswordPolicy::getExpires()
 int PasswordPolicy::setHistory(int value)
 {
 	try {
+		if (!setPasswordPolicy(context, "password-history", value)) {
+			return 0;
+		}
+
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setHistory(value);
 		passwordManager.enforce();
@@ -228,8 +247,7 @@ int PasswordPolicy::setHistory(int value)
 		ERROR("Failed to set history size");
 		return -1;
 	}
-
-	return setPasswordPolicy(context, "password-history", value);
+	return 0;
 }
 
 int PasswordPolicy::getHistory()
@@ -295,7 +313,13 @@ int PasswordPolicy::enforceChange()
 
 int PasswordPolicy::setMaxInactivityTimeDeviceLock(int value)
 {
-	return setPasswordPolicy(context, "password-inactivity-timeout", value);
+	try {
+		setPasswordPolicy(context, "password-inactivity-timeout", value);
+	} catch (runtime::Exception &e) {
+		ERROR(e.what());
+		return -1;
+	}
+	return 0;
 }
 
 int PasswordPolicy::getMaxInactivityTimeDeviceLock()
@@ -362,6 +386,10 @@ std::string PasswordPolicy::getPattern()
 int PasswordPolicy::setMaximumCharacterOccurrences(int value)
 {
 	try {
+		if (!setPasswordPolicy(context, "password-maximum-character-occurrences", (value == 0) ? INT_MAX : value)) {
+			return 0;
+		}
+
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setMaximumCharacterOccurrences(value);
 		passwordManager.enforce();
@@ -369,8 +397,7 @@ int PasswordPolicy::setMaximumCharacterOccurrences(int value)
 		ERROR(e.what());
 		return -1;
 	}
-
-	return setPasswordPolicy(context, "password-maximum-character-occurrences", (value == 0) ? INT_MAX : value);
+	return 0;
 }
 
 int PasswordPolicy::getMaximumCharacterOccurrences()
@@ -383,6 +410,10 @@ int PasswordPolicy::getMaximumCharacterOccurrences()
 int PasswordPolicy::setMaximumNumericSequenceLength(int value)
 {
 	try {
+		if (!setPasswordPolicy(context, "password-numeric-sequences-length", (value == 0) ? INT_MAX : value)) {
+			return 0;
+		}
+
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setMaximumNumericSequenceLength(value);
 		passwordManager.enforce();
@@ -390,8 +421,7 @@ int PasswordPolicy::setMaximumNumericSequenceLength(int value)
 		ERROR(e.what());
 		return -1;
 	}
-
-	return setPasswordPolicy(context, "password-numeric-sequences-length", (value == 0) ? INT_MAX : value);
+	return 0;
 }
 
 int PasswordPolicy::getMaximumNumericSequenceLength()

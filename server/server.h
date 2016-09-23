@@ -77,9 +77,9 @@ public:
 		}
 	}
 
-	int setPolicy(const std::string& name, int value, const std::string& event, const std::string& info);
+	bool setPolicy(const std::string& name, int value, const std::string& event, const std::string& info);
 
-	int setPolicy(const std::string& name, int value, const std::string& info)
+	bool setPolicy(const std::string& name, int value, const std::string& info)
 	{
 		return setPolicy(name, value, name, info);
 	}

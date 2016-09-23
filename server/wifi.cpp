@@ -126,6 +126,10 @@ WifiPolicy::~WifiPolicy()
 int WifiPolicy::setState(bool enable)
 {
 	try {
+		if (!SetPolicyAllowed(context, "wifi", enable)) {
+			return 0;
+		}
+
 		dbus::Connection &systemDBus = dbus::Connection::getSystem();
 		systemDBus.methodcall(NETCONFIG_INTERFACE,
 							  "DevicePolicySetWifi",
@@ -138,7 +142,6 @@ int WifiPolicy::setState(bool enable)
 		return -1;
 	}
 
-	SetPolicyAllowed(context, "wifi", enable);
 	return 0;
 }
 
@@ -150,6 +153,10 @@ bool WifiPolicy::getState()
 int WifiPolicy::setHotspotState(bool enable)
 {
 	try {
+		if (!SetPolicyAllowed(context, "wifi-hotspot", enable)) {
+			return 0;
+		}
+
 		dbus::Connection &systemDBus = dbus::Connection::getSystem();
 		systemDBus.methodcall(MOBILEAP_INTERFACE,
 							  "change_policy",
@@ -163,7 +170,6 @@ int WifiPolicy::setHotspotState(bool enable)
 		return -1;
 	}
 
-	SetPolicyAllowed(context, "wifi-hotspot", enable);
 	return 0;
 }
 
@@ -175,6 +181,10 @@ bool WifiPolicy::getHotspotState()
 int WifiPolicy::setProfileChangeRestriction(bool enable)
 {
 	try {
+		if (!SetPolicyAllowed(context, "wifi-profile-change", enable)) {
+			return 0;
+		}
+
 		dbus::Connection &systemDBus = dbus::Connection::getSystem();
 		systemDBus.methodcall(NETCONFIG_INTERFACE,
 							  "DevicePolicySetWifiProfile",
@@ -186,7 +196,6 @@ int WifiPolicy::setProfileChangeRestriction(bool enable)
 		ERROR("Failed to set Wi-Fi profile change restriction");
 	}
 
-	SetPolicyAllowed(context, "wifi-profile-change", enable);
 	return 0;
 }
 
@@ -197,10 +206,16 @@ bool WifiPolicy::isProfileChangeRestricted(void)
 
 int WifiPolicy::setNetworkAccessRestriction(bool enable)
 {
-	SetPolicyEnabled(context, "wifi-ssid-restriction", enable);
+	try {
+			if (!SetPolicyEnabled(context, "wifi-ssid-restriction", enable)) {
+				return 0;
+			}
 
-	if (enable) {
-		applyBlocklistToConnectedAP();
+			if (enable) {
+				applyBlocklistToConnectedAP();
+			}
+	} catch (runtime::Exception& e) {
+		ERROR("Failed to set Wi-Fi profile change restriction");
 	}
 
 	return 0;

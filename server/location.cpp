@@ -38,10 +38,15 @@ LocationPolicy::~LocationPolicy()
 
 int LocationPolicy::setLocationState(int enable)
 {
-	if (location_manager_enable_restriction(!enable) != LOCATIONS_ERROR_NONE)
-		return -1;
+	if (!SetPolicyAllowed(context, "location", enable)) {
+		return 0;
+	}
 
-	return SetPolicyAllowed(context, "location", enable);
+	if (location_manager_enable_restriction(!enable) != LOCATIONS_ERROR_NONE) {
+		return -1;
+	}
+
+	return 0;
 }
 
 int LocationPolicy::getLocationState()

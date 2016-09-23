@@ -113,22 +113,18 @@ int Server::unregisterNotificationSubscriber(const std::string& name, int id)
 	return service->unsubscribeNotification(name, id);
 }
 
-int Server::setPolicy(const std::string& name, int value, const std::string& event, const std::string& info)
+bool Server::setPolicy(const std::string& name, int value, const std::string& event, const std::string& info)
 {
 	uid_t uid = getPeerUid();
-	try {
-		std::string pkgid = GetPackageId(uid, getPeerPid());
-		if (policyManager->setPolicy(pkgid, uid, name, value)) {
-			if (event.empty() == false) {
-				service->notify(event, info);
-			}
+	std::string pkgid = GetPackageId(uid, getPeerPid());
+	if (policyManager->setPolicy(pkgid, uid, name, value)) {
+		if (event.empty() == false) {
+			service->notify(event, info);
 		}
-	} catch (runtime::Exception& e) {
-		ERROR(e.what());
-		return -1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
 bool Server::checkPeerPrivilege(const rmi::Credentials& cred, const std::string& privilege)
