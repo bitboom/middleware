@@ -3,7 +3,7 @@
 System
 System::Privileged
 User
-User::App::org.tizen.keyguard
-User::App::org.tizen.lockscreen
-User::App::setting-password-efl
-User::App::setting-locktype-efl
+User::Pkg::org.tizen.keyguard
+User::Pkg::org.tizen.lockscreen
+User::Pkg::org.tizen.setting-password
+User::Pkg::org.tizen.setting-locktype
