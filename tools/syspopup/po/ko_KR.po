@@ -71,7 +71,7 @@ msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
 msgstr "보안정책에 따라 SD 카드를 사용할 수 없습니다."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
-msgstr "보안정책에 따라 휴대전화를 암호화를 해제할 수 없습니다."
+msgstr "보안정책에 따라 휴대전화의 암호화를 해제할 수 없습니다."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
 msgstr "보안정책에 따라 Wi-Fi를 사용할 수 없습니다."

@@ -11,7 +11,7 @@ msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
 msgstr "屏幕截取"
 
 msgid "IDS_ST_BODY_PASSWORD"
-msgstr "混合密码"
+msgstr "密码"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
 msgstr "热点"
