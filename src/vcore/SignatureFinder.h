@@ -29,9 +29,13 @@ namespace ValidationCore {
 
 class SignatureFileInfo {
 public:
-	SignatureFileInfo(const std::string &fileName, int num)
-		: m_fileName(fileName)
-		, m_fileNumber(num)
+	SignatureFileInfo() : m_fileName(std::string()), m_fileNumber(-1)
+	{
+	}
+
+	SignatureFileInfo(const std::string &fileName, int num) :
+		m_fileName(fileName),
+		m_fileNumber(num)
 	{}
 
 	std::string getFileName() const

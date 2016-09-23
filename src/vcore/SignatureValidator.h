@@ -26,7 +26,6 @@
 #include <list>
 #include <memory>
 
-#include <vcore/Certificate.h>
 #include <vcore/SignatureData.h>
 #include <vcore/SignatureFinder.h>
 #include <vcore/Error.h>
@@ -64,7 +63,8 @@ using UriList = std::list<std::string>;
  */
 class SignatureValidator {
 public:
-	SignatureValidator(const SignatureFileInfo &info);
+	explicit SignatureValidator(const SignatureFileInfo &info);
+	explicit SignatureValidator(const std::string &packagePath);
 	virtual ~SignatureValidator();
 
 	SignatureValidator() = delete;
@@ -75,10 +75,16 @@ public:
 				bool checkOcsp,
 				bool checkReferences,
 				SignatureData &outData);
-
 	VCerr checkList(bool checkOcsp,
 					const UriList &uriList,
 					SignatureData &outData);
+
+	VCerr checkAll(bool checkOcsp,
+				   bool checkReferences,
+				   SignatureDataMap &sigDataMap);
+	VCerr checkListAll(bool checkOcsp,
+					   const UriList &uriList,
+					   SignatureDataMap &sigDataMap);
 
 	/*
 	 *  @Remarks : cert list isn't completed with self-signed root CA system cert

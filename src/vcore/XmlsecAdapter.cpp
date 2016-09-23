@@ -301,10 +301,27 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 		dsigCtx->keyInfoReadCtx.certsVerificationTime = context.validationTime;
 	}
 
+	// Set proxy data to dsigCtx
+	if (context.isProxyMode && !context.proxySet.empty()) {
+		LogDebug("Set proxy data to xmlsec1 handle.");
+		for (auto data : context.proxySet) {
+			if (!strcmp(data.c_str(), "#prop"))
+				continue;
+
+			if(xmlSecProxyCtxAdd(&(dsigCtx.get()->proxyCtxPtr),
+								 reinterpret_cast<const xmlChar *>(data.c_str())))
+				ThrowMsg(Exception::InternalError, "Failed to add proxy data.");
+
+		}
+	}
+
 	int res;
 
 	switch (m_mode) {
 	case ValidateMode::NORMAL: {
+		if (context.isProxyMode)
+			dsigCtx.get()->flags |= XMLSEC_DSIG_FLAGS_SKIP_PROXY;
+
 		res = xmlSecDSigCtxVerify(dsigCtx.get(), node);
 		break;
 	}
@@ -318,7 +335,7 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 		dsigCtx.get()->flags |= XMLSEC_DSIG_FLAGS_CHECK_PROXY;
 		for (auto uri : *m_pList) {
 			if(xmlSecProxyCtxAdd(&(dsigCtx.get()->proxyCtxPtr),
-								reinterpret_cast<const xmlChar *>(uri.c_str())))
+								 reinterpret_cast<const xmlChar *>(uri.c_str())))
 				ThrowMsg(Exception::InternalError, "PARTIAL_HASH mode failed.");
 		}
 		res = xmlSecDSigCtxVerify(dsigCtx.get(), node);
@@ -341,8 +358,12 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 	if (dsigCtx->status != xmlSecDSigStatusSucceeded)
 		ThrowMsg(Exception::InvalidSig, "Signature status is not succedded.");
 
-	xmlSecSize refSize = xmlSecPtrListGetSize(&(dsigCtx->signedInfoReferences));
+	// Set references for reverse reference check by ReferenceValidator
+	if (context.isProxyMode)
+		for (auto &proxy : context.proxySet)
+			context.referenceSet.insert(proxy);
 
+	xmlSecSize refSize = xmlSecPtrListGetSize(&(dsigCtx->signedInfoReferences));
 	for (xmlSecSize i = 0; i < refSize; ++i) {
 		xmlSecDSigReferenceCtxPtr dsigRefCtx = static_cast<xmlSecDSigReferenceCtxPtr>(
 				xmlSecPtrListGetItem(&(dsigCtx->signedInfoReferences), i));
@@ -362,6 +383,8 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 		}
 
 		context.referenceSet.emplace(reinterpret_cast<char *>(dsigRefCtx->uri));
+		if (context.isProxyMode)
+			context.proxySet.emplace(reinterpret_cast<char *>(dsigRefCtx->uri));
 	}
 }
 

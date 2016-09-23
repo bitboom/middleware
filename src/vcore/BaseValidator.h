@@ -39,8 +39,9 @@ using UriList = std::list<std::string>;
 
 class BaseValidator {
 public:
-	BaseValidator(const SignatureFileInfo &info);
-	virtual ~BaseValidator() {};
+	explicit BaseValidator(const SignatureFileInfo &info);
+	explicit BaseValidator(const std::string &packagePath);
+	virtual ~BaseValidator() {}
 
 	VCerr makeChainBySignature(bool completeWithSystemCert,
 							   CertificateList &certList);
@@ -54,6 +55,11 @@ protected:
 	VCerr additionalCheck(VCerr result);
 
 	SignatureData m_data;
+	bool m_disregarded;
+	std::string m_packagePath;
+	SignatureFileInfo m_fileInfo;
+	SignatureFileInfoSet m_fileInfoSet;
+	XmlSec::XmlSecContext m_context;
 
 private:
 	VCerr makeDataBySignature(bool completeWithSystemCert);
@@ -65,9 +71,6 @@ private:
 	bool checkObjectReferences(void);
 
 	PluginHandler m_pluginHandler;
-	SignatureFileInfo m_fileInfo;
-	XmlSec::XmlSecContext m_context;
-	bool m_disregarded;
 };
 
 } // namespace ValidationCore

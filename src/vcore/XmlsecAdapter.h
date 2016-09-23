@@ -50,7 +50,8 @@ public:
 		XmlSecContext()
 			: validationTime(0)
 			, allowBrokenChain(false)
-			, errorBrokenChain(false) {}
+			, errorBrokenChain(false)
+			, isProxyMode(false) {}
 
 		/*
 		 * Absolute path to signature file.
@@ -89,9 +90,20 @@ public:
 		bool errorBrokenChain;
 		/*
 		 * Output parameter.
-		 * Reference checked by xmlsec
+		 * Reference checked by xmlsec.
 		 */
 		ReferenceSet referenceSet;
+		/*
+		 * Input parameter.
+		 * If true, proxy validation mode on and set XMLSEC_DSIG_FLAGS_SKIP_PROXY.
+		 */
+		bool isProxyMode;
+		/*
+		 * Output parameter.
+		 * Reference checked by xmlsec.
+		 * Reuse for proxy valdiation.
+		 */
+		ProxySet proxySet;
 	};
 
 	struct Exception {

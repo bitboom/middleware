@@ -574,6 +574,65 @@ RUNNER_TEST(T00159_negative_tpk_with_nohash)
 	}
 }
 
+RUNNER_TEST(T00160_positive_checkAll)
+{
+	SignatureValidator validator(TestData::widget_path);
+	SignatureDataMap sigDataMap;
+	VCerr result = validator.checkAll(true, true, sigDataMap);
+
+	RUNNER_ASSERT_MSG(result == E_SIG_NONE,
+					  "sig validation should be success: "
+					  << validator.errorToString(result));
+
+	/* Below codes is example for client.
+	 *
+	auto authorSigData = sigDataMap[ValidationCore::SignatureType::AUTHOR];
+	for (const auto &certPtr : authorSigData.getCertList())
+		std::cout << "Author certificate > " << certPtr->getBase64() << std::endl;
+
+	auto distSigData = sigDataMap[ValidationCore::SignatureType::DISTRIBUTOR1];
+	for (const auto &certPtr : distSigData.getCertList())
+		std::cout << "Distributor certificate > "
+				  << certPtr->getBase64() << std::endl;
+	 *
+	 */
+
+}
+
+RUNNER_TEST(T00161_positive_checkListAll)
+{
+	SignatureValidator validator(TestData::tpk_with_userdata_path);
+	UriList uriList;
+	uriList.emplace_back("author-siganture.xml");
+	uriList.emplace_back("bin/preference");
+	uriList.emplace_back("res/edje/pref_buttons_panel.edj");
+	uriList.emplace_back("res/edje/pref_edit_panel.edj");
+	uriList.emplace_back("res/edje/preference.edj");
+	uriList.emplace_back("res/images/icon_delete.png");
+	uriList.emplace_back("res/res.xml");
+	uriList.emplace_back("shared/res/preference.png");
+	uriList.emplace_back("tizen-manifest.xml");
+
+	SignatureDataMap sigDataMap;
+	VCerr result = validator.checkListAll(true, uriList, sigDataMap);
+	RUNNER_ASSERT_MSG(result == E_SIG_NONE,
+					  "sig validation should be success: "
+					  << validator.errorToString(result));
+
+	/* Below codes is example for client.
+	 *
+	auto authorSigData = sigDataMap[ValidationCore::SignatureType::AUTHOR];
+	for (const auto &certPtr : authorSigData.getCertList())
+		std::cout << "Author certificate > " << certPtr->getBase64() << std::endl;
+
+	auto distSigData = sigDataMap[ValidationCore::SignatureType::DISTRIBUTOR1];
+	for (const auto &certPtr : distSigData.getCertList())
+		std::cout << "Distributor certificate > "
+				  << certPtr->getBase64() << std::endl;
+	 *
+	 */
+}
+
 RUNNER_TEST_GROUP_INIT(T0020_SigVal_errorstring)
 
 RUNNER_TEST(T0021)

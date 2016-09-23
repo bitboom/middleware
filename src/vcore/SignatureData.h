@@ -24,6 +24,7 @@
 
 #include <list>
 #include <set>
+#include <map>
 #include <string>
 
 #include <vcore/Certificate.h>
@@ -31,8 +32,18 @@
 
 namespace ValidationCore {
 
+enum SignatureType {
+	AUTHOR = -1,
+	DISTRIBUTOR1 = 1,
+	DISTRIBUTOR2 = 2
+}; // Distributor type can be increase, do not use enum class.
+
+class SignatureData;
+
 typedef std::set<std::string> ReferenceSet;
+typedef std::set<std::string> ProxySet;
 typedef std::list<std::string> ObjectList;
+typedef std::map<int, SignatureData> SignatureDataMap;
 
 class SignatureData {
 public:
@@ -69,6 +80,7 @@ public:
 
 private:
 	ReferenceSet m_referenceSet;
+	ProxySet m_proxySet;
 	CertificateList m_certList;
 
 	//TargetRestriction
@@ -89,8 +101,6 @@ private:
 	CertStoreId::Set m_storeIdSet;
 	bool m_certificateSorted;
 };
-
-typedef std::set<SignatureData> SignatureDataSet;
 
 } // ValidationCore
 

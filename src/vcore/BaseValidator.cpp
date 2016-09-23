@@ -81,8 +81,14 @@ inline bool _isTimeStrict(const Set &stores)
 namespace ValidationCore {
 
 BaseValidator::BaseValidator(const SignatureFileInfo &info) :
-	m_fileInfo(info),
-	m_disregarded(false)
+	m_disregarded(false),
+	m_fileInfo(info)
+{
+}
+
+BaseValidator::BaseValidator(const std::string &packagePath) :
+	m_disregarded(false),
+	m_packagePath(packagePath)
 {
 }
 
@@ -171,7 +177,7 @@ VCerr BaseValidator::parseSignature(void)
  */
 VCerr BaseValidator::makeDataBySignature(bool completeWithSystemCert)
 {
-	LogDebug("Start to make chain.");
+	LogDebug("Start to make chain about > " << m_fileInfo.getFileName());
 	m_data = SignatureData(m_fileInfo.getFileName(), m_fileInfo.getFileNumber());
 
 	if (parseSignature()) {
