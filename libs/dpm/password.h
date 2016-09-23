@@ -47,6 +47,10 @@ typedef enum {
 	DPM_PASSWORD_QUALITY_ALPHANUMERIC    = 0x80,    /**< Containing at least numeric and alphabetic characters */
 } dpm_password_quality_e;
 
+/**
+ * @brief       Enumeration for dpm password status type
+ * @since_tizen 3.0
+ */
 typedef enum {
 	DPM_PASSWORD_STATUS_NORMAL,                 /**< Password normal status */
 	DPM_PASSWORD_STATUS_CHANGED,                /**< Password successfully changed */

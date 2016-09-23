@@ -91,7 +91,7 @@ int dpm_security_set_internal_storage_encryption(device_policy_manager_h handle,
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  * @see         dpm_security_set_internal_storage_encryption()
@@ -129,12 +129,12 @@ int dpm_security_set_external_storage_encryption(device_policy_manager_h handle,
  *              storage encryption is enabled.
  * @since_tizen 3.0
  * @param[in]   handle Device policy manager handle
- * @param[out   is_encrypted true if external storage is encrypted or being encrypted,
+ * @param[out]   is_encrypted true if external storage is encrypted or being encrypted,
  *              else false
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  * @see         dpm_security_set_external_storage_encryption()

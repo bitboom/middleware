@@ -87,7 +87,7 @@ int dpm_zone_create(device_policy_manager_h handle, const char* name, const char
  */
 int dpm_zone_destroy(device_policy_manager_h handle, const char* name);
 
-/*
+/**
  * @brief       Enumeration for zone state
  * @since_tizen 3.0
  */

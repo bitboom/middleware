@@ -125,7 +125,7 @@ int dpm_restriction_get_microphone_state(device_policy_manager_h handle, int *is
  * @param[in]   allow If true, allow user to change the location state, if false, disallow
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -165,7 +165,7 @@ int dpm_restriction_get_location_state(device_policy_manager_h handle, int *is_a
  *              the external storage
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -184,7 +184,7 @@ int dpm_restriction_set_external_storage_state(device_policy_manager_h handle, i
  * @param[out]  is_allowed true if the use of external storage is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
@@ -204,7 +204,7 @@ int dpm_restriction_get_external_storage_state(device_policy_manager_h handle, i
  * @param[in]   allow If true, allow the clipboard access, if false, disallow the clipboard access.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -223,7 +223,7 @@ int dpm_restriction_set_clipboard_state(device_policy_manager_h handle, int allo
  * @param[out]  is_allowed true if the access is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
@@ -244,7 +244,7 @@ int dpm_restriction_get_clipboard_state(device_policy_manager_h handle, int *is_
  *              debugging
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -263,7 +263,7 @@ int dpm_restriction_set_usb_debugging_state(device_policy_manager_h handle, int 
  * @param[out]   is_allowed true if the usb debugging is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
@@ -285,7 +285,7 @@ int dpm_restriction_get_usb_debugging_state(device_policy_manager_h handle, int 
  *              if false, disallow user to change Wi-Fi state.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -304,7 +304,7 @@ int dpm_restriction_set_wifi_state(device_policy_manager_h handle, int allow);
  * @param[out]  is_allowed true if the change is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
@@ -326,7 +326,7 @@ int dpm_restriction_get_wifi_state(device_policy_manager_h handle, int *is_allow
  *              if false, disallow user to change Wi-Fi hotspot state.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -347,7 +347,7 @@ int dpm_restriction_set_wifi_hotspot_state(device_policy_manager_h handle, int a
  * @param[out]  is_allowed true if the state change is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
@@ -369,7 +369,7 @@ int dpm_restriction_get_wifi_hotspot_state(device_policy_manager_h handle, int *
  *              if false, disallow user to change the bluetooth tethering state.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -391,7 +391,7 @@ int dpm_restriction_set_bluetooth_tethering_state(device_policy_manager_h handle
  * @param[out]  is_allowed true if the change is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
@@ -413,7 +413,7 @@ int dpm_restriction_get_bluetooth_tethering_state(device_policy_manager_h handle
  *              if false, disallow USB tethering state change.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -434,7 +434,7 @@ int dpm_restriction_set_usb_tethering_state(device_policy_manager_h handle, int 
  * @param[out]  is_allowed true if the change is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
@@ -456,7 +456,7 @@ int dpm_restriction_get_usb_tethering_state(device_policy_manager_h handle, int 
  *              if false, disallow user to change bluetooth state.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -474,10 +474,10 @@ int dpm_restriction_set_bluetooth_mode_change_state(device_policy_manager_h hand
  *              so user can not change its state.
  * @since_tizen 3.0
  * @param[in]   handle Device policy manager handle
- * @param[out]  is allowed true if the change is allowed, false otherwise.
+ * @param[out]  is_allowed true if the change is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
@@ -501,7 +501,7 @@ int dpm_restriction_get_bluetooth_mode_change_state(device_policy_manager_h hand
  *              if false, disallow the bluetooth desktop connectivitiy
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -522,7 +522,7 @@ int dpm_restriction_set_bluetooth_desktop_connectivity_state(device_policy_manag
  * @param[out]  is_allowed true if the connectivity is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
@@ -543,7 +543,7 @@ int dpm_restriction_get_bluetooth_desktop_connectivity_state(device_policy_manag
  * @param[out]  allow If true, allow the bluetooth pairing, if false, disallow the bluetooth pairing.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -564,7 +564,7 @@ int dpm_restriction_set_bluetooth_pairing_state(device_policy_manager_h handle, 
  * @param[out]  is_allowed true if the pairing is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
@@ -585,7 +585,7 @@ int dpm_restriction_get_bluetooth_pairing_state(device_policy_manager_h handle, 
  *              if false, disallow the use of SMS or text messaging.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -603,7 +603,7 @@ int dpm_restriction_set_messaging_state(device_policy_manager_h handle, int allo
  * @param[out]  is_allowed true if the messaging is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_restriction_set_messaging_state()
@@ -621,7 +621,7 @@ int dpm_restriction_get_messaging_state(device_policy_manager_h handle, int *is_
  * @param[in]   allow If ture, allow POP or IMAP email, if false, disallow POP or IMAP email.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -639,7 +639,7 @@ int dpm_restriction_set_popimap_email_state(device_policy_manager_h handle, int 
  * @param[out]  is_allowed true if the POP or IMAP email is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_restriction_set_popimap_email_state()
@@ -659,7 +659,7 @@ int dpm_restriction_get_popimap_email_state(device_policy_manager_h handle, int 
  *              if false, disallow the use of web browser.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
  *              the privilege to call this API
@@ -677,7 +677,7 @@ int dpm_restriction_set_browser_state(device_policy_manager_h handle, int allow)
  * @param[out]  is_allowed true if the use of web browser is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
- * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_restriction_set_browser_state()
