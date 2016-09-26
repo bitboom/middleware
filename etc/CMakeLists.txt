@@ -1,44 +1,28 @@
+# Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+#
+# @file        CMakeLists.txt
+# @author      Kyungwook tak (k.tak@samsung.com)
+# @author      Sangwan Kwon (sangwan.kwon@samsung.com)
+#
+
 SET(ETC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 INSTALL(FILES
-    ${ETC_DIR}/schema.xsd
-    DESTINATION ${CERT_SVC_RO_PATH}
-    )
+	${ETC_DIR}/schema.xsd
+	DESTINATION ${CERT_SVC_RO_PATH}
+)
 
-MESSAGE("Add ssl table to certs-meta.db")
-
-EXECUTE_PROCESS(
-    COMMAND
-        ${ETC_DIR}/cert_svc_create_clean_store_db.sh
-        ${ETC_DIR}/cert_svc_store_db.sql
-        ${ETC_DIR}/certs-meta.db
-    RESULT_VARIABLE ERROR_CODE
-    )
-
-IF (ERROR_CODE)
-    MESSAGE(FATAL_ERROR "[${ERROR_CODE}] Failed to create clean store db")
-ENDIF (ERROR_CODE)
-
-EXECUTE_PROCESS(
-    COMMAND
-        ${ETC_DIR}/initialize_store_db.sh
-        ${ETC_DIR}/certs-meta.db
-        ${TZ_SYS_CA_CERTS}
-    RESULT_VARIABLE ERROR_CODE
-    )
-
-IF (ERROR_CODE)
-    MESSAGE(FATAL_ERROR "[${ERROR_CODE}] Failed to initialize store db")
-ENDIF (ERROR_CODE)
-
-INSTALL(FILES
-    ${ETC_DIR}/certs-meta.db
-    DESTINATION ${CERT_SVC_DB_PATH}
-    )
-
-INSTALL(FILES
-    ${ETC_DIR}/certs-meta.db
-    DESTINATION ${UPGRADE_DATA_PATH}
-    )
-
+ADD_SUBDIRECTORY(db)
 ADD_SUBDIRECTORY(upgrade)
