@@ -114,6 +114,7 @@ PasswordPolicy::~PasswordPolicy()
 int PasswordPolicy::setQuality(int quality)
 {
 	try {
+		PasswordManager::QualityType type = getPasswordQualityType(quality);
 		if (!setPasswordPolicy(context, "password-quality", quality)) {
 			return 0;
 		}
@@ -123,7 +124,7 @@ int PasswordPolicy::setQuality(int quality)
 		}
 
 		PasswordManager passwordManager(context.getPeerUid());
-		passwordManager.setQuality(getPasswordQualityType(quality));
+		passwordManager.setQuality(type);
 
 		if (quality == DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD) {
 			passwordManager.setMinimumLength(SIMPLE_PASSWORD_LENGTH);
