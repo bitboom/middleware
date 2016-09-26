@@ -95,6 +95,7 @@ void Server::run()
 
 	PolicyBuild(*this);
 
+	::umask(0);
 	service->start(true);
 }
 
