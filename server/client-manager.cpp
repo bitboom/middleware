@@ -41,8 +41,10 @@ DeviceAdministrator DeviceAdministratorManager::enroll(const std::string& name, 
 {
 	database::Connection connection(repository, database::Connection::ReadWrite);
 
-	std::string selectQuery = "SELECT * FROM CLIENT WHERE PKG = \"" + name + "\"" + " AND UID = \"" + std::to_string(uid) + "\"";
+	std::string selectQuery = "SELECT * FROM CLIENT WHERE PKG = ? AND UID = ?";
 	database::Statement stmt0(connection, selectQuery);
+	stmt0.bind(1, name);
+	stmt0.bind(2, static_cast<int>(uid));
 	if (stmt0.step()) {
 		throw runtime::Exception("Client already registered");
 	}
@@ -55,7 +57,6 @@ DeviceAdministrator DeviceAdministratorManager::enroll(const std::string& name, 
 	stmt.bind(2, static_cast<int>(uid));
 	stmt.bind(3, key);
 	stmt.bind(4, true);
-
 	if (!stmt.exec()) {
 		throw runtime::Exception("Failed to insert client data");
 	}
@@ -67,8 +68,11 @@ void DeviceAdministratorManager::disenroll(const std::string& name, uid_t uid)
 {
 	database::Connection connection(repository, database::Connection::ReadWrite);
 
-	std::string query = "DELETE FROM CLIENT WHERE PKG = \"" + name + "\"" + " AND UID = \"" + std::to_string(uid) + "\"";
-	if (!connection.exec(query)) {
+	std::string query = "DELETE FROM CLIENT WHERE PKG = ? AND UID = ?";
+	database::Statement stmt(connection, query);
+	stmt.bind(1, name);
+	stmt.bind(2, static_cast<int>(uid));
+	if (!stmt.exec()) {
 		throw runtime::Exception("Failed to delete client data");
 	}
 }
