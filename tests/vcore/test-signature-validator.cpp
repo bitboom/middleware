@@ -468,9 +468,9 @@ RUNNER_TEST(T00156_negative_tpk_with_userdata_file_changed_in_list)
 	uriList.emplace_back("res/edje/pref_edit_panel.edj");
 	uriList.emplace_back("res/edje/preference.edj");
 	uriList.emplace_back("res/images/icon_delete.png");
-	uriList.emplace_back("res/res.xml");
 	uriList.emplace_back("shared/res/preference.png");
 	/* this file is modified after signing app */
+	uriList.emplace_back("res/res.xml");
 	uriList.emplace_back("tizen-manifest.xml");
 
 	for (auto &sig : signatureSet) {
@@ -481,14 +481,96 @@ RUNNER_TEST(T00156_negative_tpk_with_userdata_file_changed_in_list)
 						   uriList,
 						   data);
 
-		if (data.isAuthorSignature())
-			RUNNER_ASSERT_MSG(result == E_SIG_INVALID_SIG,
-							  "author sig validation should be failed: "
-							  << validator.errorToString(result));
-		else
-			RUNNER_ASSERT_MSG(result == E_SIG_INVALID_SIG,
-							  "dist sig validation should be failed: "
-							  << validator.errorToString(result));
+		RUNNER_ASSERT_MSG(result == E_SIG_INVALID_SIG,
+						  "sig validation should be E_SIG_INVALID_SIG: "
+						  << validator.errorToString(result));
+	}
+}
+
+RUNNER_TEST(T00157_negative_tpk_with_userdata_file_changed_in_list_2)
+{
+	SignatureFileInfoSet signatureSet;
+	SignatureFinder signatureFinder(TestData::attacked_tpk_with_userdata_path);
+	RUNNER_ASSERT_MSG(
+		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
+		"SignatureFinder failed");
+	UriList uriList;
+	uriList.emplace_back("author-siganture.xml");
+	uriList.emplace_back("bin/preference");
+	uriList.emplace_back("res/edje/pref_buttons_panel.edj");
+	uriList.emplace_back("res/edje/pref_edit_panel.edj");
+	uriList.emplace_back("res/edje/preference.edj");
+	uriList.emplace_back("res/images/icon_delete.png");
+	uriList.emplace_back("shared/res/preference.png");
+	/* this file is modified after signing app */
+	uriList.emplace_back("res/res.xml");
+	/* force disable below for only checking above one */
+	// uriList.emplace_back("tizen-manifest.xml");
+
+	for (auto &sig : signatureSet) {
+		SignatureValidator validator(sig);
+		SignatureData data;
+		VCerr result = validator.checkList(
+						   true,
+						   uriList,
+						   data);
+
+		RUNNER_ASSERT_MSG(result == E_SIG_INVALID_SIG,
+						  "sig validation should be E_SIG_INVALID_SIG: "
+						  << validator.errorToString(result));
+	}
+}
+
+RUNNER_TEST(T00158_negative_tpk_with_userdata_file_changed_in_list_3)
+{
+	SignatureFileInfoSet signatureSet;
+	SignatureFinder signatureFinder(TestData::attacked_tpk_with_userdata_path);
+	RUNNER_ASSERT_MSG(
+		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
+		"SignatureFinder failed");
+	UriList uriList;
+	uriList.emplace_back("res/edje/pref_buttons_panel.edj");
+	uriList.emplace_back("res/images/icon_delete.png");
+	uriList.emplace_back("shared/res/preference.png");
+	/* this file is modified after signing app */
+	// uriList.emplace_back("res/res.xml");
+	// uriList.emplace_back("tizen-manifest.xml");
+
+	for (auto &sig : signatureSet) {
+		SignatureValidator validator(sig);
+		SignatureData data;
+		VCerr result = validator.checkList(
+						   true,
+						   uriList,
+						   data);
+
+		RUNNER_ASSERT_MSG(result == E_SIG_NONE,
+						  "sig validation should be E_SIG_INVALID_SIG: "
+						  << validator.errorToString(result));
+	}
+}
+
+RUNNER_TEST(T00159_negative_tpk_with_nohash)
+{
+	SignatureFileInfoSet signatureSet;
+	SignatureFinder signatureFinder(TestData::attacked_tpk_with_userdata_path);
+	RUNNER_ASSERT_MSG(
+		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
+		"SignatureFinder failed");
+
+	UriList uriList;
+
+	for (auto &sig : signatureSet) {
+		SignatureValidator validator(sig);
+		SignatureData data;
+		VCerr result = validator.checkList(
+						   true,
+						   uriList,
+						   data);
+
+		RUNNER_ASSERT_MSG(result == E_SIG_NONE,
+						  "sig validation should success: "
+						  << validator.errorToString(result));
 	}
 }
 
