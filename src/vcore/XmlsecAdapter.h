@@ -16,7 +16,8 @@
 /*
  * @file        XmlSecAdapter.h
  * @author      Bartlomiej Grzelewski (b.grzelewski@samsung.com)
- * @version     2.0
+ * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
+ * @version     2.1
  * @brief
  */
 #pragma once

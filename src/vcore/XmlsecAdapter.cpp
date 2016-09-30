@@ -16,7 +16,8 @@
 /*
  * @file        XmlsecAdapter.cpp
  * @author      Bartlomiej Grzelewski (b.grzelewski@samsung.com)
- * @version     2.0
+ * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
+ * @version     2.1
  * @brief
  */
 #include <cstdlib>
@@ -303,23 +304,25 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 	int res;
 
 	switch (m_mode) {
-	case ValidateMode::NORMAL:
+	case ValidateMode::NORMAL: {
+		res = xmlSecDSigCtxVerify(dsigCtx.get(), node);
+		break;
+	}
+
+	case ValidateMode::NO_HASH:
+		dsigCtx.get()->flags |= XMLSEC_DSIG_FLAGS_IGNORE_REFERENCES;
 		res = xmlSecDSigCtxVerify(dsigCtx.get(), node);
 		break;
 
-	case ValidateMode::NO_HASH:
-		res = xmlSecDSigCtxVerifyEx(dsigCtx.get(), node, 1, nullptr);
-		break;
-
 	case ValidateMode::PARTIAL_HASH: {
-		size_t n = m_pList->size();
-		const char *pList[n + 1] = {0};
-		size_t i = 0;
-
-		for (auto uri : *m_pList)
-			pList[i++] = uri.c_str();
-
-		res = xmlSecDSigCtxVerifyEx(dsigCtx.get(), node, 0, pList);
+		dsigCtx.get()->flags |= XMLSEC_DSIG_FLAGS_CHECK_PROXY;
+		for (auto uri : *m_pList) {
+			if(xmlSecProxyCtxAdd(&(dsigCtx.get()->proxyCtxPtr),
+								reinterpret_cast<const xmlChar *>(uri.c_str())))
+				ThrowMsg(Exception::InternalError, "PARTIAL_HASH mode failed.");
+		}
+		res = xmlSecDSigCtxVerify(dsigCtx.get(), node);
+		xmlSecProxyCtxDestroy(dsigCtx.get()->proxyCtxPtr);
 		break;
 	}
 
