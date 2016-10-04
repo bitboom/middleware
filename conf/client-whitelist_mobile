@@ -5,5 +5,6 @@ System::Privileged
 User
 User::Pkg::org.tizen.keyguard
 User::Pkg::org.tizen.lockscreen
+User::Pkg::org.tizen.setting
 User::Pkg::org.tizen.setting-password
 User::Pkg::org.tizen.setting-locktype
