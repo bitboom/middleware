@@ -18,8 +18,6 @@
  * @author      Bartlomiej Grzelewski (b.grzelewski@samsung.com)
  * @version     1.0
  * @brief       Simple c++ interface for libxml2.
- *              Its used in wrt-installer only and should be removed
- *              from cert-svc.
  */
 #ifndef _SAXREADER_H_
 #define _SAXREADER_H_
