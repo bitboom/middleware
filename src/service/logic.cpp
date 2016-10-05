@@ -37,17 +37,17 @@ namespace CCHECKER {
 
 namespace {
 
-struct PkgmgrinfoEvent {
-	PkgmgrinfoEvent(uid_t _uid, const char *_pkgid)
+struct PkgmgrEvent {
+	PkgmgrEvent(uid_t _uid, const char *_pkgid)
 		: uid(_uid)
 		, pkgid(_pkgid) {}
 
-	inline bool operator==(const PkgmgrinfoEvent &rhs) const
+	inline bool operator==(const PkgmgrEvent &rhs) const
 	{
 		return uid == rhs.uid && pkgid.compare(rhs.pkgid) == 0;
 	}
 
-	inline bool operator<(const PkgmgrinfoEvent &rhs) const
+	inline bool operator<(const PkgmgrEvent &rhs) const
 	{
 		if (uid < rhs.uid)
 			return true;
@@ -57,7 +57,7 @@ struct PkgmgrinfoEvent {
 			return pkgid.compare(rhs.pkgid) < 0;
 	}
 
-	inline bool operator>(const PkgmgrinfoEvent &rhs) const
+	inline bool operator>(const PkgmgrEvent &rhs) const
 	{
 		if (uid > rhs.uid)
 			return true;
@@ -72,7 +72,7 @@ struct PkgmgrinfoEvent {
 	pkgmgr_event_t type;
 };
 
-std::set<PkgmgrinfoEvent> pkgmgrinfo_event_set;
+std::set<PkgmgrEvent> pkgmgr_event_set;
 const char *const DB_PATH = DB_INSTALL_DIR"/.cert-checker.db";
 
 } // namespace Anonymous
@@ -194,36 +194,37 @@ error_t  Logic::setup()
 
 	LogDebug("register connman event callback success");
 	set_connman_online_state();
-	// Add pkgmgrinfo callback
+	// Add pkgmgr callback
 	LogDebug("Register package event handler start");
-	std::unique_ptr<pkgmgrinfo_client, int(*)(pkgmgrinfo_client *)>
-	_pcInstall(pkgmgrinfo_client_new(PMINFO_LISTENING), pkgmgrinfo_client_free);
-	std::unique_ptr<pkgmgrinfo_client, int(*)(pkgmgrinfo_client *)>
-	_pcUninstall(pkgmgrinfo_client_new(PMINFO_LISTENING), pkgmgrinfo_client_free);
+	std::unique_ptr<pkgmgr_client, int(*)(pkgmgr_client *)>
+	_pcInstall(pkgmgr_client_new(PC_LISTENING), pkgmgr_client_free);
+	std::unique_ptr<pkgmgr_client, int(*)(pkgmgr_client *)>
+	_pcUninstall(pkgmgr_client_new(PC_LISTENING), pkgmgr_client_free);
 	m_pc_install = std::move(_pcInstall);
 	m_pc_uninstall = std::move(_pcUninstall);
 
 	if (!m_pc_install || !m_pc_uninstall) {
-		LogError("Get pkgmgrinfo client failed");
+		LogError("Get pkgmgr client failed");
 		return REGISTER_CALLBACK_ERROR;
 	}
 
 	int ret_status_install;
 	int ret_status_uninstall;
-	ret_status_install = pkgmgrinfo_client_set_status_type(
-							 m_pc_install.get(), PKGMGR_CLIENT_STATUS_INSTALL);
-	ret_status_uninstall = pkgmgrinfo_client_set_status_type(
-							   m_pc_uninstall.get(), PKGMGR_CLIENT_STATUS_UNINSTALL);
+	ret_status_install = pkgmgr_client_set_status_type(
+							m_pc_install.get(), PKGMGR_CLIENT_STATUS_INSTALL);
+	ret_status_uninstall = pkgmgr_client_set_status_type(
+							m_pc_uninstall.get(), PKGMGR_CLIENT_STATUS_UNINSTALL);
 
-	if (ret_status_install == PMINFO_R_ERROR || ret_status_uninstall == PMINFO_R_ERROR) {
-		LogError("Set pkgmgrinfo status fail");
+	if (ret_status_install != PKGMGR_R_OK ||
+		ret_status_uninstall != PKGMGR_R_OK) {
+		LogError("Set pkgmgr status fail");
 		return REGISTER_CALLBACK_ERROR;
 	}
 
-	m_reqid_install = pkgmgrinfo_client_listen_status(
-						  m_pc_install.get(), pkgmgrinfo_event_handler_static, this);
-	m_reqid_uninstall = pkgmgrinfo_client_listen_status(
-							m_pc_uninstall.get(), pkgmgrinfo_event_handler_static, this);
+	m_reqid_install = pkgmgr_client_listen_status(
+						m_pc_install.get(), pkgmgr_event_handler_static, this);
+	m_reqid_uninstall = pkgmgr_client_listen_status(
+						m_pc_uninstall.get(), pkgmgr_event_handler_static, this);
 
 	if (m_reqid_install < 0 || m_reqid_uninstall < 0) {
 		LogError("Register pacakge install event handler fail");
@@ -243,7 +244,7 @@ void Logic::run(guint timeout)
 	g_main_loop_run(m_loop);
 }
 
-int Logic::pkgmgrinfo_event_handler_static(
+int Logic::pkgmgr_event_handler_static(
 	uid_t uid,
 	int reqid,
 	const char *pkgtype,
@@ -253,21 +254,21 @@ int Logic::pkgmgrinfo_event_handler_static(
 	const void *pmsg,
 	void *data)
 {
-	LogDebug("pkgmgrinfo event handler start!!");
+	LogDebug("pkgmgr event handler start!!");
 
 	if (data == nullptr)
 		return -1;
 
 	std::string keyStr(key);
 	std::string valStr(val);
-	LogDebug("pkgmgrinfo event was caught. type : " << valStr << ", status : " << keyStr);
+	LogDebug("pkgmgr event was caught. type : " << valStr << ", status : " << keyStr);
 
 	if ((valStr.compare("install") == 0 || valStr.compare("uninstall") == 0)
 			&& keyStr.compare("start") == 0)  {
-		return static_cast<Logic *>(data)->pkgmgrinfo_event_handler(
+		return static_cast<Logic *>(data)->pkgmgr_event_handler(
 				   uid, reqid, pkgtype, pkgid, key, val, pmsg, data);
 	} else if (keyStr.compare("end") == 0 && valStr.compare("ok") == 0) {
-		return static_cast<Logic *>(data)->push_pkgmgrinfo_event(uid, pkgid);
+		return static_cast<Logic *>(data)->push_pkgmgr_event(uid, pkgid);
 	} else {
 		// TODO(sangwan.kwon) if get untreat event like fail, must quit loop
 		LogDebug("Untreated event was caught : " << val);
@@ -275,7 +276,7 @@ int Logic::pkgmgrinfo_event_handler_static(
 	}
 }
 
-int Logic::pkgmgrinfo_event_handler(
+int Logic::pkgmgr_event_handler(
 	uid_t uid,
 	int reqid,
 	const char */*pkgtype*/,
@@ -293,51 +294,51 @@ int Logic::pkgmgrinfo_event_handler(
 	std::string keyStr(key);
 	std::string valStr(val);
 	LogDebug("uid: " << uid << " pkgid: " << pkgid << " key: " << keyStr << " val: " << valStr);
-	PkgmgrinfoEvent event(uid, pkgid);
+	PkgmgrEvent event(uid, pkgid);
 
 	if (valStr.compare("install") == 0) {
 		if (reqid != m_reqid_install) {
-			LogError("pkgmgrinfo event reqid unmatched");
+			LogError("pkgmgr event reqid unmatched");
 			return -1;
 		}
 
 		event.type = EVENT_INSTALL;
 	} else if (valStr.compare("uninstall") == 0) {
 		if (reqid != m_reqid_uninstall) {
-			LogError("pkgmgrinfo event reqid unmatched");
+			LogError("pkgmgr event reqid unmatched");
 			return -1;
 		}
 
 		event.type = EVENT_UNINSTALL;
 	}
 
-	pkgmgrinfo_event_set.insert(event);
+	pkgmgr_event_set.insert(event);
 	return 0;
 }
 
-int Logic::push_pkgmgrinfo_event(uid_t uid, const char *pkgid)
+int Logic::push_pkgmgr_event(uid_t uid, const char *pkgid)
 {
-	PkgmgrinfoEvent event(uid, pkgid);
-	std::set<PkgmgrinfoEvent>::iterator pkgmgrinfo_event_iter = pkgmgrinfo_event_set.find(event);
+	PkgmgrEvent event(uid, pkgid);
+	std::set<PkgmgrEvent>::iterator pkgmgr_event_iter = pkgmgr_event_set.find(event);
 
-	if (pkgmgrinfo_event_iter != pkgmgrinfo_event_set.end()) {
+	if (pkgmgr_event_iter != pkgmgr_event_set.end()) {
 		// FIXME: No information about app_id in the signal. Use stub.
 		app_t app(TEMP_APP_ID, pkgid, uid, {});
 
-		if (pkgmgrinfo_event_iter->type == EVENT_INSTALL) {
+		if (pkgmgr_event_iter->type == EVENT_INSTALL) {
 			LogDebug("Successfully Installed. uid: " << uid << ", pkgid: " << pkgid);
 			push_event(event_t(app, event_t::event_type_t::APP_INSTALL));
-		} else if (pkgmgrinfo_event_iter->type == EVENT_UNINSTALL) {
+		} else if (pkgmgr_event_iter->type == EVENT_UNINSTALL) {
 			LogDebug("Successfully Uninstalled. uid: " << uid << ", pkgid: " << pkgid);
 			push_event(event_t(app, event_t::event_type_t::APP_UNINSTALL));
 		}
 
-		LogDebug("push pkgmgrifo success. pkgid: " << pkgid << ", uid: " << uid);
-		pkgmgrinfo_event_set.erase(event);
+		LogDebug("push pkgmgr success. pkgid: " << pkgid << ", uid: " << uid);
+		pkgmgr_event_set.erase(event);
 		return 0;
 	} else {
 		// if update status, return fail
-		LogDebug("push pkgmgrifo fail. pkgid: " << pkgid << ", uid: " << uid);
+		LogDebug("push pkgmgr fail. pkgid: " << pkgid << ", uid: " << uid);
 		return -1;
 	}
 }

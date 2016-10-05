@@ -40,7 +40,6 @@
 #include "service/queue.h"
 
 #include <package-manager.h>
-#include <pkgmgr-info.h>
 
 namespace CCHECKER {
 
@@ -112,7 +111,7 @@ private:
 												 void *logic_ptr));
 	bool get_online(void) const;
 
-	static int pkgmgrinfo_event_handler_static(
+	static int pkgmgr_event_handler_static(
 		uid_t uid,
 		int reqid,
 		const char *pkgtype,
@@ -121,7 +120,7 @@ private:
 		const char *val,
 		const void *pmsg,
 		void *data);
-	int pkgmgrinfo_event_handler(
+	int pkgmgr_event_handler(
 		uid_t uid,
 		int reqid,
 		const char *pkgtype,
@@ -130,7 +129,7 @@ private:
 		const char *val,
 		const void *pmsg,
 		void *data);
-	int push_pkgmgrinfo_event(uid_t uid, const char *pkgid);
+	int push_pkgmgr_event(uid_t uid, const char *pkgid);
 
 	void process_all(void);
 	void process_queue(void);
@@ -161,8 +160,8 @@ private:
 	// about pkgmgr event
 	int m_reqid_install;
 	int m_reqid_uninstall;
-	std::unique_ptr<pkgmgrinfo_client, int(*)(pkgmgrinfo_client *)> m_pc_install;
-	std::unique_ptr<pkgmgrinfo_client, int(*)(pkgmgrinfo_client *)> m_pc_uninstall;
+	std::unique_ptr<pkgmgr_client, int(*)(pkgmgr_client *)> m_pc_install;
+	std::unique_ptr<pkgmgr_client, int(*)(pkgmgr_client *)> m_pc_uninstall;
 };
 
 } // namespace CCHECKER
