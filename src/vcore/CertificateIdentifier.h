@@ -19,10 +19,7 @@
  * @version     1.0
  * @brief
  */
-#ifndef \
-    _WRT_ENGINE_SRC_INSTALLER_CORE_VALIDATION_CORE_CERTIFICATEIDENTIFICATOR_H_
-#define \
-	_WRT_ENGINE_SRC_INSTALLER_CORE_VALIDATION_CORE_CERTIFICATEIDENTIFICATOR_H_
+#pragma once
 
 #include <map>
 
@@ -68,5 +65,3 @@ private:
 	FingerPrintMap fingerPrintMap;
 };
 } // namespace ValidationCore
-
-#endif // _WRT_ENGINE_SRC_INSTALLER_CORE_VALIDATION_CORE_CERTIFICATEIDENTIFICATOR_H_

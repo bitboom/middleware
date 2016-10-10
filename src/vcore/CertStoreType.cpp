@@ -18,8 +18,7 @@
  * @file        CertStoreType.cpp
  * @version     1.0
  * @brief       Identification of certificate domain. Certificate domains
- *              were defined in WAC 1.0 documentation. This is a part
- *              should be implemented in wrt-installer.
+ *              were defined in WAC 1.0 documentation.
  */
 #include <vcore/CertStoreType.h>
 

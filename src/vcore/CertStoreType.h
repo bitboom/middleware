@@ -18,8 +18,7 @@
  * @file        CertStoreType.h
  * @version     1.0
  * @brief       Identification of certificate domain. Certificate domains
- *              were defined in WAC 1.0 documentation. This is a part
- *              should be implemented in wrt-installer.
+ *              were defined in WAC 1.0 documentation.
  */
 #ifndef _VALIDATION_CORE_CERTSTORETYPE_H_
 #define _VALIDATION_CORE_CERTSTORETYPE_H_

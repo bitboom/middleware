@@ -18,8 +18,6 @@
  * @author      Bartlomiej Grzelewski (b.grzelewski@samsung.com)
  * @version     1.0
  * @brief       Search for author-signature.xml and signatureN.xml files.
- *              This class is WAC 2.0 specific and shuld be moved to
- *              wrt-installer.
  */
 #ifndef _VALIDATION_CORE_SIGNATUREFINDER_H_
 #define _VALIDATION_CORE_SIGNATUREFINDER_H_

@@ -19,8 +19,7 @@
  * @version     1.0
  * @brief
  */
-#ifndef _WRT_ENGINE_SRC_INSTALLER_CORE_VALIDATION_CORE_VALIDATORFACTORY_H_
-#define _WRT_ENGINE_SRC_INSTALLER_CORE_VALIDATION_CORE_VALIDATORFACTORY_H_
+#pragma once
 
 #include <vcore/CertificateIdentifier.h>
 
@@ -32,5 +31,3 @@ namespace ValidationCore {
 
 const CertificateIdentifier &createCertificateIdentifier();
 } // namespace ValidationCore
-
-#endif // _WRT_ENGINE_SRC_INSTALLER_CORE_VALIDATION_CORE_VALIDATORFACTORY_H_
