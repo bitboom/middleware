@@ -43,4 +43,5 @@ extern const std::string google2nd;
 extern const std::string google3rd;
 
 extern const std::string certVerisign;
+extern const std::string certGenUriIncluded;
 }

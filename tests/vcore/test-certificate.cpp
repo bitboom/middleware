@@ -99,3 +99,20 @@ RUNNER_TEST(T0034_Certificate_isCA)
 	Certificate cert3(TestData::google3rd, Certificate::FORM_BASE64);
 	RUNNER_ASSERT(cert3.isCA() == 0);
 }
+
+/*
+ * test: Certificate::getAlternativeNameURI
+ * description: Certificate should parse data passed to object constructor.
+ * expected: Function getAlternativeNameURI should return list of
+ * alternativeNames hardcoded in certificate.
+ */
+RUNNER_TEST(T0035_Certificate_AltNameURI)
+{
+	Certificate cert(TestData::certGenUriIncluded, Certificate::FORM_BASE64);
+	Certificate::AltNameSet nameSet = cert.getAlternativeNameURI();
+	RUNNER_ASSERT(nameSet.size() == 8);
+	std::string str("URN:tizen:deviceid=2.0#R1q+lPsGCM7PAEPvzUcc38xPCLw=");
+	RUNNER_ASSERT(nameSet.find(str) != nameSet.end());
+	str = std::string("fakeURI");
+	RUNNER_ASSERT(nameSet.find(str) == nameSet.end());
+}

@@ -124,6 +124,7 @@ public:
 	// 4 of them are "string similar" types so it is possible
 	// to create more generic function.
 	AltNameSet getAlternativeNameDNS() const;
+	AltNameSet getAlternativeNameURI() const;
 
 	time_t getNotAfter() const;
 
@@ -176,5 +177,9 @@ protected:
 	std::string getField(FieldType type, int fieldNid) const;
 
 	X509 *m_x509;
+
+private:
+	AltNameSet getAlternativeName(int type) const;
+
 };
 } // namespace ValidationCore

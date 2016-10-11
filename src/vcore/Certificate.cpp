@@ -423,7 +423,7 @@ std::string Certificate::getOCSPURL() const
 	return retValue;
 }
 
-Certificate::AltNameSet Certificate::getAlternativeNameDNS() const
+Certificate::AltNameSet Certificate::getAlternativeName(int type) const
 {
 	AltNameSet set;
 	GENERAL_NAME *namePart = NULL;
@@ -436,14 +436,28 @@ Certificate::AltNameSet Certificate::getAlternativeNameDNS() const
 			VcoreThrowMsg(Certificate::Exception::OpensslInternalError,
 						  "openssl sk_GENERAL_NAME_pop err.");
 
-		if (GEN_DNS == namePart->type) {
-			char *temp = reinterpret_cast<char *>(ASN1_STRING_data(namePart->d.dNSName));
+		if (type == namePart->type) {
+			char *temp;
+
+			switch (type) {
+			case GEN_DNS:
+				temp = reinterpret_cast<char *>(ASN1_STRING_data(namePart->d.dNSName));
+				break;
+
+			case GEN_URI:
+				temp = reinterpret_cast<char *>(ASN1_STRING_data(namePart->d.uniformResourceIdentifier));
+				break;
+
+			default:
+				VcoreThrowMsg(Certificate::Exception::WrongParamError,
+							  "Not support alt name type : " << type);
+			}
 
 			if (!temp) {
 				set.insert(std::string());
 			} else {
 				set.insert(std::string(temp));
-				LogDebug("FOUND GEN_DNS: " << temp);
+				LogDebug("FOUND AltName: " << temp);
 			}
 		} else {
 			LogDebug("FOUND GEN TYPE ID: " << namePart->type);
@@ -451,6 +465,16 @@ Certificate::AltNameSet Certificate::getAlternativeNameDNS() const
 	}
 
 	return set;
+}
+
+Certificate::AltNameSet Certificate::getAlternativeNameDNS() const
+{
+	return getAlternativeName(GEN_DNS);
+}
+
+Certificate::AltNameSet Certificate::getAlternativeNameURI() const
+{
+	return getAlternativeName(GEN_URI);
 }
 
 ASN1_TIME *Certificate::getNotAfterTime() const
