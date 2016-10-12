@@ -77,6 +77,7 @@ SET(VCORE_SOURCES
 
 SET(VCORE_INCLUDES
     ./
+    cert-svc/
     dpl/core/include
     dpl/log/include
     )

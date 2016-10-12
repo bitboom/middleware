@@ -53,6 +53,7 @@
 #include "vcore/CertificateCollection.h"
 #include "vcore/pkcs12.h"
 #include "vcore/Client.h"
+#include "vcore/ValidatorFactories.h"
 
 #include "cert-svc/cinstance.h"
 #include "cert-svc/ccert.h"
@@ -822,99 +823,36 @@ err:
 		return CERTSVC_SUCCESS;
 	}
 
-	// TODO : sangan.kwon, modify method by using CertificateIdentifier
-	int getVisibility(CertSvcCertificate certificate, CertSvcVisibility *visibility,
-					  const char *fingerprintListPath)
+	int getVisibility(CertSvcCertificate certificate, CertSvcVisibility *visibility)
 	{
-		int ret = CERTSVC_FAIL;
-		//xmlChar *xmlPathCertificateSet  = (xmlChar*) "CertificateSet"; /*unused variable*/
-		//xmlChar *xmlPathCertificateDomain = (xmlChar*) "CertificateDomain";// name=\"tizen-platform\""; /*unused variable*/
-		xmlChar *xmlPathDomainPlatform = (xmlChar *) "tizen-platform";
-		xmlChar *xmlPathDomainPublic = (xmlChar *) "tizen-public";
-		xmlChar *xmlPathDomainPartner = (xmlChar *) "tizen-partner";
-		xmlChar *xmlPathDomainDeveloper = (xmlChar *) "tizen-developer";
-		//xmlChar *xmlPathFingerPrintSHA1 = (xmlChar*) "FingerprintSHA1"; /*unused variable*/
-		auto iter = m_certificateMap.find(certificate.privateHandler);
+		if (visibility == NULL)
+			return CERTSVC_WRONG_ARGUMENT;
 
+		auto iter = m_certificateMap.find(certificate.privateHandler);
 		if (iter == m_certificateMap.end()) {
+			LogError("Failed to find certificate.");
 			return CERTSVC_FAIL;
 		}
 
-		CertificatePtr certPtr = iter->second;
-		std::string fingerprint = Certificate::FingerprintToColonHex(certPtr->getFingerprint(
-									  Certificate::FINGERPRINT_SHA1));
-		/*   load file */
-		xmlDocPtr doc = xmlParseFile(fingerprintListPath);
+		auto certPtr = iter->second;
+		auto storeIdSet = createCertificateIdentifier().find(certPtr);
+		if (storeIdSet.contains(CERTSVC_VISIBILITY_PUBLIC))
+			*visibility = CERTSVC_VISIBILITY_PUBLIC;
+		else if (storeIdSet.contains(CERTSVC_VISIBILITY_PLATFORM))
+			*visibility = CERTSVC_VISIBILITY_PLATFORM;
+		else if (storeIdSet.contains(CERTSVC_VISIBILITY_PARTNER))
+			*visibility = CERTSVC_VISIBILITY_PARTNER;
+		else if (storeIdSet.contains(CERTSVC_VISIBILITY_DEVELOPER))
+			*visibility = CERTSVC_VISIBILITY_DEVELOPER;
+		else
+			return CERTSVC_FAIL;
 
-		if ((doc == NULL) || (xmlDocGetRootElement(doc) == NULL)) {
-			LogError("Failed to prase fingerprint_list.xml");
-			return CERTSVC_IO_ERROR;
-		}
+		LogInfo("Certificate's finger print : " <<
+				Certificate::FingerprintToColonHex(certPtr->getFingerprint(
+												   Certificate::FINGERPRINT_SHA1)) <<
+				", visibility : " << *visibility);
 
-		xmlNodePtr curPtr = xmlFirstElementChild(xmlDocGetRootElement(doc));
-
-		if (curPtr == NULL) {
-			LogError("Can not find root");
-			ret = CERTSVC_IO_ERROR;
-			goto out;
-		}
-
-		while (curPtr != NULL) {
-			xmlAttr *attr = curPtr->properties;
-
-			if (!attr->children || !attr->children->content) {
-				LogError("Failed to get fingerprints from list");
-				ret = CERTSVC_FAIL;
-				goto out;
-			}
-
-			xmlChar *strLevel = attr->children->content;
-			xmlNodePtr FpPtr = xmlFirstElementChild(curPtr);
-
-			if (FpPtr == NULL) {
-				LogError("Could not find fingerprint");
-				ret = CERTSVC_FAIL;
-				goto out;
-			}
-
-			LogDebug("Retrieve level : " << strLevel);
-
-			while (FpPtr) {
-				xmlChar *content = xmlNodeGetContent(FpPtr);
-
-				if (xmlStrcmp(content, (xmlChar *)fingerprint.c_str()) == 0) {
-					LogDebug("fingerprint : " << content << " are " << strLevel);
-
-					if (!xmlStrcmp(strLevel, xmlPathDomainPlatform)) {
-						*visibility = CERTSVC_VISIBILITY_PLATFORM;
-						ret = CERTSVC_SUCCESS;
-						goto out;
-					} else if (!xmlStrcmp(strLevel, xmlPathDomainPublic)) {
-						*visibility = CERTSVC_VISIBILITY_PUBLIC;
-						ret = CERTSVC_SUCCESS;
-						goto out;
-					} else if (!xmlStrcmp(strLevel, xmlPathDomainPartner)) {
-						*visibility = CERTSVC_VISIBILITY_PARTNER;
-						ret = CERTSVC_SUCCESS;
-						goto out;
-					} else if (!xmlStrcmp(strLevel, xmlPathDomainDeveloper)) {
-						*visibility = CERTSVC_VISIBILITY_DEVELOPER;
-						ret = CERTSVC_SUCCESS;
-						goto out;
-					}
-				}
-
-				FpPtr = xmlNextElementSibling(FpPtr);
-			}
-
-			curPtr = xmlNextElementSibling(curPtr);
-		}
-
-		xmlFreeDoc(doc);
-		return CERTSVC_FAIL;
-out:
-		xmlFreeDoc(doc);
-		return ret;
+		return CERTSVC_SUCCESS;
 	}
 
 	inline int pkcsNameIsUniqueInStore(
@@ -1537,16 +1475,9 @@ int certsvc_certificate_get_visibility(CertSvcCertificate certificate,
 									   CertSvcVisibility *visibility)
 {
 	try {
-		int result = impl(certificate.privateInstance)->getVisibility(certificate, visibility,
-					 FINGERPRINT_LIST_PATH);
 
-		if (result != CERTSVC_SUCCESS) {
-			LogDebug("Cannot find store id in FINGERPRINT_LIST_PATH. Find it in extention continue.");
-			result = impl(certificate.privateInstance)->getVisibility(certificate, visibility,
-					 FINGERPRINT_LIST_EXT_PATH);
-		}
+		return impl(certificate.privateInstance)->getVisibility(certificate, visibility);
 
-		return result;
 	} catch (...) {
 		LogError("exception occur");
 	}

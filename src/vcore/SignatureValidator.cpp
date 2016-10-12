@@ -295,9 +295,9 @@ VCerr SignatureValidator::Impl::preStep(void)
 	LogDebug("Start to check certificate domain.");
 	auto certificatePtr = m_data.getCertList().back();
 	auto storeIdSet = createCertificateIdentifier().find(certificatePtr);
+
 	// Check root CA certificate has proper domain.
 	LogDebug("root certificate from " << storeIdSet.typeToString() << " domain");
-
 	if (m_data.isAuthorSignature()) {
 		if (!storeIdSet.contains(TIZEN_DEVELOPER)) {
 			LogError("author-signature.xml's root certificate "

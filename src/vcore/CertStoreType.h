@@ -26,23 +26,25 @@
 
 #include <string>
 
+#include <cert-svc/ccert.h>
+
 namespace ValidationCore {
 namespace CertStoreId {
 typedef unsigned int Type;
 
 // RootCA certificates for developer mode.
-const Type TIZEN_DEVELOPER = 1;
+const Type TIZEN_DEVELOPER = CERTSVC_VISIBILITY_DEVELOPER;
 // RootCA certificates for author signatures.
 const Type TIZEN_TEST = 1 << 1;
 const Type TIZEN_VERIFY = 1 << 2;
 const Type TIZEN_STORE = 1 << 3;
 const Type TIZEN_REVOKED = 1 << 4;
 // RootCA's visibility level : public
-const Type VIS_PUBLIC = 1 << 6;
+const Type VIS_PUBLIC = CERTSVC_VISIBILITY_PUBLIC;
 // RootCA's visibility level : partner
-const Type VIS_PARTNER = 1 << 7;
+const Type VIS_PARTNER = CERTSVC_VISIBILITY_PARTNER;
 // RootCA's visibility level : platform
-const Type VIS_PLATFORM = 1 << 10;
+const Type VIS_PLATFORM = CERTSVC_VISIBILITY_PLATFORM;
 
 class Set {
 public:

@@ -111,4 +111,9 @@ extern std::vector<std::string> certChain;
  */
 extern std::vector<std::string> certChainSelfSigned;
 
+extern const std::string certCAAuthor;
+extern const std::string certCAPublic;
+extern const std::string certCAPlatform;
+extern const std::string certCAPartner;
+
 }
