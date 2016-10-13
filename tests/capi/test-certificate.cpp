@@ -118,7 +118,7 @@ RUNNER_TEST(T0104_not_before_not_after)
 	RUNNER_ASSERT_MSG(before == 1084406400, "TODO");
 	result = certsvc_certificate_get_not_after(cert, &after);
 	RUNNER_ASSERT_MSG(CERTSVC_SUCCESS == result, "Error extracting NOT_AFTER");
-	//extracted: date --date="May 12 23:59:59 2016 GMT" +%s
+	//extracted: date --date="May 12 23:59:59 2014 GMT" +%s
 	RUNNER_ASSERT_MSG(after == 1399939199, "TODO");
 }
 

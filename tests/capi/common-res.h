@@ -55,14 +55,14 @@ extern const std::string googleCA;
 /*
  *  Signed by googleCA
  *  Not Before: May 13 00:00:00 2004 GMT
- *  Not After : May 12 23:59:59 2016 GMT
+ *  Not After : May 12 23:59:59 2014 GMT
  */
 extern const std::string google2nd;
 
 /*
  *  Signed by google2nd
- *  Not Before: Oct 26 00:00:00 2016 GMT
- *  Not After : Sep 30 23:59:59 2016 GMT
+ *  Not Before: Oct 26 00:00:00 2011 GMT
+ *  Not After : Sep 30 23:59:59 2013 GMT
  */
 extern const std::string certEE;
 
@@ -73,13 +73,13 @@ extern const std::string certEE;
 extern const std::string certFullField;
 
 /*
- *  Not Before: Oct  5 12:11:33 2016 GMT
+ *  Not Before: Oct  5 12:11:33 2011 GMT
  *  Not After : Oct  2 12:11:33 2021 GMT
  */
 extern const SigComponents magda;
 
 /*
- *  Not Before: Oct  5 12:00:51 2016 GMT
+ *  Not Before: Oct  5 12:00:51 2011 GMT
  *  Not After : Oct  2 12:00:51 2021 GMT
  */
 extern const SigComponents filipSHA1;
@@ -87,23 +87,23 @@ extern const SigComponents filipSHA256;
 
 /*
  *  Signer
- *  Not Before: Jun 18 08:11:04 2016 GMT
- *  Not After : Jun 18 08:11:04 2016 GMT
+ *  Not Before: Jun 18 08:11:04 2014 GMT
+ *  Not After : Jun 18 08:11:04 2015 GMT
  *
  *  Second CA
- *  Not Before: Jun 18 08:10:59 2016 GMT
- *  Not After : Jun 18 08:10:59 2016 GMT
+ *  Not Before: Jun 18 08:10:59 2014 GMT
+ *  Not After : Jun 18 08:10:59 2015 GMT
  *
  *  Root CA
- *  Not Before: Jun 18 08:10:51 2016 GMT
- *  Not After : Jun 18 08:10:51 2016 GMT
+ *  Not Before: Jun 18 08:10:51 2014 GMT
+ *  Not After : Jun 18 08:10:51 2015 GMT
  */
 extern std::vector<std::string> certChain;
 
 /*
  *  Second CA
- *  Not Before: Jun 14 08:12:50 2016 GMT
- *  Not After : Jun 14 08:12:50 2016 GMT
+ *  Not Before: Jun 14 08:12:50 2014 GMT
+ *  Not After : Jun 14 08:12:50 2015 GMT
  *
  *  Root CA
  *  Not Before: Jun 14 08:12:35 2016 GMT
