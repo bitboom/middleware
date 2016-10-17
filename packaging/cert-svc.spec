@@ -2,7 +2,7 @@
 
 Name:    cert-svc
 Summary: Certification service
-Version: 2.1.5
+Version: 2.1.6
 Release: 0
 Group:   Security/Certificate Management
 License: Apache-2.0 and OpenSSL
