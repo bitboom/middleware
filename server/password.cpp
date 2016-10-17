@@ -225,7 +225,6 @@ int PasswordPolicy::setExpires(int value)
 		return -1;
 	}
 	return 0;
-
 }
 
 int PasswordPolicy::getExpires()
@@ -403,7 +402,6 @@ int PasswordPolicy::setMaximumCharacterOccurrences(int value)
 
 int PasswordPolicy::getMaximumCharacterOccurrences()
 {
-
 	unsigned int result = getPasswordPolicy(context, "password-maximum-character-occurrences");
 	return (result == INT_MAX) ? 0 : result;
 }

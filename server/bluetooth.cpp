@@ -191,7 +191,6 @@ int BluetoothPolicy::setDesktopConnectivityState(const bool enable)
 		return -1;
 
 	return 0;
-
 }
 
 bool BluetoothPolicy::getDesktopConnectivityState()
@@ -249,7 +248,6 @@ int BluetoothPolicy::setTetheringState(bool enable)
 	}
 
 	return 0;
-
 }
 
 bool BluetoothPolicy::getTetheringState()
