@@ -110,7 +110,7 @@ static void reply_password_enforce_event_handler(app_control_h ug, app_control_h
 
 				app_control_add_extra_data(app_control, "current", current);
 				app_control_add_extra_data(app_control, "caller", "DPM");
-				app_control_set_app_id(app_control, "setting-locktype-efl");
+				app_control_set_app_id(app_control, "org.tizen.setting-locktype");
 				app_control_send_launch_request(app_control, NULL, NULL);
 				app_control_destroy(app_control);
 				free(current);
@@ -139,7 +139,7 @@ static void password_enforce_event_handler(void *data, Evas_Object *obj, void *e
 		app_control_add_extra_data(app_control, "viewtype", "SETTING_PW_TYPE_ENTER_LOCK_TYPE");
 		app_control_send_launch_request(app_control, reply_password_enforce_event_handler, popup);
 	} else {
-		app_control_set_app_id(app_control, "setting-locktype-efl");
+		app_control_set_app_id(app_control, "org.tizen.setting-locktype");
 		app_control_send_launch_request(app_control, NULL, NULL);
 		evas_object_del(popup);
 	}

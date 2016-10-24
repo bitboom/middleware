@@ -80,7 +80,6 @@ typedef struct appdata {
 	Evas_Object* nf;
 	Evas_Object* base;
 	Evas_Object* navi_bar;
-	Evas_Object* navi_item;
 	Evas_Object* dpm_encryption_layout;
 	dpm_encryption_info_s device_info;
 

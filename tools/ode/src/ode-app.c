@@ -152,30 +152,45 @@ static void app_pause(void* data)
 static void app_resume(void* data)
 {
 	/* Take necessary actions when application becomes visible. */
+	dlog_print(DLOG_DEBUG, LOG_TAG, "### app_resume ###");
 }
 
 static void app_terminate(void* data)
 {
 	/* unregister vconf notify callback */
 	int ret;
+	appdata_s* ad = (appdata_s*)data;
 
-	ret = vconf_ignore_key_changed(VCONFKEY_SETAPPL_SCREEN_LOCK_TYPE_INT, locktype_status_changed_cb);
-	if (ret != 0)
-		dlog_print(DLOG_ERROR, LOG_TAG, "Failed to unregister lockscreen type callback");
-
-	ret = vconf_ignore_key_changed(VCONFKEY_SYSMAN_MMC_STATUS, sdcard_status_changed_cb);
-	if (ret != 0)
-		dlog_print(DLOG_ERROR, LOG_TAG, "Failed to unregister sdcard callback");
-
-	/* unregister runtime info callback */
-	ret = runtime_info_unset_changed_cb(RUNTIME_INFO_KEY_CHARGER_CONNECTED);
-	if (ret != 0)
-		dlog_print(DLOG_ERROR, LOG_TAG, "Failed to unregister runtime info callback");
-
-	/* unregister battery percent callback */
-	ret = device_remove_callback(DEVICE_CALLBACK_BATTERY_CAPACITY, battery_changed_cb);
-	if (ret != 0)
-		dlog_print(DLOG_ERROR, LOG_TAG, "Failed to unregister battery capacity callback");
+	switch (ad->view_type) {
+		case ENCRYPT_DEVICE:
+			ret = vconf_ignore_key_changed(VCONFKEY_SETAPPL_SCREEN_LOCK_TYPE_INT, locktype_status_changed_cb);
+			if (ret != 0)
+				dlog_print(DLOG_ERROR, LOG_TAG, "Failed to unregister lockscreen type callback");
+			/* unregister runtime info callback */
+			ret = runtime_info_unset_changed_cb(RUNTIME_INFO_KEY_CHARGER_CONNECTED);
+			if (ret != 0)
+				dlog_print(DLOG_ERROR, LOG_TAG, "Failed to unregister runtime info callback");
+			/* unregister battery percent callback */
+			ret = device_remove_callback(DEVICE_CALLBACK_BATTERY_CAPACITY, battery_changed_cb);
+			if (ret != 0)
+				dlog_print(DLOG_ERROR, LOG_TAG, "Failed to unregister battery capacity callback");
+			break;
+		case DECRYPT_DEVICE:
+			/* unregister runtime info callback */
+			ret = runtime_info_unset_changed_cb(RUNTIME_INFO_KEY_CHARGER_CONNECTED);
+			if (ret != 0)
+				dlog_print(DLOG_ERROR, LOG_TAG, "Failed to unregister runtime info callback");
+			/* unregister battery percent callback */
+			ret = device_remove_callback(DEVICE_CALLBACK_BATTERY_CAPACITY, battery_changed_cb);
+			if (ret != 0)
+				dlog_print(DLOG_ERROR, LOG_TAG, "Failed to unregister battery capacity callback");
+			break;
+		case ENCRYPT_SD_CARD:
+			ret = vconf_ignore_key_changed(VCONFKEY_SYSMAN_MMC_STATUS, sdcard_status_changed_cb);
+			if (ret != 0)
+				dlog_print(DLOG_ERROR, LOG_TAG, "Failed to unregister sdcard callback");
+			break;
+	}
 }
 
 static void ui_app_lang_changed(app_event_info_h event_info, void* user_data)

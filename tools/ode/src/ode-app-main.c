@@ -18,6 +18,9 @@
 
 #include "ode-app.h"
 
+#define APP_SETTING_LOCKTYPE "org.tizen.setting-locktype"
+#define APP_SETTING_PASSWORD "org.tizen.setting-password"
+
 static void update_next_button_status(appdata_s* ad)
 {
 	dlog_print(DLOG_DEBUG, LOG_TAG, "update_next_button_status start");
@@ -115,7 +118,7 @@ static void _launch_password_ug_cb(app_control_h ug, app_control_h reply, app_co
 				app_control_add_extra_data(app_ctl, "current", current);
 				free(current);
 			}
-			app_control_set_app_id(app_ctl, "setting-locktype-efl");
+			app_control_set_app_id(app_ctl, APP_SETTING_LOCKTYPE);
 			app_control_set_launch_mode(app_ctl, APP_CONTROL_LAUNCH_MODE_GROUP);
 			app_control_send_launch_request(app_ctl, NULL, NULL);
 			app_control_destroy(app_ctl);
@@ -143,13 +146,13 @@ static void _locktype_btn_clicked_cb(void* data, Evas_Object* obj, void* event_i
 
 	if (lock_type == SETTING_SCREEN_LOCK_TYPE_PASSWORD || lock_type == SETTING_SCREEN_LOCK_TYPE_SIMPLE_PASSWORD) {
 		app_control_add_extra_data(app_ctl, "viewtype", "SETTING_PW_TYPE_ENTER_LOCK_TYPE");
-		app_control_set_app_id(app_ctl, "setting-password-efl");
+		app_control_set_app_id(app_ctl, APP_SETTING_PASSWORD);
 		app_control_set_launch_mode(app_ctl, APP_CONTROL_LAUNCH_MODE_GROUP);
 		app_control_send_launch_request(app_ctl, _launch_password_ug_cb, NULL);
 		app_control_destroy(app_ctl);
 
 	} else {
-		app_control_set_app_id(app_ctl, "setting-locktype-efl");
+		app_control_set_app_id(app_ctl, APP_SETTING_LOCKTYPE);
 		app_control_set_launch_mode(app_ctl, APP_CONTROL_LAUNCH_MODE_GROUP);
 		app_control_send_launch_request(app_ctl, NULL, NULL);
 		app_control_destroy(app_ctl);
@@ -321,7 +324,6 @@ static int sdcard_status_update(appdata_s* ad)
 
 	update_next_button_status(ad);
 	return 0;
-
 }
 
 static int locktype_status_update(appdata_s* ad)
@@ -373,6 +375,41 @@ void locktype_status_changed_cb(keynode_t* node, void* data)
 	locktype_status_update(ad);
 }
 
+static int battery_cb_register(appdata_s* ad)
+{
+	int ret;
+
+	/* register runtime callback : connected charger */
+	ret = runtime_info_set_changed_cb(RUNTIME_INFO_KEY_CHARGER_CONNECTED, battery_charger_changed_cb, ad);
+	if (ret != RUNTIME_INFO_ERROR_NONE) {
+		dlog_print(DLOG_ERROR, LOG_TAG, "runtime_info_set_changed_cb failed: %d", ret);
+		return -1;
+	}
+
+	/* register runtime callback : battery percent */
+	ret = device_add_callback(DEVICE_CALLBACK_BATTERY_CAPACITY, battery_changed_cb, ad);
+	if (ret != DEVICE_ERROR_NONE) {
+		dlog_print(DLOG_ERROR, LOG_TAG, "device_add_callback failed: %d", ret);
+		return -1;
+	}
+
+	return 0;
+}
+
+static int locktype_cb_register(appdata_s* ad)
+{
+	int ret;
+
+	/* register vconf notify for locktype */
+	ret = vconf_notify_key_changed(VCONFKEY_SETAPPL_SCREEN_LOCK_TYPE_INT, locktype_status_changed_cb, ad);
+	if (ret != 0) {
+		dlog_print(DLOG_ERROR, LOG_TAG, "runtime_info_set_changed_cb failed: %d", ret);
+		return -1;
+	}
+
+	return 0;
+}
+
 void _back_btn_clicked_cb(void* data, Evas_Object* obj, void* event_info)
 {
 	ui_app_exit();
@@ -384,10 +421,21 @@ static Eina_Bool _pop_cb(void* data, Elm_Object_Item* it)
 	return EINA_FALSE;
 }
 
+void sw_back_btn_set(Evas_Object* obj, const char* title_label, Evas_Object* content)
+{
+	Evas_Object* back_btn = NULL;
+
+	back_btn = elm_button_add(obj);
+	elm_object_style_set(back_btn, "naviframe/back_btn/default");
+	evas_object_smart_callback_add(back_btn, "clicked", _back_btn_clicked_cb, obj);
+
+	Elm_Object_Item *nf_it = elm_naviframe_item_push(obj, title_label, back_btn, NULL, content, NULL);
+	elm_naviframe_item_pop_cb_set(nf_it, _pop_cb, NULL);
+}
+
 void dpm_encryption_create_view(appdata_s* ad)
 {
 	Evas_Object* navi_bar = ad->navi_bar;
-	Evas_Object* back_button = NULL;
 	Evas_Object* base_layout = NULL;
 	Evas_Object* encrypt_msg1, *encrypt_msg2, *encrypt_msg3 = NULL;
 	Evas_Object* battery_txt, *charge_txt, *locktype_txt = NULL;
@@ -417,6 +465,8 @@ void dpm_encryption_create_view(appdata_s* ad)
 	encrypt_msg3 = dpm_encryption_create_textblock(encryption_layout, IDS_ST_BODY_TO_ENCRYPTION_YOUR_DEVICE_C_ABB, text_st);
 	elm_object_part_content_set(encryption_layout, "msg_content_3", encrypt_msg3);
 
+	set_next_btn_layout(base_layout, ad, IDS_ST_BUTTON_NEXT);
+
 	/* get battery info */
 	ret = battery_status_update(ad);
 	if (ret != 0) {
@@ -424,17 +474,9 @@ void dpm_encryption_create_view(appdata_s* ad)
 		return;
 	}
 
-	/* register runtime callback : connected charger */
-	ret = runtime_info_set_changed_cb(RUNTIME_INFO_KEY_CHARGER_CONNECTED, battery_charger_changed_cb, ad);
-	if (ret != RUNTIME_INFO_ERROR_NONE) {
-		dlog_print(DLOG_ERROR, LOG_TAG, "runtime_info_set_changed_cb failed: %d", ret);
-		return;
-	}
-
-	/* register runtime callback : battery percent */
-	ret = device_add_callback(DEVICE_CALLBACK_BATTERY_CAPACITY, battery_changed_cb, ad);
-	if (ret != DEVICE_ERROR_NONE) {
-		dlog_print(DLOG_ERROR, LOG_TAG, "device_add_callback failed: %d", ret);
+	ret = battery_cb_register(ad);
+	if (ret != 0) {
+		dlog_print(DLOG_ERROR, LOG_TAG, "battery_cb_register failed");
 		return;
 	}
 
@@ -444,12 +486,13 @@ void dpm_encryption_create_view(appdata_s* ad)
 		dlog_print(DLOG_ERROR, LOG_TAG, "locktype_status_update failed");
 		return;
 	}
-	/* register vconf notify for locktype */
-	ret = vconf_notify_key_changed(VCONFKEY_SETAPPL_SCREEN_LOCK_TYPE_INT, locktype_status_changed_cb, ad);
+
+	ret = locktype_cb_register(ad);
 	if (ret != 0) {
-		dlog_print(DLOG_ERROR, LOG_TAG, "runtime_info_set_changed_cb failed: %d", ret);
+		dlog_print(DLOG_ERROR, LOG_TAG, "locktype_cb_register failed");
 		return;
 	}
+
 	/* set layout text */
 	battery_txt = dpm_encryption_create_textblock(encryption_layout, IDS_ST_BODY_CHARGE_THE_BATTERY_TO_AT_LEAST_PDP, text_st);
 	elm_object_part_content_set(encryption_layout, "battery_text", battery_txt);
@@ -465,21 +508,12 @@ void dpm_encryption_create_view(appdata_s* ad)
 
 	elm_object_part_content_set(base_layout, "content_layout", encryption_layout);
 
-	set_next_btn_layout(base_layout, ad, IDS_ST_BUTTON_NEXT);
-
-	back_button = elm_button_add(navi_bar);
-	elm_object_style_set(back_button, "naviframe/back_btn/default");
-	evas_object_smart_callback_add(back_button, "clicked", _back_btn_clicked_cb, navi_bar);
-
-	Elm_Object_Item *nf_it = elm_naviframe_item_push(navi_bar, IDS_ST_HEADER_ENCRYPT_DEVICE, back_button, NULL, base_layout, NULL);
-	elm_naviframe_item_pop_cb_set(nf_it, _pop_cb, NULL);
-	ad->navi_item = nf_it;
+	sw_back_btn_set(navi_bar, IDS_ST_HEADER_ENCRYPT_DEVICE, base_layout);
 }
 
 void dpm_decryption_create_view(appdata_s* ad)
 {
 	Evas_Object* navi_bar = ad->navi_bar;
-	Evas_Object* back_button = NULL;
 	Evas_Object* base_layout = NULL;
 	Evas_Object* decrypt_msg1, *decrypt_msg2, *decrypt_msg3 = NULL;
 	Evas_Object* battery_txt, *charge_txt = NULL;
@@ -509,6 +543,8 @@ void dpm_decryption_create_view(appdata_s* ad)
 	decrypt_msg3 = dpm_encryption_create_textblock(decryption_layout, IDS_ST_HEADER_TO_DECRYPT_YOUR_DEVICE_C_ABB, text_st);
 	elm_object_part_content_set(decryption_layout, "msg_content_3", decrypt_msg3);
 
+	set_next_btn_layout(base_layout, ad, IDS_ST_BUTTON_NEXT);
+
 	/* get battery info */
 	ret = battery_status_update(ad);
 	if (ret != 0) {
@@ -516,17 +552,9 @@ void dpm_decryption_create_view(appdata_s* ad)
 		return;
 	}
 
-	/* register runtime callback : connected charger */
-	ret = runtime_info_set_changed_cb(RUNTIME_INFO_KEY_CHARGER_CONNECTED, battery_charger_changed_cb, ad);
-	if (ret != RUNTIME_INFO_ERROR_NONE) {
-		dlog_print(DLOG_ERROR, LOG_TAG, "runtime_info_set_changed_cb failed: %d", ret);
-		return;
-	}
-
-	/* register runtime callback : battery percent */
-	ret = device_add_callback(DEVICE_CALLBACK_BATTERY_CAPACITY, battery_changed_cb, ad);
-	if (ret != DEVICE_ERROR_NONE) {
-		dlog_print(DLOG_ERROR, LOG_TAG, "device_add_callback failed: %d", ret);
+	ret = battery_cb_register(ad);
+	if (ret != 0) {
+		dlog_print(DLOG_ERROR, LOG_TAG, "battery_cb_register failed");
 		return;
 	}
 
@@ -540,21 +568,12 @@ void dpm_decryption_create_view(appdata_s* ad)
 
 	elm_object_part_content_set(base_layout, "content_layout", decryption_layout);
 
-	set_next_btn_layout(base_layout, ad, IDS_ST_BUTTON_NEXT);
-
-	back_button = elm_button_add(navi_bar);
-	elm_object_style_set(back_button, "naviframe/back_btn/default");
-	evas_object_smart_callback_add(back_button, "clicked", _back_btn_clicked_cb, navi_bar);
-
-	Elm_Object_Item *nf_it = elm_naviframe_item_push(navi_bar, IDS_ST_HEADER_DECRYPT_DEVICE, back_button, NULL, base_layout, NULL);
-	elm_naviframe_item_pop_cb_set(nf_it, _pop_cb, NULL);
-	ad->navi_item = nf_it;
+	sw_back_btn_set(navi_bar, IDS_ST_HEADER_DECRYPT_DEVICE, base_layout);
 }
 
 void dpm_encryption_sd_card_create_view(appdata_s* ad)
 {
 	Evas_Object* navi_bar = ad->navi_bar;
-	Evas_Object* back_button = NULL;
 	Evas_Object* base_layout = NULL;
 	Evas_Object* encrypt_msg1, *encrypt_msg2, *encrypt_msg3, *encrypt_msg4 = NULL;
 	Evas_Object* sdcard_txt = NULL;
@@ -587,6 +606,8 @@ void dpm_encryption_sd_card_create_view(appdata_s* ad)
 	encrypt_msg4 = dpm_encryption_create_textblock(encryption_layout, IDS_ST_BODY_TO_ENCRYPT_YOUR_SD_CARD_C, text_st);
 	elm_object_part_content_set(encryption_layout, "msg_content_4", encrypt_msg4);
 
+	set_next_btn_layout(base_layout, ad, IDS_ST_BUTTON_NEXT);
+
 	/* get sdcard info */
 	ret = sdcard_status_update(ad);
 	if (ret != 0) {
@@ -615,21 +636,12 @@ void dpm_encryption_sd_card_create_view(appdata_s* ad)
 
 	elm_object_part_content_set(base_layout, "content_layout", encryption_layout);
 
-	set_next_btn_layout(base_layout, ad, IDS_ST_BUTTON_NEXT);
-
-	back_button = elm_button_add(navi_bar);
-	elm_object_style_set(back_button, "naviframe/back_btn/default");
-	evas_object_smart_callback_add(back_button, "clicked", _back_btn_clicked_cb, navi_bar);
-
-	Elm_Object_Item *nf_it = elm_naviframe_item_push(navi_bar, IDS_ST_HEADER_ENCRYPT_SD_CARD, back_button, NULL, base_layout, NULL);
-	elm_naviframe_item_pop_cb_set(nf_it, _pop_cb, NULL);
-	ad->navi_item = nf_it;
+	sw_back_btn_set(navi_bar, IDS_ST_HEADER_ENCRYPT_SD_CARD, base_layout);
 }
 
 void dpm_decryption_sd_card_create_view(appdata_s* ad)
 {
 	Evas_Object* navi_bar = ad->navi_bar;
-	Evas_Object* back_button = NULL;
 	Evas_Object* base_layout = NULL;
 	Evas_Object* decrypt_msg = NULL;
 	Evas_Object* decryption_layout = NULL;
@@ -659,12 +671,5 @@ void dpm_decryption_sd_card_create_view(appdata_s* ad)
 	elm_object_part_content_set(base_layout, "content_layout", decryption_layout);
 
 	set_next_btn_layout(base_layout, ad, IDS_ST_BUTTON_NEXT);
-
-	back_button = elm_button_add(navi_bar);
-	elm_object_style_set(back_button, "naviframe/back_btn/default");
-	evas_object_smart_callback_add(back_button, "clicked", _back_btn_clicked_cb, navi_bar);
-
-	Elm_Object_Item *nf_it = elm_naviframe_item_push(navi_bar, IDS_ST_HEADER_DECRYPT_SD_CARD, back_button, NULL, base_layout, NULL);
-	elm_naviframe_item_pop_cb_set(nf_it, _pop_cb, NULL);
-	ad->navi_item = nf_it;
+	sw_back_btn_set(navi_bar, IDS_ST_HEADER_ENCRYPT_SD_CARD, base_layout);
 }

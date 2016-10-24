@@ -289,8 +289,8 @@ int PasswordPolicy::enforceChange()
 	int ret = 0;
 	int lock_type = 0;
 	bundle *b = ::bundle_create();
-	const char *simple_user_data[6] = {"app-id", "setting-password-efl", "caller", "DPM", "viewtype", "SETTING_PW_TYPE_SET_SIMPLE_PASSWORD"};
-	const char *passwd_user_data[6] = {"app-id", "setting-password-efl", "caller", "DPM", "viewtype", "SETTING_PW_TYPE_SET_PASSWORD"};
+	const char *simple_user_data[6] = {"app-id", "org.tizen.setting-password", "caller", "DPM", "viewtype", "SETTING_PW_TYPE_SET_SIMPLE_PASSWORD"};
+	const char *passwd_user_data[6] = {"app-id", "org.tizen.setting-password", "caller", "DPM", "viewtype", "SETTING_PW_TYPE_SET_PASSWORD"};
 
 	vconf_get_int(VCONFKEY_SETAPPL_SCREEN_LOCK_TYPE_INT, &lock_type);
 	::bundle_add_str(b, "id", "password-enforce-change");
