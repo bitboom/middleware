@@ -20,6 +20,9 @@
 #include <klay/error.h>
 #include <klay/exception.h>
 #include <klay/audit/logger.h>
+#include <klay/audit/console-sink.h>
+#include <klay/audit/dlog-sink.h>
+#include <klay/audit/null-sink.h>
 
 #include <klay/testbench.h>
 
@@ -38,4 +41,26 @@ TESTCASE(LogSeverityTest)
 		audit::LogLevelToString((audit::LogLevel)-1);
 	} catch (runtime::Exception& e) {
 	}
+}
+
+TESTCASE(BackendTest)
+{
+	audit::Logger::setBackend(new audit::DlogLogSink());
+	audit::Logger::setTag("KLAY");
+	INFO("Dlog Test : " << "Info");
+	DEBUG("Dlog Test : " << "Debug");
+	WARN("Dlog Test : " << "Warning");
+	ERROR("Dlog Test : " << "Error");
+
+	audit::Logger::setBackend(new audit::ConsoleLogSink());
+	INFO("Console Test : " << "Info");
+	DEBUG("Console Test : " << "Debug");
+	WARN("Console Test : " << "Warning");
+	ERROR("Console Test : " << "Error");
+
+	audit::Logger::setBackend(new audit::NullLogSink());
+	INFO("Null Test : " << "Info");
+	DEBUG("Null Test : " << "Debug");
+	WARN("Null Test : " << "Warning");
+	ERROR("Null Test : " << "Error");
 }

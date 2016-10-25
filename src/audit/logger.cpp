@@ -26,7 +26,15 @@
 namespace audit {
 
 LogLevel Logger::logLevel = LogLevel::Trace;
-std::unique_ptr<LogSink> Logger::backend(new ConsoleLogSink());
+std::unique_ptr<std::string> Logger::tag([]() {
+	auto tag = Logger::getTag();
+	return tag.empty() ? new std::string("KLAY") : new std::string(tag);
+}());
+
+std::unique_ptr<LogSink> Logger::backend([]() {
+	auto *backend = Logger::getBackend();
+	return backend != nullptr ? std::move(backend) : new ConsoleLogSink();
+}());
 
 std::string LogLevelToString(const LogLevel level)
 {
@@ -44,6 +52,20 @@ std::string LogLevelToString(const LogLevel level)
 	}
 }
 
+LogLevel StringToLogLevel(const std::string& level)
+{
+	if (level == "ERROR")
+		return LogLevel::Error;
+	else if (level == "WARN")
+		return LogLevel::Warning;
+	else if (level == "DEBUG")
+		return LogLevel::Debug;
+	else if (level == "INFO")
+		return LogLevel::Info;
+	else
+		return LogLevel::Trace;
+}
+
 void Logger::setLogLevel(const LogLevel level)
 {
 	Logger::logLevel = level;
@@ -52,6 +74,31 @@ void Logger::setLogLevel(const LogLevel level)
 LogLevel Logger::getLogLevel(void)
 {
 	return Logger::logLevel;
+}
+
+void Logger::setTag(const std::string& tag)
+{
+	Logger::tag.reset(new std::string(tag));
+}
+
+std::string Logger::getTag(void)
+{
+	auto *pTag = Logger::tag.get();
+	return (pTag != nullptr) ? *pTag : std::string();
+}
+
+void Logger::setBackend(LogSink *logSink)
+{
+	if (logSink == nullptr)
+		return;
+
+	Logger::backend.reset(logSink);
+}
+
+LogSink *Logger::getBackend(void)
+{
+	auto *pBackend = Logger::backend.get();
+	return (pBackend != nullptr) ? pBackend : nullptr;
 }
 
 void Logger::log(LogLevel severity,
@@ -65,7 +112,7 @@ void Logger::log(LogLevel severity,
 	buffer << LogLevelToString(severity)
 		   << "<" << ::getpid() << ">:"
 		   << file << ":" << line
-		   << " " << func << " " << message
+		   << ", " << func << "() > " << message
 		   << std::endl;
 
 	Logger::backend->sink(buffer.str());

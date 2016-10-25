@@ -39,6 +39,9 @@ class Logger {
 public:
 	static void setLogLevel(const LogLevel level);
 	static LogLevel getLogLevel(void);
+	static void setTag(const std::string& tag);
+	static std::string getTag(void);
+	static void setBackend(LogSink *logSink);
 	static void log(LogLevel severity,
 					const std::string& file,
 					const unsigned int line,
@@ -46,7 +49,10 @@ public:
 					const std::string& message);
 
 private:
+	static LogSink *getBackend(void);
+
 	static LogLevel logLevel;
+	static std::unique_ptr<std::string> tag;
 	static std::unique_ptr<LogSink> backend;
 };
 
@@ -55,11 +61,15 @@ private:
 (::strrchr(__FILE__, '/') ? ::strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 
+#define FORMAT(ITEMS)                                                  \
+(static_cast<std::ostringstream &>(std::ostringstream() << ITEMS)).str()
+
 #define LOG(SEVERITY, MESSAGE)                                         \
 do {                                                                   \
 	if (audit::LogLevel::SEVERITY <= audit::Logger::getLogLevel()) {   \
 		audit::Logger::log(audit::LogLevel::SEVERITY,                  \
-						   __FILENAME__, __LINE__, __func__, MESSAGE); \
+						   __FILENAME__, __LINE__, __func__,           \
+						   FORMAT(MESSAGE));                           \
 	}                                                                  \
 } while (0)
 
@@ -77,6 +87,7 @@ do {                                                                   \
 #endif //NDEBUG
 
 std::string LogLevelToString(const LogLevel level);
+LogLevel StringToLogLevel(const std::string& level);
 
 } // namespace audit
 #endif //__AUDIT_LOGGER_H__

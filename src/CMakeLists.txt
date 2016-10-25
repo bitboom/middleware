@@ -43,6 +43,7 @@ SET (KLAY_SOURCES		${KLAY_SRC}/error.cpp
 						${KLAY_SRC}/audit/logger.cpp
 						${KLAY_SRC}/audit/null-sink.cpp
 						${KLAY_SRC}/audit/console-sink.cpp
+						${KLAY_SRC}/audit/dlog-sink.cpp
 )
 
 SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,noexecstack")
@@ -52,6 +53,7 @@ ADD_LIBRARY(${PROJECT_NAME} STATIC ${KLAY_SOURCES})
 PKG_CHECK_MODULES(KLAY_DEPS REQUIRED	gio-2.0
 										libxml-2.0
 										sqlite3
+										dlog
 )
 
 INCLUDE_DIRECTORIES(SYSTEM	${KLAY_INCLUDE}

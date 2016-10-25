@@ -10,6 +10,7 @@ BuildRequires: gcc
 BuildRequires: cmake
 BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(sqlite3)
+BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(libxml-2.0)
 BuildRequires: pkgconfig(libtzplatform-config)
 
