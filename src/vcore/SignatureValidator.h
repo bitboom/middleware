@@ -71,24 +71,21 @@ public:
 	SignatureValidator(const SignatureValidator &) = delete;
 	const SignatureValidator &operator=(const SignatureValidator &) = delete;
 
-	VCerr check(
-		const std::string &contentPath,
-		bool checkOcsp,
-		bool checkReferences,
-		SignatureData &outData);
+	VCerr check(const std::string &contentPath,
+				bool checkOcsp,
+				bool checkReferences,
+				SignatureData &outData);
 
-	VCerr checkList(
-		bool checkOcsp,
-		const UriList &uriList,
-		SignatureData &outData);
+	VCerr checkList(bool checkOcsp,
+					const UriList &uriList,
+					SignatureData &outData);
 
 	/*
 	 *  @Remarks : cert list isn't completed with self-signed root CA system cert
 	 *             if completeWithSystemCert is false.
 	 */
-	VCerr makeChainBySignature(
-		bool completeWithSystemCert,
-		CertificateList &certList);
+	VCerr makeChainBySignature(bool completeWithSystemCert,
+							   CertificateList &certList);
 
 	std::string errorToString(int code);
 

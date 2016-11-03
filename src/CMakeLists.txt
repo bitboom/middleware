@@ -52,6 +52,7 @@ SET(VCORE_SOURCES
 
     vcore/api.cpp
     vcore/Base64.cpp
+    vcore/BaseValidator.cpp
     vcore/Certificate.cpp
     vcore/CertificateCollection.cpp
     vcore/CertificateConfigReader.cpp
