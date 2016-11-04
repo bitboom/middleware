@@ -334,7 +334,7 @@ PackageManager& PackageManager::instance()
 	return __instance__;
 }
 
-void PackageManager::setEventCallback(pkgmgrinfo_handler callback, void* user_data)
+void PackageManager::setEventCallback(pkgmgr_handler callback, void* user_data)
 {
 	int ret;
 	ret = ::pkgmgr_client_listen_status(nativeListenHandle, callback, user_data);

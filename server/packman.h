@@ -91,7 +91,7 @@ public:
 	std::vector<std::string> getPackageList(const uid_t user);
 	std::vector<ApplicationInfo> getAppList(const uid_t user);
 
-	void setEventCallback(pkgmgrinfo_handler callback, void* user_data);
+	void setEventCallback(pkgmgr_handler callback, void* user_data);
 	void unsetEventCallback();
 
 	void setModeRestriction(int mode, uid_t user);
