@@ -226,6 +226,13 @@ void File::write(const void *buffer, const size_t size) const
 	}
 }
 
+void File::lseek(off_t offset, int whence) const
+{
+	if (::lseek(descriptor, offset, whence) == -1) {
+		throw runtime::Exception(runtime::GetSystemErrorMessage());
+	}
+}
+
 File File::copyTo(const std::string& destDir)
 {
 	const std::string& filename = getPath();

@@ -50,6 +50,7 @@ TESTCASE(FileIO)
 		tmp.create(755);
 		tmp.lock();
 		tmp.write(testbuf, ::strlen(testbuf));
+		tmp.lseek(10, SEEK_SET);
 		tmp.unlock();
 		tmp.close();
 	} catch (runtime::Exception& e) {

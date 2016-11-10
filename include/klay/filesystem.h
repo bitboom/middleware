@@ -18,6 +18,7 @@
 #define __RUNTIME_FILESYSTEM_H__
 
 #include <dirent.h>
+#include <sys/types.h>
 
 #include <string>
 
@@ -96,6 +97,7 @@ public:
 	void open(int flags);
 	void read(void *buffer, const size_t size) const;
 	void write(const void *buffer, const size_t size) const;
+	void lseek(off_t offset, int whence) const;
 	void close();
 	File copyTo(const std::string& pathname);
 	void remove(bool recursive = false);
