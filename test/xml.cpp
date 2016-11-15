@@ -31,7 +31,7 @@
 
 #include <klay/testbench.h>
 
-const std::string testXmlFilePath = TEST_DATA_DIR "sample-policy.xml";
+const std::string testXmlFilePath = TEST_DATA_DIR "/sample-policy.xml";
 
 TESTCASE(XPath)
 {
