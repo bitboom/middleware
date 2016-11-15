@@ -18,7 +18,7 @@
 #
 
 SET(PWD ${CMAKE_CURRENT_SOURCE_DIR})
-SET(CA_BUNDLE_DIGEST "c1518dfd686541282f9095c48d297413")
+SET(CA_BUNDLE_DIGEST "c0c04242cc04632a3227622cdcc22e3d")
 
 EXECUTE_PROCESS(
 	COMMAND
@@ -31,13 +31,13 @@ IF (${CURRENT_DIGEST} STREQUAL ${CA_BUNDLE_DIGEST})
 	MESSAGE("ca-certificate digest is match with static db.")
 
 	INSTALL(FILES
-		resource/certs-meta-0.0.3.db
+		resource/certs-meta-0.0.4.db
 		DESTINATION ${CERT_SVC_DB_PATH}
 		RENAME certs-meta.db
 		)
 
 	INSTALL(FILES
-		resource/certs-meta-0.0.3.db
+		resource/certs-meta-0.0.4.db
 		DESTINATION ${UPGRADE_DATA_PATH}
 		RENAME certs-meta.db
 		)
