@@ -35,11 +35,8 @@ which can be used for many servers and clients
 	CXXFLAGS="$CXXFLAGS -Wp,-U_FORTIFY_SOURCE"
 %endif
 
-%{!?profile:%define profile "mobile"}
-
 %cmake . -DVERSION=%{version} \
          -DCMAKE_BUILD_TYPE=%{build_type} \
-         -DTIZEN_PROFILE_NAME=%{profile} \
          -DTEST_DATA_INSTALL_DIR=%{TZ_SYS_DATA}/klay-test \
 
 make %{?jobs:-j%jobs}
