@@ -273,7 +273,8 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 		fileOpenCallback,
 		fileReadCallback,
 		fileCloseCallback);
-	CustomPtr<xmlDocPtr> docPtr(xmlParseFile(context.signatureFile.c_str()), xmlFreeDoc);
+	CustomPtr<xmlDocPtr> docPtr(xmlParseFile(context.signatureFile.c_str()),
+											 xmlFreeDoc);
 
 	if (!docPtr || xmlDocGetRootElement(docPtr.get()) == nullptr)
 		ThrowMsg(Exception::InvalidFormat,
@@ -288,7 +289,12 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 		ThrowMsg(Exception::InvalidFormat,
 				 "Start node not found in " << context.signatureFile);
 
-	CustomPtr<xmlSecDSigCtxPtr> dsigCtx(xmlSecDSigCtxCreate(mngrPtr), xmlSecDSigCtxDestroy);
+	CustomPtr<xmlSecDSigCtxPtr> dsigCtx(xmlSecDSigCtxCreate(mngrPtr),
+										[](xmlSecDSigCtxPtr dsigCtx) {
+		xmlSecProxyCtxDestroy(dsigCtx->skipReferences);
+		xmlSecProxyCtxDestroy(dsigCtx->checkReferences);
+		xmlSecDSigCtxDestroy(dsigCtx);
+	});
 
 	if (!dsigCtx)
 		ThrowMsg(Exception::OutOfMemory, "Failed to create signature context.");
@@ -308,7 +314,7 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 			if (!strcmp(data.c_str(), "#prop"))
 				continue;
 
-			if(xmlSecProxyCtxAdd(&(dsigCtx.get()->proxyCtxPtr),
+			if(xmlSecProxyCtxAdd(&(dsigCtx.get()->skipReferences),
 								 reinterpret_cast<const xmlChar *>(data.c_str())))
 				ThrowMsg(Exception::InternalError, "Failed to add proxy data.");
 
@@ -332,14 +338,16 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 		break;
 
 	case ValidateMode::PARTIAL_HASH: {
+		if (context.isProxyMode)
+			dsigCtx.get()->flags |= XMLSEC_DSIG_FLAGS_SKIP_PROXY;
+
 		dsigCtx.get()->flags |= XMLSEC_DSIG_FLAGS_CHECK_PROXY;
 		for (auto uri : *m_pList) {
-			if(xmlSecProxyCtxAdd(&(dsigCtx.get()->proxyCtxPtr),
+			if(xmlSecProxyCtxAdd(&(dsigCtx.get()->checkReferences),
 								 reinterpret_cast<const xmlChar *>(uri.c_str())))
 				ThrowMsg(Exception::InternalError, "PARTIAL_HASH mode failed.");
 		}
 		res = xmlSecDSigCtxVerify(dsigCtx.get(), node);
-		xmlSecProxyCtxDestroy(dsigCtx.get()->proxyCtxPtr);
 		break;
 	}
 
