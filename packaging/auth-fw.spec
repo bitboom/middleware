@@ -8,6 +8,7 @@ Source0:    %{name}-%{version}.tar.gz
 Source1001: %{name}.manifest
 Source1002: lib%{name}-client.manifest
 Source1003: lib%{name}-client-admin.manifest
+Requires: security-config
 BuildRequires: cmake
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(openssl)
