@@ -16,7 +16,6 @@
 
 #include <string>
 #include <climits>
-#include <klay/exception.h>
 
 #include <klay/exception.h>
 
@@ -32,7 +31,7 @@ DeviceAdministrator::~DeviceAdministrator()
 }
 
 DeviceAdministratorManager::DeviceAdministratorManager(const std::string& path) :
-	repository(path + "/.client.db")
+	repository(path + "/.dpm.db")
 {
 	prepareRepository();
 }
@@ -41,7 +40,7 @@ DeviceAdministrator DeviceAdministratorManager::enroll(const std::string& name, 
 {
 	database::Connection connection(repository, database::Connection::ReadWrite);
 
-	std::string selectQuery = "SELECT * FROM CLIENT WHERE PKG = ? AND UID = ?";
+	std::string selectQuery = "SELECT * FROM ADMIN WHERE PKG = ? AND UID = ?";
 	database::Statement stmt0(connection, selectQuery);
 	stmt0.bind(1, name);
 	stmt0.bind(2, static_cast<int>(uid));
@@ -51,7 +50,7 @@ DeviceAdministrator DeviceAdministratorManager::enroll(const std::string& name, 
 
 	std::string key = generateKey();
 
-	std::string insertQuery = "INSERT INTO CLIENT (PKG, UID, KEY, VALID) VALUES (?, ?, ?, ?)";
+	std::string insertQuery = "INSERT INTO ADMIN (PKG, UID, KEY, REMOVABLE) VALUES (?, ?, ?, ?)";
 	database::Statement stmt(connection, insertQuery);
 	stmt.bind(1, name);
 	stmt.bind(2, static_cast<int>(uid));
@@ -68,7 +67,7 @@ void DeviceAdministratorManager::disenroll(const std::string& name, uid_t uid)
 {
 	database::Connection connection(repository, database::Connection::ReadWrite);
 
-	std::string query = "DELETE FROM CLIENT WHERE PKG = ? AND UID = ?";
+	std::string query = "DELETE FROM ADMIN WHERE PKG = ? AND UID = ?";
 	database::Statement stmt(connection, query);
 	stmt.bind(1, name);
 	stmt.bind(2, static_cast<int>(uid));
@@ -88,16 +87,16 @@ void DeviceAdministratorManager::prepareRepository()
 	database::Connection connection(repository, database::Connection::ReadWrite |
 												database::Connection::Create);
 
-	std::string query = "CREATE TABLE IF NOT EXISTS CLIENT ("    \
+	std::string query = "CREATE TABLE IF NOT EXISTS ADMIN ("    \
 						"ID INTEGER PRIMARY KEY AUTOINCREMENT, " \
 						"PKG TEXT, "                             \
 						"UID INTEGER, "                          \
 						"KEY TEXT, "                             \
-						"VALID INTEGER)";
+						"REMOVABLE INTEGER)";
 
 	connection.exec(query);
 
-	database::Statement stmt(connection, "SELECT * FROM CLIENT");
+	database::Statement stmt(connection, "SELECT * FROM ADMIN");
 	while (stmt.step()) {
 		std::string name = stmt.getColumn(1).getText();
 		uid_t uid = static_cast<uid_t>(stmt.getColumn(2).getInt());

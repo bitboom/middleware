@@ -14,10 +14,10 @@
  *  limitations under the License
  */
 
-#include <fcntl.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include <functional>
 
@@ -47,7 +47,24 @@ std::string GetPackageId(uid_t uid, pid_t pid)
 	char pkgid[PATH_MAX];
 
 	if (aul_app_get_pkgid_bypid_for_uid(pid, pkgid, PATH_MAX, uid) != 0) {
-		throw runtime::Exception("Unknown PID");
+		int fd = ::open(std::string("/proc/" + std::to_string(pid) + "/cmdline").c_str(), O_RDONLY);
+		if (fd == -1) {
+			throw runtime::Exception("Unknown PID");
+		}
+
+		ssize_t ret, bytes = 0;
+		do {
+			ret = ::read(fd, &pkgid[bytes], PATH_MAX);
+			if (ret != -1) {
+				bytes += ret;
+			}
+		} while ((ret == -1) && (errno == EINTR));
+
+		if (ret == -1) {
+			throw runtime::Exception("Failed to get admin info");
+		}
+
+		pkgid[bytes] = '\0';
 	}
 
 	return pkgid;
