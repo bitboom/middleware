@@ -38,7 +38,6 @@ namespace DevicePolicyManager {
 
 namespace {
 
-krate_manager_h krate_manager;
 std::regex krateNamePattern(NAME_PATTERN);
 
 bool isAllowedName(const std::string& name) {
@@ -55,7 +54,7 @@ bool isAllowedName(const std::string& name) {
 	return !exists;
 }
 
-bool foreach_krate_cb(const char* name, void* user_data) {
+bool foreachKrateCallback(const char* name, void* user_data) {
 	auto pList = (std::vector<std::string>*)user_data;
 	pList->push_back(name);
 	return true;
@@ -73,13 +72,10 @@ KratePolicy::KratePolicy(PolicyControlContext& ctx) :
 
 	context.createNotification("KratePolicy::created");
 	context.createNotification("KratePolicy::removed");
-
-	krate_manager_create(&krate_manager);
 }
 
 KratePolicy::~KratePolicy()
 {
-	krate_manager_destroy(krate_manager);
 }
 
 
@@ -138,14 +134,22 @@ int KratePolicy::removeKrate(const std::string& name)
 int KratePolicy::getKrateState(const std::string& name)
 {
 	krate_state_e state = (krate_state_e)0;
+	krate_manager_h krate_manager;
+
+	krate_manager_create(&krate_manager);
 	krate_manager_get_krate_state(krate_manager, name.c_str(), &state);
+	krate_manager_destroy(krate_manager);
 	return (int)state;
 }
 
 std::vector<std::string> KratePolicy::getKrateList(int state)
 {
 	std::vector<std::string> list;
-	krate_manager_foreach_name(krate_manager, (krate_state_e)state, foreach_krate_cb, &list);
+	krate_manager_h krate_manager;
+
+	krate_manager_create(&krate_manager);
+	krate_manager_foreach_name(krate_manager, (krate_state_e)state, foreachKrateCallback, &list);
+	krate_manager_destroy(krate_manager);
 	return list;
 }
 
