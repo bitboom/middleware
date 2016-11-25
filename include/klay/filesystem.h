@@ -90,6 +90,8 @@ public:
 	mode_t getMode() const;
 	uid_t getUid() const;
 	gid_t getGid() const;
+	ino_t getInode() const;
+	dev_t getDevice() const;
 
 	size_t size() const;
 

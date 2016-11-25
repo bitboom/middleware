@@ -148,6 +148,26 @@ gid_t File::getGid() const
 	return st.st_gid;
 }
 
+ino_t File::getInode() const
+{
+	struct stat st;
+	if (::stat(path.c_str(), &st) != 0) {
+		throw runtime::Exception(runtime::GetSystemErrorMessage());
+	}
+
+	return st.st_ino;
+}
+
+dev_t File::getDevice() const
+{
+	struct stat st;
+	if (::stat(path.c_str(), &st) != 0) {
+		throw runtime::Exception(runtime::GetSystemErrorMessage());
+	}
+
+	return st.st_dev;
+}
+
 size_t File::size() const
 {
 	struct stat st;
