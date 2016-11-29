@@ -1449,113 +1449,109 @@ int loadCertificatesFromStore(
 	size_t *bufferLen,
 	size_t *certBlockCount)
 {
-	int result = CERTSVC_SUCCESS;
-	size_t count = 0;
-	int records = 0;
 	sqlite3_stmt *stmt = NULL;
-	char *query = NULL;
 	char **certs = NULL;
-	const char *tmpText = NULL;
-	size_t i = 0;
+	size_t gnameSize = 0;
 
-	query = sqlite3_mprintf("select associated_gname from %Q where gname=%Q",
-			storetype_to_string(storeType), gname);
+	/* Get associated_gname from store */
+	char *query = sqlite3_mprintf("select associated_gname from %Q "
+								  "where gname=%Q",
+								   storetype_to_string(storeType),
+								   gname);
+	int result = execute_select_query(query, &stmt);
+	if (result != CERTSVC_SUCCESS) {
+		SLOGE("Querying database failed.");
+		goto error;
+	}
 
+	int records = sqlite3_step(stmt);
+	if (records != SQLITE_ROW) {
+		SLOGE("No valid records found for gname passed [%s].", gname);
+		result = CERTSVC_FAIL;
+		goto error;
+	}
+
+	const char *columnText = (const char *)sqlite3_column_text(stmt, 0);
+	if (!columnText) {
+		SLOGE("Failed to sqlite3_column_text");
+		result = CERTSVC_FAIL;
+		goto error;
+	}
+	sqlite3_free(query);
+	sqlite3_finalize(stmt);
+
+	/* Get gnames from store */
+	query = sqlite3_mprintf("select gname from %Q "
+							"where associated_gname=%Q and enabled=%d and "
+							"is_root_app_enabled=%d",
+							storetype_to_string(storeType),
+							columnText,
+							ENABLED,
+							ENABLED);
 	result = execute_select_query(query, &stmt);
 	if (result != CERTSVC_SUCCESS) {
 		SLOGE("Querying database failed.");
-		result = CERTSVC_FAIL;
 		goto error;
 	}
 
-	records = sqlite3_step(stmt);
-	if (records != SQLITE_ROW || records == SQLITE_DONE) {
-		SLOGE("No valid records found for gname passed [%s].",gname);
-		result = CERTSVC_FAIL;
+	certs = (char**)malloc(4 * sizeof(char *));
+	if (!certs) {
+		SLOGE("Failed to allocate memory.");
+		result = CERTSVC_BAD_ALLOC;
 		goto error;
 	}
+	memset(certs, 0x00, 4 * sizeof(char *));
 
+	while (1) {
+		records = sqlite3_step(stmt);
+		if (records == SQLITE_DONE)
+			break;
 
-	if (records == SQLITE_ROW) {
-		if (query)
-			sqlite3_free(query);
-
-		const char *columnText = (const char *)sqlite3_column_text(stmt, 0);
-		if (!columnText) {
-			SLOGE("Failed to sqlite3_column_text");
-			result = CERTSVC_FAIL;
-			goto error;
-		}
-
-		query = sqlite3_mprintf("select gname from %Q where associated_gname=%Q and enabled=%d and is_root_app_enabled=%d",
-				storetype_to_string(storeType), columnText, ENABLED, ENABLED);
-
-		if (stmt)
-			sqlite3_finalize(stmt);
-
-		result = execute_select_query(query, &stmt);
-		if (result != CERTSVC_SUCCESS) {
+		if (records != SQLITE_ROW) {
 			SLOGE("Querying database failed.");
 			result = CERTSVC_FAIL;
 			goto error;
 		}
 
-		while (1) {
-			records = sqlite3_step(stmt);
-			if (records != SQLITE_ROW || records == SQLITE_DONE)
-				break;
-
-			if (count == 0) {
-				certs = (char**) malloc(4 * sizeof(char *));
-				if (!certs) {
-					SLOGE("Failed to allocate memory");
-					result = CERTSVC_BAD_ALLOC;
-					goto error;
-				}
-				memset(certs, 0x00, 4 * sizeof(char *));
-			}
-
-			if (records == SQLITE_ROW) {
-				tmpText = (const char *)sqlite3_column_text(stmt, 0);
-				if (!tmpText) {
-					SLOGE("Failed to sqlite3_column_text.");
-					result = CERTSVC_FAIL;
-					goto error;
-				}
-
-				if (!((certs)[count] = strdup(tmpText))) {
-					SLOGE("Failed to allocate memory");
-					result = CERTSVC_BAD_ALLOC;
-					goto error;
-				}
-			}
-
-			count++;
+		const char *tmpText = (const char *)sqlite3_column_text(stmt, 0);
+		if (!tmpText) {
+			SLOGE("Failed to sqlite3_column_text.");
+			result = CERTSVC_FAIL;
+			goto error;
 		}
 
-		if (count == 0) {
-			SLOGE("No valid records found for the gname passed [%s].",gname);
-			return CERTSVC_FAIL;
+		if (!((certs)[gnameSize++] = strdup(tmpText))) {
+			SLOGE("Failed to allocate memory");
+			result = CERTSVC_BAD_ALLOC;
+			goto error;
 		}
 	}
 
-	*certBlockCount = count;
-	*bufferLen = count * sizeof(ResponseCertBlock);
-	ResponseCertBlock *certBlockList = (ResponseCertBlock *) malloc(*bufferLen);
+	if (gnameSize == 0) {
+		SLOGE("No valid records found for the gname passed [%s].",gname);
+		result = CERTSVC_FAIL;
+		goto error;
+	}
+
+	*certBlockCount = gnameSize;
+	*bufferLen = gnameSize * sizeof(ResponseCertBlock);
+
+	ResponseCertBlock *certBlockList = (ResponseCertBlock *)malloc(*bufferLen);
 	if (!certBlockList) {
 		SLOGE("Failed to allocate memory for ResponseCertBlock");
 		result = CERTSVC_BAD_ALLOC;
 		goto error;
 	}
-
-	if (count > 0)
-		memset(certBlockList, 0x00, *bufferLen);
+	memset(certBlockList, 0x00, *bufferLen);
 
 	ResponseCertBlock *currentBlock = NULL;
-	for (i = 0; i < count; i++) {
+	size_t i;
+	for (i = 0; i < gnameSize; i++) {
 		currentBlock = certBlockList + i;
 		if (sizeof(currentBlock->dataBlock) < strlen(certs[i])) {
-			SLOGE("src is longer than dst. src[%s] dst size[%d]", certs[i], sizeof(currentBlock->dataBlock));
+			SLOGE("src is longer than dst. src[%s] dst size[%d]",
+				  certs[i],
+				  sizeof(currentBlock->dataBlock));
 			free(certBlockList);
 			result = CERTSVC_FAIL;
 			goto error;
@@ -1567,7 +1563,7 @@ int loadCertificatesFromStore(
 
 	result = CERTSVC_SUCCESS;
 
-	SLOGD("success: loadCertificatesFromStore. CERT_COUNT=%d", count);
+	SLOGD("success: loadCertificatesFromStore. CERT_COUNT=%d", gnameSize);
 
 error:
 	if (query)
@@ -1577,7 +1573,7 @@ error:
 		sqlite3_finalize(stmt);
 
 	if (certs) {
-		for(i = 0; i < count; i++)
+		for(i = 0; i < gnameSize; i++)
 			free(certs[i]);
 
 		free(certs);
