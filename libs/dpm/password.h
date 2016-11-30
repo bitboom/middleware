@@ -52,11 +52,20 @@ typedef enum {
  * @since_tizen 3.0
  */
 typedef enum {
-	DPM_PASSWORD_STATUS_NORMAL,                 /**< Password normal status */
-	DPM_PASSWORD_STATUS_CHANGED,                /**< Password successfully changed */
-	DPM_PASSWORD_STATUS_NOT_CHANGED,            /**< Password not changed */
-	DPM_PASSWORD_STATUS_CHANGE_REQUIRED ,       /**< Password change required */
-	DPM_PASSWORD_STATUS_MAX_ATTEMPTS_EXCEEDED,  /**< Password Max Attempts Exceeded*/
+	DPM_PASSWORD_STATUS_NORMAL,                     /**< Password normal status */
+	DPM_PASSWORD_STATUS_CHANGED,                    /**< Password successfully changed */
+	DPM_PASSWORD_STATUS_NOT_CHANGED,                /**< Password not changed */
+	DPM_PASSWORD_STATUS_CHANGE_REQUIRED ,           /**< Password change required */
+	DPM_PASSWORD_STATUS_MAX_ATTEMPTS_EXCEEDED,      /**< Password Max Attempts Exceeded*/
+
+	DPM_PASSWORD_STATUS_EXPIRED,                    /**< Password expired */
+	DPM_PASSWORD_STATUS_RECOVERY_PASSWORD_FAILED,   /**< Device unlock failed by Password Recovery */
+	DPM_PASSWORD_STATUS_RECOVERY_PASSWORD_SUCCEEDED,/**< Device unlock succeeded by Password Recovery */
+
+	DPM_PASSWORD_STATUS_QUALITY_CHANGED,            /**< Password quality successfully changed */
+	DPM_PASSWORD_STATUS_MIN_LENGTH_CHANGED,         /**< Password min_length successfully changed */
+	DPM_PASSWORD_STATUS_COMPLEX_CHAR_CHANGED,       /**< Password complex_char successfully changed */
+	DPM_PASSWORD_STATUS_PATTERN_CHANGED             /**< Password pattern successfully changed */
 } dpm_password_status_e;
 
 /**
@@ -69,7 +78,7 @@ typedef enum {
  * @privlevel   partner
  * @privilege   %http://tizen.org/privilege/dpm.password
  * @param[in]   handle Device policy manager handle
- * @param[in]   quality Password quality type
+ * @param[in]   quality Password quality type, values of #dpm_password_quality_e combined with bitwise 'or'
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
@@ -79,14 +88,14 @@ typedef enum {
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  */
-int dpm_password_set_quality(device_policy_manager_h handle, dpm_password_quality_e quality);
+int dpm_password_set_quality(device_policy_manager_h handle, int quality);
 
 /**
  * @brief       Gets password quality.
  * @details     An administrator can get the password restrictions it is imposing.
  * @since_tizen 3.0
  * @param[in]   handle Device policy manager handle
- * @param[out]   quality Password quality type
+ * @param[out]   quality Password quality type, values of #dpm_password_quality_e combined with bitwise 'or'
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
@@ -94,7 +103,7 @@ int dpm_password_set_quality(device_policy_manager_h handle, dpm_password_qualit
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  */
-int dpm_password_get_quality(device_policy_manager_h handle, dpm_password_quality_e *quality);
+int dpm_password_get_quality(device_policy_manager_h handle, int *quality);
 
 /**
  * @partner

@@ -68,7 +68,8 @@ RestrictionPolicy::RestrictionPolicy(PolicyControlContext& ctxt) :
 	context.registerParametricMethod(this, DPM_PRIVILEGE_USB, (int)(RestrictionPolicy::setUsbTetheringState)(int));
 	context.registerParametricMethod(this, DPM_PRIVILEGE_STORAGE, (int)(RestrictionPolicy::setExternalStorageState)(int));
 	context.registerParametricMethod(this, DPM_PRIVILEGE_EMAIL, (int)(RestrictionPolicy::setPopImapEmailState)(int));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_MESSAGING, (int)(RestrictionPolicy::setMessagingState)(int));
+	context.registerParametricMethod(this, DPM_PRIVILEGE_MESSAGING, (int)(RestrictionPolicy::setMessagingState)(std::string, int));
+	context.registerParametricMethod(this, "", (int)(RestrictionPolicy::getMessagingState)(std::string));
 	context.registerParametricMethod(this, DPM_PRIVILEGE_BROWSER, (int)(RestrictionPolicy::setBrowserState)(int));
 
 	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getCameraState));
@@ -78,7 +79,6 @@ RestrictionPolicy::RestrictionPolicy(PolicyControlContext& ctxt) :
 	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getUsbTetheringState));
 	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getExternalStorageState));
 	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getPopImapEmailState));
-	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getMessagingState));
 	context.registerNonparametricMethod(this, "", (int)(RestrictionPolicy::getBrowserState));
 
 	context.createNotification(restrictionNotifications);
@@ -243,7 +243,7 @@ int RestrictionPolicy::getPopImapEmailState()
 	return context.getPolicy("popimap-email");
 }
 
-int RestrictionPolicy::setMessagingState(int enable)
+int RestrictionPolicy::setMessagingState(const std::string& sim_id, int enable)
 {
 	try {
 		SetPolicyAllowed(context, "messaging", enable);
@@ -254,7 +254,7 @@ int RestrictionPolicy::setMessagingState(int enable)
 	return 0;
 }
 
-int RestrictionPolicy::getMessagingState()
+int RestrictionPolicy::getMessagingState(const std::string& sim_id)
 {
 	return context.getPolicy("messaging");
 }

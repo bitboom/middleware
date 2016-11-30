@@ -38,6 +38,15 @@ public:
 		DPM_PASSWORD_STATUS_NOT_CHANGED,             /**< Password not changed */
 		DPM_PASSWORD_STATUS_CHANGE_REQUIRED ,        /**< Password change required */
 		DPM_PASSWORD_STATUS_MAX_ATTEMPTS_EXCEEDED,   /**< Password Max Attempts Exceeded*/
+
+		DPM_PASSWORD_STATUS_EXPIRED,					/**< Password expired */
+		DPM_PASSWORD_STATUS_RECOVERY_PASSWORD_FAILED,	/**< Device unlock failed by Password Recovery */
+		DPM_PASSWORD_STATUS_RECOVERY_PASSWORD_SUCCEEDED,/**< Device unlock succeeded by Password Recovery */
+
+		DPM_PASSWORD_STATUS_QUALITY_CHANGED,			/**< Password quality successfully changed */
+		DPM_PASSWORD_STATUS_MIN_LENGTH_CHANGED, 		/**< Password min_length successfully changed */
+		DPM_PASSWORD_STATUS_COMPLEX_CHAR_CHANGED,		/**< Password complex_char successfully changed */
+		DPM_PASSWORD_STATUS_PATTERN_CHANGED, 			/**< Password pattern successfully changed */
 		DPM_PASSWORD_STATUS_MAX
 	} PasswordPolicyStatus;
 
@@ -71,6 +80,8 @@ public:
 	int getMaximumNumericSequenceLength();
 	int setForbiddenStrings(const std::vector<std::string> &forbiddenStrings);
 	std::vector<std::string> getForbiddenStrings();
+	int setRecovery(int enable);
+	int getRecovery();
 
 private:
 	PolicyControlContext &context;

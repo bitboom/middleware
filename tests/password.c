@@ -64,7 +64,7 @@ static int password_set_password_quality(struct testcase *tc)
 static int password_get_password_quality(struct testcase *tc)
 {
 	device_policy_manager_h handle;
-	dpm_password_quality_e quality = DPM_PASSWORD_QUALITY_UNSPECIFIED;
+	int quality = DPM_PASSWORD_QUALITY_UNSPECIFIED;
 
 	handle = dpm_manager_create();
 	if (handle == NULL) {

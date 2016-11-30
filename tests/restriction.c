@@ -78,6 +78,61 @@ struct testcase restriction_testcase_##__name__ = {                    \
 	.handler = restriction_##__name__                                  \
 }
 
+
+static int restriction_messaging(struct testcase *tc)
+{
+	device_policy_manager_h handle;
+	int state, enable = false;
+	handle = dpm_manager_create();
+	if (handle == NULL) {
+		printf("Failed to create client handle\n");
+		return TEST_FAILED;
+	}
+	if (dpm_restriction_get_messaging_state(NULL, "SIM1", &state) == 0) {
+		printf("NULL handle test in getter failed\n");
+		dpm_context_destroy(handle);
+		return TEST_FAILED;
+	}
+	if (dpm_restriction_get_messaging_state(handle, "SIM1", NULL) == 0) {
+		printf("NULL param test failed\n");
+		dpm_context_destroy(handle);
+		return TEST_FAILED;
+	}
+	if (dpm_restriction_set_messaging_state(NULL, "SIM1", false) == 0) {
+		printf("NULL handle test in setter failed\n");
+		dpm_context_destroy(handle);
+		return TEST_FAILED;
+	}
+	if (dpm_restriction_get_messaging_state(handle, "SIM1", &state) != 0) {
+		printf("Policy query failed\n");
+		dpm_context_destroy(handle);
+		return TEST_FAILED;
+	}
+	enable = !state;
+	if (dpm_restriction_set_messaging_state(handle, "SIM1", enable) != 0) {
+		printf("Policy enforce failed\n");
+		dpm_context_destroy(handle);
+		return TEST_FAILED;
+	}
+	dpm_restriction_get_messaging_state(handle, "SIM1", &enable);
+	if (enable != !state) {
+		printf("Policy check failed\n");
+		dpm_context_destroy(handle);
+		return TEST_FAILED;
+	}
+	if (dpm_restriction_set_messaging_state(handle, "SIM1", state) != 0) {
+		printf("Policy recovery failed\n");
+		dpm_context_destroy(handle);
+		return TEST_FAILED;
+	}
+	dpm_context_destroy(handle);
+	return TEST_SUCCESSED;
+}
+struct testcase restriction_testcase_messaging = {
+	.description = "restriction_testcase_messaging",
+	.handler = restriction_messaging
+};
+
 DEFINE_RESTRICTION_TESTCASE(clipboard);
 DEFINE_RESTRICTION_TESTCASE(wifi);
 DEFINE_RESTRICTION_TESTCASE(wifi_hotspot);
@@ -86,7 +141,6 @@ DEFINE_RESTRICTION_TESTCASE(usb_tethering);
 DEFINE_RESTRICTION_TESTCASE(bluetooth_mode_change);
 DEFINE_RESTRICTION_TESTCASE(bluetooth_desktop_connectivity);
 DEFINE_RESTRICTION_TESTCASE(bluetooth_pairing);
-DEFINE_RESTRICTION_TESTCASE(messaging);
 DEFINE_RESTRICTION_TESTCASE(popimap_email);
 DEFINE_RESTRICTION_TESTCASE(browser);
 DEFINE_RESTRICTION_TESTCASE(camera);

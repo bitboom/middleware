@@ -77,6 +77,7 @@ std::unordered_map<std::string, ManagedPolicy> managedPolicyMap = {
 	DEFINE_GLOBAL_POLICY("password-numeric-sequences-length", INT_MAX, MinimizeIntegerComparator),
 	DEFINE_GLOBAL_POLICY("password-maximum-character-occurrences", INT_MAX, MinimizeIntegerComparator),
 	DEFINE_GLOBAL_POLICY("password-quality", 0, MaximizeIntegerComparator),
+	DEFINE_GLOBAL_POLICY("password-recovery", 0, RestrictionComparator),
 	DEFINE_GLOBAL_POLICY("bluetooth", 1, StateComparator),
 	DEFINE_GLOBAL_POLICY("bluetooth-tethering", 1, StateComparator),
 	DEFINE_GLOBAL_POLICY("bluetooth-desktop-connectivity", 1, StateComparator),

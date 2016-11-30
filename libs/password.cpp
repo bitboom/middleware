@@ -269,4 +269,22 @@ std::vector<std::string> PasswordPolicy::getForbiddenStrings()
 		return error;
 	}
 }
+
+int PasswordPolicy::setRecovery(int enable)
+{
+	try {
+		return context->methodCall<int>("PasswordPolicy::setRecovery", enable);
+	} catch (runtime::Exception &e) {
+		return -1;
+	}
+}
+
+int PasswordPolicy::getRecovery()
+{
+	try {
+		return context->methodCall<int>("PasswordPolicy::getRecovery");
+	} catch (runtime::Exception &e) {
+		return -1;
+	}
+}
 } /* namespace DevicePolicyManager */

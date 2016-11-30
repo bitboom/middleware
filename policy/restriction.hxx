@@ -49,8 +49,8 @@ public:
 	int setPopImapEmailState(int enable);
 	int getPopImapEmailState();
 
-	int setMessagingState(int enable);
-	int getMessagingState();
+	int setMessagingState(const std::string& sim_id, int enable);
+	int getMessagingState(const std::string& sim_id);
 
 	int setBrowserState(int enable);
 	int getBrowserState();

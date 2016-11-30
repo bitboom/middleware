@@ -18,6 +18,7 @@
 #include <cassert>
 
 #include "password.h"
+#include "password_internal.h"
 #include "password.hxx"
 
 #include "array.h"
@@ -26,7 +27,7 @@
 
 using namespace DevicePolicyManager;
 
-EXPORT_API int dpm_password_set_quality(device_policy_manager_h handle, dpm_password_quality_e quality)
+EXPORT_API int dpm_password_set_quality(device_policy_manager_h handle, int quality)
 {
 	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
 
@@ -36,7 +37,7 @@ EXPORT_API int dpm_password_set_quality(device_policy_manager_h handle, dpm_pass
 	return password.setQuality(quality);
 }
 
-EXPORT_API int dpm_password_get_quality(device_policy_manager_h handle, dpm_password_quality_e *quality)
+EXPORT_API int dpm_password_get_quality(device_policy_manager_h handle, int *quality)
 {
 	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
 	RET_ON_FAILURE(quality, DPM_ERROR_INVALID_PARAMETER);
@@ -427,4 +428,32 @@ EXPORT_API int dpm_password_set_forbidden_strings(device_policy_manager_h handle
 		forbiddenStrings.push_back(strings[iter]);
 
 	return password.setForbiddenStrings(forbiddenStrings);
+}
+
+EXPORT_API int dpm_password_set_recovery(device_policy_manager_h handle, int enable)
+{
+	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
+
+	DevicePolicyContext &client = GetDevicePolicyContext(handle);
+	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
+
+	return password.setRecovery(enable);
+}
+
+EXPORT_API int dpm_password_get_recovery(device_policy_manager_h handle, int *enable)
+{
+	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(enable, DPM_ERROR_INVALID_PARAMETER);
+
+	DevicePolicyContext &client = GetDevicePolicyContext(handle);
+	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
+
+	int ret = password.getRecovery();
+	if (ret < 0) {
+		return -1;
+	}
+
+	*enable = ret;
+
+	return DPM_ERROR_NONE;
 }
