@@ -27,8 +27,6 @@
 #include <klay/file-descriptor.h>
 #include <klay/rmi/service.h>
 
-typedef std::function<bool(const std::string&, const std::string&)> PolicyComparator;
-
 class Server {
 public:
 	Server();
@@ -77,25 +75,26 @@ public:
 		}
 	}
 
-	bool setPolicy(const std::string& name, int value, const std::string& event, const std::string& info);
+	template<typename DataType>
+	bool setPolicy(const std::string& name, DataType& value, const std::string& event, const std::string& info);
 
-	bool setPolicy(const std::string& name, int value, const std::string& info)
+	template<typename DataType>
+	bool setPolicy(const std::string& name, DataType& value, const std::string& info)
 	{
-		return setPolicy(name, value, name, info);
+		return setPolicy<DataType>(name, value, name, info);
 	}
 
-	int getPolicy(const std::string& name, uid_t uid)
+	template<typename DataType>
+	DataType getPolicy(const std::string& name, uid_t uid)
 	{
-		return policyManager->getGlobalPolicy(name);
+		return policyManager->getUserPolicy<DataType>(name, uid);
 	}
 
-	int getPolicy(const std::string& name)
+	template<typename DataType>
+	DataType getPolicy(const std::string& name)
 	{
-		return policyManager->getGlobalPolicy(name);
+		return policyManager->getGlobalPolicy<DataType>(name);
 	}
-
-	int enroll(const std::string& pkgid, uid_t user);
-	int disenroll(const std::string& pkgid, uid_t user);
 
 	PolicyManager& getPolicyManager()
 	{
@@ -113,9 +112,20 @@ private:
 	std::string location;
 
 	std::unique_ptr<PolicyManager> policyManager;
-	std::unique_ptr<DeviceAdministratorManager> adminManager;
 	std::unique_ptr<rmi::Service> service;
-	std::unordered_map<std::string, PolicyComparator> policyComparators;
 };
 
+template<typename DataType>
+bool Server::setPolicy(const std::string& name, DataType& value, const std::string& event, const std::string& info)
+{
+	DeviceAdministrator admin(getPeerPid(), getPeerUid());
+	if (policyManager->setPolicy<DataType>(admin, name, value)) {
+		if (event.empty() == false) {
+			service->notify(event, info);
+		}
+		return true;
+	}
+
+	return false;
+}
 #endif //__DPM_SERVER_H__

@@ -20,6 +20,10 @@
 
 #include "administration.hxx"
 
+namespace {
+const std::string repository = "/opt/dbspace/.dpm.db";
+}
+
 namespace DevicePolicyManager {
 
 AdministrationPolicy::AdministrationPolicy(PolicyControlContext& ctx) :
@@ -35,22 +39,26 @@ AdministrationPolicy::~AdministrationPolicy()
 
 int AdministrationPolicy::registerPolicyClient(const std::string& name, uid_t uid)
 {
+	int ret = -1;
 	try {
-		return context.enroll(name, uid);
+		ret = context.getPolicyManager().prepareStorage(name, uid);
 	} catch (runtime::Exception& e) {
-		ERROR("Failed to register policy client");
-		return -1;
+		ERROR("Failed to register admin client");
 	}
+
+	return ret == 0 ? 0 : -1;
 }
 
 int AdministrationPolicy::deregisterPolicyClient(const std::string& name, uid_t uid)
 {
+	int ret = -1;
 	try {
-		return context.disenroll(name, uid);
+		ret = context.getPolicyManager().removeStorage(name, uid);
 	} catch (runtime::Exception& e) {
 		ERROR("Failed to deregister policy client");
-		return -1;
 	}
+
+	return ret == 0 ? 0 : -1;
 }
 
 DEFINE_POLICY(AdministrationPolicy);

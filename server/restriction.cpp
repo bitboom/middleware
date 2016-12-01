@@ -101,7 +101,7 @@ int RestrictionPolicy::setCameraState(int enable)
 
 int RestrictionPolicy::getCameraState()
 {
-	return context.getPolicy("camera");
+	return context.getPolicy<int>("camera");
 }
 
 int RestrictionPolicy::setMicrophoneState(int enable)
@@ -134,7 +134,7 @@ int RestrictionPolicy::setMicrophoneState(int enable)
 
 int RestrictionPolicy::getMicrophoneState()
 {
-	return context.getPolicy("microphone");
+	return context.getPolicy<int>("microphone");
 }
 
 int RestrictionPolicy::setClipboardState(int enable)
@@ -150,7 +150,7 @@ int RestrictionPolicy::setClipboardState(int enable)
 
 int RestrictionPolicy::getClipboardState()
 {
-	return context.getPolicy("clipboard");
+	return context.getPolicy<int>("clipboard");
 }
 
 int RestrictionPolicy::setUsbDebuggingState(int enable)
@@ -166,7 +166,7 @@ int RestrictionPolicy::setUsbDebuggingState(int enable)
 
 int RestrictionPolicy::getUsbDebuggingState()
 {
-	return context.getPolicy("usb-debugging");
+	return context.getPolicy<int>("usb-debugging");
 }
 
 int RestrictionPolicy::setUsbTetheringState(bool enable)
@@ -193,7 +193,7 @@ int RestrictionPolicy::setUsbTetheringState(bool enable)
 
 bool RestrictionPolicy::getUsbTetheringState()
 {
-	return context.getPolicy("usb-tethering");
+	return context.getPolicy<int>("usb-tethering");
 }
 
 int RestrictionPolicy::setExternalStorageState(int enable)
@@ -224,7 +224,7 @@ int RestrictionPolicy::setExternalStorageState(int enable)
 
 int RestrictionPolicy::getExternalStorageState()
 {
-	return context.getPolicy("external-storage");
+	return context.getPolicy<int>("external-storage");
 }
 
 int RestrictionPolicy::setPopImapEmailState(int enable)
@@ -240,7 +240,7 @@ int RestrictionPolicy::setPopImapEmailState(int enable)
 
 int RestrictionPolicy::getPopImapEmailState()
 {
-	return context.getPolicy("popimap-email");
+	return context.getPolicy<int>("popimap-email");
 }
 
 int RestrictionPolicy::setMessagingState(const std::string& sim_id, int enable)
@@ -256,7 +256,7 @@ int RestrictionPolicy::setMessagingState(const std::string& sim_id, int enable)
 
 int RestrictionPolicy::getMessagingState(const std::string& sim_id)
 {
-	return context.getPolicy("messaging");
+	return context.getPolicy<int>("messaging");
 }
 
 int RestrictionPolicy::setBrowserState(int enable)
@@ -272,7 +272,7 @@ int RestrictionPolicy::setBrowserState(int enable)
 
 int RestrictionPolicy::getBrowserState()
 {
-	return context.getPolicy("browser");
+	return context.getPolicy<int>("browser");
 }
 
 DEFINE_POLICY(RestrictionPolicy);

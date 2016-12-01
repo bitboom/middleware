@@ -51,7 +51,7 @@ int LocationPolicy::setLocationState(int enable)
 
 int LocationPolicy::getLocationState()
 {
-	return context.getPolicy("location");
+	return context.getPolicy<int>("location");
 }
 
 DEFINE_POLICY(LocationPolicy);

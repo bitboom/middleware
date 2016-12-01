@@ -16,23 +16,60 @@
 
 #ifndef __DPM_CLIENT_MANAGER_H__
 #define __DPM_CLIENT_MANAGER_H__
-#include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <limits.h>
+
+#include <aul.h>
 
 #include <string>
 #include <vector>
 
-#include <klay/db/column.h>
-#include <klay/db/statement.h>
-#include <klay/db/connection.h>
+#include <klay/exception.h>
 
 class DeviceAdministrator {
 public:
 	DeviceAdministrator(const DeviceAdministrator&) = delete;
 	DeviceAdministrator(DeviceAdministrator&&) = default;
-	DeviceAdministrator(const std::string& name, uid_t uid, const std::string& key);
+	DeviceAdministrator(const std::string& pkgid, uid_t user, const std::string& pk) :
+		name(pkgid), uid(user), key(pk)
+	{
+	}
 
-	~DeviceAdministrator();
+	DeviceAdministrator(pid_t pid, uid_t user)
+	{
+		char pkgid[PATH_MAX];
+
+		if (aul_app_get_pkgid_bypid_for_uid(pid, pkgid, PATH_MAX, uid) != 0) {
+			int fd = ::open(std::string("/proc/" + std::to_string(pid) + "/cmdline").c_str(), O_RDONLY);
+			if (fd == -1) {
+				throw runtime::Exception("Unknown PID");
+			}
+
+			ssize_t ret, bytes = 0;
+			do {
+				ret = ::read(fd, &pkgid[bytes], PATH_MAX);
+				if (ret != -1) {
+					bytes += ret;
+				}
+			} while ((ret == -1) && (errno == EINTR));
+
+			if (ret == -1) {
+				throw runtime::Exception("Failed to get admin info");
+			}
+
+			pkgid[bytes] = '\0';
+		}
+
+		name = pkgid;
+		uid = user;
+	}
+
+	~DeviceAdministrator()
+	{
+	}
 
 	DeviceAdministrator& operator=(DeviceAdministrator&&) = default;
 	DeviceAdministrator& operator=(const DeviceAdministrator&) = delete;
@@ -56,36 +93,6 @@ private:
 	std::string name;
 	uid_t uid;
 	std::string key;
-};
-
-class DeviceAdministratorManager {
-public:
-	typedef std::vector<DeviceAdministrator> DeviceAdministratorList;
-
-	DeviceAdministratorManager(const std::string& path);
-	DeviceAdministratorManager(const DeviceAdministratorManager&) = delete;
-	DeviceAdministratorManager& operator=(const DeviceAdministratorManager&) = delete;
-
-	DeviceAdministrator enroll(const std::string& name, uid_t uid);
-	void disenroll(const std::string& name, uid_t uid);
-
-	DeviceAdministratorList::iterator begin()
-	{
-		return deviceAdministratorList.begin();
-	}
-
-	DeviceAdministratorList::iterator end()
-	{
-		return deviceAdministratorList.end();
-	}
-
-private:
-	void prepareRepository();
-	std::string generateKey();
-
-private:
-	std::string repository;
-	DeviceAdministratorList deviceAdministratorList;
 };
 
 #endif //__DPM_CLIENT_MANAGER_H__

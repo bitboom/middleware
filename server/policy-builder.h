@@ -39,14 +39,14 @@ struct PolicyBuilder {
 	std::unique_ptr<T> instance;
 };
 
-inline bool SetPolicyAllowed(PolicyControlContext& context, const std::string& name, bool allow)
+inline bool SetPolicyAllowed(PolicyControlContext& context, const std::string& name, int allow)
 {
-	return context.setPolicy(name, allow, name, allow ? "allowed" : "disallowed");
+	return context.setPolicy<int>(name, allow, name, allow ? "allowed" : "disallowed");
 }
 
-inline bool SetPolicyEnabled(PolicyControlContext& context, const std::string& name, bool enable)
+inline bool SetPolicyEnabled(PolicyControlContext& context, const std::string& name, int enable)
 {
-	return context.setPolicy(name, enable, name, enable ? "enabled" : "disabled");
+	return context.setPolicy<int>(name, enable, name, enable ? "enabled" : "disabled");
 }
 
 inline void PolicyBuild(PolicyControlContext& context)

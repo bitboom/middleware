@@ -42,12 +42,12 @@ int PasswordStatus = 0;
 
 inline int getPasswordPolicy(PolicyControlContext &ctx, const std::string &name)
 {
-	return ctx.getPolicy(name, ctx.getPeerUid());
+	return ctx.getPolicy<int>(name, ctx.getPeerUid());
 }
 
 inline bool setPasswordPolicy(PolicyControlContext &ctx, const std::string &name, int value)
 {
-	return ctx.setPolicy(name, value, "password", name);
+	return ctx.setPolicy<int>(name, value, "password", name);
 }
 
 inline PasswordManager::QualityType getPasswordQualityType(int quality)
@@ -476,7 +476,7 @@ std::vector<std::string> PasswordPolicy::getForbiddenStrings()
 int PasswordPolicy::setRecovery(int enable)
 {
 	try {
-		SetPolicyEnabled(context, "password-recovery", enable);
+		setPasswordPolicy(context, "password-recovery", enable);
 	} catch (runtime::Exception &e) {
 		ERROR("Failed to set recovery");
 		return -1;

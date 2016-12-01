@@ -147,7 +147,7 @@ int WifiPolicy::setState(bool enable)
 
 bool WifiPolicy::getState()
 {
-	return context.getPolicy("wifi");
+	return context.getPolicy<int>("wifi");
 }
 
 int WifiPolicy::setHotspotState(bool enable)
@@ -175,7 +175,7 @@ int WifiPolicy::setHotspotState(bool enable)
 
 bool WifiPolicy::getHotspotState()
 {
-	return context.getPolicy("wifi-hotspot");
+	return context.getPolicy<int>("wifi-hotspot");
 }
 
 int WifiPolicy::setProfileChangeRestriction(bool enable)
@@ -201,7 +201,7 @@ int WifiPolicy::setProfileChangeRestriction(bool enable)
 
 bool WifiPolicy::isProfileChangeRestricted(void)
 {
-	return context.getPolicy("wifi-profile-change");
+	return context.getPolicy<int>("wifi-profile-change");
 }
 
 int WifiPolicy::setNetworkAccessRestriction(bool enable)
@@ -223,14 +223,14 @@ int WifiPolicy::setNetworkAccessRestriction(bool enable)
 
 bool WifiPolicy::isNetworkAccessRestricted(void)
 {
-	return context.getPolicy("wifi-ssid-restriction");
+	return context.getPolicy<int>("wifi-ssid-restriction");
 }
 
 int WifiPolicy::addSsidToBlocklist(const std::string& ssid)
 {
 	try {
 		blockSsidList.insert(ssid);
-		if (context.getPolicy("wifi-ssid-restriction")) {
+		if (context.getPolicy<int>("wifi-ssid-restriction")) {
 			applyBlocklistToConnectedAP();
 		}
 	} catch (runtime::Exception& e) {

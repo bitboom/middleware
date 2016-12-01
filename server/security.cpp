@@ -69,7 +69,7 @@ int SecurityPolicy::lockoutScreen()
 
 int SecurityPolicy::setInternalStorageEncryption(bool encrypt)
 {
-	int policy = context.getPolicy("internal-storage-encryption");
+	int policy = context.getPolicy<int>("internal-storage-encryption");
 	if ((encrypt == true) && (policy == true)) {
 		return 0;
 	} else if ((encrypt == false) && (policy == false)) {
@@ -97,7 +97,7 @@ int SecurityPolicy::setInternalStorageEncryption(bool encrypt)
 
 int SecurityPolicy::isInternalStorageEncrypted()
 {
-	int policy = context.getPolicy("internal-storage-encryption");
+	int policy = context.getPolicy<int>("internal-storage-encryption");
 	if (policy == true) {
 		return true;
 	}
@@ -107,7 +107,7 @@ int SecurityPolicy::isInternalStorageEncrypted()
 
 int SecurityPolicy::setExternalStorageEncryption(bool encrypt)
 {
-	int policy = context.getPolicy("external-storage-encryption");
+	int policy = context.getPolicy<int>("external-storage-encryption");
 	if ((encrypt == true) && (policy == true)) {
 		return 0;
 	} else if ((encrypt == false) && (policy == false)) {
@@ -135,7 +135,7 @@ int SecurityPolicy::setExternalStorageEncryption(bool encrypt)
 
 int SecurityPolicy::isExternalStorageEncrypted()
 {
-	int policy = context.getPolicy("external-storage-encryption");
+	int policy = context.getPolicy<int>("external-storage-encryption");
 	if (policy == true) {
 		return true;
 	}

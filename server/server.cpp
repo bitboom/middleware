@@ -14,20 +14,13 @@
  *  limitations under the License
  */
 
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <unistd.h>
-
 #include <functional>
 
-#include <aul.h>
 #include <cynara-client.h>
 #include <cynara-session.h>
 
 #include "server.h"
 #include "policy-builder.h"
-#include "client-manager.h"
 
 #include "exception.h"
 #include "filesystem.h"
@@ -38,44 +31,13 @@ using namespace std::placeholders;
 namespace {
 
 const std::string POLICY_MANAGER_ADDRESS = "/tmp/.device-policy-manager.sock";
-const std::string POLICY_ACCESS_POINT_PATH = "/var/run/dpm";
-const std::string POLICY_STORAGE_PATH = "/opt/etc/dpm/policy";
-const std::string DEVICE_ADMIN_REPOSITORY = DB_PATH;
-
-std::string GetPackageId(uid_t uid, pid_t pid)
-{
-	char pkgid[PATH_MAX];
-
-	if (aul_app_get_pkgid_bypid_for_uid(pid, pkgid, PATH_MAX, uid) != 0) {
-		int fd = ::open(std::string("/proc/" + std::to_string(pid) + "/cmdline").c_str(), O_RDONLY);
-		if (fd == -1) {
-			throw runtime::Exception("Unknown PID");
-		}
-
-		ssize_t ret, bytes = 0;
-		do {
-			ret = ::read(fd, &pkgid[bytes], PATH_MAX);
-			if (ret != -1) {
-				bytes += ret;
-			}
-		} while ((ret == -1) && (errno == EINTR));
-
-		if (ret == -1) {
-			throw runtime::Exception("Failed to get admin info");
-		}
-
-		pkgid[bytes] = '\0';
-	}
-
-	return pkgid;
-}
+const std::string POLICY_STORAGE_PATH = "/opt/dbspace/.dpm.db";
 
 } // namespace
 
 Server::Server()
 {
-	policyManager.reset(new PolicyManager(POLICY_STORAGE_PATH, POLICY_ACCESS_POINT_PATH));
-	adminManager.reset(new DeviceAdministratorManager(DEVICE_ADMIN_REPOSITORY));
+	policyManager.reset(new PolicyManager(POLICY_STORAGE_PATH));
 	service.reset(new rmi::Service(POLICY_MANAGER_ADDRESS));
 
 	service->setPrivilegeChecker(std::bind(&Server::checkPeerPrivilege, this, _1, _2));
@@ -90,27 +52,9 @@ Server::~Server()
 
 void Server::run()
 {
-	policyManager->prepareGlobalPolicy();
-
-	int index = 0;
-	uid_t uids[32];
-	DeviceAdministratorManager::DeviceAdministratorList::iterator iter = adminManager->begin();
-	while (iter != adminManager->end()) {
-		int i = 0;
-		const DeviceAdministrator& admin = *iter;
-		uid_t uid = admin.getUid();
-		while ((i < index) && (uids[i] != uid)) i++;
-
-		if (i == index) {
-			uids[index++] = uid;
-			policyManager->prepareUserPolicy(uid);
-		}
-
-		policyManager->populateStorage(admin.getName(), admin.getUid(), true);
-		++iter;
-	}
-
 	PolicyBuild(*this);
+
+	policyManager->apply();
 
 	::umask(0);
 	service->start(true);
@@ -129,20 +73,6 @@ runtime::FileDescriptor Server::registerNotificationSubscriber(const std::string
 int Server::unregisterNotificationSubscriber(const std::string& name, int id)
 {
 	return service->unsubscribeNotification(name, id);
-}
-
-bool Server::setPolicy(const std::string& name, int value, const std::string& event, const std::string& info)
-{
-	uid_t uid = getPeerUid();
-	std::string pkgid = GetPackageId(uid, getPeerPid());
-	if (policyManager->setPolicy(pkgid, uid, name, value)) {
-		if (event.empty() == false) {
-			service->notify(event, info);
-		}
-		return true;
-	}
-
-	return false;
 }
 
 bool Server::checkPeerPrivilege(const rmi::Credentials& cred, const std::string& privilege)
@@ -171,19 +101,3 @@ bool Server::checkPeerPrivilege(const rmi::Credentials& cred, const std::string&
 	return true;
 }
 
-int Server::enroll(const std::string& name, uid_t uid)
-{
-	adminManager->enroll(name, uid);
-	policyManager->prepareUserPolicy(uid);
-	policyManager->populateStorage(name, uid, true);
-
-	return 0;
-}
-
-int Server::disenroll(const std::string& name, uid_t uid)
-{
-	adminManager->disenroll(name, uid);
-	policyManager->removeStorage(name, uid);
-
-	return 0;
-}
