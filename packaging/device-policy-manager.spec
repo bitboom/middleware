@@ -54,7 +54,6 @@ managing device policies.
 %manifest device-policy-manager.manifest
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/device-policy-manager
-%attr(700,root,root) %{_bindir}/factory-reset
 %attr(700,root,root) %{_bindir}/dpm-admin-cli
 %{_unitdir}/device-policy-manager.service
 %{_unitdir}/multi-user.target.wants/device-policy-manager.service
