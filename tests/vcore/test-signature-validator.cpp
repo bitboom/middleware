@@ -29,9 +29,11 @@ using namespace ValidationCore;
 
 namespace {
 
-std::vector<VCerr> runCheck(const std::string &contentPath,
-								   bool checkOcsp,
-								   bool checkReferences)
+using RetPair = std::pair<VCerr, SignatureData>;
+
+std::vector<RetPair> runCheck(const std::string &contentPath,
+							  bool checkOcsp,
+							  bool checkReferences)
 {
 	SignatureFileInfoSet signatureSet;
 	SignatureFinder signatureFinder(contentPath);
@@ -39,21 +41,22 @@ std::vector<VCerr> runCheck(const std::string &contentPath,
 		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
 		"SignatureFinder failed");
 
-	std::vector<VCerr> retVector;
+	std::vector<RetPair> ret;
 	for (auto &sig : signatureSet) {
 		SignatureValidator validator(sig);
 		SignatureData outData;
-		retVector.push_back(validator.check(contentPath,
-											checkOcsp,
-											checkReferences,
-											outData));
+		ret.push_back(std::make_pair(validator.check(contentPath,
+													 checkOcsp,
+													 checkReferences,
+													 outData),
+									 outData));
 	}
-	return retVector;
+	return ret;
 }
 
-std::vector<VCerr> runCheckList(const std::string &contentPath,
-									   bool checkOcsp,
-									   const UriList &uriList)
+std::vector<RetPair> runCheckList(const std::string &contentPath,
+								  bool checkOcsp,
+								  const UriList &uriList)
 {
 	SignatureFileInfoSet signatureSet;
 	SignatureFinder signatureFinder(contentPath);
@@ -61,20 +64,21 @@ std::vector<VCerr> runCheckList(const std::string &contentPath,
 		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
 		"SignatureFinder failed");
 
-	std::vector<VCerr> retVector;
+	std::vector<RetPair> ret;
 	for (auto &sig : signatureSet) {
 		SignatureValidator validator(sig);
 		SignatureData outData;
-		retVector.push_back(validator.checkList(checkOcsp,
-												uriList,
-												outData));
+		ret.push_back(std::make_pair(validator.checkList(checkOcsp,
+														 uriList,
+														 outData),
+									 outData));
 	}
-	return retVector;
+	return ret;
 }
 
 VCerr runCheckAll(const std::string &contentPath,
-						 bool checkOcsp,
-						 bool checkReferences)
+				  bool checkOcsp,
+				  bool checkReferences)
 {
 	SignatureValidator validator(contentPath);
 	SignatureDataMap sigDataMap;
@@ -82,8 +86,8 @@ VCerr runCheckAll(const std::string &contentPath,
 }
 
 VCerr runCheckListAll(const std::string &contentPath,
-							 bool checkOcsp,
-							 const UriList &uriList)
+					  bool checkOcsp,
+					  const UriList &uriList)
 {
 	SignatureValidator validator(contentPath);
 	SignatureDataMap sigDataMap;
@@ -103,149 +107,96 @@ RUNNER_TEST(T00101_finder)
 		"SignatureFinder failed");
 	RUNNER_ASSERT_MSG(signatureSet.size() == 2, "Some signature has not been found");
 
-	for (auto &fileInfo : signatureSet)
-		RUNNER_ASSERT_MSG((
-							  (fileInfo.getFileName().find("author-signature.xml") != std::string::npos &&
-							   fileInfo.getFileNumber() == -1) ||
-							  (fileInfo.getFileName().find("signature1.xml") != std::string::npos &&
-							   fileInfo.getFileNumber() == 1)),
-						  "invalid signature xml found: " << fileInfo.getFileName() << " with number: " <<
-						  fileInfo.getFileNumber());
+	for (const auto &fileInfo : signatureSet)
+		RUNNER_ASSERT_MSG(((fileInfo.getFileName().find("author-signature.xml") != std::string::npos &&
+							fileInfo.getFileNumber() == -1) ||
+						   (fileInfo.getFileName().find("signature1.xml") != std::string::npos &&
+							fileInfo.getFileNumber() == 1)),
+						  "invalid signature xml found: " << fileInfo.getFileName() <<
+						  " with number: " << fileInfo.getFileNumber());
 }
 
 RUNNER_TEST(T00102_positive_public_check_ref)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::widget_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::widget_path,
+							  true,
+							  true);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::widget_path,
-						   true,
-						   true,
-						   data);
-		RUNNER_ASSERT_MSG(result == E_SIG_NONE,
-						  "sig validation should be success: "
-						  << validator.errorToString(result));
+	for (const auto &ret : retVector) {
+		RUNNER_ASSERT_MSG(ret.first == E_SIG_NONE,
+						  "sig validation should be success: " << ret.first);
 
-		if (!data.isAuthorSignature() && data.getSignatureNumber() == 1)
-			RUNNER_ASSERT_MSG(data.getVisibilityLevel() == CertStoreId::VIS_PUBLIC,
+		auto sigData = ret.second;
+		if (sigData.getSignatureNumber() == 1)
+			RUNNER_ASSERT_MSG(sigData.getVisibilityLevel() == CertStoreId::VIS_PUBLIC,
 							  "visibility check failed.");
 	}
 }
 
 RUNNER_TEST(T00103_positive_partner_check_ref)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::widget_partner_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::widget_partner_path,
+							  true,
+							  true);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::widget_partner_path,
-						   true,
-						   true,
-						   data);
-		RUNNER_ASSERT_MSG(result == E_SIG_NONE,
-						  "sig validation should be success: "
-						  << validator.errorToString(result));
+	for (const auto &ret : retVector) {
+		RUNNER_ASSERT_MSG(ret.first == E_SIG_NONE,
+						  "sig validation should be success: " << ret.first);
 
-		if (!data.isAuthorSignature())
-			RUNNER_ASSERT_MSG(data.getVisibilityLevel() == CertStoreId::VIS_PARTNER,
+		auto sigData = ret.second;
+		if (sigData.getSignatureNumber() == 1)
+			RUNNER_ASSERT_MSG(sigData.getVisibilityLevel() == CertStoreId::VIS_PARTNER,
 							  "visibility check failed.");
 	}
 }
 
 RUNNER_TEST(T00104_positive_public_uncheck_ref)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::widget_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::widget_path,
+							  true,
+							  false);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::widget_path,
-						   true,
-						   false,
-						   data);
-		RUNNER_ASSERT_MSG(result == E_SIG_NONE,
-						  "sig validation should be success: "
-						  << validator.errorToString(result));
+	for (const auto &ret : retVector) {
+		RUNNER_ASSERT_MSG(ret.first == E_SIG_NONE,
+						  "sig validation should be success: " << ret.first);
 
-		if (!data.isAuthorSignature() && data.getSignatureNumber() == 1)
-			RUNNER_ASSERT_MSG(data.getVisibilityLevel() == CertStoreId::VIS_PUBLIC,
+		auto sigData = ret.second;
+		if (sigData.getSignatureNumber() == 1)
+			RUNNER_ASSERT_MSG(sigData.getVisibilityLevel() == CertStoreId::VIS_PUBLIC,
 							  "visibility check failed.");
 	}
 }
 
 RUNNER_TEST(T00105_positive_partner_uncheck_ref)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::widget_partner_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::widget_partner_path,
+							  true,
+							  false);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::widget_partner_path,
-						   true,
-						   false,
-						   data);
-		RUNNER_ASSERT_MSG(result == E_SIG_NONE,
-						  "sig validation should be success: "
-						  << validator.errorToString(result));
+	for (const auto &ret : retVector) {
+		RUNNER_ASSERT_MSG(ret.first == E_SIG_NONE,
+						  "sig validation should be success: " << ret.first);
 
-		if (!data.isAuthorSignature())
-			RUNNER_ASSERT_MSG(data.getVisibilityLevel() == CertStoreId::VIS_PARTNER,
+		auto sigData = ret.second;
+		if (sigData.getSignatureNumber() == 1)
+			RUNNER_ASSERT_MSG(sigData.getVisibilityLevel() == CertStoreId::VIS_PARTNER,
 							  "visibility check failed.");
 	}
 }
 
 RUNNER_TEST(T00106_positive_tpk)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::tpk_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::tpk_path,
+							  true,
+							  true);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::tpk_path,
-						   true,
-						   true,
-						   data);
-		RUNNER_ASSERT_MSG(result == E_SIG_NONE,
-						  "sig validation should be success: "
-						  << validator.errorToString(result));
-	}
+	for (const auto &ret : retVector)
+		RUNNER_ASSERT_MSG(ret.first == E_SIG_NONE,
+						  "sig validation should be success: " << ret.first);
 }
 
 RUNNER_TEST(T00107_positive_tpk_with_userdata)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::tpk_with_userdata_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
 	UriList uriList;
 	uriList.emplace_back("author-siganture.xml");
 	uriList.emplace_back("bin/preference");
@@ -257,277 +208,183 @@ RUNNER_TEST(T00107_positive_tpk_with_userdata)
 	uriList.emplace_back("shared/res/preference.png");
 	uriList.emplace_back("tizen-manifest.xml");
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.checkList(
-						   true,
-						   uriList,
-						   data);
-		RUNNER_ASSERT_MSG(result == E_SIG_NONE,
+	auto retVector = runCheckList(TestData::tpk_with_userdata_path,
+								  true,
+								  uriList);
+
+	for (const auto &ret : retVector)
+		RUNNER_ASSERT_MSG(ret.first == E_SIG_NONE,
 						  "sig validation should be success: "
-						  << validator.errorToString(result));
-	}
+						  << ret.first);
 }
 
 RUNNER_TEST(T00108_distributor_disregard_check)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::widget_dist22_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::widget_dist22_path,
+							  true,
+							  true);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::widget_dist22_path,
-						   true,
-						   true,
-						   data);
-
-		if (data.isAuthorSignature())
-			RUNNER_ASSERT_MSG(result == E_SIG_INVALID_CHAIN,
+	for (const auto &ret : retVector) {
+		auto sigData = ret.second;
+		if (sigData.isAuthorSignature())
+			RUNNER_ASSERT_MSG(ret.first == E_SIG_INVALID_CHAIN,
 							  "author sig validation should be fail : "
-							  << validator.errorToString(result));
-		else if (data.getSignatureNumber() == 1)
-			RUNNER_ASSERT_MSG(result == E_SIG_INVALID_CHAIN,
+							  << ret.first);
+		else if (sigData.getSignatureNumber() == 1)
+			RUNNER_ASSERT_MSG(ret.first == E_SIG_INVALID_CHAIN,
 							  "dist1 sig validation should be fail: "
-							  << validator.errorToString(result));
+							  << ret.first);
 		else
-			RUNNER_ASSERT_MSG(result == E_SIG_DISREGARDED,
+			RUNNER_ASSERT_MSG(ret.first == E_SIG_DISREGARDED,
 							  "dist22 sig validation should be disregarded: "
-							  << validator.errorToString(result));
+							  << ret.first);
 	}
 }
 
 RUNNER_TEST(T00109_positive_platform_check_ref)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::widget_platform_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::widget_platform_path,
+							  true,
+							  true);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::widget_platform_path,
-						   true,
-						   true,
-						   data);
-		RUNNER_ASSERT_MSG(result == E_SIG_NONE,
-						  "sig validation should be success: "
-						  << validator.errorToString(result));
+	for (const auto &ret : retVector) {
+		RUNNER_ASSERT_MSG(ret.first == E_SIG_NONE,
+						  "sig validation should be success: " << ret.first);
 
-		if (!data.isAuthorSignature())
-			RUNNER_ASSERT_MSG(data.getVisibilityLevel() == CertStoreId::VIS_PLATFORM,
+		auto sigData = ret.second;
+		if (sigData.getSignatureNumber() == 1)
+			RUNNER_ASSERT_MSG(sigData.getVisibilityLevel() == CertStoreId::VIS_PLATFORM,
 							  "visibility check failed.");
 	}
 }
 
 RUNNER_TEST(T00110_positive_platform_uncheck_ref)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::widget_platform_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::widget_platform_path,
+							  true,
+							  false);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::widget_platform_path,
-						   true,
-						   false,
-						   data);
-		RUNNER_ASSERT_MSG(result == E_SIG_NONE,
-						  "sig validation should be success: "
-						  << validator.errorToString(result));
+	for (const auto &ret : retVector) {
+		RUNNER_ASSERT_MSG(ret.first == E_SIG_NONE,
+						  "sig validation should be success: " << ret.first);
 
-		if (!data.isAuthorSignature())
-			RUNNER_ASSERT_MSG(data.getVisibilityLevel() == CertStoreId::VIS_PLATFORM,
+		auto sigData = ret.second;
+		if (sigData.getSignatureNumber() == 1)
+			RUNNER_ASSERT_MSG(sigData.getVisibilityLevel() == CertStoreId::VIS_PLATFORM,
 							  "visibility check failed.");
 	}
 }
+
 RUNNER_TEST(T00111_positive_wgt_link)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::widget_positive_link_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::widget_positive_link_path,
+							  true,
+							  true);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::widget_positive_link_path,
-						   true,
-						   true,
-						   data);
-
+	for (const auto &ret : retVector) {
+		auto sigData = ret.second;
 		// this condition is for OCSP Success in signature1.xml
-		if (!data.isAuthorSignature())
-			RUNNER_ASSERT_MSG(result == E_SIG_NONE,
-							  "If DT_LNK type point within package, it should be success: "
-							  << validator.errorToString(result));
+		if (sigData.getSignatureNumber() == 1)
+			RUNNER_ASSERT_MSG(ret.first == E_SIG_NONE,
+							  "If DT_LNK type point within package, "
+							  "it should be success: "
+							  << ret.first);
 	}
 }
 
 RUNNER_TEST(T00112_negative_wgt_link)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::widget_negative_link_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::widget_negative_link_path,
+							  true,
+							  true);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::widget_negative_link_path,
-						   true,
-						   true,
-						   data);
-
-		if (!data.isAuthorSignature())
-			RUNNER_ASSERT_MSG(result == E_SIG_INVALID_REF,
-							  "If DT_LNK type point outside of package, it should be fail: "
-							  << validator.errorToString(result));
+	for (const auto &ret : retVector) {
+		auto sigData = ret.second;
+		if (sigData.getSignatureNumber() == 1)
+			RUNNER_ASSERT_MSG(ret.first == E_SIG_INVALID_REF,
+							  "If DT_LNK type point outside of package, "
+							  "it should be fail: "
+							  << ret.first);
 	}
 }
 
 RUNNER_TEST(T00151_negative_hash_check_ref)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::widget_negative_hash_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::widget_negative_hash_path,
+							  true,
+							  true);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::widget_negative_hash_path,
-						   true,
-						   true,
-						   data);
-
-		if (!data.isAuthorSignature())
-			RUNNER_ASSERT_MSG(result == E_SIG_INVALID_SIG,
-							  "dist sig shouldn't be success: "
-							  << validator.errorToString(result));
+	for (const auto &ret : retVector) {
+		auto sigData = ret.second;
+		if (sigData.getSignatureNumber() == 1)
+				RUNNER_ASSERT_MSG(ret.first == E_SIG_INVALID_SIG,
+								  "dist sig shouldn't be success: "
+								  << ret.first);
 	}
 }
 
 RUNNER_TEST(T00152_negative_hash_uncheck_ref)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::widget_negative_hash_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::widget_negative_hash_path,
+							  true,
+							  false);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::widget_negative_hash_path,
-						   true,
-						   false,
-						   data);
-
-		if (!data.isAuthorSignature())
-			RUNNER_ASSERT_MSG(result == E_SIG_INVALID_SIG,
-							  "dist sig shouldn't be success: "
-							  << validator.errorToString(result));
+	for (const auto &ret : retVector) {
+		auto sigData = ret.second;
+		if (sigData.getSignatureNumber() == 1)
+				RUNNER_ASSERT_MSG(ret.first == E_SIG_INVALID_SIG,
+								  "dist sig shouldn't be success: "
+								  << ret.first);
 	}
 }
 
 RUNNER_TEST(T00153_negative_signature_check_ref)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::widget_negative_signature_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::widget_negative_signature_path,
+							  true,
+							  true);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::widget_negative_signature_path,
-						   true,
-						   true,
-						   data);
-
-		if (!data.isAuthorSignature())
-			RUNNER_ASSERT_MSG(result == E_SIG_INVALID_SIG,
-							  "dist sig validation should be failed: "
-							  << validator.errorToString(result));
+	for (const auto &ret : retVector) {
+		auto sigData = ret.second;
+		if (sigData.getSignatureNumber() == 1)
+				RUNNER_ASSERT_MSG(ret.first == E_SIG_INVALID_SIG,
+								  "dist sig shouldn't be success: "
+								  << ret.first);
 	}
 }
 
 RUNNER_TEST(T00154_negative_signature_uncheck_ref)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::widget_negative_signature_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::widget_negative_signature_path,
+							  true,
+							  false);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::widget_negative_signature_path,
-						   true,
-						   false,
-						   data);
-
-		// TODO(sangwan.kwon) : delete if condition about author signature
-		if (!data.isAuthorSignature())
-			RUNNER_ASSERT_MSG(result == E_SIG_INVALID_SIG,
-							  "dist sig should be failed: "
-							  << validator.errorToString(result));
+	for (const auto &ret : retVector) {
+		auto sigData = ret.second;
+		if (sigData.getSignatureNumber() == 1)
+				RUNNER_ASSERT_MSG(ret.first == E_SIG_INVALID_SIG,
+								  "dist sig shouldn't be success: "
+								  << ret.first);
 	}
 }
 
 RUNNER_TEST(T00155_negative_tpk_with_added_malfile)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::attacked_tpk_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
+	auto retVector = runCheck(TestData::attacked_tpk_path,
+							  true,
+							  true);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.check(
-						   TestData::attacked_tpk_path,
-						   true,
-						   true,
-						   data);
-		RUNNER_ASSERT_MSG(result == E_SIG_INVALID_REF,
-						  "dist sig validation should be failed: "
-						  << validator.errorToString(result));
+	for (const auto &ret : retVector) {
+		auto sigData = ret.second;
+		if (sigData.getSignatureNumber() == 1)
+				RUNNER_ASSERT_MSG(ret.first == E_SIG_INVALID_REF,
+								  "dist sig shouldn't be success: "
+								  << ret.first);
 	}
 }
 
 RUNNER_TEST(T00156_negative_tpk_with_userdata_file_changed_in_list)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::attacked_tpk_with_userdata_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
 	UriList uriList;
 	uriList.emplace_back("author-siganture.xml");
 	uriList.emplace_back("bin/preference");
@@ -540,27 +397,18 @@ RUNNER_TEST(T00156_negative_tpk_with_userdata_file_changed_in_list)
 	uriList.emplace_back("res/res.xml");
 	uriList.emplace_back("tizen-manifest.xml");
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.checkList(
-						   true,
-						   uriList,
-						   data);
+	auto retVector = runCheckList(TestData::attacked_tpk_with_userdata_path,
+								  true,
+								  uriList);
 
-		RUNNER_ASSERT_MSG(result == E_SIG_INVALID_SIG,
+	for (const auto &ret : retVector)
+		RUNNER_ASSERT_MSG(ret.first == E_SIG_INVALID_SIG,
 						  "sig validation should be E_SIG_INVALID_SIG: "
-						  << validator.errorToString(result));
-	}
+						  << ret.first);
 }
 
 RUNNER_TEST(T00157_negative_tpk_with_userdata_file_changed_in_list_2)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::attacked_tpk_with_userdata_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
 	UriList uriList;
 	uriList.emplace_back("author-siganture.xml");
 	uriList.emplace_back("bin/preference");
@@ -574,27 +422,18 @@ RUNNER_TEST(T00157_negative_tpk_with_userdata_file_changed_in_list_2)
 	/* force disable below for only checking above one */
 	// uriList.emplace_back("tizen-manifest.xml");
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.checkList(
-						   true,
-						   uriList,
-						   data);
+	auto retVector = runCheckList(TestData::attacked_tpk_with_userdata_path,
+								  true,
+								  uriList);
 
-		RUNNER_ASSERT_MSG(result == E_SIG_INVALID_SIG,
+	for (const auto &ret : retVector)
+		RUNNER_ASSERT_MSG(ret.first == E_SIG_INVALID_SIG,
 						  "sig validation should be E_SIG_INVALID_SIG: "
-						  << validator.errorToString(result));
-	}
+						  << ret.first);
 }
 
 RUNNER_TEST(T00158_negative_tpk_with_userdata_file_changed_in_list_3)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::attacked_tpk_with_userdata_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
 	UriList uriList;
 	uriList.emplace_back("res/edje/pref_buttons_panel.edj");
 	uriList.emplace_back("res/images/icon_delete.png");
@@ -603,42 +442,27 @@ RUNNER_TEST(T00158_negative_tpk_with_userdata_file_changed_in_list_3)
 	// uriList.emplace_back("res/res.xml");
 	// uriList.emplace_back("tizen-manifest.xml");
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.checkList(
-						   true,
-						   uriList,
-						   data);
+	auto retVector = runCheckList(TestData::attacked_tpk_with_userdata_path,
+								  true,
+								  uriList);
 
-		RUNNER_ASSERT_MSG(result == E_SIG_NONE,
-						  "sig validation should be E_SIG_INVALID_SIG: "
-						  << validator.errorToString(result));
-	}
+	for (const auto &ret : retVector)
+		RUNNER_ASSERT_MSG(ret.first == E_SIG_NONE,
+						  "sig validation should be success: "
+						  << ret.first);
 }
 
 RUNNER_TEST(T00159_negative_tpk_with_nohash)
 {
-	SignatureFileInfoSet signatureSet;
-	SignatureFinder signatureFinder(TestData::attacked_tpk_with_userdata_path);
-	RUNNER_ASSERT_MSG(
-		SignatureFinder::NO_ERROR == signatureFinder.find(signatureSet),
-		"SignatureFinder failed");
-
 	UriList uriList;
+	auto retVector = runCheckList(TestData::attacked_tpk_with_userdata_path,
+								  true,
+								  uriList);
 
-	for (auto &sig : signatureSet) {
-		SignatureValidator validator(sig);
-		SignatureData data;
-		VCerr result = validator.checkList(
-						   true,
-						   uriList,
-						   data);
-
-		RUNNER_ASSERT_MSG(result == E_SIG_NONE,
-						  "sig validation should success: "
-						  << validator.errorToString(result));
-	}
+	for (const auto &ret : retVector)
+		RUNNER_ASSERT_MSG(ret.first == E_SIG_NONE,
+						  "sig validation should be success: "
+						  << ret.first);
 }
 
 RUNNER_TEST(T00160_positive_checkAll)
@@ -663,7 +487,6 @@ RUNNER_TEST(T00160_positive_checkAll)
 				  << certPtr->getBase64() << std::endl;
 	 *
 	 */
-
 }
 
 RUNNER_TEST(T00161_positive_checkListAll)
@@ -713,9 +536,9 @@ RUNNER_TEST(T00162_compare_time_between_check_and_checkAll)
 										  true);
 
 				for (auto &ret : retVector)
-					RUNNER_ASSERT_MSG(ret == E_SIG_NONE,
+					RUNNER_ASSERT_MSG(ret.first == E_SIG_NONE,
 									  "sig validation should be success: "
-									  << ret);
+									  << ret.first);
 			},
 			[&]() { // func2
 				auto ret = runCheckAll(TestData::tpk_sdk_sample_path[i],
@@ -747,10 +570,10 @@ RUNNER_TEST(T00163_compare_time_between_checkList_and_checkListAll)
 										  true,
 										  uriList);
 
-			for (auto &ret : retVector)
-				RUNNER_ASSERT_MSG(ret == E_SIG_NONE,
+			for (const auto &ret : retVector)
+				RUNNER_ASSERT_MSG(ret.first == E_SIG_NONE,
 								  "sig validation should be success: "
-								  << ret);
+								  << ret.first);
 		},
 		[&]() { // func2
 			auto ret = runCheckListAll(TestData::tpk_sdk_sample_path[2],
