@@ -16,6 +16,8 @@
 
 #include <sys/types.h>
 
+#include <unordered_map>
+
 #include <aul.h>
 #include <vconf.h>
 #include <bundle.h>
@@ -38,7 +40,7 @@ namespace {
 std::string PasswordPattern;
 std::vector<std::string> ForbiddenStrings;
 
-int PasswordStatus = 0;
+std::unordered_map<uid_t, int> PasswordStatus;
 
 inline int getPasswordPolicy(PolicyControlContext &ctx, const std::string &name)
 {
@@ -313,7 +315,7 @@ int PasswordPolicy::enforceChange()
 		return -1;
 	}
 
-	PasswordStatus = DPM_PASSWORD_STATUS_CHANGE_REQUIRED;
+	PasswordStatus[context.getPeerUid()] = DPM_PASSWORD_STATUS_CHANGE_REQUIRED;
 	return 0;
 }
 
@@ -375,14 +377,14 @@ int PasswordPolicy::setStatus(int status)
 		break;
 	}
 
-	PasswordStatus = status;
+	PasswordStatus[context.getPeerUid()] = status;
 
 	return 0;
 }
 
 int PasswordPolicy::getStatus()
 {
-	return PasswordStatus;
+	return PasswordStatus[context.getPeerUid()];
 }
 
 int PasswordPolicy::deletePattern()
