@@ -15,7 +15,7 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
-# @file        cert-svc-db-upgrade.sh.in
+# @file        202.cert-svc-db-upgrade.sh.in
 # @author      Sangwan Kwon (sangwan.kwon@samsung.com)
 # @brief       cert-svc db migration scripts for platform upgrade 2.4 -> 3.0
 #

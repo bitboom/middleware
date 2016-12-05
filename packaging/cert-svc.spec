@@ -178,8 +178,8 @@ fi
 %attr(-, %{user_name}, %{group_name}) %cert_svc_db_path/certs-meta.db-journal
 %attr(-, %{user_name}, %{group_name}) %cert_svc_ro_path
 
-%attr(755, root, root) %upgrade_script_path/cert-svc-db-upgrade.sh
-%attr(755, root, root) %upgrade_script_path/cert-svc-disabled-certs-upgrade.sh
+%attr(755, root, root) %upgrade_script_path/202.cert-svc-db-upgrade.sh
+%attr(755, root, root) %upgrade_script_path/203.cert-svc-disabled-certs-upgrade.sh
 %upgrade_data_path/certs-meta.db
 
 %files devel
