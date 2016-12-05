@@ -581,6 +581,7 @@ int dpm_restriction_get_bluetooth_pairing_state(device_policy_manager_h handle, 
  * @privlevel   partner
  * @privilege   %http://tizen.org/privilege/dpm.message
  * @param[in]   handle Device policy manager handle
+ * @param[in]   sim_id SIM identifier
  * @param[in]   allow If true, allow the use of SMS or text messaging,
  *              if false, disallow the use of SMS or text messaging.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
@@ -592,7 +593,7 @@ int dpm_restriction_get_bluetooth_pairing_state(device_policy_manager_h handle, 
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_restriction_get_messaging_state()
  */
-int dpm_restriction_set_messaging_state(device_policy_manager_h handle, int allow);
+int dpm_restriction_set_messaging_state(device_policy_manager_h handle, const char *sim_id, int allow);
 
 /**
  * @brief       Checks whether the text messaging is allowed or not.
@@ -600,6 +601,7 @@ int dpm_restriction_set_messaging_state(device_policy_manager_h handle, int allo
  *              is enabled or not.
  * @since_tizen 3.0
  * @param[in]   handle Device policy manager handle
+ * @param[in]   sim_id SIM identifier
  * @param[out]  is_allowed true if the messaging is allowed, false otherwise.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
@@ -608,7 +610,7 @@ int dpm_restriction_set_messaging_state(device_policy_manager_h handle, int allo
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_restriction_set_messaging_state()
  */
-int dpm_restriction_get_messaging_state(device_policy_manager_h handle, int *is_allowed);
+int dpm_restriction_get_messaging_state(device_policy_manager_h handle, const char *sim_id, int *is_allowed);
 
 /**
  * @partner

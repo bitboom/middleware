@@ -152,19 +152,19 @@ int RestrictionPolicy::getPopImapEmailState()
 	}
 }
 
-int RestrictionPolicy::setMessagingState(int enable)
+int RestrictionPolicy::setMessagingState(const std::string &sim_id, int enable)
 {
 	try {
-		return context->methodCall<int>("RestrictionPolicy::setMessagingState", enable);
+		return context->methodCall<int>("RestrictionPolicy::setMessagingState", sim_id, enable);
 	} catch (runtime::Exception& e) {
 		return -1;
 	}
 }
 
-int RestrictionPolicy::getMessagingState()
+int RestrictionPolicy::getMessagingState(const std::string &sim_id)
 {
 	try {
-		return context->methodCall<int>("RestrictionPolicy::getMessagingState");
+		return context->methodCall<int>("RestrictionPolicy::getMessagingState", sim_id);
 	} catch (runtime::Exception& e) {
 		return -1;
 	}

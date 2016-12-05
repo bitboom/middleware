@@ -366,23 +366,23 @@ EXPORT_API int dpm_restriction_get_popimap_email_state(device_policy_manager_h h
 	return DPM_ERROR_NONE;
 }
 
-EXPORT_API int dpm_restriction_set_messaging_state(device_policy_manager_h handle, int allow)
+EXPORT_API int dpm_restriction_set_messaging_state(device_policy_manager_h handle, const char *sim_id, int allow)
 {
 	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	return restriction.setMessagingState(allow);
+	return restriction.setMessagingState(sim_id, allow);
 }
 
-EXPORT_API int dpm_restriction_get_messaging_state(device_policy_manager_h handle, int *is_allowed)
+EXPORT_API int dpm_restriction_get_messaging_state(device_policy_manager_h handle, const char *sim_id, int *is_allowed)
 {
 	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
 	RET_ON_FAILURE(is_allowed, DPM_ERROR_INVALID_PARAMETER);
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	int ret = restriction.getMessagingState();
+	int ret = restriction.getMessagingState(sim_id);
 	if (ret < 0) {
 		return -1;
 	}

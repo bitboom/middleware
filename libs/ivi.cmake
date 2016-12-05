@@ -23,5 +23,6 @@ SET(POLICY      ${POLICY}
 
 SET(CAPI        ${CAPI}
 				dpm/password.h
+				dpm/password_internal.h
 				dpm/zone.h
 )

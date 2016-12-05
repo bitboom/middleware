@@ -90,6 +90,7 @@ PasswordPolicy::PasswordPolicy(PolicyControlContext &ctxt) :
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumCharacterOccurrences)(int));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumNumericSequenceLength)(int));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setForbiddenStrings)(std::vector<std::string>));
+	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setRecovery)(int));
 
 	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getStatus));
 	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getQuality));
@@ -103,6 +104,7 @@ PasswordPolicy::PasswordPolicy(PolicyControlContext &ctxt) :
 	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getMaximumCharacterOccurrences));
 	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getMaximumNumericSequenceLength));
 	ctxt.registerNonparametricMethod(this, "", (std::vector<std::string>)(PasswordPolicy::getForbiddenStrings));
+	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getRecovery));
 
 	ctxt.createNotification("password");
 }
@@ -114,19 +116,23 @@ PasswordPolicy::~PasswordPolicy()
 int PasswordPolicy::setQuality(int quality)
 {
 	try {
-		PasswordManager::QualityType type = getPasswordQualityType(quality);
+		int authQuality = DPM_PASSWORD_QUALITY_UNSPECIFIED;
+		if (quality & DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD) {
+			authQuality = quality - DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD;
+		}
+		PasswordManager::QualityType type = getPasswordQualityType(authQuality);
 		if (!setPasswordPolicy(context, "password-quality", quality)) {
 			return 0;
 		}
 
-		if (quality == DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD) {
+		if (quality & DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD) {
 			setPasswordPolicy(context, "password-minimum-length", SIMPLE_PASSWORD_LENGTH);
 		}
 
 		PasswordManager passwordManager(context.getPeerUid());
 		passwordManager.setQuality(type);
 
-		if (quality == DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD) {
+		if (quality & DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD) {
 			passwordManager.setMinimumLength(SIMPLE_PASSWORD_LENGTH);
 		}
 		passwordManager.enforce();
@@ -333,29 +339,45 @@ int PasswordPolicy::setStatus(int status)
 		return -1;
 	}
 
-	if (status == DPM_PASSWORD_STATUS_MAX_ATTEMPTS_EXCEEDED) {
-		ERROR("Max Attempts Exceeded.");
+	switch (status) {
+	case DPM_PASSWORD_STATUS_CHANGED:
+		context.notify("password", "DPM_PASSWORD_STATUS_CHANGED");
+		break;
+	case DPM_PASSWORD_STATUS_NOT_CHANGED:
+		context.notify("password", "DPM_PASSWORD_STATUS_NOT_CHANGED");
+		break;
+	case DPM_PASSWORD_STATUS_CHANGE_REQUIRED:
+		context.notify("password", "DPM_PASSWORD_STATUS_CHANGE_REQUIRED");
+		break;
+	case DPM_PASSWORD_STATUS_MAX_ATTEMPTS_EXCEEDED:
 		context.notify("password", "DPM_PASSWORD_STATUS_MAX_ATTEMPTS_EXCEEDED");
-		return -1;
+		break;
+	case DPM_PASSWORD_STATUS_EXPIRED:
+		context.notify("password", "DPM_PASSWORD_STATUS_EXPIRED");
+		break;
+	case DPM_PASSWORD_STATUS_RECOVERY_PASSWORD_FAILED:
+		context.notify("password", "DPM_PASSWORD_STATUS_RECOVERY_PASSWORD_FAILED");
+		break;
+	case DPM_PASSWORD_STATUS_RECOVERY_PASSWORD_SUCCEEDED:
+		context.notify("password", "DPM_PASSWORD_STATUS_RECOVERY_PASSWORD_SUCCEEDED");
+		break;
+	case DPM_PASSWORD_STATUS_QUALITY_CHANGED:
+		context.notify("password", "DPM_PASSWORD_STATUS_QUALITY_CHANGED");
+		break;
+	case DPM_PASSWORD_STATUS_MIN_LENGTH_CHANGED:
+		context.notify("password", "DPM_PASSWORD_STATUS_MIN_LENGTH_CHANGED");
+		break;
+	case DPM_PASSWORD_STATUS_COMPLEX_CHAR_CHANGED:
+		context.notify("password", "DPM_PASSWORD_STATUS_COMPLEX_CHAR_CHANGED");
+		break;
+	case DPM_PASSWORD_STATUS_PATTERN_CHANGED:
+		context.notify("password", "DPM_PASSWORD_STATUS_PATTERN_CHANGED");
+		break;
 	}
 
-	if (PasswordStatus == DPM_PASSWORD_STATUS_CHANGE_REQUIRED) {
-		if (status == DPM_PASSWORD_STATUS_CHANGED) {
-			PasswordStatus = DPM_PASSWORD_STATUS_NORMAL;
-			context.notify("password", "DPM_PASSWORD_STATUS_NORMAL");
-			return 0;
-		} else if (status == DPM_PASSWORD_STATUS_NOT_CHANGED) {
-			return 0;
-		}
-	} else if (PasswordStatus == DPM_PASSWORD_STATUS_NORMAL) {
-		if (status == DPM_PASSWORD_STATUS_CHANGE_REQUIRED) {
-			PasswordStatus = status;
-			context.notify("password", "DPM_PASSWORD_STATUS_CHANGE_REQUIRED");
-			return 0;
-		}
-	}
+	PasswordStatus = status;
 
-	return -1;
+	return 0;
 }
 
 int PasswordPolicy::getStatus()
@@ -449,6 +471,23 @@ int PasswordPolicy::setForbiddenStrings(const std::vector<std::string> &forbidde
 std::vector<std::string> PasswordPolicy::getForbiddenStrings()
 {
 	return ForbiddenStrings;
+}
+
+int PasswordPolicy::setRecovery(int enable)
+{
+	try {
+		SetPolicyEnabled(context, "password-recovery", enable);
+	} catch (runtime::Exception &e) {
+		ERROR("Failed to set recovery");
+		return -1;
+	}
+
+	return 0;
+}
+
+int PasswordPolicy::getRecovery()
+{
+	return getPasswordPolicy(context, "password-recovery");
 }
 
 DEFINE_POLICY(PasswordPolicy);
