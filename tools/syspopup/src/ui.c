@@ -95,8 +95,8 @@ static void reply_password_enforce_event_handler(app_control_h ug, app_control_h
 			return;
 		}
 
-		if (strcmp(result_string, "SETTING_PW_TYPE_ENTER_LOCK_TYPE") ||
-				 strcmp(result_string, "SETTING_PW_TYPE_VERIFY_FP_ALT_PASSWORD")) {
+		if (!strcmp(result_string, "SETTING_PW_TYPE_ENTER_LOCK_TYPE") ||
+				 !strcmp(result_string, "SETTING_PW_TYPE_VERIFY_FP_ALT_PASSWORD")) {
 
 			free(result_string);
 			app_control_get_extra_data(reply, "current", &current);
