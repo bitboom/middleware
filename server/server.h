@@ -76,10 +76,10 @@ public:
 	}
 
 	template<typename DataType>
-	bool setPolicy(const std::string& name, DataType& value, const std::string& event, const std::string& info);
+	bool setPolicy(const std::string& name, const DataType& value, const std::string& event, const std::string& info);
 
 	template<typename DataType>
-	bool setPolicy(const std::string& name, DataType& value, const std::string& info)
+	bool setPolicy(const std::string& name, const DataType& value, const std::string& info)
 	{
 		return setPolicy<DataType>(name, value, name, info);
 	}
@@ -116,7 +116,7 @@ private:
 };
 
 template<typename DataType>
-bool Server::setPolicy(const std::string& name, DataType& value, const std::string& event, const std::string& info)
+bool Server::setPolicy(const std::string& name, const DataType& value, const std::string& event, const std::string& info)
 {
 	DeviceAdministrator admin(getPeerPid(), getPeerUid());
 	if (policyManager->setPolicy<DataType>(admin, name, value)) {

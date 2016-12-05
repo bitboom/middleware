@@ -80,7 +80,7 @@ struct ManagedPolicy {
 	}
 
 	template<typename DataType>
-	bool set(DataSource& datasource, const std::string& admin, uid_t domain, DataType& value)
+	bool set(DataSource& datasource, const std::string& admin, uid_t domain, const DataType& value)
 	{
 		std::lock_guard<std::recursive_mutex> lock(updateLock);
 		return static_cast<VariantStorage<DataType> *>(storage)->set(datasource, admin, domain, value);
@@ -130,7 +130,7 @@ public:
 
 	template<typename DataType>
 	struct VariantStorage : public IVariantStorage {
-		VariantStorage( const std::string& rname, int sc, const DataType& value) :
+		VariantStorage(const std::string& rname, int sc, const DataType& value) :
 			name(rname), scope(sc), reference(value)
 		{
 			bool defaultComparator = [value](decltype(value)& v1, decltype(value)& v2) {
@@ -171,7 +171,7 @@ public:
 			return comparator(v1, v2);
 		}
 
-		bool insert(uid_t domain, DataType& value)
+		bool insert(uid_t domain, const DataType& value)
 		{
 			int count = current.count(domain);
 			if ((count == 0) || (current[domain] != value)) {
@@ -182,7 +182,7 @@ public:
 			return false;
 		}
 
-		bool set(DataSource& datasource, const std::string& admin, uid_t domain, DataType& value)
+		bool set(DataSource& datasource, const std::string& admin, uid_t domain, const DataType& value)
 		{
 			std::string selectQuery = "SELECT id FROM admin WHERE pkg = ? AND uid = ?";
 			database::Statement stmt0(datasource, selectQuery);
@@ -293,13 +293,13 @@ public:
 	int removeStorage(const std::string& admin, uid_t uid);
 
 	template<typename DataType>
-	bool setGlobalPolicy(const DeviceAdministrator& admin, const std::string& policyName, DataType& value);
+	bool setGlobalPolicy(const DeviceAdministrator& admin, const std::string& policyName, const DataType& value);
 
 	template<typename DataType>
-	bool setUserPolicy(const DeviceAdministrator& admin, const std::string& policyName, DataType& value);
+	bool setUserPolicy(const DeviceAdministrator& admin, const std::string& policyName, const DataType& value);
 
 	template<typename DataType>
-	bool setPolicy(const DeviceAdministrator& admin, const std::string& policyName, DataType& value);
+	bool setPolicy(const DeviceAdministrator& admin, const std::string& policyName, const DataType& value);
 
 	template<typename DataType>
 	DataType getGlobalPolicy(const std::string& policyName);
@@ -340,7 +340,7 @@ DataType PolicyManager::getUserPolicy(const std::string& name, uid_t domain)
 
 template<typename DataType>
 bool PolicyManager::setUserPolicy(const DeviceAdministrator& admin,
-								  const std::string& policyName, DataType& value)
+								  const std::string& policyName, const DataType& value)
 {
 	if (!managedPolicyMap.count(policyName)) {
 		throw runtime::Exception("Unknown policy: " + policyName);
@@ -352,7 +352,7 @@ bool PolicyManager::setUserPolicy(const DeviceAdministrator& admin,
 
 template<typename DataType>
 bool PolicyManager::setGlobalPolicy(const DeviceAdministrator& admin,
-									const std::string& policyName, DataType& value)
+									const std::string& policyName, const DataType& value)
 {
 	if (!managedPolicyMap.count(policyName)) {
 		throw runtime::Exception("Unknown policy: " + policyName);
@@ -363,7 +363,7 @@ bool PolicyManager::setGlobalPolicy(const DeviceAdministrator& admin,
 }
 
 template<typename DataType>
-bool PolicyManager::setPolicy(const DeviceAdministrator& admin, const std::string& policyName, DataType& value)
+bool PolicyManager::setPolicy(const DeviceAdministrator& admin, const std::string& policyName, const DataType& value)
 {
 	if (!managedPolicyMap.count(policyName)) {
 		throw runtime::Exception("Unknown policy: " + policyName);
