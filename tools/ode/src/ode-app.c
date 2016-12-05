@@ -136,6 +136,10 @@ static void app_control(app_control_h app_control, void* data)
 	else if (!strcmp(viewtype, "DECRYPT_SD_CARD"))
 		ad->view_type = DECRYPT_SD_CARD;
 
+	if (viewtype) {
+		free(viewtype);
+	}
+
 	elm_app_base_scale_set(1.8);
 
 	if (create_base_gui(ad) != 0) {
