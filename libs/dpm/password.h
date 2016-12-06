@@ -91,15 +91,20 @@ typedef enum {
 int dpm_password_set_quality(device_policy_manager_h handle, int quality);
 
 /**
+ * @partner
  * @brief       Gets password quality.
  * @details     An administrator can get the password restrictions it is imposing.
  * @since_tizen 3.0
+ * @privlevel   partner
+ * @privilege   %http://tizen.org/privilege/dpm.password
  * @param[in]   handle Device policy manager handle
  * @param[out]   quality Password quality type, values of #dpm_password_quality_e combined with bitwise 'or'
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_TIMED_OUT Time out
+ * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
+ *              the privilege to call this API
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  */
@@ -128,15 +133,20 @@ int dpm_password_get_quality(device_policy_manager_h handle, int *quality);
 int dpm_password_set_minimum_length(device_policy_manager_h handle, int value);
 
 /**
+ * @partner
  * @brief       Gets password minimum length.
  * @details     Gets the minimum allowed password length.
  * @since_tizen 3.0
+ * @privlevel   partner
+ * @privilege   %http://tizen.org/privilege/dpm.password
  * @param[in]   handle Device policy manager handle
  * @param[out]   value Allowed minimum password length
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_TIMED_OUT Time out
+ * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
+ *              the privilege to call this API
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  */
@@ -165,16 +175,21 @@ int dpm_password_get_minimum_length(device_policy_manager_h handle, int *value);
 int dpm_password_set_min_complex_chars(device_policy_manager_h handle, int value);
 
 /**
+ * @partner
  * @brief       Gets minimum complex char in password.
  * @details     Complex characters are all non-alphabetic characters;
  *              that is, numbers and symbols.
  * @since_tizen 3.0
+ * @privlevel   partner
+ * @privilege   %http://tizen.org/privilege/dpm.password
  * @param[in]   handle Device policy manager handle
  * @param[out]   value Number of minimum complex char in password.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_TIMED_OUT Time out
+ * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
+ *              the privilege to call this API
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  */
@@ -201,15 +216,20 @@ int dpm_password_get_min_complex_chars(device_policy_manager_h handle, int *valu
 int dpm_password_set_maximum_failed_attempts_for_wipe(device_policy_manager_h handle, int value);
 
 /**
+ * @partner
  * @brief       Gets maximum number of failed attempts before device is wiped.
  * @details     If user fails the last attempt, device will be wiped.
  * @since_tizen 3.0
+ * @privlevel   partner
+ * @privilege   %http://tizen.org/privilege/dpm.password
  * @param[in]   handle Device policy manager handle
  * @param[out]   value Maximum count for failed passwords.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_TIMED_OUT Time out
+ * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
+ *              the privilege to call this API
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  */
@@ -237,16 +257,21 @@ int dpm_password_get_maximum_failed_attempts_for_wipe(device_policy_manager_h ha
 int dpm_password_set_expires(device_policy_manager_h handle, int value);
 
 /**
+ * @partner
  * @brief       Gets the number of days password expires.
  * @details     An administrator can get the password age to force
  *              the user to enter a new password after every expiration period.
  * @since_tizen 3.0
+ * @privlevel   partner
+ * @privilege   %http://tizen.org/privilege/dpm.password
  * @param[in]   handle Device policy manager handle
  * @param[out]   value Number of days after which the password expires.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_TIMED_OUT Time out
+ * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
+ *              the privilege to call this API
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  */
@@ -275,10 +300,13 @@ int dpm_password_get_expires(device_policy_manager_h handle, int *value);
 int dpm_password_set_history(device_policy_manager_h handle, int value);
 
 /**
+ * @partner
  * @brief       Gets the number of min password history to avoid previous password.
  * @details     An administrator can get the number of previous
  *              passwords which cannot be used when entering a new password.
  * @since_tizen 3.0
+ * @privlevel   partner
+ * @privilege   %http://tizen.org/privilege/dpm.password
  * @param[in]   handle Device policy manager handle
  * @param[out]   value Number of previous passwords which cannot be used when
  *              settings a new password.
@@ -286,6 +314,8 @@ int dpm_password_set_history(device_policy_manager_h handle, int value);
  * @retval      #DPM_ERROR_NONE Successful
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_TIMED_OUT Time out
+ * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
+ *              the privilege to call this API
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  */
@@ -382,17 +412,22 @@ int dpm_password_enforce_change(device_policy_manager_h handle);
 int dpm_password_set_max_inactivity_time_device_lock(device_policy_manager_h handle, int value);
 
 /**
+ * @partner
  * @brief       Gets the maximum number of seconds of inactivity time
  *              before the screen timeout occurs.
  * @details     Called by an application that is managing the device to get
  *              the value of timeout period.
  * @since_tizen 3.0
+ * @privlevel   partner
+ * @privilege   %http://tizen.org/privilege/dpm.password
  * @param[in]   handle Device policy manager handle
  * @param[out]  value Pointer of Maximum inactivity time for device lock.
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_TIMED_OUT Time out
+ * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
+ *              the privilege to call this API
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  */
@@ -454,9 +489,12 @@ int dpm_password_get_status(device_policy_manager_h handle, dpm_password_status_
 int dpm_password_delete_pattern(device_policy_manager_h handle);
 
 /**
+ * @partner
  * @brief       Gets password pattern.
  * @details     This API can be used for applying complexity on new password value.
  * @since_tizen 3.0
+ * @privlevel   partner
+ * @privilege   %http://tizen.org/privilege/dpm.password
  * @remarks     The @a pattern should be freed using free().
  * @param[in]   handle Device policy manager handle
  * @param[out]  pattern Password pattern
@@ -465,6 +503,8 @@ int dpm_password_delete_pattern(device_policy_manager_h handle);
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_TIMED_OUT Time out
  * @retval      #DPM_ERROR_OUT_OF_MEMORY Out of memory
+ * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
+ *              the privilege to call this API
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  */
@@ -498,6 +538,7 @@ int dpm_password_get_pattern(device_policy_manager_h handle, char **pattern);
 int dpm_password_set_maximum_character_occurrences(device_policy_manager_h handle, int value);
 
 /**
+ * @partner
  * @brief       Gets the maximum number of times a character can occur in
  *              the device password.
  * @details     An administrator can retrieve the maximum number of times
@@ -505,12 +546,16 @@ int dpm_password_set_maximum_character_occurrences(device_policy_manager_h handl
  *              one admin has set this value then the least value will take
  *              preference.
  * @since_tizen 3.0
+ * @privlevel   partner
+ * @privilege   %http://tizen.org/privilege/dpm.password
  * @param[in]   handle Device policy manager handle
  * @param[out]   value Pointer of Maximum Character Occurrences
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_TIMED_OUT Time out
+ * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
+ *              the privilege to call this API
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  */
@@ -549,6 +594,7 @@ int dpm_password_get_maximum_character_occurrences(device_policy_manager_h handl
 int dpm_password_set_maximum_numeric_sequence_length(device_policy_manager_h handle, int value);
 
 /**
+ * @partner
  * @brief       Gets the maximum numeric sequence length allowed in
  *              the device password.
  * @details     An administrator can retrieve the length of numeric sequences
@@ -559,12 +605,16 @@ int dpm_password_set_maximum_numeric_sequence_length(device_policy_manager_h han
  *              If more than one admin has set this value then the least value
  *              will take preference.
  * @since_tizen 3.0
+ * @privlevel   partner
+ * @privilege   %http://tizen.org/privilege/dpm.password
  * @param[in]   handle Device policy manager handle
  * @param[out]  value Pointer of maximum numeric sequence length
  * @return      #DPM_ERROR_NONE on success, otherwise a negative value
  * @retval      #DPM_ERROR_NONE Successful
  * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval      #DPM_ERROR_TIMED_OUT Time out
+ * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
+ *              the privilege to call this API
  * @pre         The handle must be created by dpm_manager_create().
  * @see         dpm_manager_create()
  */

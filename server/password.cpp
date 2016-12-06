@@ -95,17 +95,17 @@ PasswordPolicy::PasswordPolicy(PolicyControlContext &ctxt) :
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setRecovery)(int));
 
 	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getStatus));
-	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getQuality));
-	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getMinimumLength));
-	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getMinComplexChars));
-	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getMaximumFailedForWipe));
-	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getExpires)());
-	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getHistory)());
-	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getMaxInactivityTimeDeviceLock));
-	ctxt.registerNonparametricMethod(this, "", (std::string)(PasswordPolicy::getPattern));
-	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getMaximumCharacterOccurrences));
-	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getMaximumNumericSequenceLength));
-	ctxt.registerNonparametricMethod(this, "", (std::vector<std::string>)(PasswordPolicy::getForbiddenStrings));
+	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getQuality));
+	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMinimumLength));
+	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMinComplexChars));
+	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumFailedForWipe));
+	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getExpires)());
+	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getHistory)());
+	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaxInactivityTimeDeviceLock));
+	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (std::string)(PasswordPolicy::getPattern));
+	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumCharacterOccurrences));
+	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumNumericSequenceLength));
+	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (std::vector<std::string>)(PasswordPolicy::getForbiddenStrings));
 	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getRecovery));
 
 	ctxt.createNotification("password");
