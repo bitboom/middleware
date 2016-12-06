@@ -77,7 +77,7 @@ bool RestrictionComparator(int v1, int v2)
 
 bool MinimizeIntegerComparator(int v1, int v2)
 {
-	return v2 < v2 ? true : false;
+	return v2 < v1 ? true : false;
 }
 
 bool MaximizeIntegerComparator(int v1, int v2)
