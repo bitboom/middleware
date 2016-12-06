@@ -42,7 +42,7 @@ public:
 	{
 		char pkgid[PATH_MAX];
 
-		if (aul_app_get_pkgid_bypid_for_uid(pid, pkgid, PATH_MAX, uid) != 0) {
+		if (aul_app_get_pkgid_bypid_for_uid(pid, pkgid, PATH_MAX, user) != 0) {
 			int fd = ::open(std::string("/proc/" + std::to_string(pid) + "/cmdline").c_str(), O_RDONLY);
 			if (fd == -1) {
 				throw runtime::Exception("Unknown PID");
