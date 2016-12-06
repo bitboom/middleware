@@ -156,22 +156,18 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (optVal == DPM_ADMIN_CLI_NULL) {
-		printUsage();
-		exit(EXIT_FAILURE);
-	}
-
 	uid = getUID(userName);
 	if (uid == -1) {
 		printUsage();
 		exit(EXIT_FAILURE);
 	}
 
-	if (optVal == DPM_ADMIN_CLI_REGISTER) {
+	switch(optVal) {
+	case DPM_ADMIN_CLI_REGISTER:
 		return registAdminClient(pkgName, static_cast<uid_t>(uid));
-	} else if (optVal == DPM_ADMIN_CLI_DEREGISTER) {
+	case DPM_ADMIN_CLI_DEREGISTER:
 		return deregistAdminClient(pkgName, static_cast<uid_t>(uid));
-	} else {
+	default:
 		printUsage();
 		exit(EXIT_FAILURE);
 	}
