@@ -37,10 +37,10 @@ public:
 	bool getHotspotState();
 
 	int setProfileChangeRestriction(bool restrict);
-	bool isProfileChangeRestricted(void);
+	bool isProfileChangeRestricted();
 
 	int setNetworkAccessRestriction(bool restrict);
-	bool isNetworkAccessRestricted(void);
+	bool isNetworkAccessRestricted();
 
 	int addSsidToBlocklist(const std::string& ssid);
 	int removeSsidFromBlocklist(const std::string& ssid);

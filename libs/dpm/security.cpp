@@ -29,7 +29,11 @@ EXPORT_API int dpm_security_lockout_screen(device_policy_manager_h handle)
 
 	DevicePolicyContext &context = GetDevicePolicyContext(handle);
 	SecurityPolicy security = context.createPolicyInterface<SecurityPolicy>();
-	return security.lockoutScreen();
+	try {
+		return security.lockoutScreen();
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_security_set_internal_storage_encryption(device_policy_manager_h handle, int encrypt)
@@ -38,7 +42,11 @@ EXPORT_API int dpm_security_set_internal_storage_encryption(device_policy_manage
 
 	DevicePolicyContext &context = GetDevicePolicyContext(handle);
 	SecurityPolicy security = context.createPolicyInterface<SecurityPolicy>();
-	return security.setInternalStorageEncryption(encrypt);
+	try {
+		return security.setInternalStorageEncryption(encrypt);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_security_is_internal_storage_encrypted(device_policy_manager_h handle, int *is_encrypted)
@@ -48,11 +56,12 @@ EXPORT_API int dpm_security_is_internal_storage_encrypted(device_policy_manager_
 
 	DevicePolicyContext &context = GetDevicePolicyContext(handle);
 	SecurityPolicy security = context.createPolicyInterface<SecurityPolicy>();
-	int ret = security.isInternalStorageEncrypted();
-	if (ret < 0) {
+	try {
+		*is_encrypted = security.isInternalStorageEncrypted();
+	} catch (...) {
 		return -1;
 	}
-	*is_encrypted = ret;
+
 	return DPM_ERROR_NONE;
 }
 
@@ -62,7 +71,11 @@ EXPORT_API int dpm_security_set_external_storage_encryption(device_policy_manage
 
 	DevicePolicyContext &context = GetDevicePolicyContext(handle);
 	SecurityPolicy security = context.createPolicyInterface<SecurityPolicy>();
-	return security.setExternalStorageEncryption(encrypt);
+	try {
+		return security.setExternalStorageEncryption(encrypt);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_security_is_external_storage_encrypted(device_policy_manager_h handle, int *is_encrypted)
@@ -72,11 +85,12 @@ EXPORT_API int dpm_security_is_external_storage_encrypted(device_policy_manager_
 
 	DevicePolicyContext &context = GetDevicePolicyContext(handle);
 	SecurityPolicy security = context.createPolicyInterface<SecurityPolicy>();
-	int ret = security.isExternalStorageEncrypted();
-	if (ret < 0) {
+	try {
+		*is_encrypted = security.isExternalStorageEncrypted();
+	} catch (...) {
 		return -1;
 	}
-	*is_encrypted = ret;
+
 	return DPM_ERROR_NONE;
 }
 
@@ -89,5 +103,9 @@ EXPORT_API int dpm_security_wipe_data(device_policy_manager_h handle, dpm_securi
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	StoragePolicy storage = client.createPolicyInterface<StoragePolicy>();
-	return storage.wipeData(type);
+	try {
+		return storage.wipeData(type);
+	} catch (...) {
+		return -1;
+	}
 }

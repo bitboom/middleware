@@ -28,32 +28,32 @@ public:
 	RestrictionPolicy(PolicyControlContext& ctxt);
 	~RestrictionPolicy();
 
-	int setCameraState(int enable);
-	int getCameraState();
+	int setCameraState(bool enable);
+	bool getCameraState();
 
-	int setMicrophoneState(int enable);
-	int getMicrophoneState();
+	int setMicrophoneState(bool enable);
+	bool getMicrophoneState();
 
-	int setClipboardState(int enable);
-	int getClipboardState();
+	int setClipboardState(bool enable);
+	bool getClipboardState();
 
-	int setUsbDebuggingState(int enable);
-	int getUsbDebuggingState();
+	int setUsbDebuggingState(bool enable);
+	bool getUsbDebuggingState();
 
 	int setUsbTetheringState(bool enable);
 	bool getUsbTetheringState();
 
-	int setExternalStorageState(int enable);
-	int getExternalStorageState();
+	int setExternalStorageState(bool enable);
+	bool getExternalStorageState();
 
-	int setPopImapEmailState(int enable);
-	int getPopImapEmailState();
+	int setPopImapEmailState(bool enable);
+	bool getPopImapEmailState();
 
-	int setMessagingState(const std::string& sim_id, int enable);
-	int getMessagingState(const std::string& sim_id);
+	int setMessagingState(const std::string& sim_id, bool enable);
+	bool getMessagingState(const std::string& sim_id);
 
-	int setBrowserState(int enable);
-	int getBrowserState();
+	int setBrowserState(bool enable);
+	bool getBrowserState();
 
 private:
 	PolicyControlContext& context;

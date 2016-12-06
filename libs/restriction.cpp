@@ -27,165 +27,93 @@ RestrictionPolicy::~RestrictionPolicy()
 {
 }
 
-int RestrictionPolicy::setMicrophoneState(int enable)
+int RestrictionPolicy::setMicrophoneState(bool enable)
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::setMicrophoneState", enable);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	return context->methodCall<int>("RestrictionPolicy::setMicrophoneState", enable);
 }
 
-int RestrictionPolicy::getMicrophoneState()
+bool RestrictionPolicy::getMicrophoneState()
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::getMicrophoneState");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	return context->methodCall<bool>("RestrictionPolicy::getMicrophoneState");
 }
 
-int RestrictionPolicy::setCameraState(int enable)
+int RestrictionPolicy::setCameraState(bool enable)
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::setCameraState", enable);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	return context->methodCall<int>("RestrictionPolicy::setCameraState", enable);
 }
 
-int RestrictionPolicy::getCameraState()
+bool RestrictionPolicy::getCameraState()
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::getCameraState");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	return context->methodCall<bool>("RestrictionPolicy::getCameraState");
 }
 
-int RestrictionPolicy::setClipboardState(int enable)
+int RestrictionPolicy::setClipboardState(bool enable)
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::setClipboardState", enable);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("RestrictionPolicy::setClipboardState", enable);
 }
 
-int RestrictionPolicy::getClipboardState()
+bool RestrictionPolicy::getClipboardState()
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::getClipboardState");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<bool>("RestrictionPolicy::getClipboardState");
 }
 
-int RestrictionPolicy::setUsbDebuggingState(int enable)
+int RestrictionPolicy::setUsbDebuggingState(bool enable)
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::setUsbDebuggingState", enable);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("RestrictionPolicy::setUsbDebuggingState", enable);
 }
 
-int RestrictionPolicy::getUsbDebuggingState()
+bool RestrictionPolicy::getUsbDebuggingState()
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::getUsbDebuggingState");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<bool>("RestrictionPolicy::getUsbDebuggingState");
 }
 
 int RestrictionPolicy::setUsbTetheringState(bool enable)
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::setUsbTetheringState", enable);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	return context->methodCall<int>("RestrictionPolicy::setUsbTetheringState", enable);
 }
 bool RestrictionPolicy::getUsbTetheringState()
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::getUsbTetheringState");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	return context->methodCall<bool>("RestrictionPolicy::getUsbTetheringState");
 }
 
-int RestrictionPolicy::setExternalStorageState(int enable)
+int RestrictionPolicy::setExternalStorageState(bool enable)
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::setExternalStorageState", enable);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("RestrictionPolicy::setExternalStorageState", enable);
 }
 
-int RestrictionPolicy::getExternalStorageState()
+bool RestrictionPolicy::getExternalStorageState()
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::getExternalStorageState");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<bool>("RestrictionPolicy::getExternalStorageState");
 }
 
-int RestrictionPolicy::setPopImapEmailState(int enable)
+int RestrictionPolicy::setPopImapEmailState(bool enable)
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::setPopImapEmailState", enable);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("RestrictionPolicy::setPopImapEmailState", enable);
 }
 
-int RestrictionPolicy::getPopImapEmailState()
+bool RestrictionPolicy::getPopImapEmailState()
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::getPopImapEmailState");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<bool>("RestrictionPolicy::getPopImapEmailState");
 }
 
-int RestrictionPolicy::setMessagingState(const std::string &sim_id, int enable)
+int RestrictionPolicy::setMessagingState(const std::string &sim_id, bool enable)
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::setMessagingState", sim_id, enable);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("RestrictionPolicy::setMessagingState", sim_id, enable);
 }
 
-int RestrictionPolicy::getMessagingState(const std::string &sim_id)
+bool RestrictionPolicy::getMessagingState(const std::string &sim_id)
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::getMessagingState", sim_id);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<bool>("RestrictionPolicy::getMessagingState", sim_id);
 }
 
-int RestrictionPolicy::setBrowserState(int enable)
+int RestrictionPolicy::setBrowserState(bool enable)
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::setBrowserState", enable);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("RestrictionPolicy::setBrowserState", enable);
 }
 
-int RestrictionPolicy::getBrowserState()
+bool RestrictionPolicy::getBrowserState()
 {
-	try {
-		return context->methodCall<int>("RestrictionPolicy::getBrowserState");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<bool>("RestrictionPolicy::getBrowserState");
 }
 
 } //namespace DevicePolicyManager

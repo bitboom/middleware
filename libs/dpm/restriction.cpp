@@ -31,7 +31,12 @@ EXPORT_API int dpm_restriction_set_camera_state(device_policy_manager_h handle, 
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	return restriction.setCameraState(allow);
+
+	try {
+		return restriction.setCameraState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_camera_state(device_policy_manager_h handle, int *is_allowed)
@@ -41,13 +46,14 @@ EXPORT_API int dpm_restriction_get_camera_state(device_policy_manager_h handle, 
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	int ret = restriction.getCameraState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = restriction.getCameraState();
+	} catch (...) {
 		return -1;
 	}
 
-	*is_allowed = ret;
-	return 0;
+	return DPM_ERROR_NONE;
 }
 
 EXPORT_API int dpm_restriction_set_microphone_state(device_policy_manager_h handle, int allow)
@@ -56,7 +62,12 @@ EXPORT_API int dpm_restriction_set_microphone_state(device_policy_manager_h hand
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	return restriction.setMicrophoneState(allow);
+
+	try {
+		return restriction.setMicrophoneState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_microphone_state(device_policy_manager_h handle, int *is_allowed)
@@ -66,12 +77,14 @@ EXPORT_API int dpm_restriction_get_microphone_state(device_policy_manager_h hand
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	int ret = restriction.getMicrophoneState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = restriction.getMicrophoneState();
+	} catch (...) {
 		return -1;
 	}
-	*is_allowed = ret;
-	return 0;
+
+	return DPM_ERROR_NONE;
 }
 
 EXPORT_API int dpm_restriction_set_location_state(device_policy_manager_h handle, int allow)
@@ -80,7 +93,12 @@ EXPORT_API int dpm_restriction_set_location_state(device_policy_manager_h handle
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	LocationPolicy location = client.createPolicyInterface<LocationPolicy>();
-	return location.setLocationState(allow);
+
+	try {
+		return location.setLocationState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_location_state(device_policy_manager_h handle, int *is_allowed)
@@ -90,12 +108,13 @@ EXPORT_API int dpm_restriction_get_location_state(device_policy_manager_h handle
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	LocationPolicy location = client.createPolicyInterface<LocationPolicy>();
-	int ret = location.getLocationState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = location.getLocationState();
+	} catch (...) {
 		return -1;
 	}
 
-	*is_allowed = ret;
 	return DPM_ERROR_NONE;
 }
 
@@ -105,7 +124,12 @@ EXPORT_API int dpm_restriction_set_usb_debugging_state(device_policy_manager_h h
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	return restriction.setUsbDebuggingState(allow);
+
+	try {
+		return restriction.setUsbDebuggingState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_usb_debugging_state(device_policy_manager_h handle, int *is_allowed)
@@ -115,11 +139,13 @@ EXPORT_API int dpm_restriction_get_usb_debugging_state(device_policy_manager_h h
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	int ret = restriction.getUsbDebuggingState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = restriction.getUsbDebuggingState();
+	} catch (...) {
 		return -1;
 	}
-	*is_allowed = ret;
+
 	return DPM_ERROR_NONE;
 }
 
@@ -129,7 +155,12 @@ EXPORT_API int dpm_restriction_set_usb_tethering_state(device_policy_manager_h h
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	return restriction.setUsbTetheringState(allow);
+
+	try {
+		return restriction.setUsbTetheringState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_usb_tethering_state(device_policy_manager_h handle, int *is_allowed)
@@ -139,11 +170,13 @@ EXPORT_API int dpm_restriction_get_usb_tethering_state(device_policy_manager_h h
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	int ret = restriction.getUsbTetheringState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = restriction.getUsbTetheringState();
+	} catch (...) {
 		return -1;
 	}
-	*is_allowed = ret;
+
 	return DPM_ERROR_NONE;
 }
 
@@ -153,7 +186,12 @@ EXPORT_API int dpm_restriction_set_external_storage_state(device_policy_manager_
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	return restriction.setExternalStorageState(allow);
+
+	try {
+		return restriction.setExternalStorageState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_external_storage_state(device_policy_manager_h handle, int *is_allowed)
@@ -163,11 +201,13 @@ EXPORT_API int dpm_restriction_get_external_storage_state(device_policy_manager_
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	int ret = restriction.getExternalStorageState();
-	if (ret < 0) {
-		return 0;
+
+	try {
+		*is_allowed = restriction.getExternalStorageState();
+	} catch (...) {
+		return -1;
 	}
-	*is_allowed = ret;
+
 	return DPM_ERROR_NONE;
 }
 
@@ -177,7 +217,12 @@ EXPORT_API int dpm_restriction_set_clipboard_state(device_policy_manager_h handl
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	return restriction.setClipboardState(allow);
+
+	try {
+		return restriction.setClipboardState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_clipboard_state(device_policy_manager_h handle, int *is_allowed)
@@ -187,11 +232,13 @@ EXPORT_API int dpm_restriction_get_clipboard_state(device_policy_manager_h handl
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	int ret = restriction.getClipboardState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = restriction.getClipboardState();
+	} catch (...) {
 		return -1;
 	}
-	*is_allowed = ret;
+
 	return DPM_ERROR_NONE;
 }
 
@@ -201,7 +248,12 @@ EXPORT_API int dpm_restriction_set_wifi_state(device_policy_manager_h handle, in
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	WifiPolicy wifi = client.createPolicyInterface<WifiPolicy>();
-	return wifi.setState(allow);
+
+	try {
+		return wifi.setState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_wifi_state(device_policy_manager_h handle, int *is_allowed)
@@ -211,11 +263,13 @@ EXPORT_API int dpm_restriction_get_wifi_state(device_policy_manager_h handle, in
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	WifiPolicy wifi = client.createPolicyInterface<WifiPolicy>();
-	int ret = wifi.getState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = wifi.getState();
+	} catch (...) {
 		return -1;
 	}
-	*is_allowed = ret;
+
 	return DPM_ERROR_NONE;
 }
 
@@ -225,7 +279,12 @@ EXPORT_API int dpm_restriction_set_wifi_hotspot_state(device_policy_manager_h ha
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	WifiPolicy wifi = client.createPolicyInterface<WifiPolicy>();
-	return  wifi.setHotspotState(allow);
+
+	try {
+		return wifi.setHotspotState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_wifi_hotspot_state(device_policy_manager_h handle, int *is_allowed)
@@ -235,11 +294,13 @@ EXPORT_API int dpm_restriction_get_wifi_hotspot_state(device_policy_manager_h ha
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	WifiPolicy wifi = client.createPolicyInterface<WifiPolicy>();
-	int ret = wifi.getHotspotState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = wifi.getHotspotState();
+	} catch (...) {
 		return -1;
 	}
-	*is_allowed = ret;
+
 	return DPM_ERROR_NONE;
 }
 
@@ -249,7 +310,12 @@ EXPORT_API int dpm_restriction_set_bluetooth_tethering_state(device_policy_manag
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	return bluetooth.setTetheringState(allow);
+
+	try {
+		return bluetooth.setTetheringState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_bluetooth_tethering_state(device_policy_manager_h handle, int *is_allowed)
@@ -259,11 +325,13 @@ EXPORT_API int dpm_restriction_get_bluetooth_tethering_state(device_policy_manag
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	int ret = bluetooth.getTetheringState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = bluetooth.getTetheringState();
+	} catch (...) {
 		return -1;
 	}
-	*is_allowed = ret;
+
 	return DPM_ERROR_NONE;
 }
 
@@ -273,7 +341,12 @@ EXPORT_API int dpm_restriction_set_bluetooth_mode_change_state(device_policy_man
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	return bluetooth.setModeChangeState(allow);
+
+	try {
+		return bluetooth.setModeChangeState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_bluetooth_mode_change_state(device_policy_manager_h handle, int *is_allowed)
@@ -283,11 +356,12 @@ EXPORT_API int dpm_restriction_get_bluetooth_mode_change_state(device_policy_man
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	int ret = bluetooth.getModeChangeState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = bluetooth.getModeChangeState();
+	} catch (...) {
 		return -1;
 	}
-	*is_allowed = ret;
 
 	return DPM_ERROR_NONE;
 }
@@ -298,7 +372,12 @@ EXPORT_API int dpm_restriction_set_bluetooth_desktop_connectivity_state(device_p
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	return bluetooth.setDesktopConnectivityState(allow);
+
+	try {
+		return bluetooth.setDesktopConnectivityState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_bluetooth_desktop_connectivity_state(device_policy_manager_h handle, int *is_allowed)
@@ -308,11 +387,12 @@ EXPORT_API int dpm_restriction_get_bluetooth_desktop_connectivity_state(device_p
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	int ret = bluetooth.getDesktopConnectivityState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = bluetooth.getDesktopConnectivityState();
+	} catch (...) {
 		return -1;
 	}
-	*is_allowed = ret;
 
 	return DPM_ERROR_NONE;
 }
@@ -323,7 +403,12 @@ EXPORT_API int dpm_restriction_set_bluetooth_pairing_state(device_policy_manager
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	return bluetooth.setPairingState(allow);
+
+	try {
+		return bluetooth.setPairingState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_bluetooth_pairing_state(device_policy_manager_h handle, int *is_allowed)
@@ -333,11 +418,12 @@ EXPORT_API int dpm_restriction_get_bluetooth_pairing_state(device_policy_manager
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	int ret = bluetooth.getPairingState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = bluetooth.getPairingState();
+	} catch (...) {
 		return -1;
 	}
-	*is_allowed = ret;
 
 	return DPM_ERROR_NONE;
 }
@@ -348,7 +434,12 @@ EXPORT_API int dpm_restriction_set_popimap_email_state(device_policy_manager_h h
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	return restriction.setPopImapEmailState(allow);
+
+	try {
+		return restriction.setPopImapEmailState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_popimap_email_state(device_policy_manager_h handle, int *is_allowed)
@@ -358,11 +449,13 @@ EXPORT_API int dpm_restriction_get_popimap_email_state(device_policy_manager_h h
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	int ret = restriction.getPopImapEmailState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = restriction.getPopImapEmailState();
+	} catch (...) {
 		return -1;
 	}
-	*is_allowed = ret;
+
 	return DPM_ERROR_NONE;
 }
 
@@ -372,7 +465,12 @@ EXPORT_API int dpm_restriction_set_messaging_state(device_policy_manager_h handl
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	return restriction.setMessagingState(sim_id, allow);
+
+	try {
+		return restriction.setMessagingState(sim_id, allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_messaging_state(device_policy_manager_h handle, const char *sim_id, int *is_allowed)
@@ -382,11 +480,13 @@ EXPORT_API int dpm_restriction_get_messaging_state(device_policy_manager_h handl
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	int ret = restriction.getMessagingState(sim_id);
-	if (ret < 0) {
+
+	try {
+		*is_allowed = restriction.getMessagingState(sim_id);
+	} catch (...) {
 		return -1;
 	}
-	*is_allowed = ret;
+
 	return DPM_ERROR_NONE;
 }
 
@@ -396,7 +496,12 @@ EXPORT_API int dpm_restriction_set_browser_state(device_policy_manager_h handle,
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	return restriction.setBrowserState(allow);
+
+	try {
+		return restriction.setBrowserState(allow);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_restriction_get_browser_state(device_policy_manager_h handle, int *is_allowed)
@@ -406,10 +511,12 @@ EXPORT_API int dpm_restriction_get_browser_state(device_policy_manager_h handle,
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	RestrictionPolicy restriction = client.createPolicyInterface<RestrictionPolicy>();
-	int ret = restriction.getBrowserState();
-	if (ret < 0) {
+
+	try {
+		*is_allowed = restriction.getBrowserState();
+	} catch (...) {
 		return -1;
 	}
-	*is_allowed = ret;
+
 	return DPM_ERROR_NONE;
 }

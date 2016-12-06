@@ -29,7 +29,12 @@ EXPORT_API int dpm_bluetooth_add_device_to_blacklist(device_policy_manager_h han
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	return bluetooth.addDeviceToBlacklist(mac);
+
+	try {
+		return bluetooth.addDeviceToBlacklist(mac);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_bluetooth_remove_device_from_blacklist(device_policy_manager_h handle, const char* mac)
@@ -39,7 +44,12 @@ EXPORT_API int dpm_bluetooth_remove_device_from_blacklist(device_policy_manager_
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	return bluetooth.removeDeviceFromBlacklist(mac);
+
+	try {
+		return bluetooth.removeDeviceFromBlacklist(mac);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_bluetooth_set_device_restriction(device_policy_manager_h handle, int enable)
@@ -48,7 +58,12 @@ EXPORT_API int dpm_bluetooth_set_device_restriction(device_policy_manager_h hand
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	return bluetooth.setDeviceRestriction(enable);
+
+	try {
+		return bluetooth.setDeviceRestriction(enable);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_bluetooth_is_device_restricted(device_policy_manager_h handle, int *state)
@@ -57,11 +72,13 @@ EXPORT_API int dpm_bluetooth_is_device_restricted(device_policy_manager_h handle
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	int ret = bluetooth.isDeviceRestricted();
-	if (ret < 0) {
+
+	try {
+		*state = bluetooth.isDeviceRestricted();
+	} catch (...) {
 		return -1;
 	}
-	*state = ret;
+
 	return DPM_ERROR_NONE;
 }
 
@@ -72,7 +89,12 @@ EXPORT_API int dpm_bluetooth_add_uuid_to_blacklist(device_policy_manager_h handl
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	return bluetooth.addUuidToBlacklist(uuid);
+
+	try {
+		return bluetooth.addUuidToBlacklist(uuid);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_bluetooth_remove_uuid_from_blacklist(device_policy_manager_h handle, const char* uuid)
@@ -82,7 +104,12 @@ EXPORT_API int dpm_bluetooth_remove_uuid_from_blacklist(device_policy_manager_h 
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	return bluetooth.removeUuidFromBlacklist(uuid);
+
+	try {
+		return bluetooth.removeUuidFromBlacklist(uuid);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_bluetooth_set_uuid_restriction(device_policy_manager_h handle, int enable)
@@ -91,7 +118,12 @@ EXPORT_API int dpm_bluetooth_set_uuid_restriction(device_policy_manager_h handle
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	return bluetooth.setUuidRestriction(enable);
+
+	try {
+		return bluetooth.setUuidRestriction(enable);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_bluetooth_is_uuid_restricted(device_policy_manager_h handle, int *state)
@@ -100,10 +132,12 @@ EXPORT_API int dpm_bluetooth_is_uuid_restricted(device_policy_manager_h handle, 
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	BluetoothPolicy bluetooth = client.createPolicyInterface<BluetoothPolicy>();
-	int ret = bluetooth.isUuidRestricted();
-	if (ret < 0) {
+
+	try {
+		*state = bluetooth.isUuidRestricted();
+	} catch (...) {
 		return -1;
 	}
-	*state = ret;
+
 	return DPM_ERROR_NONE;
 }

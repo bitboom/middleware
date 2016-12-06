@@ -42,8 +42,8 @@ SecurityPolicy::SecurityPolicy(PolicyControlContext& ctxt) :
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_SECURITY, (int)(SecurityPolicy::setInternalStorageEncryption)(bool));
 	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_SECURITY, (int)(SecurityPolicy::setExternalStorageEncryption)(bool));
 
-	ctxt.registerNonparametricMethod(this, "", (int)(SecurityPolicy::isInternalStorageEncrypted));
-	ctxt.registerNonparametricMethod(this, "", (int)(SecurityPolicy::isExternalStorageEncrypted));
+	ctxt.registerNonparametricMethod(this, "", (bool)(SecurityPolicy::isInternalStorageEncrypted));
+	ctxt.registerNonparametricMethod(this, "", (bool)(SecurityPolicy::isExternalStorageEncrypted));
 }
 
 SecurityPolicy::~SecurityPolicy()
@@ -108,12 +108,11 @@ int SecurityPolicy::setInternalStorageEncryption(bool encrypt)
 	return 0;
 }
 
-int SecurityPolicy::isInternalStorageEncrypted()
+bool SecurityPolicy::isInternalStorageEncrypted()
 {
 	char *state = ::vconf_get_str(VCONFKEY_ODE_CRYPTO_STATE);
 	if (state == NULL) {
-		ERROR("Failed to read internal storage encryption state");
-		return -1;
+		throw runtime::Exception("Failed to read internal storage encryption state");
 	}
 
 	std::string expected("encrypted");
@@ -164,12 +163,11 @@ int SecurityPolicy::setExternalStorageEncryption(bool encrypt)
 	return 0;
 }
 
-int SecurityPolicy::isExternalStorageEncrypted()
+bool SecurityPolicy::isExternalStorageEncrypted()
 {
 	char *state = ::vconf_get_str(VCONFKEY_SDE_CRYPTO_STATE);
 	if (state == NULL) {
-		ERROR("Failed to read external storage encryption state");
-		return -1;
+		throw runtime::Exception("Failed to read external storage encryption state");
 	}
 
 	std::string expected("encrypted");

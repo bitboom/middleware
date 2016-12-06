@@ -26,8 +26,8 @@ public:
 	LocationPolicy(PolicyControlContext& ctxt);
 	~LocationPolicy();
 
-	int setLocationState(int enable);
-	int getLocationState();
+	int setLocationState(bool enable);
+	bool getLocationState();
 
 private:
 	PolicyControlContext& context;

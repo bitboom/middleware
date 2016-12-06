@@ -28,47 +28,27 @@ SecurityPolicy::~SecurityPolicy()
 
 int SecurityPolicy::lockoutScreen()
 {
-	try {
-		return context->methodCall<int>("SecurityPolicy::lockoutScreen");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("SecurityPolicy::lockoutScreen");
 }
 
 int SecurityPolicy::setInternalStorageEncryption(bool encrypt)
 {
-	try {
-		return context->methodCall<int>("SecurityPolicy::setInternalStorageEncryption", encrypt);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("SecurityPolicy::setInternalStorageEncryption", encrypt);
 }
 
-int SecurityPolicy::isInternalStorageEncrypted()
+bool SecurityPolicy::isInternalStorageEncrypted()
 {
-	try {
-		return context->methodCall<int>("SecurityPolicy::isInternalStorageEncrypted");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("SecurityPolicy::isInternalStorageEncrypted");
 }
 
 int SecurityPolicy::setExternalStorageEncryption(bool encrypt)
 {
-	try {
-		return context->methodCall<int>("SecurityPolicy::setExternalStorageEncryption", encrypt);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("SecurityPolicy::setExternalStorageEncryption", encrypt);
 }
 
-int SecurityPolicy::isExternalStorageEncrypted()
+bool SecurityPolicy::isExternalStorageEncrypted()
 {
-	try {
-		return context->methodCall<int>("SecurityPolicy::isExternalStorageEncrypted");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("SecurityPolicy::isExternalStorageEncrypted");
 }
 
 } // namespace DevicePolicyManager

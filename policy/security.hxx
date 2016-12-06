@@ -32,11 +32,11 @@ public:
 	~SecurityPolicy();
 
 	int lockoutScreen();
-	int wipeData(const int id);
+	int wipeData(int id);
 	int setInternalStorageEncryption(bool encrypt);
-	int isInternalStorageEncrypted();
+	bool isInternalStorageEncrypted();
 	int setExternalStorageEncryption(bool encrypt);
-	int isExternalStorageEncrypted();
+	bool isExternalStorageEncrypted();
 
 private:
 	PolicyControlContext& context;

@@ -28,7 +28,12 @@ EXPORT_API int dpm_wifi_set_profile_change_restriction(device_policy_manager_h h
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	WifiPolicy wifi = client.createPolicyInterface<WifiPolicy>();
-	return wifi.setProfileChangeRestriction(enable);
+
+	try {
+		return wifi.setProfileChangeRestriction(enable);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_wifi_is_profile_change_restricted(device_policy_manager_h handle, int *enable)
@@ -38,7 +43,12 @@ EXPORT_API int dpm_wifi_is_profile_change_restricted(device_policy_manager_h han
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	WifiPolicy wifi = client.createPolicyInterface<WifiPolicy>();
-	*enable = wifi.isProfileChangeRestricted();
+
+	try {
+		*enable = wifi.isProfileChangeRestricted();
+	} catch (...) {
+		return -1;
+	}
 
 	return DPM_ERROR_NONE;
 }
@@ -49,7 +59,12 @@ EXPORT_API int dpm_wifi_set_network_access_restriction(device_policy_manager_h h
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	WifiPolicy wifi = client.createPolicyInterface<WifiPolicy>();
-	return wifi.setNetworkAccessRestriction(enable);
+
+	try {
+		return wifi.setNetworkAccessRestriction(enable);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_wifi_is_network_access_restricted(device_policy_manager_h handle, int *enable)
@@ -59,7 +74,12 @@ EXPORT_API int dpm_wifi_is_network_access_restricted(device_policy_manager_h han
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	WifiPolicy wifi = client.createPolicyInterface<WifiPolicy>();
-	*enable = wifi.isNetworkAccessRestricted();
+
+	try {
+		*enable = wifi.isNetworkAccessRestricted();
+	} catch (...) {
+		return -1;
+	}
 
 	return DPM_ERROR_NONE;
 }
@@ -71,7 +91,12 @@ EXPORT_API int dpm_wifi_add_ssid_to_blocklist(device_policy_manager_h handle, co
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	WifiPolicy wifi = client.createPolicyInterface<WifiPolicy>();
-	return wifi.addSsidToBlocklist(ssid);
+
+	try {
+		return wifi.addSsidToBlocklist(ssid);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_wifi_remove_ssid_from_blocklist(device_policy_manager_h handle, const char* ssid)
@@ -81,5 +106,10 @@ EXPORT_API int dpm_wifi_remove_ssid_from_blocklist(device_policy_manager_h handl
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	WifiPolicy wifi = client.createPolicyInterface<WifiPolicy>();
-	return wifi.removeSsidFromBlocklist(ssid);
+
+	try {
+		return wifi.removeSsidFromBlocklist(ssid);
+	} catch (...) {
+		return -1;
+	}
 }

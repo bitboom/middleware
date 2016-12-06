@@ -26,22 +26,14 @@ LocationPolicy::~LocationPolicy()
 {
 }
 
-int LocationPolicy::setLocationState(int enable)
+int LocationPolicy::setLocationState(bool enable)
 {
-	try {
-		return context->methodCall<int>("LocationPolicy::setLocationState", enable);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("LocationPolicy::setLocationState", enable);
 }
 
-int LocationPolicy::getLocationState()
+bool LocationPolicy::getLocationState()
 {
-	try {
-		return context->methodCall<int>("LocationPolicy::getLocationState");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<bool>("LocationPolicy::getLocationState");
 }
 
 } //namespace DevicePolicyManager

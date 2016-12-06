@@ -27,150 +27,86 @@ BluetoothPolicy::~BluetoothPolicy()
 }
 
 // for restriction CPIs
-int BluetoothPolicy::setModeChangeState(const bool enable)
+int BluetoothPolicy::setModeChangeState(bool enable)
 {
-	try {
-		return context->methodCall<int>("BluetoothPolicy::setModeChangeState", enable);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("BluetoothPolicy::setModeChangeState", enable);
 }
 
 bool BluetoothPolicy::getModeChangeState()
 {
-	try {
-		return context->methodCall<bool>("BluetoothPolicy::getModeChangeState");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<bool>("BluetoothPolicy::getModeChangeState");
 }
 
-int BluetoothPolicy::setDesktopConnectivityState(const bool enable)
+int BluetoothPolicy::setDesktopConnectivityState(bool enable)
 {
-	try {
-		return context->methodCall<bool>("BluetoothPolicy::setDesktopConnectivityState", enable);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<bool>("BluetoothPolicy::setDesktopConnectivityState", enable);
 }
 
 bool BluetoothPolicy::getDesktopConnectivityState()
 {
-	try {
-		return context->methodCall<bool>("BluetoothPolicy::getDesktopConnectivityState");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<bool>("BluetoothPolicy::getDesktopConnectivityState");
 }
 
 int BluetoothPolicy::setTetheringState(bool enable)
 {
-	try {
-		return context->methodCall<int>("BluetoothPolicy::setTetheringState", enable);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("BluetoothPolicy::setTetheringState", enable);
 }
 
 bool BluetoothPolicy::getTetheringState()
 {
-	try {
-		return context->methodCall<bool>("BluetoothPolicy::getTetheringState");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	return context->methodCall<bool>("BluetoothPolicy::getTetheringState");
 }
 
-int BluetoothPolicy::setPairingState(const bool enable)
+int BluetoothPolicy::setPairingState(bool enable)
 {
-	try {
-		return context->methodCall<int>("BluetoothPolicy::setPairingState", enable);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	return context->methodCall<int>("BluetoothPolicy::setPairingState", enable);
 }
 
 bool BluetoothPolicy::getPairingState()
 {
-	try {
-		return context->methodCall<bool>("BluetoothPolicy::getPairingState");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	return context->methodCall<bool>("BluetoothPolicy::getPairingState");
 }
 
 
 // for bluetooth CAPIs
 int BluetoothPolicy::addDeviceToBlacklist(const std::string& mac)
 {
-	try {
-		return context->methodCall<int>("BluetoothPolicy::addDeviceToBlacklist", mac);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("BluetoothPolicy::addDeviceToBlacklist", mac);
 }
 
 int BluetoothPolicy::removeDeviceFromBlacklist(const std::string& mac)
 {
-	try {
-		return context->methodCall<int>("BluetoothPolicy::removeDeviceFromBlacklist", mac);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("BluetoothPolicy::removeDeviceFromBlacklist", mac);
 }
 
-int BluetoothPolicy::setDeviceRestriction(const bool enable)
+int BluetoothPolicy::setDeviceRestriction(bool enable)
 {
-	try {
-		return context->methodCall<int>("BluetoothPolicy::setDeviceRestriction", enable);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("BluetoothPolicy::setDeviceRestriction", enable);
 }
 
 bool BluetoothPolicy::isDeviceRestricted()
 {
-	try {
-		return context->methodCall<bool>("BluetoothPolicy::isDeviceRestricted");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<bool>("BluetoothPolicy::isDeviceRestricted");
 }
 
 int BluetoothPolicy::addUuidToBlacklist(const std::string& uuid)
 {
-	try {
-		return context->methodCall<int>("BluetoothPolicy::addUuidToBlacklist", uuid);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("BluetoothPolicy::addUuidToBlacklist", uuid);
 }
 
 int BluetoothPolicy::removeUuidFromBlacklist(const std::string& uuid)
 {
-	try {
-		return context->methodCall<int>("BluetoothPolicy::removeUuidFromBlacklist", uuid);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("BluetoothPolicy::removeUuidFromBlacklist", uuid);
 }
 
-int BluetoothPolicy::setUuidRestriction(const bool enable)
+int BluetoothPolicy::setUuidRestriction(bool enable)
 {
-	try {
-		return context->methodCall<int>("BluetoothPolicy::setUuidRestriction", enable);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<int>("BluetoothPolicy::setUuidRestriction", enable);
 }
 
 bool BluetoothPolicy::isUuidRestricted()
 {
-	try {
-		return context->methodCall<bool>("BluetoothPolicy::isUuidRestricted");
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	return context->methodCall<bool>("BluetoothPolicy::isUuidRestricted");
 }
 
 } // namespace DevicePolicyManager

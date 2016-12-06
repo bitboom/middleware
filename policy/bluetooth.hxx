@@ -32,24 +32,24 @@ public:
 	~BluetoothPolicy();
 
 	// for restriction CPIs
-	int setModeChangeState(const bool enable);
+	int setModeChangeState(bool enable);
 	bool getModeChangeState();
-	int setDesktopConnectivityState(const bool enable);
+	int setDesktopConnectivityState(bool enable);
 	bool getDesktopConnectivityState();
 	int setTetheringState(bool enable);
 	bool getTetheringState();
-	int setPairingState(const bool enable);
+	int setPairingState(bool enable);
 	bool getPairingState();
 
 	// for bluetooth CAPIs
 	int addDeviceToBlacklist(const std::string& mac);
 	int removeDeviceFromBlacklist(const std::string& mac);
-	int setDeviceRestriction(const bool enable);
+	int setDeviceRestriction(bool enable);
 	bool isDeviceRestricted();
 
 	int addUuidToBlacklist(const std::string& uuid);
 	int removeUuidFromBlacklist(const std::string& uuid);
-	int setUuidRestriction(const bool enable);
+	int setUuidRestriction(bool enable);
 	bool isUuidRestricted();
 
 private:
