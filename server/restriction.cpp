@@ -150,7 +150,7 @@ int RestrictionPolicy::setClipboardState(int enable)
 
 int RestrictionPolicy::getClipboardState()
 {
-	return context.getPolicy<int>("clipboard");
+	return context.getPolicy<int>("clipboard", context.getPeerUid());
 }
 
 int RestrictionPolicy::setUsbDebuggingState(int enable)
@@ -264,7 +264,7 @@ int RestrictionPolicy::setBrowserState(int enable)
 	try {
 		SetPolicyAllowed(context, "browser", enable);
 	} catch (runtime::Exception& e) {
-        ERROR("Failed to enforce browser [olicy");
+        ERROR("Failed to enforce browser policy");
         return -1;
     }
 	return 0;
@@ -272,7 +272,7 @@ int RestrictionPolicy::setBrowserState(int enable)
 
 int RestrictionPolicy::getBrowserState()
 {
-	return context.getPolicy<int>("browser");
+	return context.getPolicy<int>("browser", context.getPeerUid());
 }
 
 DEFINE_POLICY(RestrictionPolicy);
