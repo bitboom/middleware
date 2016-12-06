@@ -8,5 +8,5 @@ includedir=@INCLUDE_INSTALL_DIR@
 Name: dpm
 Description: Tizen Device Policy Client library
 Version: @VERSION@
-Libs: -L${libdir} -ldpm
+Libs: -L${libdir} -ldpm -ldpm-ext-password -ldpm-ext-krate_zone
 Cflags: -I${includedir}/dpm
