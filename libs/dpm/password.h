@@ -454,6 +454,7 @@ int dpm_password_get_max_inactivity_time_device_lock(device_policy_manager_h han
 int dpm_password_set_status(device_policy_manager_h handle, dpm_password_status_e status);
 
 /**
+ * @partner
  * @brief       Gets password status
  * @details     An administrator can know password status for this API.
  * @since_tizen 3.0
@@ -658,6 +659,7 @@ typedef void *dpm_password_iterator_h;
 dpm_password_iterator_h dpm_password_create_iterator(device_policy_manager_h handle);
 
 /**
+ * @partner
  * @brief       Fetches a password forbidden string and forwards the iterator.
  * @details     This API returns a password forbidden string indicated by the iterator, and then
  *              the iterator is moved to the next position. If the iterator reaches
