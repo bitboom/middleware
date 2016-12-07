@@ -13,6 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+#include <vconf.h>
 #include <dd-deviced.h>
 #include <dd-control.h>
 #include <klay/process.h>
@@ -69,6 +70,25 @@ int SecurityPolicy::lockoutScreen()
 
 int SecurityPolicy::setInternalStorageEncryption(bool encrypt)
 {
+	char *value = ::vconf_get_str(VCONFKEY_ODE_CRYPTO_STATE);
+	if (value == NULL) {
+		ERROR("Failed to read internal storage encryption state");
+		return -1;
+	}
+
+	std::string state(value);
+	if (encrypt) {
+		if (state != "unencrypted") {
+			ERROR("Storage might be already encrypted or it has error");
+			return -1;
+		}
+	} else {
+		if (state != "encrypted") {
+			ERROR("Storage might be already decrypted or it has error");
+			return -1;
+		}
+	}
+
 	try {
 		Bundle bundle;
 		bundle.add("viewtype", encrypt ? "ENCRYPT_DEVICE" : "DECRYPT_DEVICE");
@@ -90,11 +110,41 @@ int SecurityPolicy::setInternalStorageEncryption(bool encrypt)
 
 int SecurityPolicy::isInternalStorageEncrypted()
 {
+	char *state = ::vconf_get_str(VCONFKEY_ODE_CRYPTO_STATE);
+	if (state == NULL) {
+		ERROR("Failed to read internal storage encryption state");
+		return -1;
+	}
+
+	std::string expected("encrypted");
+	if (expected == state) {
+		return true;
+    }
+
 	return false;
 }
 
 int SecurityPolicy::setExternalStorageEncryption(bool encrypt)
 {
+	char *value = ::vconf_get_str(VCONFKEY_SDE_CRYPTO_STATE);
+	if (value == NULL) {
+		ERROR("Failed to read external storage encryption state");
+		return -1;
+	}
+
+	std::string state(value);
+	if (encrypt) {
+		if (state != "unencrypted") {
+			ERROR("Storage might be already encrypted or it has error");
+			return -1;
+		}
+	} else {
+		if (state != "encrypted") {
+			ERROR("Storage might be already decrypted or it has error");
+			return -1;
+		}
+    }
+
 	try {
 		Bundle bundle;
 		bundle.add("viewtype", encrypt ? "ENCRYPT_SD_CARD" : "DECRYPT_SD_CARD");
@@ -116,6 +166,17 @@ int SecurityPolicy::setExternalStorageEncryption(bool encrypt)
 
 int SecurityPolicy::isExternalStorageEncrypted()
 {
+	char *state = ::vconf_get_str(VCONFKEY_SDE_CRYPTO_STATE);
+	if (state == NULL) {
+		ERROR("Failed to read external storage encryption state");
+		return -1;
+	}
+
+	std::string expected("encrypted");
+	if (expected == state) {
+		return true;
+	}
+
 	return false;
 }
 
