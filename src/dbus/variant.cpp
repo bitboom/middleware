@@ -33,17 +33,34 @@ Variant::Variant() :
 {
 }
 
+Variant::Variant(const std::string& format, ...)
+{
+	va_list ap;
+
+	va_start(ap, format);
+	variant = g_variant_new_va(format.c_str(), NULL, &ap);
+	va_end(ap);
+}
+
 Variant::~Variant()
 {
-	if (variant) {
-		g_variant_unref(variant);
-	}
+	/*
+	 * variant is foating
+	 * if (variant) {
+	 *     g_variant_unref(variant);
+	 * }
+	 */
 }
 
 Variant& Variant::operator=(GVariant* var)
 {
 	variant = var;
 	return *this;
+}
+
+GVariant* Variant::operator & ()
+{
+	return variant;
 }
 
 Variant::operator bool () const

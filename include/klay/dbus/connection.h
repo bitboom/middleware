@@ -21,6 +21,7 @@
 
 #include <string>
 #include <functional>
+#include <map>
 
 #include <klay/dbus/variant.h>
 
@@ -28,25 +29,42 @@ namespace dbus {
 
 class Connection {
 public:
-	typedef unsigned int subscriptionId;
-	typedef std::function<void(Variant)> signalCallback;
+	typedef unsigned int NameId;
+	typedef unsigned int ObjectId;
+	typedef unsigned int SubscriptionId;
+
+	typedef std::function<void()> VoidCallback;
+
+	typedef std::function<void(Variant parameters)> SignalCallback;
+
+	typedef std::function<void(const std::string& name)> ClientVanishedCallback;
+
+	typedef std::function<Variant(const std::string& objectPath,
+								  const std::string& interface,
+								  const std::string& method,
+								  Variant parameters)> MethodCallCallback;
+
+	Connection(const std::string& address);
 
 	Connection() = delete;
 	Connection(const Connection&) = delete;
 	~Connection();
 
 	Connection& operator=(const Connection&) = delete;
+	Connection& operator=(Connection&&) = delete;
 
 	static Connection& getSystem();
 
-	subscriptionId subscribeSignal(const std::string& sender,
+	void setName(const std::string& name, const VoidCallback& nameAcquireCallback,
+										  const VoidCallback& nameLostCallback);
+
+	SubscriptionId subscribeSignal(const std::string& sender,
 								   const std::string& interface,
 								   const std::string& object,
 								   const std::string& member,
-								   const signalCallback callback);
+								   const SignalCallback& callback);
 
-
-	void unsubscribeSignal(subscriptionId id);
+	void unsubscribeSignal(SubscriptionId id);
 
 	const Variant methodcall(const std::string& busName,
 							 const std::string& object,
@@ -57,10 +75,80 @@ public:
 							 const std::string& paramType,
 							 ...);
 
-private:
-	Connection(const std::string& address);
+	ObjectId registerObject(const std::string& interface,
+							const std::string& manifest,
+							const MethodCallCallback& methodcall,
+							const ClientVanishedCallback& vanished);
 
+	void unregisterObject(ObjectId id);
+
+private:
+
+	static void onNameAcquired(GDBusConnection* connection,
+							   const gchar* name, gpointer userData);
+
+	static void onNameLost(GDBusConnection* connection,
+						   const gchar* name, gpointer userData);
+
+	static void onClientVanish(GDBusConnection* connection,
+							   const gchar* name, gpointer userData);
+
+	static void onSignal(GDBusConnection* connection,
+						 const gchar *sender,
+						 const gchar *objectPath,
+						 const gchar *interface,
+						 const gchar *signal,
+						 GVariant *parameters,
+						 gpointer userData);
+
+	static void onMethodCall(GDBusConnection* connection,
+							 const gchar* sender,
+							 const gchar* objectPath,
+							 const gchar* interface,
+							 const gchar* method,
+							 GVariant* parameters,
+							 GDBusMethodInvocation* invocation,
+							 gpointer userData);
+
+private:
+	typedef std::map<std::string, guint> ClientMap;
+
+	struct NameCallback {
+		VoidCallback nameAcquired;
+		VoidCallback nameLost;
+
+		NameCallback(const VoidCallback& acquired, const VoidCallback& lost) :
+			nameAcquired(acquired), nameLost(lost)
+		{
+		}
+	};
+
+	struct VanishedCallback {
+		ClientVanishedCallback clientVanished;
+		ClientMap &watchedClients;
+
+		VanishedCallback(const ClientVanishedCallback& vanished, ClientMap& clients) :
+			clientVanished(vanished), watchedClients(clients)
+		{
+		}
+	};
+
+	struct MethodCallback {
+		MethodCallCallback methodcall;
+		ClientVanishedCallback clientVanished;
+		Connection* connection;
+
+		MethodCallback(const MethodCallCallback& method,
+					   const ClientVanishedCallback& vanished,
+					   Connection* conn) :
+			methodcall(method), clientVanished(vanished), connection(conn)
+		{
+		}
+	};
+
+	ClientMap watchedClients;
 	GDBusConnection* connection;
+	NameId ownedNameId;
 };
 
 } // namespace dbus

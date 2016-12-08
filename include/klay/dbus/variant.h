@@ -25,9 +25,10 @@ namespace dbus {
 
 class Variant {
 public:
+	Variant();
 	Variant(GVariant* var);
 	Variant(Variant&& var);
-	Variant();
+	Variant(const std::string& format, ...);
 	~Variant();
 
 	Variant& operator=(GVariant* var);
