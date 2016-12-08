@@ -29,7 +29,6 @@
 #include <system_settings.h>
 #include <dlog.h>
 #include <Elementary.h>
-#include <efl_extension.h>
 
 #ifdef  LOG_TAG
 #undef  LOG_TAG
@@ -58,9 +57,9 @@ typedef struct {
 	char *noti_content;
 } popup_info_s;
 
-popup_info_s *_get_popup_info(const char *id);
-int _get_popup_text(const char *id, const char *status, char *header, char *body);
+popup_info_s *get_popup_info(const char *id);
+int get_popup_text(const char *id, const char *status, char *header, char *body);
 
-void _create_syspopup(const char *id, char *style, const char *status, app_control_h svc);
+void create_syspopup(const char *id, char *style, const char *status, app_control_h svc);
 
 #endif /* __DPM_SYSPOPUP_H__ */

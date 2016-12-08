@@ -8,7 +8,6 @@ PKG_CHECK_MODULES(dpm_syspopup_pkgs REQUIRED
 	dlog
 	glib-2.0
 	bundle
-	efl-extension
 	elementary
 	capi-appfw-application
 	capi-system-system-settings
@@ -21,9 +20,14 @@ INCLUDE_DIRECTORIES(${dpm_syspopup_pkgs_INCLUDE_DIRS} ${DPM_LIBS})
 LINK_DIRECTORIES(${dpm_syspopup_pkgs_LIBRARY_DIRS})
 
 SET(PKG_NAME "${PROJECT_NAME}")
-SET(PKG_SRC src/main.c
-			src/ui.c
-			src/popup-list.c)
+SET(PKG_SRC	src/main.c
+		src/popup-list.c)
+
+IF (${TIZEN_PROFILE_NAME} MATCHES "wearable")
+	SET(PKG_SRC ${PKG_SRC} src/circle-ui.c)
+ELSE (${TIZEN_PROFILE_NAME} MATCHES "wearable")
+	SET(PKG_SRC ${PKG_SRC} src/ui.c)
+ENDIF (${TIZEN_PROFILE_NAME} MATCHES "wearable")
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIE")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie")
@@ -36,6 +40,7 @@ TARGET_LINK_LIBRARIES(${PKG_NAME} ${dpm_syspopup_pkgs_LIBRARIES} dpm)
 #Install app data
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${PKG_NAME}.xml DESTINATION ${APP_SHARE_PACKAGES_DIR})
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/res/${PKG_NAME}.png DESTINATION /usr/share/icons/default/small)
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/res/images/ DESTINATION ${APP_INSTALL_PREFIX}/${PKG_NAME}/res/images FILES_MATCHING PATTERN "*.png")
 
 # i18n
 ADD_SUBDIRECTORY(po)

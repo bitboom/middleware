@@ -29,7 +29,7 @@ typedef struct {
 
 static bundle_data_s bundle_data = {NULL, NULL, NULL, NULL, 0};
 
-static int __create_app_control(app_control_h svc)
+static int create_app_control(app_control_h svc)
 {
 	int i;
 
@@ -52,12 +52,12 @@ static int __create_app_control(app_control_h svc)
 	return 0;
 }
 
-static bool __app_create(void *data)
+static bool app_create(void *data)
 {
 	return true;
 }
 
-static void __free_data(void)
+static void free_data(void)
 {
 	int i = 0;
 
@@ -74,7 +74,7 @@ static void __free_data(void)
 	return;
 }
 
-static void __app_control(app_control_h app_control, void *data)
+static void app_control(app_control_h app_control, void *data)
 {
 	int ret = 0;
 	app_control_h svc = NULL;
@@ -83,6 +83,7 @@ static void __app_control(app_control_h app_control, void *data)
 	if (ret != APP_CONTROL_ERROR_NONE) {
 		dlog_print(DLOG_ERROR, LOG_TAG, "failed to get popup id");
 		ui_app_exit();
+		return;
 	}
 
 	ret = app_control_get_extra_data(app_control, "viewtype", &bundle_data.style);
@@ -91,6 +92,7 @@ static void __app_control(app_control_h app_control, void *data)
 	} else if (ret != APP_CONTROL_ERROR_NONE) {
 		dlog_print(DLOG_ERROR, LOG_TAG, "failed to get popup style");
 		ui_app_exit();
+		return;
 	}
 
 	ret = app_control_get_extra_data(app_control, "status", &bundle_data.status);
@@ -99,48 +101,52 @@ static void __app_control(app_control_h app_control, void *data)
 	} else if (ret != APP_CONTROL_ERROR_NONE) {
 		dlog_print(DLOG_ERROR, LOG_TAG, "failed to get popup status");
 		ui_app_exit();
+		return;
 	}
 
 	ret = app_control_get_extra_data_array(app_control, "user-data", &bundle_data.user_data, &bundle_data.data_size);
 	if (ret != APP_CONTROL_ERROR_KEY_NOT_FOUND && ret != APP_CONTROL_ERROR_NONE) {
 		dlog_print(DLOG_ERROR, LOG_TAG, "failed to get popup user data");
 		ui_app_exit();
+		return;
 	}
 
 	ret = app_control_create(&svc);
 	if (ret != APP_CONTROL_ERROR_NONE) {
 		dlog_print(DLOG_ERROR, LOG_TAG, "failed to create app_control handler");
 		ui_app_exit();
+		return;
 	}
 
-	if (__create_app_control(svc) != 0) {
+	if (create_app_control(svc) != 0) {
 		dlog_print(DLOG_ERROR, LOG_TAG, "failed to set app_control handler");
 		app_control_destroy(svc);
 		ui_app_exit();
+		return;
 	}
 
-	_create_syspopup(bundle_data.id, bundle_data.style, bundle_data.status, svc);
+	create_syspopup(bundle_data.id, bundle_data.style, bundle_data.status, svc);
 
 	return;
 }
 
-static void __app_terminate(void *data)
+static void app_terminate(void *data)
 {
-	__free_data();
+	free_data();
 	return;
 }
 
-static void __app_pause(void *data)
-{
-	return;
-}
-
-static void __app_resume(void *data)
+static void app_pause(void *data)
 {
 	return;
 }
 
-static void __ui_app_lang_changed(app_event_info_h event_info, void *user_data)
+static void app_resume(void *data)
+{
+	return;
+}
+
+static void ui_app_lang_changed(app_event_info_h event_info, void *user_data)
 {
 	int ret = 0;
 	char *locale = NULL;
@@ -162,13 +168,13 @@ int main(int argc, char *argv[])
 	ui_app_lifecycle_callback_s event_callback = {0, };
 	app_event_handler_h handlers[5] = {NULL, };
 
-	event_callback.create = __app_create;
-	event_callback.terminate = __app_terminate;
-	event_callback.pause = __app_pause;
-	event_callback.resume = __app_resume;
-	event_callback.app_control = __app_control;
+	event_callback.create = app_create;
+	event_callback.terminate = app_terminate;
+	event_callback.pause = app_pause;
+	event_callback.resume = app_resume;
+	event_callback.app_control = app_control;
 
-	ui_app_add_event_handler(&handlers[APP_EVENT_LANGUAGE_CHANGED], APP_EVENT_LANGUAGE_CHANGED, __ui_app_lang_changed, NULL);
+	ui_app_add_event_handler(&handlers[APP_EVENT_LANGUAGE_CHANGED], APP_EVENT_LANGUAGE_CHANGED, ui_app_lang_changed, NULL);
 
 	ret = ui_app_main(argc, argv, &event_callback, NULL);
 	if (ret != APP_ERROR_NONE)

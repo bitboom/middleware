@@ -154,7 +154,6 @@ Testcases for device policy manager and device policy client
 %package -n org.tizen.dpm-syspopup
 Summary: Tizen DPM system popup Interface
 Group: Security/Other
-BuildRequires: pkgconfig(efl-extension)
 BuildRequires: pkgconfig(elementary)
 BuildRequires: pkgconfig(capi-appfw-application)
 BuildRequires: pkgconfig(capi-system-system-settings)
@@ -169,3 +168,4 @@ Tizen DPM system popup interface package
 %{TZ_SYS_RO_APP}/org.tizen.dpm-syspopup/bin/*
 %{TZ_SYS_RO_PACKAGES}/org.tizen.dpm-syspopup.xml
 /usr/share/icons/default/small/org.tizen.dpm-syspopup.png
+%{TZ_SYS_RO_APP}/org.tizen.dpm-syspopup/res/images/*

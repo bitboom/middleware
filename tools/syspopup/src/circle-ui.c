@@ -1,4 +1,5 @@
 /*
+ * Tizen DPM Syspopup
  *
  * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
  *
@@ -22,6 +23,8 @@
 #include <vconf.h>
 
 #include "dpm-syspopup.h"
+
+#define ICON_DIR "/usr/apps/org.tizen.dpm-syspopup/res/images"
 
 static Evas_Object *main_window;
 
@@ -105,9 +108,9 @@ static void reply_password_enforce_event_handler(app_control_h ug, app_control_h
 		free(result_string);
 		app_control_get_extra_data(reply, "current", &current);
 		if (current != NULL) {
-			app_control_h app_control = NULL;
+			app_control_h app_control;
 			if (app_control_create(&app_control) != APP_CONTROL_ERROR_NONE) {
-				dlog_print(DLOG_ERROR, LOG_TAG, "failed to create app_control context");
+				dlog_print(DLOG_ERROR, LOG_TAG, "faild to create app_control context");
 				evas_object_del(popup);
 				return;
 			}
@@ -119,10 +122,10 @@ static void reply_password_enforce_event_handler(app_control_h ug, app_control_h
 			app_control_destroy(app_control);
 			free(current);
 		} else {
-			dlog_print(DLOG_ERROR, LOG_TAG, "failed to get current password");
+			dlog_print(DLOG_ERROR, LOG_TAG, "failed to get current password.");
 		}
+		evas_object_del(popup);
 	}
-	evas_object_del(popup);
 }
 
 static void password_enforce_event_handler(void *data, Evas_Object *obj, void *event_info)
@@ -222,23 +225,61 @@ static Eina_Bool key_event_cb(void *data, int type, void *event)
 
 	evas_object_data_set(popup, "selected", "cancel");
 
-	if (!strcmp(ev->keyname, "XF86Home") || !strcmp(ev->keyname, "XF86Back")) {
+	if (!strcmp(ev->keyname, "XF86Home") || !strcmp(ev->keyname, "XF86BACK")) {
 		evas_object_del(popup);
 	}
 
 	return EINA_TRUE;
 }
 
-static void create_popup_bottom_button(Evas_Object *popup, char *part, char *text, Evas_Smart_Cb callback)
+static void create_popup_bottom_button(Evas_Object *popup, const char *part, char *text, Evas_Smart_Cb callback)
 {
 	Evas_Object *button = NULL;
 
 	button = elm_button_add(popup);
-	elm_object_style_set(button, "popup");
+	elm_object_style_set(button, "bottom");
 	elm_object_text_set(button, __(text));
 	elm_object_part_content_set(popup, part, button);
 	evas_object_smart_callback_add(button, "clicked", callback, popup);
 
+	return;
+}
+
+static void create_popup_left_button(Evas_Object *popup, Evas_Smart_Cb callback)
+{
+	Evas_Object *button = NULL;
+	Evas_Object *icon = NULL;
+
+	button = elm_button_add(popup);
+	elm_object_style_set(button, "popup/circle/left");
+
+	icon = elm_image_add(button);
+	elm_image_file_set(icon, ICON_DIR"/tw_ic_popup_btn_delete.png", NULL);
+	evas_object_size_hint_weight_set(icon, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+	elm_object_part_content_set(button, "elm.swallow.content", icon);
+	evas_object_show(icon);
+
+	elm_object_part_content_set(popup, "button1", button);
+	evas_object_smart_callback_add(button, "clicked", callback, popup);
+	return;
+}
+
+static void create_popup_right_button(Evas_Object *popup, Evas_Smart_Cb callback)
+{
+	Evas_Object *button = NULL;
+	Evas_Object *icon = NULL;
+
+	button = elm_button_add(popup);
+	elm_object_style_set(button, "popup/circle/right");
+
+	icon = elm_image_add(button);
+	elm_image_file_set(icon, ICON_DIR"/tw_ic_popup_btn_check.png", NULL);
+	evas_object_size_hint_weight_set(icon, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+	elm_object_part_content_set(button, "elm.swallow.content", icon);
+	evas_object_show(icon);
+
+	elm_object_part_content_set(popup, "button2", button);
+	evas_object_smart_callback_add(button, "clicked", callback, popup);
 	return;
 }
 
@@ -273,32 +314,45 @@ void create_syspopup(const char *id, char *style, const char *status, app_contro
 	if (style != NULL)
 		info->style = style;
 
-	elm_object_style_set(popup, info->style);
+	elm_object_style_set(popup, "circle");
+
+	Evas_Object *layout = elm_layout_add(popup);
 
 	if (!strcmp(info->style, "default")) {
-		if (strcmp(header, "")) {
-			elm_object_part_text_set(popup, "title,text", header);
-			elm_object_item_part_text_translatable_set(popup, "title,text", EINA_TRUE);
+		if (info->left_btn != NULL) {
+			elm_layout_theme_set(layout, "layout", "popup", "content/circle/buttons2");
+		} else {
+			elm_layout_theme_set(layout, "layout", "popup", "content/circle/buttons1");
 		}
 
-		if (strcmp(body, ""))
-			elm_object_text_set(popup, body);
+		elm_object_content_set(popup, layout);
+
+		if (strcmp(header, "")) {
+			elm_object_part_text_set(layout, "elm.text.title", header);
+		}
+
+		if (strcmp(body, "")) {
+			elm_object_part_text_set(layout, "elm.text", body);
+		}
 
 		elm_popup_align_set(popup, ELM_NOTIFY_ALIGN_FILL, 1.0);
 		evas_object_event_callback_add(popup, EVAS_CALLBACK_DEL, syspopup_delete_cb, info);
 
-		if (svc)
+		if (svc) {
 			evas_object_data_set(popup, "app-control", svc);
+		}
 
 		if (info->left_btn != NULL) {
 			ecore_event_handler_add(ECORE_EVENT_KEY_DOWN, key_event_cb, popup);
-			create_popup_bottom_button(popup, "button1", info->left_btn, cancel_button_cb);
-			create_popup_bottom_button(popup, "button2", info->right_btn, confirm_button_cb);
+			create_popup_left_button(popup, cancel_button_cb);
+			create_popup_right_button(popup, confirm_button_cb);
 		} else {
-			create_popup_bottom_button(popup, "button1", info->right_btn, confirm_button_cb);
+			create_popup_bottom_button(popup, "button1", __(info->right_btn), confirm_button_cb);
 		}
 	} else {
-		elm_object_text_set(popup, body);
+		elm_object_style_set(popup, "toast/circle");
+		elm_popup_orient_set(popup, ELM_POPUP_ORIENT_CENTER);
+		elm_object_part_text_set(popup, "elm.text", body);
 		elm_popup_timeout_set(popup, 3.0);
 		evas_object_smart_callback_add(popup, "timeout", popup_timeout_cb, NULL);
 		evas_object_smart_callback_add(popup, "block,clicked", block_clicked_cb, NULL);
