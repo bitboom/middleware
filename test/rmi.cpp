@@ -40,16 +40,16 @@ public:
 	{
 		service.reset(new rmi::Service(IPC_TEST_ADDRESS));
 
-		service->registerMethod(this, "", (std::string)(TestServer::method1)(std::string));
-		service->registerMethod(this, "", (std::string)(TestServer::method2)(std::string, std::string));
-		service->registerMethod(this, "", (std::string)(TestServer::method3)(std::string, std::string, std::string));
-		service->registerMethod(this, "", (std::string)(TestServer::method4)(std::string, std::string, std::string, std::string));
+		service->expose(this, "", (std::string)(TestServer::method1)(std::string));
+		service->expose(this, "", (std::string)(TestServer::method2)(std::string, std::string));
+		service->expose(this, "", (std::string)(TestServer::method3)(std::string, std::string, std::string));
+		service->expose(this, "", (std::string)(TestServer::method4)(std::string, std::string, std::string, std::string));
 
-		service->registerMethod(this, "", (runtime::FileDescriptor)(TestServer::signalProvider)(std::string));
-		service->registerMethod(this, "", (runtime::FileDescriptor)(TestServer::policyNotificationProvider)(std::string));
+		service->expose(this, "", (runtime::FileDescriptor)(TestServer::signalProvider)(std::string));
+		service->expose(this, "", (runtime::FileDescriptor)(TestServer::policyNotificationProvider)(std::string));
 
-		service->registerNonparametricMethod(this, "", (int)(TestServer::sendSignal)());
-		service->registerNonparametricMethod(this, "", (int)(TestServer::sendPolicyChangeNotification)());
+		service->expose(this, "", (int)(TestServer::sendSignal)());
+		service->expose(this, "", (int)(TestServer::sendPolicyChangeNotification)());
 
 		service->createNotification("TestPolicyChanged");
 		service->createNotification("TestSignal");

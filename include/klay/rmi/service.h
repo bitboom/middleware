@@ -43,19 +43,96 @@
 #define TYPEOF_(...)     TYPEOF__(__VA_ARGS__)
 #define TYPEOF(x)        TYPEOF_(TYPEOF___ x, )
 
+#define ARGSEQ_0(how)
+#define ARGSEQ_1(how)     ARGSEQ_0(how), how(1)
+#define ARGSEQ_2(how)     ARGSEQ_1(how), how(2)
+#define ARGSEQ_3(how)     ARGSEQ_2(how), how(3)
+#define ARGSEQ_4(how)     ARGSEQ_3(how), how(4)
+#define ARGSEQ_5(how)     ARGSEQ_4(how), how(5)
+#define ARGSEQ_6(how)     ARGSEQ_5(how), how(6)
+#define ARGSEQ_7(how)     ARGSEQ_6(how), how(7)
+#define ARGSEQ_8(how)     ARGSEQ_7(how), how(8)
+#define ARGSEQ_9(how)     ARGSEQ_8(how), how(9)
+#define ARGSEQ_10(how)    ARGSEQ_9(how), how(10)
+#define ARGSEQ_11(how)    ARGSEQ_10(how), how(11)
+#define ARGSEQ_12(how)    ARGSEQ_11(how), how(12)
+#define ARGSEQ_13(how)    ARGSEQ_12(how), how(13)
+#define ARGSEQ_14(how)    ARGSEQ_13(how), how(14)
+#define ARGSEQ_15(how)    ARGSEQ_14(how), how(15)
+#define ARGSEQ_16(how)    ARGSEQ_15(how), how(16)
+#define ARGSEQ_17(how)    ARGSEQ_16(how), how(17)
+#define ARGSEQ_18(how)    ARGSEQ_17(how), how(18)
+#define ARGSEQ_19(how)    ARGSEQ_18(how), how(19)
+#define ARGSEQ_20(how)    ARGSEQ_19(how), how(20)
+#define ARGSEQ_21(how)    ARGSEQ_20(how), how(21)
+#define ARGSEQ_22(how)    ARGSEQ_21(how), how(22)
+#define ARGSEQ_23(how)    ARGSEQ_22(how), how(23)
+#define ARGSEQ_24(how)    ARGSEQ_23(how), how(24)
+#define ARGSEQ_25(how)    ARGSEQ_24(how), how(25)
+#define ARGSEQ_26(how)    ARGSEQ_25(how), how(26)
+#define ARGSEQ_27(how)    ARGSEQ_26(how), how(27)
+#define ARGSEQ_28(how)    ARGSEQ_27(how), how(28)
+#define ARGSEQ_29(how)    ARGSEQ_28(how), how(29)
+#define ARGSEQ_30(how)    ARGSEQ_29(how), how(30)
+#define ARGSEQ_31(how)    ARGSEQ_30(how), how(31)
+#define ARGSEQ_32(how)    ARGSEQ_31(how), how(32)
+#define ARGSEQ_N(how, N)  ARGSEQ_##N(how)
+
 #define PLACEHOLDER(n)   std::placeholders::_##n
 
-#define PROTOTYPE_(D, N) SEQUENCE(D, N)
+#define PROTOTYPE_(D, N) ARGSEQ_N(D, N)
 #define PROTOTYPE(...)   PROTOTYPE_(PLACEHOLDER, VAR_ARGS_SIZE(__VA_ARGS__))
+
+#define SEPSEQ_0()
+#define SEPSEQ_1()    ,
+#define SEPSEQ_2()    SEPSEQ_1()
+#define SEPSEQ_3()    SEPSEQ_2()
+#define SEPSEQ_4()    SEPSEQ_3()
+#define SEPSEQ_5()    SEPSEQ_4()
+#define SEPSEQ_6()    SEPSEQ_5()
+#define SEPSEQ_7()    SEPSEQ_6()
+#define SEPSEQ_8()    SEPSEQ_7()
+#define SEPSEQ_9()    SEPSEQ_8()
+#define SEPSEQ_10()   SEPSEQ_9()
+#define SEPSEQ_11()   SEPSEQ_10()
+#define SEPSEQ_12()   SEPSEQ_11()
+#define SEPSEQ_13()   SEPSEQ_12()
+#define SEPSEQ_14()   SEPSEQ_13()
+#define SEPSEQ_15()   SEPSEQ_14()
+#define SEPSEQ_16()   SEPSEQ_15()
+#define SEPSEQ_17()   SEPSEQ_16()
+#define SEPSEQ_18()   SEPSEQ_17()
+#define SEPSEQ_19()   SEPSEQ_18()
+#define SEPSEQ_20()   SEPSEQ_19()
+#define SEPSEQ_21()   SEPSEQ_20()
+#define SEPSEQ_22()   SEPSEQ_21()
+#define SEPSEQ_23()   SEPSEQ_22()
+#define SEPSEQ_24()   SEPSEQ_23()
+#define SEPSEQ_25()   SEPSEQ_24()
+#define SEPSEQ_26()   SEPSEQ_25()
+#define SEPSEQ_27()   SEPSEQ_26()
+#define SEPSEQ_28()   SEPSEQ_27()
+#define SEPSEQ_29()   SEPSEQ_28()
+#define SEPSEQ_30()   SEPSEQ_29()
+#define SEPSEQ_31()   SEPSEQ_30()
+#define SEPSEQ_32()   SEPSEQ_31()
+#define SEPSEQ_N(N)   SEPSEQ_##N()
+
+#define SEPSEQ_(N)    SEPSEQ_N(N)
+#define SEPSEQ(...)   SEPSEQ_(VAR_ARGS_SIZE(__VA_ARGS__))
+
+#define expose(T, P, M, ...)                                                    \
+setMethodHandler<TYPEOF(M) SEPSEQ(TYPEOF(STRIP(STRIP(M)))) TYPEOF(STRIP(STRIP(M)))>  \
+				(P, STRINGIFY(TYPEOF(STRIP(M))), std::bind(&TYPEOF(STRIP(M)), T PROTOTYPE(TYPEOF(STRIP(STRIP(M))))))
 
 #define registerMethod(T, P, M, ...)                                          \
 setMethodHandler<TYPEOF(M), TYPEOF(STRIP(STRIP(M)))>                          \
-				(P, STRINGIFY(TYPEOF(STRIP(M))), std::bind(&TYPEOF(STRIP(M)), T, \
+				(P, STRINGIFY(TYPEOF(STRIP(M))), std::bind(&TYPEOF(STRIP(M)), T \
 				PROTOTYPE(TYPEOF(STRIP(STRIP(M))))))
 
 #define registerParametricMethod(T, P, M, ...)                                \
 setMethodHandler<TYPEOF(M), TYPEOF(STRIP(STRIP(M)))>                          \
-				(P, STRINGIFY(TYPEOF(STRIP(M))), std::bind(&TYPEOF(STRIP(M)), T, \
+				(P, STRINGIFY(TYPEOF(STRIP(M))), std::bind(&TYPEOF(STRIP(M)), T \
 				PROTOTYPE(TYPEOF(STRIP(STRIP(M))))))
 
 #define registerNonparametricMethod(T, P, M, ...)                             \
