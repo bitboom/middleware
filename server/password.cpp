@@ -77,36 +77,36 @@ inline PasswordManager::QualityType getPasswordQualityType(int quality)
 PasswordPolicy::PasswordPolicy(PolicyControlContext &ctxt) :
 	context(ctxt)
 {
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setQuality)(int));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMinimumLength)(int));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMinComplexChars)(int));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumFailedForWipe)(int));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setExpires)(int));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setHistory)(int));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setPattern)(std::string));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::reset)(std::string));
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::enforceChange));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaxInactivityTimeDeviceLock)(int));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setStatus)(int));
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::deletePattern));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumCharacterOccurrences)(int));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumNumericSequenceLength)(int));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setForbiddenStrings)(std::vector<std::string>));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setRecovery)(int));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setQuality)(int));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMinimumLength)(int));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMinComplexChars)(int));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumFailedForWipe)(int));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setExpires)(int));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setHistory)(int));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setPattern)(std::string));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::reset)(std::string));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::enforceChange)());
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaxInactivityTimeDeviceLock)(int));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setStatus)(int));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::deletePattern)());
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumCharacterOccurrences)(int));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumNumericSequenceLength)(int));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setForbiddenStrings)(std::vector<std::string>));
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setRecovery)(int));
 
-	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getStatus));
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getQuality));
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMinimumLength));
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMinComplexChars));
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumFailedForWipe));
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getExpires)());
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getHistory)());
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaxInactivityTimeDeviceLock));
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (std::string)(PasswordPolicy::getPattern));
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumCharacterOccurrences));
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumNumericSequenceLength));
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_PASSWORD, (std::vector<std::string>)(PasswordPolicy::getForbiddenStrings));
-	ctxt.registerNonparametricMethod(this, "", (int)(PasswordPolicy::getRecovery));
+	ctxt.expose(this, "", (int)(PasswordPolicy::getStatus)());
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getQuality)());
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMinimumLength)());
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMinComplexChars)());
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumFailedForWipe)());
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getExpires)());
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getHistory)());
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaxInactivityTimeDeviceLock)());
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (std::string)(PasswordPolicy::getPattern)());
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumCharacterOccurrences)());
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumNumericSequenceLength)());
+	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (std::vector<std::string>)(PasswordPolicy::getForbiddenStrings)());
+	ctxt.expose(this, "", (int)(PasswordPolicy::getRecovery)());
 
 	ctxt.createNotification("password");
 }

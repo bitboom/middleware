@@ -95,17 +95,17 @@ std::vector<std::string> wifiNotifications = {
 WifiPolicy::WifiPolicy(PolicyControlContext& ctx) :
 	context(ctx)
 {
-	context.registerParametricMethod(this, DPM_PRIVILEGE_WIFI, (int)(WifiPolicy::setState)(bool));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_WIFI, (int)(WifiPolicy::setHotspotState)(bool));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_WIFI, (int)(WifiPolicy::setProfileChangeRestriction)(bool));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_WIFI, (int)(WifiPolicy::setNetworkAccessRestriction)(bool));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_WIFI, (int)(WifiPolicy::addSsidToBlocklist)(std::string));
+	context.expose(this, DPM_PRIVILEGE_WIFI, (int)(WifiPolicy::setState)(bool));
+	context.expose(this, DPM_PRIVILEGE_WIFI, (int)(WifiPolicy::setHotspotState)(bool));
+	context.expose(this, DPM_PRIVILEGE_WIFI, (int)(WifiPolicy::setProfileChangeRestriction)(bool));
+	context.expose(this, DPM_PRIVILEGE_WIFI, (int)(WifiPolicy::setNetworkAccessRestriction)(bool));
+	context.expose(this, DPM_PRIVILEGE_WIFI, (int)(WifiPolicy::addSsidToBlocklist)(std::string));
 
-	context.registerNonparametricMethod(this, "", (bool)(WifiPolicy::getState));
-	context.registerNonparametricMethod(this, "", (bool)(WifiPolicy::getHotspotState));
-	context.registerNonparametricMethod(this, "", (bool)(WifiPolicy::isProfileChangeRestricted));
-	context.registerNonparametricMethod(this, "", (bool)(WifiPolicy::isNetworkAccessRestricted));
-	context.registerParametricMethod(this, "", (int)(WifiPolicy::removeSsidFromBlocklist)(std::string));
+	context.expose(this, "", (bool)(WifiPolicy::getState)());
+	context.expose(this, "", (bool)(WifiPolicy::getHotspotState)());
+	context.expose(this, "", (bool)(WifiPolicy::isProfileChangeRestricted)());
+	context.expose(this, "", (bool)(WifiPolicy::isNetworkAccessRestricted)());
+	context.expose(this, "", (int)(WifiPolicy::removeSsidFromBlocklist)(std::string));
 
 	context.createNotification(wifiNotifications);
 

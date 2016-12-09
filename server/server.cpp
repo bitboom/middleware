@@ -42,8 +42,8 @@ Server::Server()
 
 	service->setPrivilegeChecker(std::bind(&Server::checkPeerPrivilege, this, _1, _2));
 
-	service->registerParametricMethod(this, "", (runtime::FileDescriptor)(Server::registerNotificationSubscriber)(std::string));
-	service->registerParametricMethod(this, "", (int)(Server::unregisterNotificationSubscriber)(std::string, int));
+	service->expose(this, "", (runtime::FileDescriptor)(Server::registerNotificationSubscriber)(std::string));
+	service->expose(this, "", (int)(Server::unregisterNotificationSubscriber)(std::string, int));
 }
 
 Server::~Server()

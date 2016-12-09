@@ -38,12 +38,12 @@ const std::string APPID_LOCKSCREEN = "org.tizen.lockscreen";
 SecurityPolicy::SecurityPolicy(PolicyControlContext& ctxt) :
 	context(ctxt)
 {
-	ctxt.registerNonparametricMethod(this, DPM_PRIVILEGE_LOCK, (int)(SecurityPolicy::lockoutScreen));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_SECURITY, (int)(SecurityPolicy::setInternalStorageEncryption)(bool));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_SECURITY, (int)(SecurityPolicy::setExternalStorageEncryption)(bool));
+	ctxt.expose(this, DPM_PRIVILEGE_LOCK, (int)(SecurityPolicy::lockoutScreen)());
+	ctxt.expose(this, DPM_PRIVILEGE_SECURITY, (int)(SecurityPolicy::setInternalStorageEncryption)(bool));
+	ctxt.expose(this, DPM_PRIVILEGE_SECURITY, (int)(SecurityPolicy::setExternalStorageEncryption)(bool));
 
-	ctxt.registerNonparametricMethod(this, "", (bool)(SecurityPolicy::isInternalStorageEncrypted));
-	ctxt.registerNonparametricMethod(this, "", (bool)(SecurityPolicy::isExternalStorageEncrypted));
+	ctxt.expose(this, "", (bool)(SecurityPolicy::isInternalStorageEncrypted)());
+	ctxt.expose(this, "", (bool)(SecurityPolicy::isExternalStorageEncrypted)());
 }
 
 SecurityPolicy::~SecurityPolicy()

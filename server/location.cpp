@@ -26,8 +26,8 @@ namespace DevicePolicyManager {
 LocationPolicy::LocationPolicy(PolicyControlContext& ctxt) :
 	context(ctxt)
 {
-	context.registerParametricMethod(this, DPM_PRIVILEGE_LOCATION, (int)(LocationPolicy::setLocationState)(bool));
-	context.registerNonparametricMethod(this, "", (bool)(LocationPolicy::getLocationState));
+	context.expose(this, DPM_PRIVILEGE_LOCATION, (int)(LocationPolicy::setLocationState)(bool));
+	context.expose(this, "", (bool)(LocationPolicy::getLocationState)());
 
 	context.createNotification("location");
 }

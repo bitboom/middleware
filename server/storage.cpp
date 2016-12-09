@@ -103,7 +103,7 @@ void requestDeviceFormat(const std::string& devnode, int option)
 StoragePolicy::StoragePolicy(PolicyControlContext& ctx) :
 	context(ctx)
 {
-	context.registerParametricMethod(this, DPM_PRIVILEGE_WIPE, (int)(StoragePolicy::wipeData)(int));
+	context.expose(this, DPM_PRIVILEGE_WIPE, (int)(StoragePolicy::wipeData)(int));
 }
 
 StoragePolicy::~StoragePolicy()

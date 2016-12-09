@@ -121,23 +121,23 @@ std::vector<std::string> bluetoothNotifications = {
 BluetoothPolicy::BluetoothPolicy(PolicyControlContext& ctxt) :
 	context(ctxt)
 {
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setModeChangeState)(bool));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setDesktopConnectivityState)(bool));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setTetheringState)(bool));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setPairingState)(bool));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::addDeviceToBlacklist)(std::string));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::removeDeviceFromBlacklist)(std::string));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setDeviceRestriction)(bool));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::addUuidToBlacklist)(std::string));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::removeUuidFromBlacklist)(std::string));
-	ctxt.registerParametricMethod(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setUuidRestriction)(bool));
+	ctxt.expose(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setModeChangeState)(bool));
+	ctxt.expose(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setDesktopConnectivityState)(bool));
+	ctxt.expose(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setTetheringState)(bool));
+	ctxt.expose(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setPairingState)(bool));
+	ctxt.expose(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::addDeviceToBlacklist)(std::string));
+	ctxt.expose(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::removeDeviceFromBlacklist)(std::string));
+	ctxt.expose(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setDeviceRestriction)(bool));
+	ctxt.expose(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::addUuidToBlacklist)(std::string));
+	ctxt.expose(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::removeUuidFromBlacklist)(std::string));
+	ctxt.expose(this, DPM_PRIVILEGE_BLUETOOTH, (int)(BluetoothPolicy::setUuidRestriction)(bool));
 
-	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::getModeChangeState));
-	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::getDesktopConnectivityState));
-	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::getTetheringState));
-	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::getPairingState));
-	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::isDeviceRestricted));
-	ctxt.registerNonparametricMethod(this, "", (bool)(BluetoothPolicy::isUuidRestricted));
+	ctxt.expose(this, "", (bool)(BluetoothPolicy::getModeChangeState)());
+	ctxt.expose(this, "", (bool)(BluetoothPolicy::getDesktopConnectivityState)());
+	ctxt.expose(this, "", (bool)(BluetoothPolicy::getTetheringState)());
+	ctxt.expose(this, "", (bool)(BluetoothPolicy::getPairingState)());
+	ctxt.expose(this, "", (bool)(BluetoothPolicy::isDeviceRestricted)());
+	ctxt.expose(this, "", (bool)(BluetoothPolicy::isUuidRestricted)());
 
 	ctxt.createNotification(bluetoothNotifications);
 

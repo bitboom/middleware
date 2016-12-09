@@ -56,25 +56,25 @@ std::vector<std::string> restrictionNotifications = {
 RestrictionPolicy::RestrictionPolicy(PolicyControlContext& ctxt) :
 	context(ctxt)
 {
-	context.registerParametricMethod(this, DPM_PRIVILEGE_CAMERA, (int)(RestrictionPolicy::setCameraState)(bool));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_MICROPHONE, (int)(RestrictionPolicy::setMicrophoneState)(bool));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_CLIPBOARD, (int)(RestrictionPolicy::setClipboardState)(bool));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_DEBUGGING, (int)(RestrictionPolicy::setUsbDebuggingState)(bool));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_USB, (int)(RestrictionPolicy::setUsbTetheringState)(bool));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_STORAGE, (int)(RestrictionPolicy::setExternalStorageState)(bool));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_EMAIL, (int)(RestrictionPolicy::setPopImapEmailState)(bool));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_MESSAGING, (int)(RestrictionPolicy::setMessagingState)(std::string, bool));
-	context.registerParametricMethod(this, "", (int)(RestrictionPolicy::getMessagingState)(std::string));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_BROWSER, (int)(RestrictionPolicy::setBrowserState)(bool));
+	context.expose(this, DPM_PRIVILEGE_CAMERA, (int)(RestrictionPolicy::setCameraState)(bool));
+	context.expose(this, DPM_PRIVILEGE_MICROPHONE, (int)(RestrictionPolicy::setMicrophoneState)(bool));
+	context.expose(this, DPM_PRIVILEGE_CLIPBOARD, (int)(RestrictionPolicy::setClipboardState)(bool));
+	context.expose(this, DPM_PRIVILEGE_DEBUGGING, (int)(RestrictionPolicy::setUsbDebuggingState)(bool));
+	context.expose(this, DPM_PRIVILEGE_USB, (int)(RestrictionPolicy::setUsbTetheringState)(bool));
+	context.expose(this, DPM_PRIVILEGE_STORAGE, (int)(RestrictionPolicy::setExternalStorageState)(bool));
+	context.expose(this, DPM_PRIVILEGE_EMAIL, (int)(RestrictionPolicy::setPopImapEmailState)(bool));
+	context.expose(this, DPM_PRIVILEGE_MESSAGING, (int)(RestrictionPolicy::setMessagingState)(std::string, bool));
+	context.expose(this, "", (int)(RestrictionPolicy::getMessagingState)(std::string));
+	context.expose(this, DPM_PRIVILEGE_BROWSER, (int)(RestrictionPolicy::setBrowserState)(bool));
 
-	context.registerNonparametricMethod(this, "", (bool)(RestrictionPolicy::getCameraState));
-	context.registerNonparametricMethod(this, "", (bool)(RestrictionPolicy::getMicrophoneState));
-	context.registerNonparametricMethod(this, "", (bool)(RestrictionPolicy::getClipboardState));
-	context.registerNonparametricMethod(this, "", (bool)(RestrictionPolicy::getUsbDebuggingState));
-	context.registerNonparametricMethod(this, "", (bool)(RestrictionPolicy::getUsbTetheringState));
-	context.registerNonparametricMethod(this, "", (bool)(RestrictionPolicy::getExternalStorageState));
-	context.registerNonparametricMethod(this, "", (bool)(RestrictionPolicy::getPopImapEmailState));
-	context.registerNonparametricMethod(this, "", (bool)(RestrictionPolicy::getBrowserState));
+	context.expose(this, "", (bool)(RestrictionPolicy::getCameraState)());
+	context.expose(this, "", (bool)(RestrictionPolicy::getMicrophoneState)());
+	context.expose(this, "", (bool)(RestrictionPolicy::getClipboardState)());
+	context.expose(this, "", (bool)(RestrictionPolicy::getUsbDebuggingState)());
+	context.expose(this, "", (bool)(RestrictionPolicy::getUsbTetheringState)());
+	context.expose(this, "", (bool)(RestrictionPolicy::getExternalStorageState)());
+	context.expose(this, "", (bool)(RestrictionPolicy::getPopImapEmailState)());
+	context.expose(this, "", (bool)(RestrictionPolicy::getBrowserState)());
 
 	context.createNotification(restrictionNotifications);
 }

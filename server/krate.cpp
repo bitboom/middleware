@@ -65,10 +65,10 @@ bool foreachKrateCallback(const char* name, void* user_data) {
 KratePolicy::KratePolicy(PolicyControlContext& ctx) :
 	context(ctx)
 {
-	context.registerParametricMethod(this, DPM_PRIVILEGE_ZONE, (int)(KratePolicy::createKrate)(std::string, std::string));
-	context.registerParametricMethod(this, DPM_PRIVILEGE_ZONE, (int)(KratePolicy::removeKrate)(std::string));
-	context.registerParametricMethod(this, "", (int)(KratePolicy::getKrateState)(std::string));
-	context.registerParametricMethod(this, "", (std::vector<std::string>)(KratePolicy::getKrateList)(int));
+	context.expose(this, DPM_PRIVILEGE_ZONE, (int)(KratePolicy::createKrate)(std::string, std::string));
+	context.expose(this, DPM_PRIVILEGE_ZONE, (int)(KratePolicy::removeKrate)(std::string));
+	context.expose(this, "", (int)(KratePolicy::getKrateState)(std::string));
+	context.expose(this, "", (std::vector<std::string>)(KratePolicy::getKrateList)(int));
 
 	context.createNotification("KratePolicy::created");
 	context.createNotification("KratePolicy::removed");
