@@ -25,6 +25,7 @@ ADD_DEFINITIONS("-Wextra")
 ADD_DEFINITIONS("-Werror")
 
 SET(TARGET_VCORE_LIB "cert-svc-vcore")
+SET(TARGET_TRANSEC_LIB "cert-svc-transec")
 SET(TARGET_CERT_SERVER "cert-server")
 
 ADD_DEFINITIONS("-DSIGNATURE_SCHEMA_PATH=\"${CERT_SVC_RO_PATH}/schema.xsd\"")

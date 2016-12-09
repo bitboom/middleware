@@ -161,6 +161,7 @@ fi
 %_unitdir/cert-server.socket
 %_unitdir/sockets.target.wants/cert-server.socket
 %_libdir/libcert-svc-vcore.so.*
+%_libdir/libcert-svc-transec.so.*
 %bin_dir/cert-server
 %dir %attr(-, %{user_name}, %{group_name}) %cert_svc_path
 %dir %attr(-, %{user_name}, %{group_name}) %cert_svc_pkcs12
@@ -178,6 +179,7 @@ fi
 %_includedir/*
 %_libdir/pkgconfig/*
 %_libdir/libcert-svc-vcore.so
+%_libdir/libcert-svc-transec.so
 
 %if 0%{?certsvc_test_build}
 %files test
