@@ -17,9 +17,9 @@
 #
 
 CONFIGURE_FILE(
-	cert-checker-upgrade.sh.in cert-checker-upgrade.sh
+	500.cert-checker-upgrade.sh.in 500.cert-checker-upgrade.sh
 	@ONLY)
 
 INSTALL(FILES
-	cert-checker-upgrade.sh
+	500.cert-checker-upgrade.sh
 	DESTINATION ${UPGRADE_SCRIPT_DIR})

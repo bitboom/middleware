@@ -176,7 +176,7 @@ fi
 %{popup_unitdir}/%{name}-popup.socket
 %{popup_unitdir}/sockets.target.wants/%{name}-popup.socket
 
-%attr(755, root, root) %{upgrade_script_dir}/cert-checker-upgrade.sh
+%attr(755, root, root) %{upgrade_script_dir}/500.cert-checker-upgrade.sh
 %{upgrade_data_dir}/.%{name}.db
 
 %files -n lib%{name}-common
