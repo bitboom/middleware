@@ -150,34 +150,6 @@ Testcases for device policy manager and device policy client
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/dpm-api-tests
 
-## Tools Package #############################################################
-%package -n org.tizen.ode
-Summary: Tizen ODE User Interface
-Group: Security/Other
-BuildRequires: pkgconfig(glib-2.0)
-BuildRequires: pkgconfig(elementary)
-BuildRequires: pkgconfig(dlog)
-BuildRequires: pkgconfig(capi-appfw-application)
-BuildRequires: pkgconfig(efl-extension)
-BuildRequires: pkgconfig(libxml-2.0)
-BuildRequires: pkgconfig(capi-system-system-settings)
-BuildRequires: pkgconfig(evas)
-BuildRequires: pkgconfig(capi-system-device)
-BuildRequires: pkgconfig(capi-system-runtime-info)
-BuildRequires: pkgconfig(vconf)
-BuildRequires: pkgconfig(capi-appfw-app-control)
-
-%description -n org.tizen.ode
-Tizen ODE User Interface for device policy management
-
-%define odeapp_home %{TZ_SYS_RO_APP}/org.tizen.ode
-
-%files -n org.tizen.ode
-%defattr(-,root,root,-)
-%{odeapp_home}/bin/*
-%{odeapp_home}/res/*
-%{TZ_SYS_RO_PACKAGES}/org.tizen.ode.xml
-
 ## DPM Syspopup Package ######################################################
 %package -n org.tizen.dpm-syspopup
 Summary: Tizen DPM system popup Interface
