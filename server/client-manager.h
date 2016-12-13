@@ -56,7 +56,7 @@ public:
 				}
 			} while ((ret == -1) && (errno == EINTR));
 
-			::close(fd);
+			while (::close(fd) == -1 && errno == EINTR);
 
 			if (ret == -1) {
 				throw runtime::Exception("Failed to get admin info");
