@@ -92,13 +92,211 @@ bool PatternComparator(const std::string& v1, const std::string& v2)
 
 } // namespace
 
+class UserPolicy : public ManagedPolicy {
+public:
+	template<typename DataType>
+	UserPolicy(const std::string& name, const DataType& value);
+
+	template<typename DataType>
+	UserPolicy(const std::string& name, const DataType& value,
+			   const typename PolicyComparator<DataType>::type& pred);
+
+	void apply(DataSource& datasource, const std::vector<uid_t>& domainList);
+
+private:
+    template<typename DataType>
+    class Storage : public PolicyStorage<DataType> {
+	public:
+		Storage(const std::string& rname, const DataType& value);
+		Storage(const std::string& rname, const DataType& value,
+				const typename PolicyComparator<DataType>::type& pred);
+
+		void declare(DataSource& datasource);
+		bool enforce(DataSource& datasource, uid_t domain);
+	};
+};
+
+template<typename DataType>
+UserPolicy::UserPolicy(const std::string& name, const DataType& value) :
+	ManagedPolicy(new Storage<DataType>(name, value))
+{
+}
+
+template<typename DataType>
+UserPolicy::UserPolicy(const std::string& name, const DataType& value,
+					   const typename PolicyComparator<DataType>::type& pred) :
+	ManagedPolicy(new Storage<DataType>(name, value, pred))
+{
+}
+
+void UserPolicy::apply(DataSource& datasource, const std::vector<uid_t>& domainList)
+{
+	for (auto domain : domainList) {
+		enforce(datasource, domain);
+	}
+}
+
+template<typename DataType>
+UserPolicy::Storage<DataType>::Storage(const std::string& rname, const DataType& value) :
+	ManagedPolicy::PolicyStorage<DataType>(rname, value)
+{
+}
+
+template<typename DataType>
+UserPolicy::Storage<DataType>::Storage(const std::string& rname, const DataType& value,
+									   const typename PolicyComparator<DataType>::type& pred) :
+	ManagedPolicy::PolicyStorage<DataType>(rname, value, pred)
+{
+}
+
+template<typename DataType>
+void UserPolicy::Storage<DataType>::declare(DataSource& datasource)
+{
+	std::string query = "INSERT INTO policy_definition(id, scope, name, ivalue) VALUES (?, 1, ?, ?)";
+	database::Statement stmt(datasource, query);
+	stmt.bind(1, this->id);
+	stmt.bind(2, this->name);
+	stmt.bind(3, this->reference);
+
+	if (!stmt.exec()) {
+		throw runtime::Exception("Failed to insert");
+	}
+}
+
+template<typename DataType>
+bool UserPolicy::Storage<DataType>::enforce(DataSource& datasource, uid_t domain)
+{
+	int count = 0;
+	DataType strictness = this->reference;
+	std::string query = "SELECT managed_policy.value, policy_definition.name FROM managed_policy " \
+						"INNER JOIN policy_definition ON managed_policy.pid = policy_definition.id " \
+						"INNER JOIN admin ON managed_policy.aid = admin.id " \
+						"WHERE policy_definition.scope = 1 AND managed_policy.pid = ? AND admin.uid = ? ";
+
+	database::Statement stmt(datasource, query);
+	stmt.bind(1, this->id);
+	stmt.bind(2, static_cast<int>(domain));
+	while (stmt.step()) {
+		DataType value(stmt.getColumn(0));
+		if (this->compare(strictness, value)) {
+			strictness = value;
+		}
+		count++;
+	}
+
+	if (!count) {
+		return this->remove(domain);
+	}
+
+	return this->insert(domain, strictness);
+}
+
+
+class GlobalPolicy : public ManagedPolicy {
+public:
+	template<typename DataType>
+	GlobalPolicy(const std::string& name, const DataType& value);
+
+	template<typename DataType>
+	GlobalPolicy(const std::string& name, const DataType& value,
+				 const typename PolicyComparator<DataType>::type& pred);
+
+	void apply(DataSource& datasource, const std::vector<uid_t>& domainList);
+
+private:
+	template<typename DataType>
+	class Storage : public PolicyStorage<DataType> {
+	public:
+		Storage(const std::string& rname, const DataType& value);
+		Storage(const std::string& rname, const DataType& value,
+			    const typename PolicyComparator<DataType>::type& pred);
+
+		void declare(DataSource& datasource);
+		bool enforce(DataSource& datasource, uid_t domain);
+	};
+};
+
+template<typename DataType>
+GlobalPolicy::GlobalPolicy(const std::string& name, const DataType& value) :
+	ManagedPolicy(new Storage<DataType>(name, value))
+{
+}
+
+template<typename DataType>
+GlobalPolicy::GlobalPolicy(const std::string& name, const DataType& value,
+						   const typename PolicyComparator<DataType>::type& pred) :
+	ManagedPolicy(new Storage<DataType>(name, value, pred))
+{
+}
+
+void GlobalPolicy::apply(DataSource& datasource, const std::vector<uid_t>& domainList)
+{
+	enforce(datasource, 0);
+}
+
+template<typename DataType>
+GlobalPolicy::Storage<DataType>::Storage(const std::string& rname, const DataType& value) :
+	ManagedPolicy::PolicyStorage<DataType>(rname, value)
+{
+}
+
+template<typename DataType>
+GlobalPolicy::Storage<DataType>::Storage(const std::string& rname, const DataType& value,
+										  const typename PolicyComparator<DataType>::type& pred) :
+	ManagedPolicy::PolicyStorage<DataType>(rname, value, pred)
+{
+}
+
+template<typename DataType>
+void GlobalPolicy::Storage<DataType>::declare(DataSource& datasource)
+{
+	std::string query = "INSERT INTO policy_definition(id, scope, name, ivalue) VALUES (?, 0, ?, ?)";
+	database::Statement stmt(datasource, query);
+	stmt.bind(1, this->id);
+	stmt.bind(2, this->name);
+	stmt.bind(3, this->reference);
+
+	if (!stmt.exec()) {
+		throw runtime::Exception("Failed to insert");
+	}
+}
+
+template<typename DataType>
+bool GlobalPolicy::Storage<DataType>::enforce(DataSource& datasource, uid_t domain)
+{
+	int count = 0;
+	DataType strictness = this->reference;
+	std::string query = "SELECT managed_policy.value, policy_definition.name FROM managed_policy " \
+						"INNER JOIN policy_definition ON managed_policy.pid = policy_definition.id " \
+						"INNER JOIN admin ON managed_policy.aid = admin.id " \
+						"WHERE managed_policy.pid = ? AND policy_definition.scope = 0 ";
+
+	database::Statement stmt(datasource, query);
+	stmt.bind(1, this->id);
+
+	while (stmt.step()) {
+		DataType value(stmt.getColumn(0));
+		if (this->compare(strictness, value)) {
+			strictness = value;
+		}
+		count++;
+	}
+
+	if (!count) {
+		return this->remove(0);
+	}
+
+	return this->insert(0, strictness);
+}
+
 #define USER_POLICY(_n_, _v_, _c_)	\
-{ _n_, ManagedPolicy(_n_, 1, _v_, _c_) }
+{ _n_, new UserPolicy(_n_, _v_, _c_) }
 
 #define GLOBAL_POLICY(_n_, _v_, _c_) \
-{ _n_, ManagedPolicy(_n_, 0, _v_, _c_) }
+{ _n_, new GlobalPolicy(_n_, _v_, _c_) }
 
-std::unordered_map<std::string, ManagedPolicy> PolicyManager::managedPolicyMap = {
+
+std::unordered_map<std::string, ManagedPolicy *> PolicyManager::managedPolicyMap = {
 USER_POLICY("password-history",                       int(0),          MaximizeIntegerComparator),
 USER_POLICY("password-minimum-length",                int(0),          MaximizeIntegerComparator),
 USER_POLICY("password-minimum-complexity",            int(0),          MaximizeIntegerComparator),
@@ -132,7 +330,8 @@ GLOBAL_POLICY("wifi-profile-change",                    int(1),          StateCo
 GLOBAL_POLICY("wifi-ssid-restriction",                  int(0),          RestrictionComparator)
 };
 
-std::atomic<unsigned int> ManagedPolicy::IVariantStorage::sequencer(1);
+template<typename DataType>
+std::atomic<unsigned int> ManagedPolicy::PolicyStorage<DataType>::sequence(1);
 
 PolicyManager::PolicyManager(const std::string& path) :
 	connection(path, database::Connection::ReadWrite | database::Connection::Create)
@@ -147,10 +346,10 @@ PolicyManager::~PolicyManager()
 std::vector<uid_t> PolicyManager::getManagedDomainList()
 {
 	std::vector<uid_t> managedDomains;
-	std::string query0 = "SELECT DISTINCT uid FROM admin;";
-	database::Statement stmt0(connection, query0);
-	while (stmt0.step()) {
-		managedDomains.push_back(stmt0.getColumn(0).getInt());
+	std::string query = "SELECT DISTINCT uid FROM admin;";
+	database::Statement stmt(connection, query);
+	while (stmt.step()) {
+		managedDomains.push_back(stmt.getColumn(0).getInt());
 	}
 
 	return managedDomains;
@@ -163,8 +362,8 @@ void PolicyManager::initializeStorage()
 	database::Statement stmt(connection, query);
 	if (stmt.step() == false) {
 		for (auto &it : managedPolicyMap) {
-			ManagedPolicy &policy = it.second;
-			policy.declare(connection);
+			ManagedPolicy* policy = it.second;
+			policy->declare(connection);
 		}
 	}
 }
@@ -174,8 +373,8 @@ void PolicyManager::apply()
 	std::vector<uid_t> managedDomains = getManagedDomainList();
 
 	for (auto &it : managedPolicyMap) {
-		ManagedPolicy &policy = it.second;
-		policy.apply(connection, managedDomains);
+		ManagedPolicy* policy = it.second;
+		policy->apply(connection, managedDomains);
 	}
 }
 
@@ -218,8 +417,8 @@ int PolicyManager::removeStorage(const std::string& admin, uid_t domain)
 	}
 
 	for (auto &it : managedPolicyMap) {
-		ManagedPolicy &policy = it.second;
-		policy.apply(connection, std::vector<uid_t>({domain}));
+		ManagedPolicy* policy = it.second;
+		policy->apply(connection, std::vector<uid_t>({domain}));
 	}
 
 	return 0;
