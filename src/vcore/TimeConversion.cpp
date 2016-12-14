@@ -341,8 +341,10 @@ int asn1TimeToTimeT(ASN1_TIME *t, time_t *res)
 		return 0;
 
 	char buf[27]; // asctime_r return 26 characters
+	memset(buf, 0, sizeof(buf));
 	LogDebug("Convert asn1 to tm: " << asctime_r(&tm, buf));
-	*res = mktime(&tm);
+	*res = timegm(&tm);
+	LogDebug("Convert tm to time_t: " << *res);
 
 	// If time_t occured overflow, set TIME_MAX.
 	if (*res == -1) {
@@ -350,10 +352,6 @@ int asn1TimeToTimeT(ASN1_TIME *t, time_t *res)
 		*res = TIME_MAX;
 	}
 
-	// For Debugging.
-	struct tm localTm;
-	localtime_r(res, &localTm);
-	LogDebug("Result time_t(tm format): " << asctime_r(&localTm, buf));
 	return 1;
 }
 
