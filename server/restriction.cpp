@@ -35,11 +35,6 @@
 	"org.tizen.system.deviced.SysNoti",     \
 	"control"
 
-#define MOBILEAP_INTERFACE                  \
-	"org.tizen.MobileapAgent",              \
-	"/MobileapAgent",                       \
-	"org.tizen.tethering"
-
 namespace DevicePolicyManager {
 
 namespace {
@@ -175,15 +170,6 @@ int RestrictionPolicy::setUsbTetheringState(bool enable)
 		if (!SetPolicyAllowed(context, "usb-tethering", enable)) {
 			return 0;
 		}
-
-		dbus::Connection &systemDBus = dbus::Connection::getSystem();
-		systemDBus.methodcall(MOBILEAP_INTERFACE,
-							  "change_policy",
-							  -1,
-							  "",
-							  "(sb)",
-							  "usb-tethering",
-							  enable);
 	} catch (runtime::Exception& e) {
 		ERROR("Failed to change USB tethering state");
 		return -1;

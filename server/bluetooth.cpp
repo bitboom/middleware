@@ -38,12 +38,6 @@
 	((enable) ? BLUETOOTH_DPM_BT_ALLOWED :              \
 				BLUETOOTH_DPM_BT_RESTRICTED)
 
-
-#define MOBILEAP_INTERFACE		\
-	"org.tizen.MobileapAgent",	\
-	"/MobileapAgent",			\
-	"org.tizen.tethering"
-
 namespace DevicePolicyManager {
 
 namespace {
@@ -233,15 +227,6 @@ int BluetoothPolicy::setTetheringState(bool enable)
 		if (!SetPolicyAllowed(context, "bluetooth-tethering", enable)) {
 			return 0;
 		}
-
-		dbus::Connection &systemDBus = dbus::Connection::getSystem();
-		systemDBus.methodcall(MOBILEAP_INTERFACE,
-							  "change_policy",
-							  -1,
-							  "",
-							  "(sb)",
-							  "bluetooth-tethering",
-							  enable);
 	} catch (runtime::Exception& e) {
 		ERROR("Failed to change bluetooth tethering state");
 		return -1;

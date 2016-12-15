@@ -37,11 +37,6 @@
 	"/net/netconfig/network",	\
 	"net.netconfig.network"
 
-#define MOBILEAP_INTERFACE		\
-	"org.tizen.MobileapAgent",	\
-	"/MobileapAgent",			\
-	"org.tizen.tethering"
-
 namespace DevicePolicyManager {
 
 namespace {
@@ -156,15 +151,6 @@ int WifiPolicy::setHotspotState(bool enable)
 		if (!SetPolicyAllowed(context, "wifi-hotspot", enable)) {
 			return 0;
 		}
-
-		dbus::Connection &systemDBus = dbus::Connection::getSystem();
-		systemDBus.methodcall(MOBILEAP_INTERFACE,
-							  "change_policy",
-							  -1,
-							  "",
-							  "(sb)",
-							  "wifi-hotspot",
-							  enable);
 	} catch (runtime::Exception& e) {
 		ERROR("Failed to change Wi-Fi hotspot state");
 		return -1;
