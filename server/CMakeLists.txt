@@ -23,6 +23,7 @@ SET(FOUNDATION		main.cpp
 					packman.cpp
 					policy-builder.cpp
 					policy-manager.cpp
+					syspopup.cpp
 )
 
 SET(POLICY			administration.cpp

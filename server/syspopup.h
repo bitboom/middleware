@@ -13,40 +13,30 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-#include <fcntl.h>
-#include <unistd.h>
-#include <getopt.h>
-#include <signal.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
-#include <cstdlib>
-#include <iostream>
-#include <stdexcept>
+#ifndef __DPM_SYSPOPUP_SERVICE_H__
+#define __DPM_SYSPOPUP_SERVICE_H__
 
-#include "syspopup.h"
-#include "server.h"
+#include <string>
 
-void signalHandler(int signum)
-{
-	exit(0);
-}
+#include <klay/dbus/connection.h>
 
-int main(int argc, char *argv[])
-{
-	::signal(SIGINT, signalHandler);
+class SyspopupService {
+public:
+	SyspopupService();
+	~SyspopupService();
 
-	::umask(022);
+private:
+	dbus::Variant onMethodCall(const std::string& objectPath,
+							   const std::string& interface,
+							   const std::string& methodName,
+							   dbus::Variant parameters);
 
-	try {
-		SyspopupService syspopup;
+	void onNameAcquired();
+	void onNameLost();
 
-		Server server;
-		server.run();
-	} catch (std::exception &e) {
-		std::cerr << e.what() << std::endl;
-		return 1;
-	}
+private:
+	uid_t activeUser;
+};
 
-	return 0;
-}
+#endif //__DPM_SYSPOPUP_SERVICE_H__

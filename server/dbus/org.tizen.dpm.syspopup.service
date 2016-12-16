@@ -1,0 +1,5 @@
+[D-BUS Service]
+Name=org.tizen.dpm.syspopup
+Exec=/bin/false
+User=security_fw
+SystemdService=org.tizen.dpm.syspopup.service
