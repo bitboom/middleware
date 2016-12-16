@@ -36,10 +36,6 @@
 #include <vcore/SignatureFinder.h>
 #include <vcore/Ocsp.h>
 
-#ifdef TIZEN_PROFILE_MOBILE
-#include <cchecker/ocsp.h>
-#endif
-
 using namespace ValidationCore::CertStoreId;
 
 namespace {
@@ -369,17 +365,6 @@ VCerr BaseValidator::baseCheck(const std::string &contentPath,
 		LogInfo("Ocsp unsupported : " << e.DumpToString());
 	} catch (const Ocsp::Exception::Base &e) {
 		LogInfo("Ocsp check throw exeption : " << e.DumpToString());
-#ifdef TIZEN_PROFILE_MOBILE
-		LogInfo("Launch cert-checker.");
-		try {
-			if (cchecker_ocsp_request() != 0)
-				LogError("Load cert-checker failed.");
-		} catch (const std::exception &e) {
-			LogError("std exception occured while cchecker running : " << e.what());
-		} catch (...) {
-			LogError("Unknown exception occuured while cchecker running. ");
-		}
-#endif
 	} catch (const std::exception &e) {
 		LogError("std exception occured : " << e.what());
 		return E_SIG_UNKNOWN;
@@ -434,17 +419,6 @@ VCerr BaseValidator::baseCheckList(bool checkOcsp, const UriList &uriList)
 		LogInfo("Ocsp unsupported : " << e.DumpToString());
 	} catch (const Ocsp::Exception::Base &e) {
 		LogInfo("Ocsp check throw exeption : " << e.DumpToString());
-#ifdef TIZEN_PROFILE_MOBILE
-		LogInfo("Launch cert-checker.");
-		try {
-			if (cchecker_ocsp_request() != 0)
-				LogError("Load cert-checker failed.");
-		} catch (const std::exception &e) {
-			LogError("std exception occured while cchecker running : " << e.what());
-		} catch (...) {
-			LogError("Unknown exception occuured while cchecker running. ");
-		}
-#endif
 	} catch (...) {
 		LogError("Unknown exception in BaseValidator::checkList");
 		return E_SIG_UNKNOWN;

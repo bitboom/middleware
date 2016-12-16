@@ -30,9 +30,6 @@ Requires: ca-certificates
 Requires: ca-certificates-tizen
 Requires: security-config
 Requires: openssl
-%if "%{?profile}" == "mobile"
-BuildRequires: pkgconfig(cert-checker)
-%endif
 
 %global user_name security_fw
 %global group_name security_fw
@@ -117,11 +114,6 @@ export FFLAGS="$FFLAGS -DTIZEN_EMULATOR_MODE"
          -DCERT_SVC_OLD_DB_PATH=%cert_svc_old_db_path \
          -DUPGRADE_SCRIPT_PATH=%upgrade_script_path \
          -DUPGRADE_DATA_PATH=%upgrade_data_path \
-%if "%{?profile}" == "mobile"
-         -DTIZEN_PROFILE_MOBILE:BOOL=ON \
-%else
-         -DTIZEN_PROFILE_MOBILE:BOOL=OFF \
-%endif
 %if 0%{?certsvc_test_build}
          -DCERTSVC_TEST_BUILD=1 \
          -DCERT_SVC_TESTS=%cert_svc_tests \

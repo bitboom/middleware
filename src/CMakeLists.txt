@@ -18,12 +18,6 @@
 #
 
 ######################### VCORE #########################
-
-IF(TIZEN_PROFILE_MOBILE)
-    ADD_DEFINITIONS("-DTIZEN_PROFILE_MOBILE")
-    SET(LIB_CERT_CHECKER cert-checker)
-ENDIF(TIZEN_PROFILE_MOBILE)
-
 PKG_CHECK_MODULES(VCORE_DEPS
     REQUIRED
     libxml-2.0
@@ -32,7 +26,6 @@ PKG_CHECK_MODULES(VCORE_DEPS
     xmlsec1
     dlog
     libsystemd-journal
-    ${LIB_CERT_CHECKER}
     )
 
 ADD_DEFINITIONS(${VCORE_DEPS_CFLAGS})
