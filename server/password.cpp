@@ -295,17 +295,11 @@ int PasswordPolicy::reset(const std::string &passwd)
 int PasswordPolicy::enforceChange()
 {
 	int ret = 0;
-	int lock_type = 0;
 	bundle *b = ::bundle_create();
-	const char *simple_user_data[6] = {"app-id", "org.tizen.setting-password", "caller", "DPM", "viewtype", "SETTING_PW_TYPE_SET_SIMPLE_PASSWORD"};
-	const char *passwd_user_data[6] = {"app-id", "org.tizen.setting-password", "caller", "DPM", "viewtype", "SETTING_PW_TYPE_SET_PASSWORD"};
+	const char *user_data[4] = {"app-id", "org.tizen.setting-password", "caller", "DPM"};
 
-	vconf_get_int(VCONFKEY_SETAPPL_SCREEN_LOCK_TYPE_INT, &lock_type);
 	::bundle_add_str(b, "id", "password-enforce-change");
-	if (lock_type == SETTING_SCREEN_LOCK_TYPE_SIMPLE_PASSWORD)
-		::bundle_add_str_array(b, "user-data", simple_user_data, 6);
-	else
-		::bundle_add_str_array(b, "user-data", passwd_user_data, 6);
+	::bundle_add_str_array(b, "user-data", user_data, 4);
 
 	ret = ::aul_launch_app_for_uid("org.tizen.dpm-syspopup", b, context.getPeerUid());
 	::bundle_free(b);
