@@ -24,6 +24,7 @@ SET(FOUNDATION		main.cpp
 					policy-builder.cpp
 					policy-manager.cpp
 					syspopup.cpp
+					preference.cpp
 )
 
 SET(POLICY			administration.cpp

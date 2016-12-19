@@ -24,6 +24,7 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "preference.h"
 #include "syspopup.h"
 #include "server.h"
 
@@ -39,6 +40,9 @@ int main(int argc, char *argv[])
 	::umask(022);
 
 	try {
+		PreferencesStore& instance = PreferencesStore::getInstance();
+		instance.load("/etc/device-policy-manager.ini");
+
 		SyspopupService syspopup;
 
 		Server server;
