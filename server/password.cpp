@@ -296,10 +296,7 @@ int PasswordPolicy::enforceChange()
 {
 	int ret = 0;
 	bundle *b = ::bundle_create();
-	const char *user_data[4] = {"app-id", "org.tizen.setting-password", "caller", "DPM"};
-
 	::bundle_add_str(b, "id", "password-enforce-change");
-	::bundle_add_str_array(b, "user-data", user_data, 4);
 
 	ret = ::aul_launch_app_for_uid("org.tizen.dpm-syspopup", b, context.getPeerUid());
 	::bundle_free(b);

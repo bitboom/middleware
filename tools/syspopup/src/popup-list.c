@@ -1,5 +1,4 @@
 /*
- * Tizen DPM Syspopup
  *
  * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
  *
@@ -17,173 +16,179 @@
  *
  */
 
-#include <dpm/password.h>
-
 #include "dpm-syspopup.h"
 
-#define ARRAY_SIZE(_array_) \
-	(sizeof(_array_) / sizeof(_array_[0]))
-
 popup_info_s popup_list[] = {
-
-	/* ID | TEXT_PREFIX | TITLE_TEXT | CONTENT_TEXT | POPUP_STYLE | LEFT_BUTTON | RIGHT_BUTTON | NOTI_TITLE | NOTI_CONTENT */
+	/* ID | VIEW_TYPE | TEXT_PREFIX | TITLE_TEXT | CONTENT_TEXT | LEFT_BUTTON | RIGHT_BUTTON */
 
 	/* Application Policy */
 	{
 		"package-installation-mode",
+		DPM_SYSPOPUP_TOAST,
 		false,
 		NULL,
 		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 	{
 		"package-uninstallation-mode",
+		DPM_SYSPOPUP_TOAST,
 		false,
 		NULL,
 		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 
 	/* Password Policy */
 	{
 		"password-enforce-change",
+		DPM_SYSPOPUP_DEFAULT,
 		false,
 		"IDS_ST_BODY_PASSWORD",
 		"IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD",
-		"default",
-		NULL, "IDS_TPLATFORM_BUTTON_OK", NULL, NULL
+		NULL, "IDS_TPLATFORM_BUTTON_OK"
 	},
 
 	/* Restriction Policy */
 	{
 		"wifi",
+		DPM_SYSPOPUP_TOAST,
 		false,
 		NULL,
 		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 	{
 		"wifi-hotspot",
+		DPM_SYSPOPUP_TOAST,
 		true,
 		"IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT",
 		"IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 	{
 		"camera",
+		DPM_SYSPOPUP_TOAST,
 		true,
 		"IDS_IDLE_TAB4_CAMERA",
 		"IDS_IDLE_TAB4_CAMERA",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 	{
 		"microphone",
+		DPM_SYSPOPUP_TOAST,
 		false,
 		NULL,
 		"IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 	{
 		"location",
+		DPM_SYSPOPUP_TOAST,
 		false,
 		NULL,
 		"IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 	{
 		"settings-changes",
+		DPM_SYSPOPUP_TOAST,
 		false,
 		NULL,
 		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 	{
 		"bluetooth",
+		DPM_SYSPOPUP_TOAST,
 		false,
 		NULL,
 		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 	{
 		"clipboard",
+		DPM_SYSPOPUP_TOAST,
 		true,
 		"IDS_TPLATFORM_OPT_CLIPBOARD",
 		"IDS_TPLATFORM_OPT_CLIPBOARD",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 	{
 		"nfc",
+		DPM_SYSPOPUP_TOAST,
 		true,
 		"IDS_ST_BODY_NFC",
 		"IDS_ST_BODY_NFC",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 	{
 		"message-sending",
+		DPM_SYSPOPUP_TOAST,
 		false,
 		NULL,
 		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 	{
-		"message-receiving",
+		"message-retrieving",
+		DPM_SYSPOPUP_TOAST,
 		false,
 		NULL,
 		"IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 	{
 		"browser",
+		DPM_SYSPOPUP_TOAST,
 		false,
 		NULL,
 		"IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 	{
 		"screen-capture",
+		DPM_SYSPOPUP_TOAST,
 		true,
 		"IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN",
 		"IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN",
-		"toast",
-		NULL, NULL, NULL, NULL
+		NULL, NULL
 	},
 
 	/* Storage Policy */
-	{"external-storage",   true, "IDS_DPM_EXTERNAL_STORAGE",   NULL, "toast", NULL, NULL, NULL, NULL},
-	{"storage-decryption", true, "IDS_DPM_STORAGE_DECRYPTION", NULL, "toast", NULL, NULL, NULL, NULL},
+	{
+		"external-storage",
+		DPM_SYSPOPUP_TOAST,
+		true,
+		"IDS_DPM_EXTERNAL_STORAGE",
+		NULL,
+		NULL, NULL
+	},
+	{
+		"storage-decryption",
+		DPM_SYSPOPUP_TOAST,
+		true,
+		"IDS_DPM_STORAGE_DECRYPTION",
+		NULL,
+		NULL, NULL
+	},
 
 	/* Krate Policy */
 	{
 		"krate-create",
+		DPM_SYSPOPUP_DEFAULT,
 		false,
 		"IDS_DPM_KRATE_CREATE",
 		"IDS_DPM_BODY_KRATE_CREATE",
-		"default",
-		"IDS_TPLATFORM_BUTTON2_CANCEL", "IDS_TPLATFORM_BUTTON_OK",
-		"IDS_DPM_NOTI_KRATE_CREATE", "IDS_DPM_NOTI_BODY_KRATE_CREATE"
+		"IDS_TPLATFORM_BUTTON2_CANCEL", "IDS_TPLATFORM_BUTTON_OK"
 	},
 	{
 		"krate-remove",
+		DPM_SYSPOPUP_DEFAULT,
 		false,
 		"IDS_DPM_KRATE_REMOVE",
 		"IDS_DPM_BODY_KRATE_REMOVE",
-		"default",
-		"IDS_TPLATFORM_BUTTON2_CANCEL", "IDS_TPLATFORM_BUTTON_OK",
-		"IDS_DPM_NOTI_KRATE_REMOVE", "IDS_DPM_NOTI_BODY_KRATE_REMOVE"
+		"IDS_TPLATFORM_BUTTON2_CANCEL", "IDS_TPLATFORM_BUTTON_OK"
 	},
 };
 
@@ -192,46 +197,16 @@ popup_info_s *get_popup_info(const char *id)
 	int i = 0;
 
 	if (id == NULL) {
-		dlog_print(DLOG_ERROR, LOG_TAG, "popup_name is NULL");
+		dlog_print(DLOG_ERROR, LOG_TAG, "popup id is NULL");
 		return NULL;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(popup_list); i++) {
-		if (!strcmp(id, popup_list[i].id))
+		if (!strcmp(id, popup_list[i].id)) {
 			return &popup_list[i];
+		}
 	}
 
 	dlog_print(DLOG_ERROR, LOG_TAG, "[%s] popup is not exist", id);
 	return NULL;
-}
-
-int get_popup_text(const char *id, const char *status, char *header, char *body)
-{
-	popup_info_s *info = NULL;
-	char *lp_header = NULL;
-	char *lp_body = NULL;
-
-	info = get_popup_info(id);
-	if (info == NULL)
-		return -1;
-
-	if (info->title != NULL) {
-		if (info->text_prefix) {
-			lp_header = __("IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS");
-			snprintf(header, PATH_MAX, lp_header, __(info->title));
-		} else {
-			snprintf(header, PATH_MAX, "%s", __(info->title));
-		}
-	}
-
-	if (info->content != NULL) {
-		if (info->text_prefix) {
-			lp_body = __("IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS");
-			snprintf(body, PATH_MAX, lp_body, __(info->content));
-		} else {
-			snprintf(body, PATH_MAX, "%s", __(info->content));
-		}
-	}
-
-	return 0;
 }

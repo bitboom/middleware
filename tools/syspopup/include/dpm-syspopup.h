@@ -1,5 +1,4 @@
 /*
- * Tizen DPM Syspopup
  *
  * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
  *
@@ -29,6 +28,10 @@
 #include <system_settings.h>
 #include <dlog.h>
 #include <Elementary.h>
+#include <notification.h>
+#include <app_control_internal.h>
+
+#include "widget.h"
 
 #ifdef  LOG_TAG
 #undef  LOG_TAG
@@ -37,29 +40,51 @@
 
 #define __(str) dgettext("dpm-syspopup", str)
 
-#define DPM_SYSPOPUP_DEFAULT_STATUS "stop"
-#define DPM_SYSPOPUP_ICON_PATH "/usr/share/icons/default/small/org.tizen.dpm-syspopup.png"
+#define ARRAY_SIZE(_array_) \
+        (sizeof(_array_) / sizeof(_array_[0]))
+
+typedef enum {
+	DPM_SYSPOPUP_DEFAULT = 0,
+	DPM_SYSPOPUP_TOAST,
+} viewtype_e;
 
 typedef struct {
-	char *title;
-	char *content;
-} noti_info_s;
+        char *key;
+        char *value;
+} appdata_s;
+
+typedef struct {
+        const char *id;
+        char *app_id;
+        appdata_s *data;
+	int data_size;
+} appcontrol_s;
 
 typedef struct {
 	const char *id;
-	bool text_prefix;
 	char *title;
 	char *content;
-	char *style;
+	const char *image;
+} notification_s;
+
+typedef struct {
+	const char *id;
+	viewtype_e viewtype;
+	bool prefix;
+	char *header;
+	char *body;
 	char *left_btn;
 	char *right_btn;
-	char *noti_title;
-	char *noti_content;
 } popup_info_s;
 
+app_control_h create_syspopup_app_control(appcontrol_s *list, const char *id);
+int create_syspopup_notification(notification_s *list, const char *id, app_control_h app_control);
 popup_info_s *get_popup_info(const char *id);
-int get_popup_text(const char *id, const char *status, char *header, char *body);
 
-void create_syspopup(const char *id, char *style, const char *status, app_control_h svc);
+Evas_Object *create_default_popup(Evas_Object *parent, popup_info_s *info, void *user_data);
+Evas_Object *create_toast_popup(Evas_Object *parent, popup_info_s *body, void *user_data);
+Evas_Object *create_password_enforce_change_popup(Evas_Object *parent, popup_info_s *info, void *user_data);
+
+void create_syspopup(const char *id, void *user_data);
 
 #endif /* __DPM_SYSPOPUP_H__ */

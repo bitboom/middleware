@@ -160,6 +160,7 @@ BuildRequires: pkgconfig(elementary)
 BuildRequires: pkgconfig(capi-appfw-application)
 BuildRequires: pkgconfig(capi-system-system-settings)
 BuildRequires: pkgconfig(capi-ui-efl-util)
+BuildRequires: pkgconfig(capi-system-info)
 
 %description -n org.tizen.dpm-syspopup
 Tizen DPM system popup interface package
