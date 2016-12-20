@@ -14,6 +14,7 @@ PKG_CHECK_MODULES(dpm_syspopup_pkgs REQUIRED
 	capi-ui-efl-util
 	notification
 	vconf
+	capi-system-info
 )
 
 INCLUDE_DIRECTORIES(${dpm_syspopup_pkgs_INCLUDE_DIRS} ${DPM_LIBS})
@@ -21,12 +22,20 @@ LINK_DIRECTORIES(${dpm_syspopup_pkgs_LIBRARY_DIRS})
 
 SET(PKG_NAME "${PROJECT_NAME}")
 SET(PKG_SRC	src/main.c
-		src/popup-list.c)
+		src/ui.c
+		src/widget.c
+		src/popup-list.c
+		src/appcontrol.c
+		src/notification.c)
 
 IF (${TIZEN_PROFILE_NAME} MATCHES "wearable")
-	SET(PKG_SRC ${PKG_SRC} src/circle-ui.c)
+	SET(PKG_SRC ${PKG_SRC}	src/wearable/default.c
+				src/wearable/toast.c
+				src/wearable/password-enforce-change.c)
 ELSE (${TIZEN_PROFILE_NAME} MATCHES "wearable")
-	SET(PKG_SRC ${PKG_SRC} src/ui.c)
+	SET(PKG_SRC ${PKG_SRC} 	src/mobile/default.c
+				src/mobile/toast.c
+				src/mobile/password-enforce-change.c)
 ENDIF (${TIZEN_PROFILE_NAME} MATCHES "wearable")
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIE")

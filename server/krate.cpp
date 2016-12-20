@@ -90,12 +90,9 @@ int KratePolicy::createKrate(const std::string& name, const std::string& setupWi
 	}
 
 	try {
-		std::vector<std::string> data = {"app-id", "org.tizen.krate-setup-wizard",
-										 "mode", "create",
-										 "krate", name};
 		Bundle bundle;
 		bundle.add("id", "krate-create");
-		bundle.add("user-data", data);
+		bundle.add("user-data", name);
 
 		Launchpad launchpad(context.getPeerUid());
 		launchpad.launch("org.tizen.dpm-syspopup", bundle);
@@ -114,12 +111,9 @@ int KratePolicy::removeKrate(const std::string& name)
 	}
 
 	try {
-		std::vector<std::string> data = {"app-id", "org.tizen.krate-setup-wizard",
-										 "mode", "remove",
-										 "krate", name};
 		Bundle bundle;
 		bundle.add("id", "krate-remove");
-		bundle.add("user-data", data);
+		bundle.add("user-data", name);
 
 		Launchpad launchpad(context.getPeerUid());
 		launchpad.launch("org.tizen.dpm-syspopup", bundle);
