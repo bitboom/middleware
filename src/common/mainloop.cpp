@@ -46,8 +46,8 @@ Mainloop::Mainloop() :
 Mainloop::~Mainloop()
 {
 	if (!m_stopped && !m_isTimedOut && !m_callbacks.empty())
-		throw std::logic_error("mainloop registered callbacks should be empty "
-							   "except timed out case");
+		LogError("mainloop registered callbacks should be empty "
+				 "except timed out case");
 
 	::close(m_pollfd);
 }
