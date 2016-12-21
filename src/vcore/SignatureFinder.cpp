@@ -26,17 +26,27 @@
 #include <errno.h>
 #include <istream>
 #include <sstream>
+#include <memory>
 
 #include <pcrecpp.h>
 
-namespace {
-
-}
 
 namespace ValidationCore {
-static const char *SIGNATURE_AUTHOR = "author-signature.xml";
-static const char *REGEXP_DISTRIBUTOR_SIGNATURE =
-	"^(signature)([1-9][0-9]*)(\\.xml)";
+
+namespace {
+
+const char *SIGNATURE_AUTHOR = "author-signature.xml";
+const char *REGEXP_DISTRIBUTOR_SIGNATURE = "^(signature)([1-9][0-9]*)(\\.xml)";
+
+struct dirent *readdir(DIR *dirp) {
+	errno = 0;
+	auto ret = ::readdir(dirp);
+	if (errno != 0)
+		LogWarning("Error read dir.");
+	return ret;
+}
+
+} // anonymous namespace
 
 class SignatureFinder::Impl {
 public:
@@ -69,54 +79,40 @@ std::string SignatureFinder::Impl::getFullPath(const std::string &file)
 
 SignatureFinder::Result SignatureFinder::Impl::find(SignatureFileInfoSet &set)
 {
-	int ret;
-	DIR *dirp;
-	struct dirent entry;
-	struct dirent *result;
-
-	if ((dirp = opendir(m_dir.c_str())) == NULL) {
-		LogError("Error opening directory: " << m_dir);
+	std::unique_ptr<DIR, std::function<int(DIR *)>> dp(::opendir(m_dir.c_str()),
+													   ::closedir);
+	LogDebug("Opendir : " << m_dir);
+	if (dp == nullptr) {
+		LogError("Error opening directory : " << m_dir);
 		return ERROR_OPENING_DIR;
 	}
 
-	for (ret = readdir_r(dirp, &entry, &result);
-			ret == 0 && result != NULL;
-			ret = readdir_r(dirp, &entry, &result)) {
+	while (auto dirp = ValidationCore::readdir(dp.get())) {
 		/* number for author signature is -1 */
-		if (!strcmp(result->d_name, SIGNATURE_AUTHOR)) {
-			std::string fullPath = getFullPath(std::string(result->d_name));
+		if (!strcmp(dirp->d_name, SIGNATURE_AUTHOR)) {
+			std::string fullPath = getFullPath(std::string(dirp->d_name));
 			LogDebug("Found author signature file full path : " << fullPath);
 			set.insert(SignatureFileInfo(fullPath, -1));
 			continue;
 		}
 
-		std::string sig;
-		std::string num;
-		std::string xml; /* just for cutting out .xml */
-
-		if (m_signatureRegexp.FullMatch(result->d_name, &sig, &num, &xml)) {
+		std::string sig, num, xml;
+		if (m_signatureRegexp.FullMatch(dirp->d_name, &sig, &num, &xml)) {
 			std::istringstream stream(num);
 			int number;
 			stream >> number;
-
-			if (stream.fail()) {
-				closedir(dirp);
+			if (stream.fail())
 				return ERROR_ISTREAM;
-			}
 
-			std::string fullPath = getFullPath(std::string(result->d_name));
+			std::string fullPath = getFullPath(std::string(dirp->d_name));
 			LogDebug("Found signature file full path : " << fullPath);
 			set.insert(SignatureFileInfo(fullPath, number));
 		}
 	}
 
-	if (ret != 0) {
-		LogError("Error in readdir");
-		closedir(dirp);
-		return ERROR_READING_DIR;
-	}
+	if (set.size() < 2)
+		LogWarning("Signature file should exist more than 2.");
 
-	closedir(dirp);
 	return NO_ERROR;
 }
 

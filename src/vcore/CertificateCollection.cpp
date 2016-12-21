@@ -43,9 +43,9 @@
 
 #include "vcore/CertificateCollection.h"
 
-namespace {
+namespace ValidationCore {
 
-using namespace ValidationCore;
+namespace {
 
 inline std::string toBinaryString(int data)
 {
@@ -69,51 +69,46 @@ bool isHashMatchedFile(const std::string &path, const std::string &hash)
 	return isHashMatchedName(name, hash);
 }
 
+struct dirent *readdir(DIR *dirp) {
+	errno = 0;
+	auto ret = ::readdir(dirp);
+	if (errno != 0)
+		LogWarning("Error read dir.");
+	return ret;
+}
+
 CertificatePtr searchCert(const std::string &dir, const CertificatePtr &certPtr, bool withHash)
 {
 	try {
 		std::string hash = certPtr->getNameHash(Certificate::FIELD_ISSUER);
-		std::unique_ptr<DIR, std::function<int(DIR *)>> dp(::opendir(dir.c_str()), ::closedir);
+		std::unique_ptr<DIR, std::function<int(DIR *)>> dp(::opendir(dir.c_str()),
+														   ::closedir);
 
-		if (dp.get() == NULL) {
+		if (dp == nullptr) {
 			LogError("Failed open dir[" << dir << "]");
 			return CertificatePtr();
 		}
 
-		size_t len = offsetof(struct dirent, d_name) + pathconf(dir.c_str(), _PC_NAME_MAX) + 1;
-		std::unique_ptr<struct dirent, std::function<void(void *)>>
-				pEntry(static_cast<struct dirent *>(::malloc(len)), ::free);
-		struct dirent *dirp = NULL;
-		int ret = 0;
-
-		while ((ret = readdir_r(dp.get(), pEntry.get(), &dirp)) == 0 && dirp) {
+		while (auto dirp = ValidationCore::readdir(dp.get())) {
 			if (dirp->d_type == DT_DIR)
 				continue;
 
-			std::string candidatePath(dir);
-			candidatePath += "/";
-			candidatePath += dirp->d_name;
-
+			auto fullPath = dir + "/" + dirp->d_name;
 			if (withHash) {
 				if (!isHashMatchedName(dirp->d_name, hash))
 					continue;
 			} else {
-				if (!isHashMatchedFile(candidatePath, hash))
+				if (!isHashMatchedFile(fullPath, hash))
 					continue;
 			}
 
-			LogDebug("Found hash matched file! : " << candidatePath);
-			CertificatePtr candidate = Certificate::createFromFile(candidatePath);
-
-			if (candidate->getOneLine().compare(certPtr->getOneLine(Certificate::FIELD_ISSUER)) != 0)
+			LogDebug("Found hash matched file! : " << fullPath);
+			auto candidate = Certificate::createFromFile(fullPath);
+			if (candidate->getOneLine().compare(
+				certPtr->getOneLine(Certificate::FIELD_ISSUER)) != 0)
 				continue;
 
 			return candidate;
-		}
-
-		if (ret != 0) {
-			LogError("readdir_r error. ret[" << ret << "]");
-			return CertificatePtr();
 		}
 
 		LogWarning("cert not found by hash[" << hash << "]");
@@ -146,9 +141,7 @@ CertificatePtr getIssuerCertFromStore(const CertificatePtr &certPtr)
 	return searchCert(TZ_SYS_CA_CERTS, certPtr, true);
 }
 
-} // namespace
-
-namespace ValidationCore {
+} // anonymous namespace
 
 CertificateCollection::CertificateCollection()
 	: m_collectionStatus(COLLECTION_UNSORTED)
