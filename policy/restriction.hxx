@@ -19,14 +19,18 @@
 
 #include "policy-context.hxx"
 
-namespace DevicePolicyManager
-{
+namespace DevicePolicyManager {
 
-class RestrictionPolicy
-{
+class RestrictionPolicy {
 public:
 	RestrictionPolicy(PolicyControlContext& ctxt);
 	~RestrictionPolicy();
+
+	RestrictionPolicy(const RestrictionPolicy& rhs);
+	RestrictionPolicy(RestrictionPolicy&& rhs);
+
+	RestrictionPolicy& operator=(const RestrictionPolicy& rhs);
+	RestrictionPolicy& operator=(RestrictionPolicy&& rhs);
 
 	int setCameraState(bool enable);
 	bool getCameraState();
@@ -56,7 +60,8 @@ public:
 	bool getBrowserState();
 
 private:
-	PolicyControlContext& context;
+	struct Private;
+	std::unique_ptr<Private> pimpl;
 };
 
 } // namespace DevicePolicyManager

@@ -35,15 +35,99 @@ const std::string APPID_LOCKSCREEN = "org.tizen.lockscreen";
 
 } // namespace
 
-SecurityPolicy::SecurityPolicy(PolicyControlContext& ctxt) :
-	context(ctxt)
-{
-	ctxt.expose(this, DPM_PRIVILEGE_LOCK, (int)(SecurityPolicy::lockoutScreen)());
-	ctxt.expose(this, DPM_PRIVILEGE_SECURITY, (int)(SecurityPolicy::setInternalStorageEncryption)(bool));
-	ctxt.expose(this, DPM_PRIVILEGE_SECURITY, (int)(SecurityPolicy::setExternalStorageEncryption)(bool));
+struct SecurityPolicy::Private {
+	Private(PolicyControlContext& ctxt) : context(ctxt) {}
 
-	ctxt.expose(this, "", (bool)(SecurityPolicy::isInternalStorageEncrypted)());
-	ctxt.expose(this, "", (bool)(SecurityPolicy::isExternalStorageEncrypted)());
+	bool checkEncryptionState(const char* key, bool encrypt)
+	{
+		char *value = ::vconf_get_str(key);
+		if (value == NULL) {
+			ERROR("Failed to read internal storage encryption state");
+			return false;
+		}
+
+		std::string state(value);
+		if (encrypt) {
+			if (state != "unencrypted") {
+				ERROR("Storage might be already encrypted or it has error");
+				return false;
+			}
+		} else {
+			if (state != "encrypted") {
+				ERROR("Storage might be already decrypted or it has error");
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	bool getEncryptionState(const char* key)
+	{
+		char *state = ::vconf_get_str(key);
+		if (state == NULL) {
+			throw runtime::Exception("Failed to read internal storage encryption state");
+		}
+
+		std::string expected("encrypted");
+		if (expected == state) {
+			return true;
+		}
+
+		return false;
+	}
+
+	int launchApplication(const std::string& name, const Bundle& bundle)
+	{
+		try {
+			Launchpad launchpad(context.getPeerUid());
+			if (launchpad.isRunning(name)) {
+				launchpad.resume(name);
+				return 0;
+			}
+
+			launchpad.launch(name, bundle);
+		} catch (runtime::Exception& e) {
+			ERROR("Failed to start application: " << name);
+			return -1;
+		}
+
+		return 0;
+	}
+
+	PolicyControlContext& context;
+};
+
+SecurityPolicy::SecurityPolicy(SecurityPolicy&& rhs) = default;
+SecurityPolicy& SecurityPolicy::operator=(SecurityPolicy&& rhs) = default;
+
+SecurityPolicy::SecurityPolicy(const SecurityPolicy& rhs)
+{
+	if (rhs.pimpl) {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+}
+
+SecurityPolicy& SecurityPolicy::operator=(const SecurityPolicy& rhs)
+{
+	if (!rhs.pimpl) {
+		pimpl.reset();
+	} else {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+
+	return *this;
+}
+
+SecurityPolicy::SecurityPolicy(PolicyControlContext& context) :
+	pimpl(new Private(context))
+{
+	context.expose(this, DPM_PRIVILEGE_LOCK, (int)(SecurityPolicy::lockoutScreen)());
+	context.expose(this, DPM_PRIVILEGE_SECURITY, (int)(SecurityPolicy::setInternalStorageEncryption)(bool));
+	context.expose(this, DPM_PRIVILEGE_SECURITY, (int)(SecurityPolicy::setExternalStorageEncryption)(bool));
+
+	context.expose(this, "", (bool)(SecurityPolicy::isInternalStorageEncrypted)());
+	context.expose(this, "", (bool)(SecurityPolicy::isExternalStorageEncrypted)());
 }
 
 SecurityPolicy::~SecurityPolicy()
@@ -52,130 +136,39 @@ SecurityPolicy::~SecurityPolicy()
 
 int SecurityPolicy::lockoutScreen()
 {
-	try {
-		Launchpad launchpad(context.getPeerUid());
-		if (launchpad.isRunning(APPID_LOCKSCREEN)) {
-			launchpad.resume(APPID_LOCKSCREEN);
-			return 0;
-		}
-
-		launchpad.launch(APPID_LOCKSCREEN);
-	} catch (runtime::Exception &e) {
-		ERROR("Failed to launch lockscreen: " + APPID_LOCKSCREEN);
-		return -1;
-	}
-
-	return 0;
+	return pimpl->launchApplication(APPID_LOCKSCREEN, Bundle());
 }
 
 int SecurityPolicy::setInternalStorageEncryption(bool encrypt)
 {
-	char *value = ::vconf_get_str(VCONFKEY_ODE_CRYPTO_STATE);
-	if (value == NULL) {
-		ERROR("Failed to read internal storage encryption state");
+	if (!pimpl->checkEncryptionState(VCONFKEY_ODE_CRYPTO_STATE, encrypt)) {
 		return -1;
 	}
 
-	std::string state(value);
-	if (encrypt) {
-		if (state != "unencrypted") {
-			ERROR("Storage might be already encrypted or it has error");
-			return -1;
-		}
-	} else {
-		if (state != "encrypted") {
-			ERROR("Storage might be already decrypted or it has error");
-			return -1;
-		}
-	}
-
-	try {
-		Bundle bundle;
-		bundle.add("viewtype", encrypt ? "ENCRYPT_DEVICE" : "DECRYPT_DEVICE");
-
-		Launchpad launchpad(context.getPeerUid());
-		if (launchpad.isRunning(APPID_DEVICE_ENCRYPTION)) {
-			launchpad.resume(APPID_DEVICE_ENCRYPTION);
-			return 0;
-		}
-
-		launchpad.launch(APPID_DEVICE_ENCRYPTION, bundle);
-	} catch (runtime::Exception& e) {
-		ERROR("Failed to start device encryption");
-		return -1;
-	}
-
-	return 0;
+	Bundle bundle;
+	bundle.add("viewtype", encrypt ? "ENCRYPT_DEVICE" : "DECRYPT_DEVICE");
+	return pimpl->launchApplication(APPID_DEVICE_ENCRYPTION, bundle);
 }
 
 bool SecurityPolicy::isInternalStorageEncrypted()
 {
-	char *state = ::vconf_get_str(VCONFKEY_ODE_CRYPTO_STATE);
-	if (state == NULL) {
-		throw runtime::Exception("Failed to read internal storage encryption state");
-	}
-
-	std::string expected("encrypted");
-	if (expected == state) {
-		return true;
-    }
-
-	return false;
+	return pimpl->getEncryptionState(VCONFKEY_ODE_CRYPTO_STATE);
 }
 
 int SecurityPolicy::setExternalStorageEncryption(bool encrypt)
 {
-	char *value = ::vconf_get_str(VCONFKEY_SDE_CRYPTO_STATE);
-	if (value == NULL) {
-		ERROR("Failed to read external storage encryption state");
+	if (!pimpl->checkEncryptionState(VCONFKEY_SDE_CRYPTO_STATE, encrypt)) {
 		return -1;
 	}
 
-	std::string state(value);
-	if (encrypt) {
-		if (state != "unencrypted") {
-			ERROR("Storage might be already encrypted or it has error");
-			return -1;
-		}
-	} else {
-		if (state != "encrypted") {
-			ERROR("Storage might be already decrypted or it has error");
-			return -1;
-		}
-    }
-
-	try {
-		Bundle bundle;
-		bundle.add("viewtype", encrypt ? "ENCRYPT_SD_CARD" : "DECRYPT_SD_CARD");
-
-		Launchpad launchpad(context.getPeerUid());
-		if (launchpad.isRunning(APPID_DEVICE_ENCRYPTION)) {
-			launchpad.resume(APPID_DEVICE_ENCRYPTION);
-			return 0;
-		}
-
-		launchpad.launch(APPID_DEVICE_ENCRYPTION, bundle);
-	} catch (runtime::Exception& e) {
-		ERROR("Failed to start sd card encryption");
-		return -1;
-	}
-
-	return 0;
+	Bundle bundle;
+	bundle.add("viewtype", encrypt ? "ENCRYPT_SD_CARD" : "DECRYPT_SD_CARD");
+	return pimpl->launchApplication(APPID_DEVICE_ENCRYPTION, bundle);
 }
 
 bool SecurityPolicy::isExternalStorageEncrypted()
 {
-	char *state = ::vconf_get_str(VCONFKEY_SDE_CRYPTO_STATE);
-	if (state == NULL) {
-		throw runtime::Exception("Failed to read external storage encryption state");
-	}
-
-	std::string expected("encrypted");
-	if (expected == state) {
-		return true;
-	}
-
-	return false;
+	return pimpl->getEncryptionState(VCONFKEY_SDE_CRYPTO_STATE);
 }
 
 DEFINE_POLICY(SecurityPolicy);

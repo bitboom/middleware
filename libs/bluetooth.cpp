@@ -17,8 +17,34 @@
 
 namespace DevicePolicyManager {
 
+struct BluetoothPolicy::Private {
+	Private(PolicyControlContext& ctx) : context(ctx) {}
+	PolicyControlContext& context;
+};
+
+BluetoothPolicy::BluetoothPolicy(BluetoothPolicy&& rhs) = default;
+BluetoothPolicy& BluetoothPolicy::operator=(BluetoothPolicy&& rhs) = default;
+
+BluetoothPolicy::BluetoothPolicy(const BluetoothPolicy& rhs)
+{
+	if (rhs.pimpl) {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+}
+
+BluetoothPolicy& BluetoothPolicy::operator=(const BluetoothPolicy& rhs)
+{
+	if (!rhs.pimpl) {
+		pimpl.reset();
+	} else {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+
+	return *this;
+}
+
 BluetoothPolicy::BluetoothPolicy(PolicyControlContext& ctxt) :
-	context(ctxt)
+	pimpl(new Private(ctxt))
 {
 }
 
@@ -29,83 +55,97 @@ BluetoothPolicy::~BluetoothPolicy()
 // for restriction CPIs
 int BluetoothPolicy::setModeChangeState(bool enable)
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<int>("BluetoothPolicy::setModeChangeState", enable);
 }
 
 bool BluetoothPolicy::getModeChangeState()
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<bool>("BluetoothPolicy::getModeChangeState");
 }
 
 int BluetoothPolicy::setDesktopConnectivityState(bool enable)
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<bool>("BluetoothPolicy::setDesktopConnectivityState", enable);
 }
 
 bool BluetoothPolicy::getDesktopConnectivityState()
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<bool>("BluetoothPolicy::getDesktopConnectivityState");
 }
 
 int BluetoothPolicy::setTetheringState(bool enable)
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<int>("BluetoothPolicy::setTetheringState", enable);
 }
 
 bool BluetoothPolicy::getTetheringState()
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<bool>("BluetoothPolicy::getTetheringState");
 }
 
 int BluetoothPolicy::setPairingState(bool enable)
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<int>("BluetoothPolicy::setPairingState", enable);
 }
 
 bool BluetoothPolicy::getPairingState()
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<bool>("BluetoothPolicy::getPairingState");
 }
 
-
-// for bluetooth CAPIs
 int BluetoothPolicy::addDeviceToBlacklist(const std::string& mac)
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<int>("BluetoothPolicy::addDeviceToBlacklist", mac);
 }
 
 int BluetoothPolicy::removeDeviceFromBlacklist(const std::string& mac)
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<int>("BluetoothPolicy::removeDeviceFromBlacklist", mac);
 }
 
 int BluetoothPolicy::setDeviceRestriction(bool enable)
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<int>("BluetoothPolicy::setDeviceRestriction", enable);
 }
 
 bool BluetoothPolicy::isDeviceRestricted()
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<bool>("BluetoothPolicy::isDeviceRestricted");
 }
 
 int BluetoothPolicy::addUuidToBlacklist(const std::string& uuid)
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<int>("BluetoothPolicy::addUuidToBlacklist", uuid);
 }
 
 int BluetoothPolicy::removeUuidFromBlacklist(const std::string& uuid)
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<int>("BluetoothPolicy::removeUuidFromBlacklist", uuid);
 }
 
 int BluetoothPolicy::setUuidRestriction(bool enable)
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<int>("BluetoothPolicy::setUuidRestriction", enable);
 }
 
 bool BluetoothPolicy::isUuidRestricted()
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<bool>("BluetoothPolicy::isUuidRestricted");
 }
 

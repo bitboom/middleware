@@ -39,5 +39,9 @@ int dpm_storage_wipe_data(dpm_storage_policy_h handle, const dpm_wipe_type_e typ
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	StoragePolicy storage = client.createPolicyInterface<StoragePolicy>();
-	return storage.wipeData(type);
+	try {
+		return storage.wipeData(type);
+	} catch (...) {
+		return -1;
+	}
 }

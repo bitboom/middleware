@@ -74,48 +74,48 @@ inline PasswordManager::QualityType getPasswordQualityType(int quality)
 
 } // namespace
 
-PasswordPolicy::PasswordPolicy(PolicyControlContext &ctxt) :
+struct PasswordPolicy::Private {
+	Private(PolicyControlContext& ctxt);
+
+	int setQuality(int quality);
+	int getQuality();
+	int setMinimumLength(int value);
+	int getMinimumLength();
+	int setMinComplexChars(int value);
+	int getMinComplexChars();
+	int setMaximumFailedForWipe(int value);
+	int getMaximumFailedForWipe();
+	int setExpires(int value);
+	int getExpires();
+	int setHistory(int value);
+	int getHistory();
+	int setPattern(const std::string &pattern);
+	int reset(const std::string &passwd);
+	int enforceChange();
+	int setMaxInactivityTimeDeviceLock(int value);
+	int getMaxInactivityTimeDeviceLock();
+	int setStatus(int status);
+	int getStatus();
+	int deletePattern();
+	std::string getPattern();
+	int setMaximumCharacterOccurrences(int value);
+	int getMaximumCharacterOccurrences();
+	int setMaximumNumericSequenceLength(int value);
+	int getMaximumNumericSequenceLength();
+	int setForbiddenStrings(const std::vector<std::string> &forbiddenStrings);
+	std::vector<std::string> getForbiddenStrings();
+	int setRecovery(int enable);
+	int getRecovery();
+
+	PolicyControlContext& context;
+};
+
+PasswordPolicy::Private::Private(PolicyControlContext& ctxt) :
 	context(ctxt)
 {
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setQuality)(int));
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMinimumLength)(int));
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMinComplexChars)(int));
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumFailedForWipe)(int));
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setExpires)(int));
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setHistory)(int));
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setPattern)(std::string));
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::reset)(std::string));
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::enforceChange)());
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaxInactivityTimeDeviceLock)(int));
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setStatus)(int));
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::deletePattern)());
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumCharacterOccurrences)(int));
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumNumericSequenceLength)(int));
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setForbiddenStrings)(std::vector<std::string>));
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setRecovery)(int));
-
-	ctxt.expose(this, "", (int)(PasswordPolicy::getStatus)());
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getQuality)());
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMinimumLength)());
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMinComplexChars)());
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumFailedForWipe)());
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getExpires)());
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getHistory)());
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaxInactivityTimeDeviceLock)());
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (std::string)(PasswordPolicy::getPattern)());
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumCharacterOccurrences)());
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumNumericSequenceLength)());
-	ctxt.expose(this, DPM_PRIVILEGE_PASSWORD, (std::vector<std::string>)(PasswordPolicy::getForbiddenStrings)());
-	ctxt.expose(this, "", (int)(PasswordPolicy::getRecovery)());
-
-	ctxt.createNotification("password");
 }
 
-PasswordPolicy::~PasswordPolicy()
-{
-}
-
-int PasswordPolicy::setQuality(int quality)
+int PasswordPolicy::Private::setQuality(int quality)
 {
 	try {
 		int authQuality = DPM_PASSWORD_QUALITY_UNSPECIFIED;
@@ -145,12 +145,12 @@ int PasswordPolicy::setQuality(int quality)
 	return 0;
 }
 
-int PasswordPolicy::getQuality()
+int PasswordPolicy::Private::getQuality()
 {
 	return getPasswordPolicy(context, "password-quality");
 }
 
-int PasswordPolicy::setMinimumLength(int value)
+int PasswordPolicy::Private::setMinimumLength(int value)
 {
 	try {
 		if (!setPasswordPolicy(context, "password-minimum-length", value)) {
@@ -168,12 +168,12 @@ int PasswordPolicy::setMinimumLength(int value)
 	return 0;
 }
 
-int PasswordPolicy::getMinimumLength()
+int PasswordPolicy::Private::getMinimumLength()
 {
 	return getPasswordPolicy(context, "password-minimum-length");
 }
 
-int PasswordPolicy::setMinComplexChars(int value)
+int PasswordPolicy::Private::setMinComplexChars(int value)
 {
 	try {
 		if (!setPasswordPolicy(context, "password-minimum-complexity", value)) {
@@ -190,12 +190,12 @@ int PasswordPolicy::setMinComplexChars(int value)
 	return 0;
 }
 
-int PasswordPolicy::getMinComplexChars()
+int PasswordPolicy::Private::getMinComplexChars()
 {
 	return getPasswordPolicy(context, "password-minimum-complexity");
 }
 
-int PasswordPolicy::setMaximumFailedForWipe(int value)
+int PasswordPolicy::Private::setMaximumFailedForWipe(int value)
 {
 	try {
 		if (!setPasswordPolicy(context, "password-maximum-failure-count", (value == 0) ? INT_MAX : value)) {
@@ -212,13 +212,13 @@ int PasswordPolicy::setMaximumFailedForWipe(int value)
 	return 0;
 }
 
-int PasswordPolicy::getMaximumFailedForWipe()
+int PasswordPolicy::Private::getMaximumFailedForWipe()
 {
 	unsigned int result = getPasswordPolicy(context, "password-maximum-failure-count");
 	return (result == INT_MAX) ? 0 : result;
 }
 
-int PasswordPolicy::setExpires(int value)
+int PasswordPolicy::Private::setExpires(int value)
 {
 	try {
 		if (!setPasswordPolicy(context, "password-expired", (value == 0) ? INT_MAX : value)) {
@@ -235,13 +235,13 @@ int PasswordPolicy::setExpires(int value)
 	return 0;
 }
 
-int PasswordPolicy::getExpires()
+int PasswordPolicy::Private::getExpires()
 {
 	unsigned int result = getPasswordPolicy(context, "password-expired");
 	return (result == INT_MAX) ? 0 : result;
 }
 
-int PasswordPolicy::setHistory(int value)
+int PasswordPolicy::Private::setHistory(int value)
 {
 	try {
 		if (!setPasswordPolicy(context, "password-history", value)) {
@@ -258,12 +258,12 @@ int PasswordPolicy::setHistory(int value)
 	return 0;
 }
 
-int PasswordPolicy::getHistory()
+int PasswordPolicy::Private::getHistory()
 {
 	return getPasswordPolicy(context, "password-history");
 }
 
-int PasswordPolicy::setPattern(const std::string &pattern)
+int PasswordPolicy::Private::setPattern(const std::string &pattern)
 {
 	try {
 		PasswordManager passwordManager(context.getPeerUid());
@@ -279,7 +279,7 @@ int PasswordPolicy::setPattern(const std::string &pattern)
 	return 0;
 }
 
-int PasswordPolicy::reset(const std::string &passwd)
+int PasswordPolicy::Private::reset(const std::string &passwd)
 {
 	try {
 		PasswordManager passwordManager(context.getPeerUid());
@@ -292,7 +292,7 @@ int PasswordPolicy::reset(const std::string &passwd)
 	return 0;
 }
 
-int PasswordPolicy::enforceChange()
+int PasswordPolicy::Private::enforceChange()
 {
 	int ret = 0;
 	bundle *b = ::bundle_create();
@@ -310,7 +310,7 @@ int PasswordPolicy::enforceChange()
 	return 0;
 }
 
-int PasswordPolicy::setMaxInactivityTimeDeviceLock(int value)
+int PasswordPolicy::Private::setMaxInactivityTimeDeviceLock(int value)
 {
 	try {
 		setPasswordPolicy(context, "password-inactivity-timeout", value);
@@ -321,12 +321,12 @@ int PasswordPolicy::setMaxInactivityTimeDeviceLock(int value)
 	return 0;
 }
 
-int PasswordPolicy::getMaxInactivityTimeDeviceLock()
+int PasswordPolicy::Private::getMaxInactivityTimeDeviceLock()
 {
 	return getPasswordPolicy(context, "password-inactivity-timeout");
 }
 
-int PasswordPolicy::setStatus(int status)
+int PasswordPolicy::Private::setStatus(int status)
 {
 	if (status >= DPM_PASSWORD_STATUS_MAX) {
 		return -1;
@@ -338,12 +338,12 @@ int PasswordPolicy::setStatus(int status)
 	return 0;
 }
 
-int PasswordPolicy::getStatus()
+int PasswordPolicy::Private::getStatus()
 {
 	return PasswordStatus[context.getPeerUid()];
 }
 
-int PasswordPolicy::deletePattern()
+int PasswordPolicy::Private::deletePattern()
 {
 	try {
 		PasswordManager passwordManager(context.getPeerUid());
@@ -358,12 +358,12 @@ int PasswordPolicy::deletePattern()
 	return 0;
 }
 
-std::string PasswordPolicy::getPattern()
+std::string PasswordPolicy::Private::getPattern()
 {
 	return PasswordPattern;
 }
 
-int PasswordPolicy::setMaximumCharacterOccurrences(int value)
+int PasswordPolicy::Private::setMaximumCharacterOccurrences(int value)
 {
 	try {
 		if (!setPasswordPolicy(context, "password-maximum-character-occurrences", (value == 0) ? INT_MAX : value)) {
@@ -380,13 +380,13 @@ int PasswordPolicy::setMaximumCharacterOccurrences(int value)
 	return 0;
 }
 
-int PasswordPolicy::getMaximumCharacterOccurrences()
+int PasswordPolicy::Private::getMaximumCharacterOccurrences()
 {
 	unsigned int result = getPasswordPolicy(context, "password-maximum-character-occurrences");
 	return (result == INT_MAX) ? 0 : result;
 }
 
-int PasswordPolicy::setMaximumNumericSequenceLength(int value)
+int PasswordPolicy::Private::setMaximumNumericSequenceLength(int value)
 {
 	try {
 		if (!setPasswordPolicy(context, "password-numeric-sequences-length", (value == 0) ? INT_MAX : value)) {
@@ -403,13 +403,13 @@ int PasswordPolicy::setMaximumNumericSequenceLength(int value)
 	return 0;
 }
 
-int PasswordPolicy::getMaximumNumericSequenceLength()
+int PasswordPolicy::Private::getMaximumNumericSequenceLength()
 {
 	unsigned int result = getPasswordPolicy(context, "password-numeric-sequences-length");
 	return (result == INT_MAX) ? 0 : result;
 }
 
-int PasswordPolicy::setForbiddenStrings(const std::vector<std::string> &forbiddenStrings)
+int PasswordPolicy::Private::setForbiddenStrings(const std::vector<std::string> &forbiddenStrings)
 {
 	try {
 		PasswordManager passwordManager(context.getPeerUid());
@@ -426,12 +426,12 @@ int PasswordPolicy::setForbiddenStrings(const std::vector<std::string> &forbidde
 	return 0;
 }
 
-std::vector<std::string> PasswordPolicy::getForbiddenStrings()
+std::vector<std::string> PasswordPolicy::Private::getForbiddenStrings()
 {
 	return ForbiddenStrings;
 }
 
-int PasswordPolicy::setRecovery(int enable)
+int PasswordPolicy::Private::setRecovery(int enable)
 {
 	try {
 		setPasswordPolicy(context, "password-recovery", enable);
@@ -443,9 +443,216 @@ int PasswordPolicy::setRecovery(int enable)
 	return 0;
 }
 
-int PasswordPolicy::getRecovery()
+int PasswordPolicy::Private::getRecovery()
 {
 	return getPasswordPolicy(context, "password-recovery");
+}
+
+PasswordPolicy::PasswordPolicy(PasswordPolicy&& rhs) = default;
+PasswordPolicy& PasswordPolicy::operator=(PasswordPolicy&& rhs) = default;
+
+PasswordPolicy::PasswordPolicy(const PasswordPolicy& rhs)
+{
+	if (rhs.pimpl) {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+}
+
+PasswordPolicy& PasswordPolicy::operator=(const PasswordPolicy& rhs)
+{
+	if (!rhs.pimpl) {
+		pimpl.reset();
+	} else {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+
+	return *this;
+}
+
+PasswordPolicy::PasswordPolicy(PolicyControlContext &context) :
+	pimpl(new Private(context))
+{
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setQuality)(int));
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMinimumLength)(int));
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMinComplexChars)(int));
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumFailedForWipe)(int));
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setExpires)(int));
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setHistory)(int));
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setPattern)(std::string));
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::reset)(std::string));
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::enforceChange)());
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaxInactivityTimeDeviceLock)(int));
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setStatus)(int));
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::deletePattern)());
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumCharacterOccurrences)(int));
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setMaximumNumericSequenceLength)(int));
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setForbiddenStrings)(std::vector<std::string>));
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::setRecovery)(int));
+
+	context.expose(this, "", (int)(PasswordPolicy::getStatus)());
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getQuality)());
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMinimumLength)());
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMinComplexChars)());
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumFailedForWipe)());
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getExpires)());
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getHistory)());
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaxInactivityTimeDeviceLock)());
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (std::string)(PasswordPolicy::getPattern)());
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumCharacterOccurrences)());
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumNumericSequenceLength)());
+	context.expose(this, DPM_PRIVILEGE_PASSWORD, (std::vector<std::string>)(PasswordPolicy::getForbiddenStrings)());
+	context.expose(this, "", (int)(PasswordPolicy::getRecovery)());
+
+	context.createNotification("password");
+}
+
+PasswordPolicy::~PasswordPolicy()
+{
+}
+
+int PasswordPolicy::setQuality(int quality)
+{
+	return pimpl->setQuality(quality);
+}
+
+int PasswordPolicy::getQuality()
+{
+	return pimpl->getQuality();
+}
+
+int PasswordPolicy::setMinimumLength(int value)
+{
+	return pimpl->setMinimumLength(value);
+}
+
+int PasswordPolicy::getMinimumLength()
+{
+	return pimpl->getMinimumLength();
+}
+
+int PasswordPolicy::setMinComplexChars(int value)
+{
+	return pimpl->setMinComplexChars(value);
+}
+
+int PasswordPolicy::getMinComplexChars()
+{
+	return pimpl->getMinComplexChars();
+}
+
+int PasswordPolicy::setMaximumFailedForWipe(int value)
+{
+	return pimpl->setMaximumFailedForWipe(value);
+}
+
+int PasswordPolicy::getMaximumFailedForWipe()
+{
+	return pimpl->getMaximumFailedForWipe();
+}
+
+int PasswordPolicy::setExpires(int value)
+{
+	return pimpl->setExpires(value);
+}
+
+int PasswordPolicy::getExpires()
+{
+	return pimpl->getExpires();
+}
+
+int PasswordPolicy::setHistory(int value)
+{
+	return pimpl->setHistory(value);
+}
+
+int PasswordPolicy::getHistory()
+{
+	return pimpl->getHistory();
+}
+
+int PasswordPolicy::setPattern(const std::string &pattern)
+{
+	return pimpl->setPattern(pattern);
+}
+
+int PasswordPolicy::reset(const std::string &passwd)
+{
+	return pimpl->reset(passwd);
+}
+
+int PasswordPolicy::enforceChange()
+{
+	return pimpl->enforceChange();
+}
+
+int PasswordPolicy::setMaxInactivityTimeDeviceLock(int value)
+{
+	return pimpl->setMaxInactivityTimeDeviceLock(value);
+}
+
+int PasswordPolicy::getMaxInactivityTimeDeviceLock()
+{
+	return pimpl->getMaxInactivityTimeDeviceLock();
+}
+
+int PasswordPolicy::setStatus(int status)
+{
+	return pimpl->setStatus(status);
+}
+
+int PasswordPolicy::getStatus()
+{
+	return pimpl->getStatus();
+}
+
+int PasswordPolicy::deletePattern()
+{
+	return pimpl->deletePattern();
+}
+
+std::string PasswordPolicy::getPattern()
+{
+	return pimpl->getPattern();
+}
+
+int PasswordPolicy::setMaximumCharacterOccurrences(int value)
+{
+	return pimpl->setMaximumCharacterOccurrences(value);
+}
+
+int PasswordPolicy::getMaximumCharacterOccurrences()
+{
+	return pimpl->getMaximumCharacterOccurrences();
+}
+
+int PasswordPolicy::setMaximumNumericSequenceLength(int value)
+{
+	return pimpl->setMaximumNumericSequenceLength(value);
+}
+
+int PasswordPolicy::getMaximumNumericSequenceLength()
+{
+	return pimpl->getMaximumNumericSequenceLength();
+}
+
+int PasswordPolicy::setForbiddenStrings(const std::vector<std::string> &forbiddenStrings)
+{
+	return pimpl->setForbiddenStrings(forbiddenStrings);
+}
+
+std::vector<std::string> PasswordPolicy::getForbiddenStrings()
+{
+	return pimpl->getForbiddenStrings();
+}
+
+int PasswordPolicy::setRecovery(int enable)
+{
+	return pimpl->setRecovery(enable);
+}
+
+int PasswordPolicy::getRecovery()
+{
+	return pimpl->getRecovery();
 }
 
 DEFINE_POLICY(PasswordPolicy);

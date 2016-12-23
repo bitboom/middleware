@@ -28,7 +28,13 @@ namespace DevicePolicyManager {
 class WifiPolicy {
 public:
 	WifiPolicy(PolicyControlContext& ctxt);
-	~WifiPolicy(void);
+	~WifiPolicy();
+
+	WifiPolicy(const WifiPolicy& rhs);
+	WifiPolicy(WifiPolicy&& rhs);
+
+	WifiPolicy& operator=(const WifiPolicy& rhs);
+	WifiPolicy& operator=(WifiPolicy&& rhs);
 
 	int setState(bool enable);
 	bool getState();
@@ -46,7 +52,8 @@ public:
 	int removeSsidFromBlocklist(const std::string& ssid);
 
 private:
-	PolicyControlContext& context;
+	struct Private;
+	std::unique_ptr<Private> pimpl;
 };
 
 } // namespace DevicePolicyManager

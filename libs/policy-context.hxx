@@ -17,6 +17,8 @@
 #ifndef __DEVICE_POLICY_CONTEXT__
 #define __DEVICE_POLICY_CONTEXT__
 
+#include <memory>
+
 #include "policy-client.h"
 
 using PolicyControlContext = ::DevicePolicyContext::PolicyControlContext;

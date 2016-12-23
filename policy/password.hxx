@@ -53,6 +53,12 @@ public:
 	PasswordPolicy(PolicyControlContext &ctxt);
 	~PasswordPolicy();
 
+	PasswordPolicy(const PasswordPolicy& rhs);
+	PasswordPolicy(PasswordPolicy&& rhs);
+
+	PasswordPolicy& operator=(const PasswordPolicy& rhs);
+	PasswordPolicy& operator=(PasswordPolicy&& rhs);
+
 	int setQuality(int quality);
 	int getQuality();
 	int setMinimumLength(int value);
@@ -84,7 +90,8 @@ public:
 	int getRecovery();
 
 private:
-	PolicyControlContext &context;
+	struct Private;
+	std::unique_ptr<Private> pimpl;
 };
 
 } /* namespace DevicePolicyManager */

@@ -26,11 +26,18 @@ public:
 	LocationPolicy(PolicyControlContext& ctxt);
 	~LocationPolicy();
 
+	LocationPolicy(const LocationPolicy& rhs);
+	LocationPolicy(LocationPolicy&& rhs);
+
+	LocationPolicy& operator=(const LocationPolicy& rhs);
+	LocationPolicy& operator=(LocationPolicy&& rhs);
+
 	int setLocationState(bool enable);
 	bool getLocationState();
 
 private:
-	PolicyControlContext& context;
+	struct Private;
+	std::unique_ptr<Private> pimpl;
 };
 
 } // namespace DevicePolicyManager

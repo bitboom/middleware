@@ -26,11 +26,18 @@ public:
 	AdministrationPolicy(PolicyControlContext& ctxt);
 	~AdministrationPolicy();
 
+	AdministrationPolicy(const AdministrationPolicy& rhs);
+	AdministrationPolicy(AdministrationPolicy&& rhs);
+
+	AdministrationPolicy& operator=(const AdministrationPolicy& rhs);
+	AdministrationPolicy& operator=(AdministrationPolicy&& rhs);
+
 	int registerPolicyClient(const std::string& name, uid_t uid);
 	int deregisterPolicyClient(const std::string& name, uid_t uid);
 
 private:
-	PolicyControlContext& context;
+	struct Private;
+	std::unique_ptr<Private> pimpl;
 };
 
 } // namespace DevicePolicyManager

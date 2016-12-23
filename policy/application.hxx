@@ -39,6 +39,13 @@ public:
 	ApplicationPolicy(PolicyControlContext& ctxt);
 	~ApplicationPolicy();
 
+	ApplicationPolicy(const ApplicationPolicy& rhs);
+	ApplicationPolicy(ApplicationPolicy&& rhs);
+
+	ApplicationPolicy& operator=(const ApplicationPolicy& rhs);
+	ApplicationPolicy& operator=(ApplicationPolicy&& rhs);
+
+
 	int installPackage(const std::string& pkgpath);
 	int uninstallPackage(const std::string& pkgid);
 
@@ -51,7 +58,8 @@ public:
 	int checkPrivilegeIsBlacklisted(int type, const std::string& privilege);
 
 private:
-	PolicyControlContext& context;
+	struct Private;
+	std::unique_ptr<Private> pimpl;
 };
 
 } // namespace DevicePolicyManager

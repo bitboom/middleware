@@ -31,6 +31,12 @@ public:
 	BluetoothPolicy(PolicyControlContext& ctxt);
 	~BluetoothPolicy();
 
+	BluetoothPolicy(const BluetoothPolicy& rhs);
+	BluetoothPolicy(BluetoothPolicy&& rhs);
+
+	BluetoothPolicy& operator=(const BluetoothPolicy& rhs);
+	BluetoothPolicy& operator=(BluetoothPolicy&& rhs);
+
 	// for restriction CPIs
 	int setModeChangeState(bool enable);
 	bool getModeChangeState();
@@ -53,7 +59,8 @@ public:
 	bool isUuidRestricted();
 
 private:
-	PolicyControlContext& context;
+	struct Private;
+	std::unique_ptr<Private> pimpl;
 };
 
 } // namespace DevicePolicyManager

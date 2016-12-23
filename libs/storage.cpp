@@ -17,8 +17,34 @@
 
 namespace DevicePolicyManager {
 
+struct StoragePolicy::Private {
+	Private(PolicyControlContext& ctxt) : context(ctxt) {}
+	PolicyControlContext& context;
+};
+
+StoragePolicy::StoragePolicy(StoragePolicy&& rhs) = default;
+StoragePolicy& StoragePolicy::operator=(StoragePolicy&& rhs) = default;
+
+StoragePolicy::StoragePolicy(const StoragePolicy& rhs)
+{
+	if (rhs.pimpl) {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+}
+
+StoragePolicy& StoragePolicy::operator=(const StoragePolicy& rhs)
+{
+	if (!rhs.pimpl) {
+		pimpl.reset();
+	} else {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+
+	return *this;
+}
+
 StoragePolicy::StoragePolicy(PolicyControlContext& ctx) :
-	context(ctx)
+	pimpl(new Private(ctx))
 {
 }
 
@@ -28,11 +54,8 @@ StoragePolicy::~StoragePolicy()
 
 int StoragePolicy::wipeData(int type)
 {
-	try {
-		return context->methodCall<int>("StoragePolicy::wipeData", type);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("StoragePolicy::wipeData", type);
 }
 
 } //namespace DevicePolicyManager

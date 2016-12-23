@@ -31,6 +31,12 @@ public:
 	SecurityPolicy(PolicyControlContext& ctxt);
 	~SecurityPolicy();
 
+	SecurityPolicy(const SecurityPolicy& rhs);
+	SecurityPolicy(SecurityPolicy&& rhs);
+
+	SecurityPolicy& operator=(const SecurityPolicy& rhs);
+	SecurityPolicy& operator=(SecurityPolicy&& rhs);
+
 	int lockoutScreen();
 	int wipeData(int id);
 	int setInternalStorageEncryption(bool encrypt);
@@ -39,7 +45,8 @@ public:
 	bool isExternalStorageEncrypted();
 
 private:
-	PolicyControlContext& context;
+	struct Private;
+	std::unique_ptr<Private> pimpl;
 };
 
 } // namespace DevicePolicyManager

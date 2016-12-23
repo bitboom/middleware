@@ -14,14 +14,39 @@
  *  limitations under the License
  */
 
-#include "policy-client.h"
-
 #include "administration.hxx"
 
 namespace DevicePolicyManager {
 
+struct AdministrationPolicy::Private {
+	Private(PolicyControlContext& ctx) : context(ctx) {}
+	PolicyControlContext& context;
+};
+
+AdministrationPolicy::AdministrationPolicy(AdministrationPolicy&& rhs) = default;
+AdministrationPolicy& AdministrationPolicy::operator=(AdministrationPolicy&& rhs) = default;
+
+AdministrationPolicy::AdministrationPolicy(const AdministrationPolicy& rhs) :
+	pimpl(nullptr)
+{
+	if (rhs.pimpl) {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+}
+
+AdministrationPolicy& AdministrationPolicy::operator=(const AdministrationPolicy& rhs)
+{
+	if (!rhs.pimpl) {
+		pimpl.reset();
+	} else {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+
+	return *this;
+}
+
 AdministrationPolicy::AdministrationPolicy(PolicyControlContext& ctx) :
-	context(ctx)
+	pimpl(new Private(ctx))
 {
 }
 
@@ -31,20 +56,14 @@ AdministrationPolicy::~AdministrationPolicy()
 
 int AdministrationPolicy::registerPolicyClient(const std::string& name, uid_t uid)
 {
-	try {
-		return context->methodCall<int>("AdministrationPolicy::registerPolicyClient", name, uid);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("AdministrationPolicy::registerPolicyClient", name, uid);
 }
 
 int AdministrationPolicy::deregisterPolicyClient(const std::string& name, uid_t uid)
 {
-	try {
-		return context->methodCall<int>("AdministrationPolicy::deregisterPolicyClient", name, uid);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("AdministrationPolicy::deregisterPolicyClient", name, uid);
 }
 
 } // namespace DevicePolicyManager

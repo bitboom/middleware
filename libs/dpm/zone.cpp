@@ -31,7 +31,12 @@ EXPORT_API int dpm_zone_create(device_policy_manager_h handle, const char* name,
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	KratePolicy krate = client.createPolicyInterface<KratePolicy>();
-	return krate.createKrate(name, pkgname);
+
+	try {
+		return krate.createKrate(name, pkgname);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_zone_destroy(device_policy_manager_h handle, const char* name)
@@ -41,7 +46,12 @@ EXPORT_API int dpm_zone_destroy(device_policy_manager_h handle, const char* name
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	KratePolicy krate = client.createPolicyInterface<KratePolicy>();
-	return krate.removeKrate(name);
+
+	try {
+		return krate.removeKrate(name);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_zone_get_state(device_policy_manager_h handle, const char* name, dpm_zone_state_e *state)
@@ -53,12 +63,17 @@ EXPORT_API int dpm_zone_get_state(device_policy_manager_h handle, const char* na
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	KratePolicy krate = client.createPolicyInterface<KratePolicy>();
 
-	int result = krate.getKrateState(name);
-	if (result == 0) {
-		return DPM_ERROR_NO_DATA;
+	try {
+		int result = krate.getKrateState(name);
+		if (result == 0) {
+			return DPM_ERROR_NO_DATA;
+		}
+
+		*state = (dpm_zone_state_e)result;
+	} catch (...) {
+		return -1;
 	}
 
-	*state = (dpm_zone_state_e)result;
 	return DPM_ERROR_NONE;
 }
 
@@ -73,10 +88,15 @@ EXPORT_API int dpm_zone_foreach_name(device_policy_manager_h handle, dpm_zone_st
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	KratePolicy krate = client.createPolicyInterface<KratePolicy>();
-	std::vector<std::string> list = krate.getKrateList(state);
-	for (const std::string& name : list) {
-		if (!callback(name.c_str(), user_data))
-			break;
+
+	try {
+		std::vector<std::string> list = krate.getKrateList(state);
+		for (const std::string& name : list) {
+			if (!callback(name.c_str(), user_data))
+				break;
+		}
+	} catch (...) {
+		return -1;
 	}
 
 	return DPM_ERROR_NONE;

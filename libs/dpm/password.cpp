@@ -34,7 +34,11 @@ EXPORT_API int dpm_password_set_quality(device_policy_manager_h handle, int qual
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.setQuality(quality);
+	try {
+		return password.setQuality(quality);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_get_quality(device_policy_manager_h handle, int *quality)
@@ -45,12 +49,16 @@ EXPORT_API int dpm_password_get_quality(device_policy_manager_h handle, int *qua
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	int ret = password.getQuality();
-	if (ret < 0) {
+	try {
+		int ret = password.getQuality();
+		if (ret < 0) {
+			return -1;
+		}
+
+		*quality = (dpm_password_quality_e)ret;
+	} catch (...) {
 		return -1;
 	}
-
-	*quality = (dpm_password_quality_e)ret;
 
 	return DPM_ERROR_NONE;
 }
@@ -63,7 +71,11 @@ EXPORT_API int dpm_password_set_minimum_length(device_policy_manager_h handle, i
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.setMinimumLength(value);
+	try {
+		return password.setMinimumLength(value);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_get_minimum_length(device_policy_manager_h handle, int *value)
@@ -74,12 +86,16 @@ EXPORT_API int dpm_password_get_minimum_length(device_policy_manager_h handle, i
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	int ret = password.getMinimumLength();
-	if (ret < 0) {
+	try {
+		int ret = password.getMinimumLength();
+		if (ret < 0) {
+			return -1;
+		}
+
+		*value = ret;
+	} catch (...) {
 		return -1;
 	}
-
-	*value = ret;
 
 	return DPM_ERROR_NONE;
 }
@@ -92,7 +108,11 @@ EXPORT_API int dpm_password_set_min_complex_chars(device_policy_manager_h handle
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.setMinComplexChars(value);
+	try {
+		return password.setMinComplexChars(value);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_get_min_complex_chars(device_policy_manager_h handle, int *value)
@@ -103,12 +123,16 @@ EXPORT_API int dpm_password_get_min_complex_chars(device_policy_manager_h handle
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	int ret = password.getMinComplexChars();
-	if (ret < 0) {
+	try {
+		int ret = password.getMinComplexChars();
+		if (ret < 0) {
+			return -1;
+		}
+
+		*value = ret;
+	} catch (...) {
 		return -1;
 	}
-
-	*value = ret;
 
 	return DPM_ERROR_NONE;
 }
@@ -121,7 +145,11 @@ EXPORT_API int dpm_password_set_maximum_failed_attempts_for_wipe(device_policy_m
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.setMaximumFailedForWipe(value);
+	try {
+		return password.setMaximumFailedForWipe(value);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_get_maximum_failed_attempts_for_wipe(device_policy_manager_h handle, int *value)
@@ -132,12 +160,16 @@ EXPORT_API int dpm_password_get_maximum_failed_attempts_for_wipe(device_policy_m
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	int ret = password.getMaximumFailedForWipe();
-	if (ret < 0) {
+	try {
+		int ret = password.getMaximumFailedForWipe();
+		if (ret < 0) {
+			return -1;
+		}
+
+		*value = ret;
+	} catch (...) {
 		return -1;
 	}
-
-	*value = ret;
 
 	return DPM_ERROR_NONE;
 }
@@ -150,7 +182,11 @@ EXPORT_API int dpm_password_set_expires(device_policy_manager_h handle, int valu
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.setExpires(value);
+	try {
+		return password.setExpires(value);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_get_expires(device_policy_manager_h handle, int *value)
@@ -161,12 +197,16 @@ EXPORT_API int dpm_password_get_expires(device_policy_manager_h handle, int *val
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	int ret = password.getExpires();
-	if (ret < 0) {
+	try {
+		int ret = password.getExpires();
+		if (ret < 0) {
+			return -1;
+		}
+
+		*value = ret;
+	} catch (...) {
 		return -1;
 	}
-
-	*value = ret;
 
 	return DPM_ERROR_NONE;
 }
@@ -179,7 +219,11 @@ EXPORT_API int dpm_password_set_history(device_policy_manager_h handle, int valu
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.setHistory(value);
+	try {
+		return password.setHistory(value);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_get_history(device_policy_manager_h handle, int *value)
@@ -190,12 +234,16 @@ EXPORT_API int dpm_password_get_history(device_policy_manager_h handle, int *val
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	int ret = password.getHistory();
-	if (ret < 0) {
+	try {
+		int ret = password.getHistory();
+		if (ret < 0) {
+			return -1;
+		}
+
+		*value = ret;
+	} catch (...) {
 		return -1;
 	}
-
-	*value = ret;
 
 	return DPM_ERROR_NONE;
 }
@@ -208,7 +256,11 @@ EXPORT_API int dpm_password_set_pattern(device_policy_manager_h handle, const ch
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.setPattern(pattern);
+	try {
+		return password.setPattern(pattern);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_reset(device_policy_manager_h handle, const char *passwd)
@@ -219,7 +271,11 @@ EXPORT_API int dpm_password_reset(device_policy_manager_h handle, const char *pa
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.reset(passwd);
+	try {
+		return password.reset(passwd);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_enforce_change(device_policy_manager_h handle)
@@ -229,7 +285,11 @@ EXPORT_API int dpm_password_enforce_change(device_policy_manager_h handle)
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.enforceChange();
+	try {
+		return password.enforceChange();
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_set_max_inactivity_time_device_lock(device_policy_manager_h handle, int value)
@@ -240,7 +300,11 @@ EXPORT_API int dpm_password_set_max_inactivity_time_device_lock(device_policy_ma
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.setMaxInactivityTimeDeviceLock(value);
+	try {
+		return password.setMaxInactivityTimeDeviceLock(value);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_get_max_inactivity_time_device_lock(device_policy_manager_h handle, int *value)
@@ -251,12 +315,16 @@ EXPORT_API int dpm_password_get_max_inactivity_time_device_lock(device_policy_ma
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	int ret = password.getMaxInactivityTimeDeviceLock();
-	if (ret < 0) {
+	try {
+		int ret = password.getMaxInactivityTimeDeviceLock();
+		if (ret < 0) {
+			return -1;
+		}
+
+		*value = ret;
+	} catch (...) {
 		return -1;
 	}
-
-	*value = ret;
 
 	return DPM_ERROR_NONE;
 }
@@ -271,7 +339,11 @@ EXPORT_API int dpm_password_set_status(device_policy_manager_h handle, dpm_passw
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.setStatus(status);
+	try {
+		return password.setStatus(status);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_get_status(device_policy_manager_h handle, dpm_password_status_e *status)
@@ -282,12 +354,16 @@ EXPORT_API int dpm_password_get_status(device_policy_manager_h handle, dpm_passw
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	int ret = password.getStatus();
-	if (ret < 0) {
+	try {
+		int ret = password.getStatus();
+		if (ret < 0) {
+			return -1;
+		}
+
+		*status = (dpm_password_status_e)ret;
+	} catch (...) {
 		return -1;
 	}
-
-	*status = (dpm_password_status_e)ret;
 
 	return DPM_ERROR_NONE;
 }
@@ -299,7 +375,11 @@ EXPORT_API int dpm_password_delete_pattern(device_policy_manager_h handle)
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.deletePattern();
+	try {
+		return password.deletePattern();
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_get_pattern(device_policy_manager_h handle, char **pattern)
@@ -310,7 +390,11 @@ EXPORT_API int dpm_password_get_pattern(device_policy_manager_h handle, char **p
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	*pattern = ::strdup(password.getPattern().c_str());
+	try {
+		*pattern = ::strdup(password.getPattern().c_str());
+	} catch (...) {
+		return -1;
+	}
 
 	return DPM_ERROR_NONE;
 }
@@ -323,7 +407,11 @@ EXPORT_API int dpm_password_set_maximum_character_occurrences(device_policy_mana
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.setMaximumCharacterOccurrences(value);
+	try {
+		return password.setMaximumCharacterOccurrences(value);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_get_maximum_character_occurrences(device_policy_manager_h handle, int *value)
@@ -334,12 +422,16 @@ EXPORT_API int dpm_password_get_maximum_character_occurrences(device_policy_mana
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	int ret = password.getMaximumCharacterOccurrences();
-	if (ret < 0) {
+	try {
+		int ret = password.getMaximumCharacterOccurrences();
+		if (ret < 0) {
+			return -1;
+		}
+
+		*value = ret;
+	} catch (...) {
 		return -1;
 	}
-
-	*value = ret;
 
 	return DPM_ERROR_NONE;
 }
@@ -352,7 +444,11 @@ EXPORT_API int dpm_password_set_maximum_numeric_sequence_length(device_policy_ma
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.setMaximumNumericSequenceLength(value);
+	try {
+		return password.setMaximumNumericSequenceLength(value);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_get_maximum_numeric_sequence_length(device_policy_manager_h handle, int *value)
@@ -363,12 +459,16 @@ EXPORT_API int dpm_password_get_maximum_numeric_sequence_length(device_policy_ma
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	int ret = password.getMaximumNumericSequenceLength();
-	if (ret < 0) {
+	try {
+		int ret = password.getMaximumNumericSequenceLength();
+		if (ret < 0) {
+			return -1;
+		}
+
+		*value = ret;
+	} catch (...) {
 		return -1;
 	}
-
-	*value = ret;
 
 	return DPM_ERROR_NONE;
 }
@@ -427,7 +527,11 @@ EXPORT_API int dpm_password_set_forbidden_strings(device_policy_manager_h handle
 	for (iter = 0; iter < length; iter++)
 		forbiddenStrings.push_back(strings[iter]);
 
-	return password.setForbiddenStrings(forbiddenStrings);
+	try {
+		return password.setForbiddenStrings(forbiddenStrings);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_set_recovery(device_policy_manager_h handle, int enable)
@@ -437,7 +541,11 @@ EXPORT_API int dpm_password_set_recovery(device_policy_manager_h handle, int ena
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	return password.setRecovery(enable);
+	try {
+		return password.setRecovery(enable);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_password_get_recovery(device_policy_manager_h handle, int *enable)
@@ -448,12 +556,16 @@ EXPORT_API int dpm_password_get_recovery(device_policy_manager_h handle, int *en
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
 
-	int ret = password.getRecovery();
-	if (ret < 0) {
+	try {
+		int ret = password.getRecovery();
+		if (ret < 0) {
+			return -1;
+		}
+
+		*enable = ret;
+	} catch (...) {
 		return -1;
 	}
-
-	*enable = ret;
 
 	return DPM_ERROR_NONE;
 }

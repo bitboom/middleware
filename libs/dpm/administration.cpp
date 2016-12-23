@@ -33,7 +33,12 @@ EXPORT_API int dpm_admin_register_client(device_policy_manager_h handle, const c
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	AdministrationPolicy admin = client.createPolicyInterface<AdministrationPolicy>();
-	return admin.registerPolicyClient(name, uid);
+
+	try {
+		return admin.registerPolicyClient(name, uid);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_admin_deregister_client(device_policy_manager_h handle, const char* name, uid_t uid)
@@ -44,5 +49,10 @@ EXPORT_API int dpm_admin_deregister_client(device_policy_manager_h handle, const
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	AdministrationPolicy admin = client.createPolicyInterface<AdministrationPolicy>();
-	return admin.deregisterPolicyClient(name, uid);
+
+	try {
+		return admin.deregisterPolicyClient(name, uid);
+	} catch (...) {
+		return -1;
+	}
 }

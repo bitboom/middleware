@@ -31,6 +31,12 @@ public:
 	KratePolicy(PolicyControlContext& ctxt);
 	~KratePolicy();
 
+	KratePolicy(const KratePolicy& rhs);
+	KratePolicy(KratePolicy&& rhs);
+
+	KratePolicy& operator=(const KratePolicy& rhs);
+	KratePolicy& operator=(KratePolicy&& rhs);
+
 	int createKrate(const std::string& name, const std::string& setupWizardAppid);
 	int removeKrate(const std::string& name);
 
@@ -39,7 +45,8 @@ public:
 	std::vector<std::string> getKrateList(int state);
 
 private:
-	PolicyControlContext& context;
+	struct Private;
+	std::unique_ptr<Private> pimpl;
 };
 
 } // namespace DevicePolicyManager

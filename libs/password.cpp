@@ -17,8 +17,34 @@
 
 namespace DevicePolicyManager {
 
+struct PasswordPolicy::Private {
+	Private(PolicyControlContext& ctxt) : context(ctxt) {}
+	PolicyControlContext& context;
+};
+
+PasswordPolicy::PasswordPolicy(PasswordPolicy&& rhs) = default;
+PasswordPolicy& PasswordPolicy::operator=(PasswordPolicy&& rhs) = default;
+
+PasswordPolicy::PasswordPolicy(const PasswordPolicy& rhs)
+{
+	if (rhs.pimpl) {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+}
+
+PasswordPolicy& PasswordPolicy::operator=(const PasswordPolicy& rhs)
+{
+	if (!rhs.pimpl) {
+		pimpl.reset();
+	} else {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+
+	return *this;
+}
+
 PasswordPolicy::PasswordPolicy(PolicyControlContext &ctxt) :
-	context(ctxt)
+	pimpl(new Private(ctxt))
 {
 }
 
@@ -28,263 +54,175 @@ PasswordPolicy::~PasswordPolicy()
 
 int PasswordPolicy::setQuality(const int quality)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::setQuality", quality);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::setQuality", quality);
 }
 
 int PasswordPolicy::getQuality()
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::getQuality");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::getQuality");
 }
 
 int PasswordPolicy::setMinimumLength(int value)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::setMinimumLength", value);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::setMinimumLength", value);
 }
 
 int PasswordPolicy::getMinimumLength()
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::getMinimumLength");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::getMinimumLength");
 }
 
 int PasswordPolicy::setMinComplexChars(int value)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::setMinComplexChars", value);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::setMinComplexChars", value);
 }
 
 int PasswordPolicy::getMinComplexChars()
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::getMinComplexChars");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::getMinComplexChars");
 }
 
 int PasswordPolicy::setMaximumFailedForWipe(int value)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::setMaximumFailedForWipe", value);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::setMaximumFailedForWipe", value);
 }
+
 int PasswordPolicy::getMaximumFailedForWipe()
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::getMaximumFailedForWipe");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::getMaximumFailedForWipe");
 }
 
 int PasswordPolicy::setExpires(int value)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::setExpires", value);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::setExpires", value);
 }
 
 int PasswordPolicy::getExpires()
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::getExpires");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::getExpires");
 }
 
 int PasswordPolicy::setHistory(int value)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::setHistory", value);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::setHistory", value);
 }
 
 int PasswordPolicy::getHistory()
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::getHistory");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::getHistory");
 }
 
 int PasswordPolicy::setPattern(const std::string &pattern)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::setPattern", pattern);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::setPattern", pattern);
 }
 
 int PasswordPolicy::reset(const std::string &passwd)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::reset", passwd);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::reset", passwd);
 }
 
 int PasswordPolicy::enforceChange()
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::enforceChange");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::enforceChange");
 }
 
 int PasswordPolicy::setMaxInactivityTimeDeviceLock(int value)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::setMaxInactivityTimeDeviceLock", value);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::setMaxInactivityTimeDeviceLock", value);
 }
 
 int PasswordPolicy::getMaxInactivityTimeDeviceLock()
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::getMaxInactivityTimeDeviceLock");;
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::getMaxInactivityTimeDeviceLock");;
 }
 
 int PasswordPolicy::setStatus(int status)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::setStatus", status);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::setStatus", status);
 }
 
 int PasswordPolicy::getStatus()
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::getStatus");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::getStatus");
 }
 
 int PasswordPolicy::deletePattern()
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::deletePattern");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::deletePattern");
 }
 
 std::string PasswordPolicy::getPattern()
 {
-	std::string error("Error");
-	try {
-		return context->methodCall<std::string>("PasswordPolicy::getPattern");
-	} catch (runtime::Exception &e) {
-		return error;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<std::string>("PasswordPolicy::getPattern");
 }
 
 int PasswordPolicy::setMaximumCharacterOccurrences(int value)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::setMaximumCharacterOccurrences", value);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::setMaximumCharacterOccurrences", value);
 }
 
 int PasswordPolicy::getMaximumCharacterOccurrences()
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::getMaximumCharacterOccurrences");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::getMaximumCharacterOccurrences");
 }
 
 int PasswordPolicy::setMaximumNumericSequenceLength(int value)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::setMaximumNumericSequenceLength", value);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::setMaximumNumericSequenceLength", value);
 }
 
 int PasswordPolicy::getMaximumNumericSequenceLength()
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::getMaximumNumericSequenceLength");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::getMaximumNumericSequenceLength");
 }
 
 int PasswordPolicy::setForbiddenStrings(const std::vector<std::string> &forbiddenStrings)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::setForbiddenStrings", forbiddenStrings);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::setForbiddenStrings", forbiddenStrings);
 }
 
 std::vector<std::string> PasswordPolicy::getForbiddenStrings()
 {
-	std::vector<std::string> error;
-	try {
-		return context->methodCall<std::vector<std::string>>("PasswordPolicy::getForbiddenStrings");
-	} catch (runtime::Exception &e) {
-		return error;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<std::vector<std::string>>("PasswordPolicy::getForbiddenStrings");
 }
 
 int PasswordPolicy::setRecovery(int enable)
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::setRecovery", enable);
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::setRecovery", enable);
 }
 
 int PasswordPolicy::getRecovery()
 {
-	try {
-		return context->methodCall<int>("PasswordPolicy::getRecovery");
-	} catch (runtime::Exception &e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("PasswordPolicy::getRecovery");
 }
 } /* namespace DevicePolicyManager */

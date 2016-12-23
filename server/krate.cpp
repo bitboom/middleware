@@ -40,30 +40,61 @@ namespace {
 
 std::regex krateNamePattern(NAME_PATTERN);
 
-bool isAllowedName(const std::string& name) {
-	if (!std::regex_match(name, krateNamePattern)) {
-		return false;
-	}
-
-	bool exists = false;
-	try {
-		runtime::User user(name);
-		exists = true;
-	} catch (runtime::Exception& e) {}
-
-	return !exists;
-}
-
-bool foreachKrateCallback(const char* name, void* user_data) {
+bool foreachKrateCallback(const char* name, void* user_data)
+{
 	auto pList = (std::vector<std::string>*)user_data;
 	pList->push_back(name);
 	return true;
 }
 
+} // namespace
+
+struct KratePolicy::Private {
+	Private(PolicyControlContext& ctxt) : context(ctxt) {}
+
+	bool isAllowedName(const std::string& name)
+	{
+		if (!std::regex_match(name, krateNamePattern)) {
+			return false;
+		}
+
+		bool exists = false;
+		try {
+			runtime::User user(name);
+			exists = true;
+		} catch (runtime::Exception& e) {
+			return false;
+		}
+
+		return !exists;
+	}
+
+	PolicyControlContext& context;
+};
+
+KratePolicy::KratePolicy(KratePolicy&& rhs) = default;
+KratePolicy& KratePolicy::operator=(KratePolicy&& rhs) = default;
+
+KratePolicy::KratePolicy(const KratePolicy& rhs)
+{
+	if (rhs.pimpl) {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
 }
 
-KratePolicy::KratePolicy(PolicyControlContext& ctx) :
-	context(ctx)
+KratePolicy& KratePolicy::operator=(const KratePolicy& rhs)
+{
+	if (!rhs.pimpl) {
+		pimpl.reset();
+	} else {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+
+	return *this;
+}
+
+KratePolicy::KratePolicy(PolicyControlContext& context) :
+	pimpl(new Private(context))
 {
 	context.expose(this, DPM_PRIVILEGE_ZONE, (int)(KratePolicy::createKrate)(std::string, std::string));
 	context.expose(this, DPM_PRIVILEGE_ZONE, (int)(KratePolicy::removeKrate)(std::string));
@@ -81,11 +112,12 @@ KratePolicy::~KratePolicy()
 
 int KratePolicy::createKrate(const std::string& name, const std::string& setupWizAppid)
 {
+	PolicyControlContext& context = pimpl->context;
 	if (!std::regex_match(name, krateNamePattern)) {
 		return -1;
 	}
 
-	if (!isAllowedName(name)) {
+	if (!pimpl->isAllowedName(name)) {
 		return -1;
 	}
 
@@ -106,6 +138,8 @@ int KratePolicy::createKrate(const std::string& name, const std::string& setupWi
 
 int KratePolicy::removeKrate(const std::string& name)
 {
+	PolicyControlContext& context = pimpl->context;
+
 	if (getKrateState(name) == 0) {
 		return -1;
 	}
@@ -133,6 +167,7 @@ int KratePolicy::getKrateState(const std::string& name)
 	krate_manager_create(&krate_manager);
 	krate_manager_get_krate_state(krate_manager, name.c_str(), &state);
 	krate_manager_destroy(krate_manager);
+
 	return (int)state;
 }
 
@@ -144,6 +179,7 @@ std::vector<std::string> KratePolicy::getKrateList(int state)
 	krate_manager_create(&krate_manager);
 	krate_manager_foreach_name(krate_manager, (krate_state_e)state, foreachKrateCallback, &list);
 	krate_manager_destroy(krate_manager);
+
 	return list;
 }
 

@@ -29,7 +29,12 @@ EXPORT_API int dpm_application_set_mode_restriction(device_policy_manager_h hand
 
 	DevicePolicyContext& client = GetDevicePolicyContext(handle);
 	ApplicationPolicy application = client.createPolicyInterface<ApplicationPolicy>();
-	return application.setModeRestriction(mode);
+
+	try {
+		return application.setModeRestriction(mode);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_application_unset_mode_restriction(device_policy_manager_h handle, int mode)
@@ -39,7 +44,12 @@ EXPORT_API int dpm_application_unset_mode_restriction(device_policy_manager_h ha
 
 	DevicePolicyContext& client = GetDevicePolicyContext(handle);
 	ApplicationPolicy application = client.createPolicyInterface<ApplicationPolicy>();
-	return application.unsetModeRestriction(mode);
+
+	try {
+		return application.unsetModeRestriction(mode);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_application_get_mode_restriction(device_policy_manager_h handle, int *mode)
@@ -49,11 +59,17 @@ EXPORT_API int dpm_application_get_mode_restriction(device_policy_manager_h hand
 
 	DevicePolicyContext& client = GetDevicePolicyContext(handle);
 	ApplicationPolicy application = client.createPolicyInterface<ApplicationPolicy>();
-	int ret = application.getModeRestriction();
-	if (ret < 0) {
+
+	try {
+		int ret = application.getModeRestriction();
+		if (ret < 0) {
+			return -1;
+		}
+		*mode = ret;
+	} catch (...) {
 		return -1;
 	}
-	*mode = ret;
+
 	return DPM_ERROR_NONE;
 }
 
@@ -64,7 +80,12 @@ EXPORT_API int dpm_application_add_privilege_to_blacklist(device_policy_manager_
 
 	DevicePolicyContext& client = GetDevicePolicyContext(handle);
 	ApplicationPolicy application = client.createPolicyInterface<ApplicationPolicy>();
-	return application.addPrivilegeToBlacklist(type, privilege);
+
+	try {
+		return application.addPrivilegeToBlacklist(type, privilege);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_application_remove_privilege_from_blacklist(device_policy_manager_h handle, int type, const char* privilege)
@@ -74,7 +95,12 @@ EXPORT_API int dpm_application_remove_privilege_from_blacklist(device_policy_man
 
 	DevicePolicyContext& client = GetDevicePolicyContext(handle);
 	ApplicationPolicy application = client.createPolicyInterface<ApplicationPolicy>();
-	return application.removePrivilegeFromBlacklist(type, privilege);
+
+	try {
+		return application.removePrivilegeFromBlacklist(type, privilege);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_application_check_privilege_is_blacklisted(device_policy_manager_h handle, int type, const char* privilege, int *is_blacklisted)
@@ -85,12 +111,18 @@ EXPORT_API int dpm_application_check_privilege_is_blacklisted(device_policy_mana
 
 	DevicePolicyContext& client = GetDevicePolicyContext(handle);
 	ApplicationPolicy application = client.createPolicyInterface<ApplicationPolicy>();
-	int ret = application.checkPrivilegeIsBlacklisted(type, privilege);
-	if (ret < 0) {
+
+	try {
+		int ret = application.checkPrivilegeIsBlacklisted(type, privilege);
+		if (ret < 0) {
+			return -1;
+		}
+
+		*is_blacklisted = ret;
+	} catch (...) {
 		return -1;
 	}
 
-	*is_blacklisted = ret;
 	return DPM_ERROR_NONE;
 }
 
@@ -101,7 +133,12 @@ EXPORT_API int dpm_application_install_package(device_policy_manager_h handle, c
 
 	DevicePolicyContext& client = GetDevicePolicyContext(handle);
 	ApplicationPolicy application = client.createPolicyInterface<ApplicationPolicy>();
-	return application.installPackage(pkgpath);
+
+	try {
+		return application.installPackage(pkgpath);
+	} catch (...) {
+		return -1;
+	}
 }
 
 EXPORT_API int dpm_application_uninstall_package(device_policy_manager_h handle, const char* pkgid)
@@ -111,5 +148,10 @@ EXPORT_API int dpm_application_uninstall_package(device_policy_manager_h handle,
 
 	DevicePolicyContext& client = GetDevicePolicyContext(handle);
 	ApplicationPolicy application = client.createPolicyInterface<ApplicationPolicy>();
-	return application.uninstallPackage(pkgid);
+
+	try {
+		return application.uninstallPackage(pkgid);
+	} catch (...) {
+		return -1;
+	}
 }

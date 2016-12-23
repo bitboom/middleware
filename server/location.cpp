@@ -23,8 +23,34 @@
 
 namespace DevicePolicyManager {
 
-LocationPolicy::LocationPolicy(PolicyControlContext& ctxt) :
-	context(ctxt)
+struct LocationPolicy::Private {
+	Private(PolicyControlContext& ctxt) : context(ctxt) {}
+	PolicyControlContext& context;
+};
+
+LocationPolicy::LocationPolicy(LocationPolicy&& rhs) = default;
+LocationPolicy& LocationPolicy::operator=(LocationPolicy&& rhs) = default;
+
+LocationPolicy::LocationPolicy(const LocationPolicy& rhs)
+{
+	if (rhs.pimpl) {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+}
+
+LocationPolicy& LocationPolicy::operator=(const LocationPolicy& rhs)
+{
+	if (!rhs.pimpl) {
+		pimpl.reset();
+	} else {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+
+	return *this;
+}
+
+LocationPolicy::LocationPolicy(PolicyControlContext& context) :
+	pimpl(new Private(context))
 {
 	context.expose(this, DPM_PRIVILEGE_LOCATION, (int)(LocationPolicy::setLocationState)(bool));
 	context.expose(this, "", (bool)(LocationPolicy::getLocationState)());
@@ -38,6 +64,8 @@ LocationPolicy::~LocationPolicy()
 
 int LocationPolicy::setLocationState(bool enable)
 {
+	PolicyControlContext& context = pimpl->context;
+
 	if (!SetPolicyAllowed(context, "location", enable)) {
 		return 0;
 	}
@@ -51,6 +79,8 @@ int LocationPolicy::setLocationState(bool enable)
 
 bool LocationPolicy::getLocationState()
 {
+	PolicyControlContext& context = pimpl->context;
+
 	return context.getPolicy<int>("location");
 }
 

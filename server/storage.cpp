@@ -35,7 +35,18 @@ namespace {
 
 const std::string PROG_FACTORY_RESET = "/usr/bin/factory-reset";
 
-std::vector<std::string> getStorageDeviceList(const std::string& type)
+} // namespace
+
+struct StoragePolicy::Private {
+	Private(PolicyControlContext& ctxt) : context(ctxt) {}
+
+	std::vector<std::string> getStorageDeviceList(const std::string& type);
+	void requestDeviceFormat(const std::string& devnode, int option);
+
+	PolicyControlContext& context;
+};
+
+std::vector<std::string> StoragePolicy::Private::getStorageDeviceList(const std::string& type)
 {
 	int intparams[6];
 	char* strparams[7];
@@ -81,7 +92,7 @@ std::vector<std::string> getStorageDeviceList(const std::string& type)
 	return storages;
 }
 
-void requestDeviceFormat(const std::string& devnode, int option)
+void StoragePolicy::Private::requestDeviceFormat(const std::string& devnode, int option)
 {
 	int ret;
 	dbus::Connection &systemDBus = dbus::Connection::getSystem();
@@ -98,10 +109,29 @@ void requestDeviceFormat(const std::string& devnode, int option)
 	}
 }
 
-} // namespace
+StoragePolicy::StoragePolicy(StoragePolicy&& rhs) = default;
+StoragePolicy& StoragePolicy::operator=(StoragePolicy&& rhs) = default;
 
-StoragePolicy::StoragePolicy(PolicyControlContext& ctx) :
-	context(ctx)
+StoragePolicy::StoragePolicy(const StoragePolicy& rhs)
+{
+	if (rhs.pimpl) {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+}
+
+StoragePolicy& StoragePolicy::operator=(const StoragePolicy& rhs)
+{
+	if (!rhs.pimpl) {
+		pimpl.reset();
+	} else {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+
+	return *this;
+}
+
+StoragePolicy::StoragePolicy(PolicyControlContext& context) :
+	pimpl(new Private(context))
 {
 	context.expose(this, DPM_PRIVILEGE_WIPE, (int)(StoragePolicy::wipeData)(int));
 }
@@ -112,7 +142,7 @@ StoragePolicy::~StoragePolicy()
 
 int StoragePolicy::wipeData(int id)
 {
-	auto worker = [id]() {
+	auto worker = [id, this]() {
 		if (id & WIPE_INTERNAL_STORAGE) {
 			runtime::Process proc(PROG_FACTORY_RESET);
 			if (proc.execute() == -1) {
@@ -123,10 +153,10 @@ int StoragePolicy::wipeData(int id)
 
 		if (id & WIPE_EXTERNAL_STORAGE) {
 			try {
-				std::vector<std::string> devices = getStorageDeviceList("mmc");
+				std::vector<std::string> devices = pimpl->getStorageDeviceList("mmc");
 				for (const std::string& devnode : devices) {
 					std::cout << "Erase device: " << devnode << std::endl;
-					requestDeviceFormat(devnode, 1);
+					pimpl->requestDeviceFormat(devnode, 1);
 					std::cout << "Erase device: " << devnode << " completed" << std::endl;
 				}
 			} catch(runtime::Exception& e) {

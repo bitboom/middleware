@@ -32,8 +32,34 @@
 
 namespace DevicePolicyManager {
 
-ApplicationPolicy::ApplicationPolicy(PolicyControlContext& ctxt) :
-	context(ctxt)
+struct ApplicationPolicy::Private {
+	Private(PolicyControlContext& ctxt) : context(ctxt) {}
+	PolicyControlContext& context;
+};
+
+ApplicationPolicy::ApplicationPolicy(ApplicationPolicy&& rhs) = default;
+ApplicationPolicy& ApplicationPolicy::operator=(ApplicationPolicy&& rhs) = default;
+
+ApplicationPolicy::ApplicationPolicy(const ApplicationPolicy& rhs)
+{
+	if (rhs.pimpl) {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+}
+
+ApplicationPolicy& ApplicationPolicy::operator=(const ApplicationPolicy& rhs)
+{
+	if (!rhs.pimpl) {
+		pimpl.reset();
+	} else {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+
+	return *this;
+}
+
+ApplicationPolicy::ApplicationPolicy(PolicyControlContext& context) :
+	pimpl(new Private(context))
 {
 	context.expose(this, "", (int)(ApplicationPolicy::getModeRestriction)());
 	context.expose(this, "", (int)(ApplicationPolicy::setModeRestriction)(int));
@@ -53,6 +79,8 @@ ApplicationPolicy::~ApplicationPolicy()
 
 int ApplicationPolicy::installPackage(const std::string& pkgpath)
 {
+	PolicyControlContext& context = pimpl->context;
+
 	try {
 		PackageManager& packman = PackageManager::instance();
 		packman.installPackage(pkgpath, context.getPeerUid());
@@ -66,6 +94,8 @@ int ApplicationPolicy::installPackage(const std::string& pkgpath)
 
 int ApplicationPolicy::uninstallPackage(const std::string& pkgid)
 {
+	PolicyControlContext& context = pimpl->context;
+
 	try {
 		PackageManager& packman = PackageManager::instance();
 		packman.uninstallPackage(pkgid, context.getPeerUid());
@@ -79,6 +109,8 @@ int ApplicationPolicy::uninstallPackage(const std::string& pkgid)
 
 int ApplicationPolicy::setModeRestriction(int mode)
 {
+	PolicyControlContext& context = pimpl->context;
+
 	try {
 		PackageManager& packman = PackageManager::instance();
 		packman.setModeRestriction(mode, context.getPeerUid());
@@ -92,6 +124,8 @@ int ApplicationPolicy::setModeRestriction(int mode)
 
 int ApplicationPolicy::unsetModeRestriction(int mode)
 {
+	PolicyControlContext& context = pimpl->context;
+
 	try {
 		PackageManager& packman = PackageManager::instance();
 		packman.unsetModeRestriction(mode, context.getPeerUid());
@@ -105,6 +139,8 @@ int ApplicationPolicy::unsetModeRestriction(int mode)
 
 int ApplicationPolicy::getModeRestriction()
 {
+	PolicyControlContext& context = pimpl->context;
+
 	try {
 		PackageManager& packman = PackageManager::instance();
 		return packman.getModeRestriction(context.getPeerUid());
@@ -118,6 +154,8 @@ int ApplicationPolicy::addPrivilegeToBlacklist(int type, const std::string& priv
 {
 	GList* privilegeList = NULL;
 	privilegeList = g_list_append(privilegeList, const_cast<char*>(privilege.c_str()));
+
+	PolicyControlContext& context = pimpl->context;
 	privilege_manager_package_type_e pkgType = type ? PRVMGR_PACKAGE_TYPE_CORE : PRVMGR_PACKAGE_TYPE_WRT;
 	int ret = privilege_manager_set_black_list(context.getPeerUid(), pkgType, privilegeList);
 	g_list_free(privilegeList);
@@ -133,6 +171,7 @@ int ApplicationPolicy::removePrivilegeFromBlacklist(int type, const std::string&
 	GList* privilegeList = NULL;
 	privilegeList = g_list_append(privilegeList, const_cast<char*>(privilege.c_str()));
 
+	PolicyControlContext& context = pimpl->context;
 	privilege_manager_package_type_e pkgType = type ? PRVMGR_PACKAGE_TYPE_CORE : PRVMGR_PACKAGE_TYPE_WRT;
 	int ret = privilege_manager_unset_black_list(context.getPeerUid(), pkgType, privilegeList);
 	g_list_free(privilegeList);
@@ -147,6 +186,7 @@ int ApplicationPolicy::checkPrivilegeIsBlacklisted(int type, const std::string& 
 {
 	GList* blacklist = NULL;
 
+	PolicyControlContext& context = pimpl->context;
 	privilege_manager_package_type_e pkgType = type ? PRVMGR_PACKAGE_TYPE_CORE : PRVMGR_PACKAGE_TYPE_WRT;
 	int ret = privilege_info_get_black_list(context.getPeerUid(), pkgType, &blacklist);
 	if (ret != PRVMGR_ERR_NONE) {

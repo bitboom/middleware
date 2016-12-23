@@ -17,8 +17,34 @@
 
 namespace DevicePolicyManager {
 
+struct KratePolicy::Private {
+	Private(PolicyControlContext& ctxt) : context(ctxt) {}
+	PolicyControlContext& context;
+};
+
+KratePolicy::KratePolicy(KratePolicy&& rhs) = default;
+KratePolicy& KratePolicy::operator=(KratePolicy&& rhs) = default;
+
+KratePolicy::KratePolicy(const KratePolicy& rhs)
+{
+	if (rhs.pimpl) {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+}
+
+KratePolicy& KratePolicy::operator=(const KratePolicy& rhs)
+{
+	if (!rhs.pimpl) {
+		pimpl.reset();
+	} else {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+
+	return *this;
+}
+
 KratePolicy::KratePolicy(PolicyControlContext& ctx) :
-	context(ctx)
+	pimpl(new Private(ctx))
 {
 }
 
@@ -28,39 +54,26 @@ KratePolicy::~KratePolicy()
 
 int KratePolicy::createKrate(const std::string& name, const std::string& setupWizAppid)
 {
-	try {
-		return context->methodCall<int>("KratePolicy::createKrate", name, setupWizAppid);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("KratePolicy::createKrate", name, setupWizAppid);
 }
 
 int KratePolicy::removeKrate(const std::string& name)
 {
-	try {
-		return context->methodCall<int>("KratePolicy::removeKrate", name);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("KratePolicy::removeKrate", name);
 }
 
 int KratePolicy::getKrateState(const std::string& name)
 {
-	try {
-		return context->methodCall<int>("KratePolicy::getKrateState", name);
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<int>("KratePolicy::getKrateState", name);
 }
 
 std::vector<std::string> KratePolicy::getKrateList(int state)
 {
-	std::vector<std::string> empty;
-	try {
-		return context->methodCall<std::vector<std::string>>("KratePolicy::getKrateList", state);
-	} catch (runtime::Exception& e) {
-		return empty;
-	}
+	PolicyControlContext& context = pimpl->context;
+	return context->methodCall<std::vector<std::string>>("KratePolicy::getKrateList", state);
 }
 
 } // namespace DevicePolicyManager

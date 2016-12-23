@@ -17,8 +17,34 @@
 
 namespace DevicePolicyManager {
 
+struct LocationPolicy::Private {
+	Private(PolicyControlContext& ctxt) : context(ctxt) {}
+	PolicyControlContext& context;
+};
+
+LocationPolicy::LocationPolicy(LocationPolicy&& rhs) = default;
+LocationPolicy& LocationPolicy::operator=(LocationPolicy&& rhs) = default;
+
+LocationPolicy::LocationPolicy(const LocationPolicy& rhs)
+{
+	if (rhs.pimpl) {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+}
+
+LocationPolicy& LocationPolicy::operator=(const LocationPolicy& rhs)
+{
+	if (!rhs.pimpl) {
+		pimpl.reset();
+	} else {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+
+	return *this;
+}
+
 LocationPolicy::LocationPolicy(PolicyControlContext& ctxt) :
-	context(ctxt)
+	pimpl(new Private(ctxt))
 {
 }
 
@@ -28,11 +54,13 @@ LocationPolicy::~LocationPolicy()
 
 int LocationPolicy::setLocationState(bool enable)
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<int>("LocationPolicy::setLocationState", enable);
 }
 
 bool LocationPolicy::getLocationState()
 {
+	PolicyControlContext& context = pimpl->context;
 	return context->methodCall<bool>("LocationPolicy::getLocationState");
 }
 

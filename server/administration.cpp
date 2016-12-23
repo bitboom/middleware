@@ -20,14 +20,36 @@
 
 #include "administration.hxx"
 
-namespace {
-const std::string repository = "/opt/dbspace/.dpm.db";
-}
-
 namespace DevicePolicyManager {
 
-AdministrationPolicy::AdministrationPolicy(PolicyControlContext& ctx) :
-	context(ctx)
+struct AdministrationPolicy::Private {
+	Private(PolicyControlContext& ctx) : context(ctx) {}
+	PolicyControlContext& context;
+};
+
+AdministrationPolicy::AdministrationPolicy(AdministrationPolicy&& rhs) = default;
+AdministrationPolicy& AdministrationPolicy::operator=(AdministrationPolicy&& rhs) = default;
+
+AdministrationPolicy::AdministrationPolicy(const AdministrationPolicy& rhs)
+{
+	if (rhs.pimpl) {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+}
+
+AdministrationPolicy& AdministrationPolicy::operator=(const AdministrationPolicy& rhs)
+{
+	if (!rhs.pimpl) {
+		pimpl.reset();
+	} else {
+		pimpl.reset(new Private(*rhs.pimpl));
+	}
+
+	return *this;
+}
+
+AdministrationPolicy::AdministrationPolicy(PolicyControlContext& context) :
+	pimpl(new Private(context))
 {
 	context.expose(this, "", (int)(AdministrationPolicy::registerPolicyClient)(std::string, uid_t));
 	context.expose(this, "", (int)(AdministrationPolicy::deregisterPolicyClient)(std::string, uid_t));
@@ -39,6 +61,7 @@ AdministrationPolicy::~AdministrationPolicy()
 
 int AdministrationPolicy::registerPolicyClient(const std::string& name, uid_t uid)
 {
+	PolicyControlContext& context = pimpl->context;
 	int ret = -1;
 	try {
 		ret = context.getPolicyManager().prepareStorage(name, uid);
@@ -51,6 +74,7 @@ int AdministrationPolicy::registerPolicyClient(const std::string& name, uid_t ui
 
 int AdministrationPolicy::deregisterPolicyClient(const std::string& name, uid_t uid)
 {
+	PolicyControlContext& context = pimpl->context;
 	int ret = -1;
 	try {
 		ret = context.getPolicyManager().removeStorage(name, uid);

@@ -31,10 +31,17 @@ public:
 	StoragePolicy(PolicyControlContext& ctxt);
 	~StoragePolicy();
 
+	StoragePolicy(const StoragePolicy& rhs);
+	StoragePolicy(StoragePolicy&& rhs);
+
+	StoragePolicy& operator=(const StoragePolicy& rhs);
+	StoragePolicy& operator=(StoragePolicy&& rhs);
+
 	int wipeData(int id);
 
 private:
-	PolicyControlContext& context;
+	struct Private;
+	std::unique_ptr<Private> pimpl;
 };
 
 } // namespace DeivcePolicyManager
