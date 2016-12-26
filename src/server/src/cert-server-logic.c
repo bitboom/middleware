@@ -939,12 +939,12 @@ int getCertificateDetailFromStore(
 	char *ckm_alias = add_shared_owner_prefix(gname);
 	if (!ckm_alias) {
 		SLOGE("Failed to make alias. memory allocation error.");
+		sqlite3_finalize(stmt);
 		return CERTSVC_BAD_ALLOC;
 	}
 
 	result = ckmc_get_data(ckm_alias, NULL, &cert_data);
 	free(ckm_alias);
-
 	sqlite3_finalize(stmt);
 
 	if (result != CKMC_ERROR_NONE) {
@@ -996,7 +996,6 @@ int getCertificateDetailFromSystemStore(const char *gname, char *pOutData)
 	}
 
 	text = (const char *)sqlite3_column_text(stmt, 0);
-
 	if (!text) {
 		SLOGE("Fail to sqlite3_column_text");
 		sqlite3_finalize(stmt);
@@ -1452,6 +1451,7 @@ int loadCertificatesFromStore(
 	sqlite3_stmt *stmt = NULL;
 	char **certs = NULL;
 	size_t gnameSize = 0;
+	char *columnText = NULL;
 
 	/* Get associated_gname from store */
 	char *query = sqlite3_mprintf("select associated_gname from %Q "
@@ -1471,9 +1471,9 @@ int loadCertificatesFromStore(
 		goto error;
 	}
 
-	const char *columnText = (const char *)sqlite3_column_text(stmt, 0);
+	columnText = strdup((const char *)sqlite3_column_text(stmt, 0));
 	if (!columnText) {
-		SLOGE("Failed to sqlite3_column_text");
+		SLOGE("Failed to get associated_gname.");
 		result = CERTSVC_FAIL;
 		goto error;
 	}
@@ -1571,6 +1571,9 @@ error:
 
 	if (stmt)
 		sqlite3_finalize(stmt);
+
+	if (columnText)
+		free(columnText);
 
 	if (certs) {
 		for(i = 0; i < gnameSize; i++)
