@@ -44,9 +44,7 @@
 void CertSigHandler(int signo)
 {
 	SLOGD("Got Signal %d, exiting now.", signo);
-
 	deinitialize_db();
-
 	exit(1);
 }
 
@@ -55,7 +53,7 @@ int CertSvcGetSocketFromSystemd(int *pSockfd)
 	int n = sd_listen_fds(0);
 	int fd;
 
-	for (fd = SD_LISTEN_FDS_START; fd < SD_LISTEN_FDS_START+n; ++fd) {
+	for (fd = SD_LISTEN_FDS_START; fd < SD_LISTEN_FDS_START + n; ++fd) {
 		if (0 < sd_is_socket_unix(fd, SOCK_STREAM, 1, VCORE_SOCK_PATH, 0)) {
 			LOGD("Get socket from systemd. fd[%d]", fd);
 			*pSockfd = fd;
@@ -78,13 +76,10 @@ void CertSvcServerComm(void)
 	char *certBlockBuffer = NULL;
 	size_t bufferLen = 0;
 	size_t blockBufferLen = 0;
-
 	struct timeval timeout;
 	timeout.tv_sec = 10;
 	timeout.tv_usec = 0;
-
 	SLOGI("cert-server is starting...");
-
 	VcoreRequestData recv_data;
 	VcoreResponseData send_data;
 
@@ -94,9 +89,9 @@ void CertSvcServerComm(void)
 	}
 
 	client_len = sizeof(clientaddr);
-	signal(SIGINT, (void*)CertSigHandler);
-
+	signal(SIGINT, (void *)CertSigHandler);
 	result = initialize_db();
+
 	if (result != CERTSVC_SUCCESS) {
 		SLOGE("Failed to initialize database.");
 		result = CERTSVC_IO_ERROR;
@@ -107,6 +102,7 @@ void CertSvcServerComm(void)
 	SLOGI("Start to check schema version.");
 	schema_version version;
 	result = get_schema_version(&version);
+
 	if (result != CERTSVC_SUCCESS) {
 		SLOGE("Failed to check schema version.");
 		result = CERTSVC_IO_ERROR;
@@ -117,6 +113,7 @@ void CertSvcServerComm(void)
 		SLOGI("Start to update schema version and bundle.");
 		// remake bundle according to new DB
 		result = update_ca_certificate_file(NULL);
+
 		if (result != CERTSVC_SUCCESS) {
 			SLOGE("Failed to migrate bundle.");
 			result = CERTSVC_IO_ERROR;
@@ -126,23 +123,21 @@ void CertSvcServerComm(void)
 		// set DB schema version to TIZEN_3_O
 		set_schema_version(TIZEN_3_0);
 	}
-	SLOGI("Finish checking DB schema version.");
 
+	SLOGI("Finish checking DB schema version.");
 	fd_set fd;
 	struct timeval tv;
+
 	while (1) {
 		errno = 0;
-
 		FD_ZERO(&fd);
 		FD_SET(server_sockfd, &fd);
-
 		tv.tv_sec = 10;
 		tv.tv_usec = 0;
-
 		memset(&recv_data, 0x00, sizeof(VcoreRequestData));
 		memset(&send_data, 0x00, sizeof(VcoreResponseData));
-
 		int ret = select(server_sockfd + 1, &fd, NULL, NULL, &tv);
+
 		if (ret == 0) { // timeout
 			SLOGD("cert-server timeout. exit.");
 			break;
@@ -153,28 +148,32 @@ void CertSvcServerComm(void)
 			break;
 		}
 
-		if ((client_sockfd = accept(server_sockfd, (struct sockaddr*)&clientaddr, (socklen_t*)&client_len)) < 0) {
-			SLOGE("Error in function accept().[socket desc :%d, error no :%d].", client_sockfd, errno);
+		if ((client_sockfd = accept(server_sockfd, (struct sockaddr *)&clientaddr,
+									(socklen_t *)&client_len)) < 0) {
+			SLOGE("Error in function accept().[socket desc :%d, error no :%d].",
+				  client_sockfd, errno);
 			continue;
 		}
 
 		SLOGD("cert-server Accept! client sock[%d]", client_sockfd);
 
-		if (setsockopt(client_sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+		if (setsockopt(client_sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+					   sizeof(timeout)) < 0) {
 			SLOGE("Error in Set SO_RCVTIMEO Socket Option");
 			send_data.result = CERTSVC_FAIL;
 			goto Error_close_exit;
 		}
 
-		if (setsockopt(client_sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+		if (setsockopt(client_sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
+					   sizeof(timeout)) < 0) {
 			SLOGE("Error in Set SO_SNDTIMEO Socket Option");
 			send_data.result = CERTSVC_FAIL;
 			goto Error_close_exit;
 		}
 
 		SLOGD("Connected to a client...");
+		read_len = recv(client_sockfd, (char *)&recv_data, sizeof(recv_data), 0);
 
-		read_len = recv(client_sockfd, (char*)&recv_data, sizeof(recv_data), 0);
 		if (read_len < 0) {
 			SLOGE("Error in function recv().");
 			send_data.result = CERTSVC_FAIL;
@@ -184,127 +183,127 @@ void CertSvcServerComm(void)
 		SLOGD("revc request: reqType=%d", recv_data.reqType);
 
 		switch (recv_data.reqType) {
-		case CERTSVC_EXTRACT_CERT:
-		{
+		case CERTSVC_EXTRACT_CERT: {
 			send_data.result = getCertificateDetailFromStore(
-					recv_data.storeType,
-					recv_data.certType,
-					recv_data.gname,
-					send_data.dataBlock);
+								   recv_data.storeType,
+								   recv_data.certType,
+								   recv_data.gname,
+								   send_data.dataBlock);
 			send_data.dataBlockLen = strlen(send_data.dataBlock);
-			result = send(client_sockfd, (char*)&send_data, sizeof(send_data), 0);
+			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
 			break;
 		}
 
-		case CERTSVC_EXTRACT_SYSTEM_CERT:
-		{
+		case CERTSVC_EXTRACT_SYSTEM_CERT: {
 			send_data.result = getCertificateDetailFromSystemStore(
-					recv_data.gname,
-					send_data.dataBlock);
+								   recv_data.gname,
+								   send_data.dataBlock);
 			send_data.dataBlockLen = strlen(send_data.dataBlock);
-			result = send(client_sockfd, (char*)&send_data, sizeof(send_data), 0);
+			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
 			break;
 		}
 
-		case CERTSVC_DELETE_CERT:
-		{
+		case CERTSVC_DELETE_CERT: {
 			send_data.result = deleteCertificateFromStore(
-					recv_data.storeType,
-					recv_data.gname);
+								   recv_data.storeType,
+								   recv_data.gname);
+
 			if (send_data.result == CERTSVC_SUCCESS)
 				send_data.result = update_ca_certificate_file(NULL);
-			result = send(client_sockfd, (char*)&send_data, sizeof(send_data), 0);
+
+			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
 			break;
 		}
 
-		case CERTSVC_GET_CERTIFICATE_STATUS:
-		{
+		case CERTSVC_GET_CERTIFICATE_STATUS: {
 			send_data.result = getCertificateStatusFromStore(
-					recv_data.storeType,
-					recv_data.gname,
-					&send_data.certStatus);
-			result = send(client_sockfd, (char*)&send_data, sizeof(send_data), 0);
+								   recv_data.storeType,
+								   recv_data.gname,
+								   &send_data.certStatus);
+			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
 			break;
 		}
 
-		case CERTSVC_SET_CERTIFICATE_STATUS:
-		{
+		case CERTSVC_SET_CERTIFICATE_STATUS: {
 			send_data.result = setCertificateStatusToStore(
-					recv_data.storeType,
-					recv_data.is_root_app,
-					recv_data.gname,
-					recv_data.certStatus);
+								   recv_data.storeType,
+								   recv_data.is_root_app,
+								   recv_data.gname,
+								   recv_data.certStatus);
+
 			if (send_data.result == CERTSVC_SUCCESS)
 				send_data.result = update_ca_certificate_file(NULL);
-			result = send(client_sockfd, (char*)&send_data, sizeof(send_data), 0);
+
+			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
 			break;
 		}
 
-		case CERTSVC_CHECK_ALIAS_EXISTS:
-		{
+		case CERTSVC_CHECK_ALIAS_EXISTS: {
 			send_data.result = checkAliasExistsInStore(
-					recv_data.storeType,
-					recv_data.gname,
-					&send_data.isAliasUnique);
-			result = send(client_sockfd, (char*)&send_data, sizeof(send_data), 0);
+								   recv_data.storeType,
+								   recv_data.gname,
+								   &send_data.isAliasUnique);
+			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
 			break;
 		}
 
-		case CERTSVC_INSTALL_CERTIFICATE:
-		{
+		case CERTSVC_INSTALL_CERTIFICATE: {
 			send_data.result = installCertificateToStore(
-					recv_data.storeType,
-					recv_data.gname,
-					recv_data.common_name,
-					recv_data.private_key_gname,
-					recv_data.associated_gname,
-					recv_data.dataBlock,
-					recv_data.certType);
+								   recv_data.storeType,
+								   recv_data.gname,
+								   recv_data.common_name,
+								   recv_data.private_key_gname,
+								   recv_data.associated_gname,
+								   recv_data.dataBlock,
+								   recv_data.certType);
 
-			if (send_data.result == CERTSVC_SUCCESS && (recv_data.certType == PEM_CRT || recv_data.certType == P12_TRUSTED))
+			if (send_data.result == CERTSVC_SUCCESS && (recv_data.certType == PEM_CRT ||
+					recv_data.certType == P12_TRUSTED))
 				send_data.result = update_ca_certificate_file(recv_data.dataBlock);
-			result = send(client_sockfd, (char*)&send_data, sizeof(send_data), 0);
+
+			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
 			break;
 		}
 
 		case CERTSVC_GET_CERTIFICATE_LIST:
 		case CERTSVC_GET_USER_CERTIFICATE_LIST:
-		case CERTSVC_GET_ROOT_CERTIFICATE_LIST:
-		{
+		case CERTSVC_GET_ROOT_CERTIFICATE_LIST: {
 			send_data.result = getCertificateListFromStore(
-					recv_data.reqType,
-					recv_data.storeType,
-					recv_data.is_root_app,
-					&certListBuffer,
-					&bufferLen,
-					&send_data.certCount);
-			result = send(client_sockfd, (char*)&send_data, sizeof(send_data), 0);
+								   recv_data.reqType,
+								   recv_data.storeType,
+								   recv_data.is_root_app,
+								   &certListBuffer,
+								   &bufferLen,
+								   &send_data.certCount);
+			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+
 			if (bufferLen > 0)
 				result = send(client_sockfd, certListBuffer, bufferLen, 0);
+
 			break;
 		}
 
-		case CERTSVC_GET_CERTIFICATE_ALIAS:
-		{
+		case CERTSVC_GET_CERTIFICATE_ALIAS: {
 			send_data.result = getCertificateAliasFromStore(
-					recv_data.storeType,
-					recv_data.gname,
-					send_data.common_name);
-			result = send(client_sockfd, (char*)&send_data, sizeof(send_data), 0);
+								   recv_data.storeType,
+								   recv_data.gname,
+								   send_data.common_name);
+			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
 			break;
 		}
 
-		case CERTSVC_LOAD_CERTIFICATES:
-		{
+		case CERTSVC_LOAD_CERTIFICATES: {
 			send_data.result = loadCertificatesFromStore(
-					recv_data.storeType,
-					recv_data.gname,
-					&certBlockBuffer,
-					&blockBufferLen,
-					&send_data.certBlockCount);
-			result = send(client_sockfd, (char*)&send_data, sizeof(send_data), 0);
+								   recv_data.storeType,
+								   recv_data.gname,
+								   &certBlockBuffer,
+								   &blockBufferLen,
+								   &send_data.certBlockCount);
+			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+
 			if (blockBufferLen > 0)
 				result = send(client_sockfd, certBlockBuffer, blockBufferLen, 0);
+
 			break;
 		}
 
@@ -319,14 +318,13 @@ void CertSvcServerComm(void)
 
 Error_close_exit:
 	close(server_sockfd);
-
 	deinitialize_db();
-
 	free(certListBuffer);
 	free(certBlockBuffer);
 
 	if (client_sockfd >= 0) {
-		result = send(client_sockfd, (char*)&send_data, sizeof(send_data), 0);
+		result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+
 		if (result <= 0)
 			SLOGE("send failed :%d, errno %d try once", result, errno);
 
@@ -343,6 +341,5 @@ int main(void)
 	SLOGI("cert-server start");
 	CertSvcServerComm();
 	SLOGI("cert-server end");
-
 	return 0;
 }

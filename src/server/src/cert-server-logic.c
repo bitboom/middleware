@@ -50,6 +50,7 @@ static CertStatus int_to_CertStatus(int intval)
 	switch (intval) {
 	case 1:
 		return ENABLED;
+
 	case 0:
 	default:
 		return DISABLED;
@@ -61,6 +62,7 @@ static int CertStatus_to_int(CertStatus status)
 	switch (status) {
 	case ENABLED:
 		return 1;
+
 	case DISABLED:
 	default:
 		return 0;
@@ -70,23 +72,43 @@ static int CertStatus_to_int(CertStatus status)
 static const char *storetype_to_string(CertStoreType type)
 {
 	switch (type) {
-	case VPN_STORE:    return "vpn";
-	case EMAIL_STORE:  return "email";
-	case WIFI_STORE:   return "wifi";
-	case SYSTEM_STORE: return "ssl";
-	default:           return NULL;
+	case VPN_STORE:
+		return "vpn";
+
+	case EMAIL_STORE:
+		return "email";
+
+	case WIFI_STORE:
+		return "wifi";
+
+	case SYSTEM_STORE:
+		return "ssl";
+
+	default:
+		return NULL;
 	}
 }
 
 static CertStoreType nextStore(CertStoreType type)
 {
 	switch (type) {
-	case NONE_STORE:   return VPN_STORE;
-	case VPN_STORE:    return WIFI_STORE;
-	case WIFI_STORE:   return EMAIL_STORE;
-	case EMAIL_STORE:  return SYSTEM_STORE;
-	case SYSTEM_STORE: return NONE_STORE;
-	default:           return NONE_STORE;
+	case NONE_STORE:
+		return VPN_STORE;
+
+	case VPN_STORE:
+		return WIFI_STORE;
+
+	case WIFI_STORE:
+		return EMAIL_STORE;
+
+	case EMAIL_STORE:
+		return SYSTEM_STORE;
+
+	case SYSTEM_STORE:
+		return NONE_STORE;
+
+	default:
+		return NONE_STORE;
 	}
 }
 
@@ -98,7 +120,9 @@ static bool hasStore(CertStoreType types, CertStoreType type)
 char *add_shared_owner_prefix(const char *name)
 {
 	char *ckm_alias = NULL;
-	int result = asprintf(&ckm_alias, "%s%s%s", ckmc_owner_id_system, ckmc_owner_id_separator, name);
+	int result = asprintf(&ckm_alias, "%s%s%s", ckmc_owner_id_system,
+						  ckmc_owner_id_separator, name);
+
 	if (result < 0 || ckm_alias == NULL) {
 		SLOGE("Failed to allocate memory");
 		return NULL;
@@ -110,15 +134,14 @@ char *add_shared_owner_prefix(const char *name)
 int ckmc_remove_alias_with_shared_owner_prefix(const char *name)
 {
 	char *ckm_alias = add_shared_owner_prefix(name);
+
 	if (!ckm_alias) {
 		SLOGE("Failed to allocate memory");
 		return CKMC_ERROR_OUT_OF_MEMORY;
 	}
 
 	int result = ckmc_remove_alias(ckm_alias);
-
 	free(ckm_alias);
-
 	return result;
 }
 
@@ -144,7 +167,6 @@ char *get_complete_path(const char *str1, const char *str2)
 int add_file_to_system_cert_dir(const char *gname)
 {
 	int ret = CERTSVC_SUCCESS;
-
 	/* find certificate which filehash name is gname in root ca certs path. */
 	char *target = get_complete_path(TZ_SYS_CA_CERTS_ORIG, gname);
 	char *link = get_complete_path(TZ_SYS_CA_CERTS, gname);
@@ -162,10 +184,8 @@ int add_file_to_system_cert_dir(const char *gname)
 	}
 
 out:
-
 	free(target);
 	free(link);
-
 	return ret;
 }
 
@@ -173,8 +193,8 @@ int del_file_from_system_cert_dir(const char *gname)
 {
 	int ret = CERTSVC_SUCCESS;
 	char *link = NULL;
-
 	link = get_complete_path(TZ_SYS_CA_CERTS, gname);
+
 	if (!link)   {
 		SLOGE("Failed to construct source file path.");
 		return CERTSVC_FAIL;
@@ -187,9 +207,7 @@ int del_file_from_system_cert_dir(const char *gname)
 	}
 
 out:
-
 	free(link);
-
 	return ret;
 }
 
@@ -209,10 +227,11 @@ int write_to_ca_cert_crt_file(const char *mode, const char *cert)
 	}
 
 	/* if mode of writing is to append, then goto end of file */
-	if (strcmp(mode,"ab") == 0)
+	if (strcmp(mode, "ab") == 0)
 		fseek(fp, 0L, SEEK_END);
 
 	size_t cert_len = strlen(cert);
+
 	if (fwrite(cert, sizeof(char), cert_len, fp) != cert_len) {
 		SLOGE("Fail to write into file.");
 		result = CERTSVC_FAIL;
@@ -221,8 +240,8 @@ int write_to_ca_cert_crt_file(const char *mode, const char *cert)
 
 	/* adding empty line at the end */
 	fwrite("\n", sizeof(char), 1, fp);
-
 error:
+
 	if (fp)
 		fclose(fp);
 
@@ -239,12 +258,11 @@ int saveCertificateToStore(const char *gname, const char *cert)
 	ckmc_policy_s cert_policy;
 	cert_policy.password = NULL;
 	cert_policy.extractable = true;
-
 	ckmc_raw_buffer_s cert_data;
 	cert_data.data = (unsigned char *)cert;
 	cert_data.size = strlen(cert);
-
 	char *ckm_alias = add_shared_owner_prefix(gname);
+
 	if (!ckm_alias) {
 		SLOGE("Failed to make alias. memory allocation error.");
 		return CERTSVC_BAD_ALLOC;
@@ -254,7 +272,8 @@ int saveCertificateToStore(const char *gname, const char *cert)
 	free(ckm_alias);
 
 	if (result == CKMC_ERROR_DB_ALIAS_EXISTS) {
-		SLOGI("same alias with gname[%s] alrady exist in ckm. Maybe other store type have it. skip.", gname);
+		SLOGI("same alias with gname[%s] alrady exist in ckm. Maybe other store type have it. skip.",
+			  gname);
 		return CERTSVC_SUCCESS;
 	}
 
@@ -274,13 +293,15 @@ int saveCertificateToSystemStore(const char *gname)
 	}
 
 	int result = add_file_to_system_cert_dir(gname);
+
 	if (result != CERTSVC_SUCCESS)
 		SLOGE("Failed to store the certificate in store.");
 
 	return result;
 }
 
-int get_certificate_buffer_from_store(CertStoreType storeType, const char *gname, char **pcert)
+int get_certificate_buffer_from_store(CertStoreType storeType,
+									  const char *gname, char **pcert)
 {
 	int result = CERTSVC_SUCCESS;
 	int records = 0;
@@ -295,12 +316,13 @@ int get_certificate_buffer_from_store(CertStoreType storeType, const char *gname
 
 	if (storeType != SYSTEM_STORE)
 		query = sqlite3_mprintf("select * from %Q where gname=%Q and enabled=%d and is_root_app_enabled=%d",
-				storetype_to_string(storeType), gname, ENABLED, ENABLED);
+								storetype_to_string(storeType), gname, ENABLED, ENABLED);
 	else
 		query = sqlite3_mprintf("select certificate from ssl where gname=%Q and enabled=%d and is_root_app_enabled=%d",
-				gname, ENABLED, ENABLED);
+								gname, ENABLED, ENABLED);
 
 	result = execute_select_query(query, &stmt);
+
 	if (result != CERTSVC_SUCCESS) {
 		SLOGE("Querying database failed.");
 		result = CERTSVC_FAIL;
@@ -308,13 +330,15 @@ int get_certificate_buffer_from_store(CertStoreType storeType, const char *gname
 	}
 
 	records = sqlite3_step(stmt);
+
 	if (records != SQLITE_ROW || records == SQLITE_DONE) {
-		SLOGE("No valid records found for given gname [%s].",gname);
+		SLOGE("No valid records found for given gname [%s].", gname);
 		result = CERTSVC_FAIL;
 		goto error;
 	}
 
 	tempBuffer = (char *)malloc(sizeof(char) * VCORE_MAX_RECV_DATA_SIZE);
+
 	if (!tempBuffer) {
 		SLOGE("Fail to allocate memory");
 		result = CERTSVC_FAIL;
@@ -335,8 +359,8 @@ int get_certificate_buffer_from_store(CertStoreType storeType, const char *gname
 	}
 
 	*pcert = tempBuffer;
-
 error:
+
 	if (result != CERTSVC_SUCCESS)
 		free(tempBuffer);
 
@@ -366,6 +390,7 @@ int update_ca_certificate_file(char *cert)
 	 */
 	if (cert != NULL && strlen(cert) > 0) {
 		result = write_to_ca_cert_crt_file("ab", cert);
+
 		if (result != CERTSVC_SUCCESS) {
 			SLOGE("Failed to write to file. result[%d]", result);
 			return result;
@@ -374,14 +399,17 @@ int update_ca_certificate_file(char *cert)
 		return CERTSVC_SUCCESS;
 	}
 
-	for (storeType = VPN_STORE; storeType != NONE_STORE; storeType = nextStore(storeType)) {
+	for (storeType = VPN_STORE; storeType != NONE_STORE;
+			storeType = nextStore(storeType)) {
 		if (storeType == SYSTEM_STORE)
-			query = sqlite3_mprintf("select certificate from ssl where enabled=%d and is_root_app_enabled=%d", ENABLED, ENABLED);
+			query = sqlite3_mprintf("select certificate from ssl where enabled=%d and is_root_app_enabled=%d",
+									ENABLED, ENABLED);
 		else
 			query = sqlite3_mprintf("select gname from %Q where is_root_cert=%d and enabled=%d and is_root_app_enabled=%d",
-					storetype_to_string(storeType), ENABLED, ENABLED, ENABLED);
+									storetype_to_string(storeType), ENABLED, ENABLED, ENABLED);
 
 		result = execute_select_query(query, &stmt);
+
 		if (query) {
 			sqlite3_free(query);
 			query = NULL;
@@ -395,6 +423,7 @@ int update_ca_certificate_file(char *cert)
 		/* update the ca-certificate.crt file */
 		while (1) {
 			records = sqlite3_step(stmt);
+
 			if (records == SQLITE_DONE) {
 				result = CERTSVC_SUCCESS;
 				break;
@@ -411,14 +440,17 @@ int update_ca_certificate_file(char *cert)
 
 			if (storeType == SYSTEM_STORE) {
 				text = (const char *)sqlite3_column_text(stmt, 0);
+
 				if (text)
 					cert = strndup(text, strlen(text));
 			} else {
 				text = (const char *)sqlite3_column_text(stmt, 0);
+
 				if (text)
 					gname = strndup(text, strlen(text));
 
 				result = get_certificate_buffer_from_store(storeType, gname, &cert);
+
 				if (result != CERTSVC_SUCCESS) {
 					SLOGE("Failed to get certificate buffer from key-manager. gname[%s]", gname);
 					goto error_and_exit;
@@ -444,9 +476,10 @@ int update_ca_certificate_file(char *cert)
 		}
 	}
 
-	SLOGD("Successfully updated ca-certificate.crt file. added cert num[%d]", counter);
-
+	SLOGD("Successfully updated ca-certificate.crt file. added cert num[%d]",
+		  counter);
 error_and_exit:
+
 	if (stmt)
 		sqlite3_finalize(stmt);
 
@@ -471,7 +504,9 @@ int enable_disable_cert_status(
 		return CERTSVC_INVALID_STATUS;
 	}
 
-	query = sqlite3_mprintf("select * from %Q where gname=%Q", storetype_to_string(storeType), gname);
+	query = sqlite3_mprintf("select * from %Q where gname=%Q",
+							storetype_to_string(storeType), gname);
+
 	if (!query) {
 		SLOGE("Failed to generate query");
 		return CERTSVC_BAD_ALLOC;
@@ -497,6 +532,7 @@ int enable_disable_cert_status(
 	if (status == DISABLED) {
 		/* check certificate presence in disabled_certs table before inserting */
 		query = sqlite3_mprintf("select * from disabled_certs where gname=%Q", gname);
+
 		if (!query) {
 			SLOGE("Failed to generate query");
 			return CERTSVC_BAD_ALLOC;
@@ -522,13 +558,15 @@ int enable_disable_cert_status(
 
 		/* get certificate from keymanager*/
 		result = get_certificate_buffer_from_store(storeType, gname, &cert);
+
 		if (result != CERTSVC_SUCCESS) {
 			SLOGE("Failed to get certificate buffer. result[%d]", result);
 			return result;
 		}
 
 		/* inserting the disabled certificate to disabled_certs table */
-		query = sqlite3_mprintf("insert into disabled_certs (gname, certificate) values (%Q, %Q)", gname, cert);
+		query = sqlite3_mprintf("insert into disabled_certs (gname, certificate) values (%Q, %Q)",
+								gname, cert);
 		free(cert);
 
 		if (!query) {
@@ -551,16 +589,18 @@ int enable_disable_cert_status(
 				SLOGE("Failed to delete certificate from key-manager. ckmc_result[%d]", result);
 				return CERTSVC_FAIL;
 			}
-
 		} else {
 			result = del_file_from_system_cert_dir(gname);
+
 			if (result != CERTSVC_SUCCESS) {
 				SLOGE("Error in del_file_from_system_cert_dir. ret[%d]", result);
 				return result;
 			}
 		}
 	} else { /* moving the certificate to enabled state */
-		query = sqlite3_mprintf("select certificate from disabled_certs where gname=%Q", gname);
+		query = sqlite3_mprintf("select certificate from disabled_certs where gname=%Q",
+								gname);
+
 		if (!query) {
 			SLOGE("Failed to generate query");
 			return CERTSVC_BAD_ALLOC;
@@ -575,6 +615,7 @@ int enable_disable_cert_status(
 		}
 
 		records = sqlite3_step(stmt);
+
 		if (records == SQLITE_ROW) {
 			text = (const char *)sqlite3_column_text(stmt, 0);
 
@@ -585,7 +626,6 @@ int enable_disable_cert_status(
 			}
 
 			cert = strndup(text, strlen(text));
-
 			sqlite3_finalize(stmt);
 
 			if (!cert) {
@@ -606,6 +646,7 @@ int enable_disable_cert_status(
 			}
 
 			query = sqlite3_mprintf("delete from disabled_certs where gname=%Q", gname);
+
 			if (!query) {
 				SLOGE("Failed to generate query");
 				return CERTSVC_BAD_ALLOC;
@@ -623,10 +664,10 @@ int enable_disable_cert_status(
 
 	if (is_root_app == ENABLED)
 		query = sqlite3_mprintf("update %Q set is_root_app_enabled=%d , enabled=%d where gname=%Q",
-				storetype_to_string(storeType), CertStatus_to_int(status), status, gname);
+								storetype_to_string(storeType), CertStatus_to_int(status), status, gname);
 	else
 		query = sqlite3_mprintf("update %Q set enabled=%d where gname=%Q",
-				storetype_to_string(storeType), CertStatus_to_int(status), gname);
+								storetype_to_string(storeType), CertStatus_to_int(status), gname);
 
 	if (!query) {
 		SLOGE("Failed to generate query");
@@ -656,19 +697,21 @@ int setCertificateStatusToStore(
 	}
 
 	int result = enable_disable_cert_status(storeType, is_root_app, gname, status);
+
 	if (result != CERTSVC_SUCCESS) {
 		SLOGE("Failed to disable certificate.");
 		return result;
 	}
 
 	SLOGD("Successfully updated the certificate status from %s to %s.",
-		(status == DISABLED) ? "ENABLED" : "DISABLED", (status == DISABLED) ? "DISABLED" : "ENABLED");
+		  (status == DISABLED) ? "ENABLED" : "DISABLED",
+		  (status == DISABLED) ? "DISABLED" : "ENABLED");
 	return CERTSVC_SUCCESS;
 }
 
 int getCertificateStatusFromStore(
 	CertStoreType storeType,
-	const char* gname,
+	const char *gname,
 	CertStatus *status)
 {
 	if (!gname) {
@@ -676,8 +719,10 @@ int getCertificateStatusFromStore(
 		return CERTSVC_WRONG_ARGUMENT;
 	}
 
-	char *query = sqlite3_mprintf("select gname, common_name, enabled from %Q where gname=%Q",
-			storetype_to_string(storeType), gname);
+	char *query =
+		sqlite3_mprintf("select gname, common_name, enabled from %Q where gname=%Q",
+						storetype_to_string(storeType), gname);
+
 	if (!query) {
 		SLOGE("Failed to generate query");
 		return CERTSVC_BAD_ALLOC;
@@ -694,6 +739,7 @@ int getCertificateStatusFromStore(
 	}
 
 	result = sqlite3_step(stmt);
+
 	if (result != SQLITE_ROW || result == SQLITE_DONE) {
 		SLOGE("No valid records found.");
 		*status = DISABLED;
@@ -702,9 +748,7 @@ int getCertificateStatusFromStore(
 	}
 
 	*status = int_to_CertStatus(sqlite3_column_int(stmt, 2));
-
 	sqlite3_finalize(stmt);
-
 	return CERTSVC_SUCCESS;
 }
 
@@ -724,12 +768,13 @@ int check_alias_exist_in_database(
 		return CERTSVC_WRONG_ARGUMENT;
 	}
 
-	for (storeType = VPN_STORE; storeType < SYSTEM_STORE; storeType = nextStore(storeType)) {
+	for (storeType = VPN_STORE; storeType < SYSTEM_STORE;
+			storeType = nextStore(storeType)) {
 		if (!hasStore(storeTypes, storeType))
 			continue;
 
 		query = sqlite3_mprintf("select * from %Q where common_name=%Q",
-				storetype_to_string(storeType), alias);
+								storetype_to_string(storeType), alias);
 
 		if (!query) {
 			SLOGE("Failed to generate query");
@@ -737,7 +782,6 @@ int check_alias_exist_in_database(
 		}
 
 		result = execute_select_query(query, &stmt);
-
 		sqlite3_free(query);
 		query = NULL;
 
@@ -747,7 +791,6 @@ int check_alias_exist_in_database(
 		}
 
 		result = sqlite3_step(stmt);
-
 		sqlite3_finalize(stmt);
 		stmt = NULL;
 
@@ -758,7 +801,6 @@ int check_alias_exist_in_database(
 	}
 
 	*punique = unique ? CERTSVC_TRUE : CERTSVC_FALSE;
-
 	return CERTSVC_SUCCESS;
 }
 
@@ -772,8 +814,8 @@ int installCertificateToStore(
 	CertType certType)
 {
 	if ((!gname)
-		|| (certType == P12_END_USER && !common_name && !private_key_gname)
-		|| (certType != P12_END_USER && !common_name && !associated_gname)) {
+			|| (certType == P12_END_USER && !common_name && !private_key_gname)
+			|| (certType != P12_END_USER && !common_name && !associated_gname)) {
 		SLOGE("Invalid input parameter passed.");
 		return CERTSVC_WRONG_ARGUMENT;
 	}
@@ -782,6 +824,7 @@ int installCertificateToStore(
 
 	if (storeType != SYSTEM_STORE) {
 		result = saveCertificateToStore(gname, dataBlock);
+
 		if (result != CERTSVC_SUCCESS) {
 			SLOGE("FAIL to save certificate to key-manager. result[%d]", result);
 			return CERTSVC_FAIL;
@@ -794,17 +837,21 @@ int installCertificateToStore(
 	}
 
 	char *query = NULL;
+
 	if (certType == P12_END_USER && private_key_gname) {
 		query = sqlite3_mprintf("insert into %Q (gname, common_name, private_key_gname, associated_gname, enabled, is_root_app_enabled) "\
-				"values (%Q, %Q, %Q, %Q, %d, %d)", storetype_to_string(storeType), gname, common_name, private_key_gname,
-				gname, ENABLED, ENABLED);
+								"values (%Q, %Q, %Q, %Q, %d, %d)", storetype_to_string(storeType), gname,
+								common_name, private_key_gname,
+								gname, ENABLED, ENABLED);
 	} else if (certType == PEM_CRT || certType == P12_TRUSTED) {
 		query = sqlite3_mprintf("insert into %Q (gname, common_name, is_root_cert, associated_gname, enabled, is_root_app_enabled) values "\
-				"(%Q, %Q, %d, %Q, %d, %d)", storetype_to_string(storeType), gname, common_name, ENABLED,
-				associated_gname, ENABLED, ENABLED);
+								"(%Q, %Q, %d, %Q, %d, %d)", storetype_to_string(storeType), gname, common_name,
+								ENABLED,
+								associated_gname, ENABLED, ENABLED);
 	} else if (certType == P12_INTERMEDIATE) {
 		query = sqlite3_mprintf("insert into %Q (gname, common_name, associated_gname, enabled, is_root_app_enabled) values (%Q, %Q, %Q, %d, %d)",
-				storetype_to_string(storeType), gname, common_name, associated_gname, ENABLED, ENABLED);
+								storetype_to_string(storeType), gname, common_name, associated_gname, ENABLED,
+								ENABLED);
 	}
 
 	if (!query) {
@@ -823,7 +870,8 @@ int installCertificateToStore(
 	return CERTSVC_SUCCESS;
 }
 
-int checkAliasExistsInStore(CertStoreType storeType, const char *alias, int *punique)
+int checkAliasExistsInStore(CertStoreType storeType, const char *alias,
+							int *punique)
 {
 	if (!alias) {
 		SLOGE("Invalid input parameter passed.");
@@ -832,6 +880,7 @@ int checkAliasExistsInStore(CertStoreType storeType, const char *alias, int *pun
 
 	*punique = CERTSVC_FAIL;
 	int result = check_alias_exist_in_database(storeType, alias, punique);
+
 	if (result != CERTSVC_SUCCESS) {
 		SLOGE("Failed to check_alias_exist_in_database. err[%d]", result);
 		return CERTSVC_FAIL;
@@ -868,7 +917,8 @@ int getCertificateDetailFromStore(
 		/* From the given certificate identifier, get the associated_gname for the certificate.
 		 * Then query the database for records matching the associated_gname to get the private key */
 		query = sqlite3_mprintf("select associated_gname from %Q where gname=%Q",
-				storetype_to_string(storeType), gname);
+								storetype_to_string(storeType), gname);
+
 		if (!query) {
 			SLOGE("Failed to generate query");
 			return CERTSVC_BAD_ALLOC;
@@ -883,6 +933,7 @@ int getCertificateDetailFromStore(
 		}
 
 		records = sqlite3_step(stmt);
+
 		if (records != SQLITE_ROW) {
 			SLOGE("No valid records found.");
 			sqlite3_finalize(stmt);
@@ -898,12 +949,11 @@ int getCertificateDetailFromStore(
 		}
 
 		query = sqlite3_mprintf("select private_key_gname from %Q where gname=%Q and enabled=%d and is_root_app_enabled=%d",
-				storetype_to_string(storeType), text, ENABLED, ENABLED);
-
+								storetype_to_string(storeType), text, ENABLED, ENABLED);
 		sqlite3_finalize(stmt);
 	} else if (storeType != SYSTEM_STORE) {
 		query = sqlite3_mprintf("select * from %Q where gname=%Q and enabled=%d and is_root_app_enabled=%d",
-				storetype_to_string(storeType), gname, ENABLED, ENABLED);
+								storetype_to_string(storeType), gname, ENABLED, ENABLED);
 	}
 
 	if (!query) {
@@ -920,6 +970,7 @@ int getCertificateDetailFromStore(
 	}
 
 	records = sqlite3_step(stmt);
+
 	if (records != SQLITE_ROW) {
 		SLOGE("No valid records found.");
 		sqlite3_finalize(stmt);
@@ -937,6 +988,7 @@ int getCertificateDetailFromStore(
 	}
 
 	char *ckm_alias = add_shared_owner_prefix(gname);
+
 	if (!ckm_alias) {
 		SLOGE("Failed to make alias. memory allocation error.");
 		sqlite3_finalize(stmt);
@@ -954,9 +1006,7 @@ int getCertificateDetailFromStore(
 
 	memcpy(pOutData, cert_data->data, cert_data->size);
 	pOutData[cert_data->size] = 0;
-
 	ckmc_buffer_free(cert_data);
-
 	return CERTSVC_SUCCESS;
 }
 
@@ -974,7 +1024,8 @@ int getCertificateDetailFromSystemStore(const char *gname, char *pOutData)
 	}
 
 	query = sqlite3_mprintf("select certificate from ssl where gname=%Q and is_root_app_enabled=%d",
-			gname, ENABLED, ENABLED);
+							gname, ENABLED, ENABLED);
+
 	if (!query) {
 		SLOGE("Query is NULL.");
 		return CERTSVC_FAIL;
@@ -989,6 +1040,7 @@ int getCertificateDetailFromSystemStore(const char *gname, char *pOutData)
 	}
 
 	records = sqlite3_step(stmt);
+
 	if (records != SQLITE_ROW) {
 		SLOGE("No valid records found for passed gname [%s].", gname);
 		sqlite3_finalize(stmt);
@@ -996,6 +1048,7 @@ int getCertificateDetailFromSystemStore(const char *gname, char *pOutData)
 	}
 
 	text = (const char *)sqlite3_column_text(stmt, 0);
+
 	if (!text) {
 		SLOGE("Fail to sqlite3_column_text");
 		sqlite3_finalize(stmt);
@@ -1003,6 +1056,7 @@ int getCertificateDetailFromSystemStore(const char *gname, char *pOutData)
 	}
 
 	size_t cert_len = strlen(text);
+
 	if (cert_len >= 4096) {
 		sqlite3_finalize(stmt);
 		SLOGE("certificate is too long");
@@ -1011,9 +1065,7 @@ int getCertificateDetailFromSystemStore(const char *gname, char *pOutData)
 
 	memcpy(pOutData, text, cert_len);
 	pOutData[cert_len] = '\0';
-
 	sqlite3_finalize(stmt);
-
 	return CERTSVC_SUCCESS;
 }
 
@@ -1024,7 +1076,6 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 	char *query = NULL;
 	char *private_key_name = NULL;
 	sqlite3_stmt *stmt = NULL;
-
 	SLOGD("Remove certificate of gname[%s] in store[%d]", gname, storeType);
 
 	if (!gname) {
@@ -1039,9 +1090,9 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 
 	/* start constructing query */
 	query = sqlite3_mprintf("select private_key_gname from %Q where gname=%Q",
-			storetype_to_string(storeType), gname);
-
+							storetype_to_string(storeType), gname);
 	result = execute_select_query(query, &stmt);
+
 	if (result != CERTSVC_SUCCESS) {
 		SLOGE("Querying database failed.");
 		result = CERTSVC_FAIL;
@@ -1049,8 +1100,10 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 	}
 
 	records = sqlite3_step(stmt);
+
 	if (records != SQLITE_ROW) {
-		SLOGE("No valid records found for passed gname [%s]. result[%d].", gname, records);
+		SLOGE("No valid records found for passed gname [%s]. result[%d].", gname,
+			  records);
 		result = CERTSVC_FAIL;
 		goto error;
 	}
@@ -1062,6 +1115,7 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 
 	query = sqlite3_mprintf("delete from disabled_certs where gname=%Q", gname);
 	result = execute_insert_update_query(query);
+
 	if (result != CERTSVC_SUCCESS) {
 		SLOGE("Unable to delete certificate entry from database. result[%d]", result);
 		goto error;
@@ -1078,9 +1132,9 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 	}
 
 	query = sqlite3_mprintf("delete from %Q where gname=%Q",
-			storetype_to_string(storeType), gname);
-
+							storetype_to_string(storeType), gname);
 	result = execute_insert_update_query(query);
+
 	if (result != CERTSVC_SUCCESS) {
 		SLOGE("Unable to delete certificate entry from database. result[%d]", result);
 		goto error;
@@ -1099,19 +1153,24 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 	CertStoreType other = ALL_STORE & ~SYSTEM_STORE & ~storeType;
 	CertStoreType current;
 	int gname_exist = 0;
-	for (current = VPN_STORE; current < SYSTEM_STORE; current = nextStore(current)) {
+
+	for (current = VPN_STORE; current < SYSTEM_STORE;
+			current = nextStore(current)) {
 		if (!hasStore(other, current))
 			continue;
 
 		query = sqlite3_mprintf("select * from %Q where gname=%Q",
-				storetype_to_string(current), gname);
+								storetype_to_string(current), gname);
 		result = execute_select_query(query, &stmt);
+
 		if (result != CERTSVC_SUCCESS) {
 			SLOGE("Querying database failed.");
 			result = CERTSVC_FAIL;
 			goto error;
 		}
+
 		records = sqlite3_step(stmt);
+
 		if (records == SQLITE_ROW) {
 			SLOGI("Same gname[%s] exist on store[%d].", gname, current);
 			gname_exist = 1;
@@ -1125,10 +1184,12 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 	}
 
 	if (!gname_exist) {
-		SLOGD("The gname[%s] which is in store[%d] is the last one. so remove it from ckm either.", gname, current);
+		SLOGD("The gname[%s] which is in store[%d] is the last one. so remove it from ckm either.",
+			  gname, current);
 
 		if (private_key_name != NULL) {
 			result = ckmc_remove_alias_with_shared_owner_prefix(private_key_name);
+
 			if (result != CKMC_ERROR_NONE) {
 				SLOGE("Failed to delete certificate from key-manager. ckmc_result[%d]", result);
 				result = CERTSVC_FAIL;
@@ -1138,8 +1199,10 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 
 		/* removing the actual cert */
 		result = ckmc_remove_alias_with_shared_owner_prefix(gname);
+
 		if (result != CKMC_ERROR_NONE) {
-			SLOGE("Failed to remove data in ckm with gname[%s]. ckm_result[%d]", gname, result);
+			SLOGE("Failed to remove data in ckm with gname[%s]. ckm_result[%d]", gname,
+				  result);
 			result = CERTSVC_FAIL;
 			goto error;
 		}
@@ -1147,8 +1210,8 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 
 	SLOGD("Success in deleting the certificate from store.");
 	result = CERTSVC_SUCCESS;
-
 error:
+
 	if (query)
 		sqlite3_free(query);
 
@@ -1156,7 +1219,6 @@ error:
 		sqlite3_finalize(stmt);
 
 	free(private_key_name);
-
 	return result;
 }
 
@@ -1178,6 +1240,7 @@ static int makeCertListNode(
 	}
 
 	node = (CertSvcStoreCertList *)malloc(sizeof(CertSvcStoreCertList));
+
 	if (node == NULL) {
 		SLOGE("Failed to allocate memory.");
 		return CERTSVC_BAD_ALLOC;
@@ -1185,9 +1248,9 @@ static int makeCertListNode(
 
 	gname_len = strlen(gname);
 	title_len = strlen(title);
-
 	node->gname = (char *)malloc(sizeof(char) * (gname_len + 1));
 	node->title = (char *)malloc(sizeof(char) * (title_len + 1));
+
 	if (node->title == NULL || node->gname == NULL) {
 		SLOGE("Failed to allocate memory");
 		result = CERTSVC_BAD_ALLOC;
@@ -1198,22 +1261,19 @@ static int makeCertListNode(
 	memcpy(node->title, title, title_len);
 	node->gname[gname_len] = '\0';
 	node->title[title_len] = '\0';
-
 	node->storeType = storeType;
 	node->status = int_to_CertStatus(statusInt);
 	node->next = NULL;
-
 	*out = node;
-
 	return CERTSVC_SUCCESS;
-
 error:
+
 	if (node != NULL) {
 		free(node->gname);
 		free(node->title);
 	}
-	free(node);
 
+	free(node);
 	return result;
 }
 
@@ -1234,9 +1294,10 @@ int getCertificateListFromStore(
 	int records = 0;
 	size_t count = 0;
 	size_t i = 0;
-
 	CertStoreType storeType;
-	for (storeType = VPN_STORE; storeType != NONE_STORE; storeType = nextStore(storeType)) {
+
+	for (storeType = VPN_STORE; storeType != NONE_STORE;
+			storeType = nextStore(storeType)) {
 		if (!hasStore(storeTypes, storeType))
 			continue;
 
@@ -1245,11 +1306,12 @@ int getCertificateListFromStore(
 		if (reqType == CERTSVC_GET_ROOT_CERTIFICATE_LIST) {
 			if (storeType == SYSTEM_STORE) {
 				query = sqlite3_mprintf("select gname, common_name, enabled from %Q where enabled=%d "\
-						"and is_root_app_enabled=%d and order by common_name asc", "ssl", ENABLED, ENABLED);
+										"and is_root_app_enabled=%d and order by common_name asc", "ssl", ENABLED,
+										ENABLED);
 			} else {
 				query = sqlite3_mprintf("select gname, common_name, enabled from %Q where "\
-						"is_root_cert IS NOT NULL and is_root_app_enabled=%d and enabled=%d",
-						storetype_to_string(storeType), ENABLED, ENABLED);
+										"is_root_cert IS NOT NULL and is_root_app_enabled=%d and enabled=%d",
+										storetype_to_string(storeType), ENABLED, ENABLED);
 			}
 		} else if (reqType == CERTSVC_GET_USER_CERTIFICATE_LIST) {
 			if (storeType == SYSTEM_STORE) {
@@ -1257,33 +1319,34 @@ int getCertificateListFromStore(
 				return CERTSVC_WRONG_ARGUMENT;
 			} else {
 				query = sqlite3_mprintf("select gname, common_name, enabled from %Q where "\
-						"private_key_gname IS NOT NULL and is_root_app_enabled=%d and enabled=%d",
-						storetype_to_string(storeType), ENABLED, ENABLED);
+										"private_key_gname IS NOT NULL and is_root_app_enabled=%d and enabled=%d",
+										storetype_to_string(storeType), ENABLED, ENABLED);
 			}
 		} else {
 			if (is_root_app != ENABLED) {
-			/* Gets only the list of certificates where is_root_app = 1 (which are enabled by the master application) */
+				/* Gets only the list of certificates where is_root_app = 1 (which are enabled by the master application) */
 				if (storeType == SYSTEM_STORE) {
 					query = sqlite3_mprintf("select gname, common_name, enabled from %Q where "\
-							"is_root_app_enabled=%d order by common_name asc",
-							storetype_to_string(storeType), ENABLED, ENABLED);
+											"is_root_app_enabled=%d order by common_name asc",
+											storetype_to_string(storeType), ENABLED, ENABLED);
 				} else {
 					query = sqlite3_mprintf("select gname, common_name, enabled from %Q where is_root_app_enabled=%d",
-							storetype_to_string(storeType), ENABLED, ENABLED);
+											storetype_to_string(storeType), ENABLED, ENABLED);
 				}
 			} else {
-			/* Gets all the certificates from store without any restrictions */
+				/* Gets all the certificates from store without any restrictions */
 				if (storeType == SYSTEM_STORE) {
 					query = sqlite3_mprintf("select gname, common_name, enabled from %Q order by common_name asc",
-							storetype_to_string(storeType), ENABLED);
+											storetype_to_string(storeType), ENABLED);
 				} else {
 					query = sqlite3_mprintf("select gname, common_name, enabled from %Q",
-							storetype_to_string(storeType), ENABLED);
+											storetype_to_string(storeType), ENABLED);
 				}
 			}
 		}
 
 		result = execute_select_query(query, &stmt);
+
 		if (result != CERTSVC_SUCCESS) {
 			SLOGE("Querying database failed.");
 			result = CERTSVC_FAIL;
@@ -1292,11 +1355,11 @@ int getCertificateListFromStore(
 
 		while ((records = sqlite3_step(stmt)) == SQLITE_ROW) {
 			result = makeCertListNode(
-					storeType,
-					(const char *)sqlite3_column_text(stmt, 0),
-					(const char *)sqlite3_column_text(stmt, 1),
-					(int)sqlite3_column_int(stmt, 2),
-					&tmpNode);
+						 storeType,
+						 (const char *)sqlite3_column_text(stmt, 0),
+						 (const char *)sqlite3_column_text(stmt, 1),
+						 (int)sqlite3_column_int(stmt, 2),
+						 &tmpNode);
 
 			if (result != CERTSVC_SUCCESS) {
 				SLOGE("Failed to make new cert list node. result[%d]", result);
@@ -1331,44 +1394,49 @@ int getCertificateListFromStore(
 	}
 
 	*certCount = count;
-	VcoreCertResponseData *respCertData = (VcoreCertResponseData *)malloc(count * sizeof(VcoreCertResponseData));
+	VcoreCertResponseData *respCertData = (VcoreCertResponseData *)malloc(
+			count * sizeof(VcoreCertResponseData));
+
 	if (!respCertData) {
 		SLOGE("Failed to allocate memory");
 		result = CERTSVC_BAD_ALLOC;
 		goto error;
 	}
+
 	if (count > 0)
 		memset(respCertData, 0x00, count * sizeof(VcoreCertResponseData));
-	VcoreCertResponseData* currRespCertData = NULL;
 
+	VcoreCertResponseData *currRespCertData = NULL;
 	currentNode = rootCertHead;
+
 	for (i = 0; i < count; i++) {
-	   tmpNode = currentNode->next;
+		tmpNode = currentNode->next;
+		currRespCertData = respCertData + i;
 
-	   currRespCertData = respCertData + i;
-	   if (strlen(currentNode->gname) > sizeof(currRespCertData->gname)
-		   || strlen(currentNode->title) > sizeof(currRespCertData->title)) {
-		   SLOGE("String is too long. [%s], [%s]", currentNode->gname, currentNode->title);
-		   result = CERTSVC_FAIL;
-		   *certListBuffer = NULL;
-		   free(respCertData);
-		   goto error;
-	   }
-	   strncpy(currRespCertData->gname, currentNode->gname, strlen(currentNode->gname));
-	   strncpy(currRespCertData->title, currentNode->title, strlen(currentNode->title));
-	   currRespCertData->status = currentNode->status;
-	   currRespCertData->storeType = currentNode->storeType;
+		if (strlen(currentNode->gname) > sizeof(currRespCertData->gname)
+				|| strlen(currentNode->title) > sizeof(currRespCertData->title)) {
+			SLOGE("String is too long. [%s], [%s]", currentNode->gname, currentNode->title);
+			result = CERTSVC_FAIL;
+			*certListBuffer = NULL;
+			free(respCertData);
+			goto error;
+		}
 
-	   currentNode = tmpNode;
+		strncpy(currRespCertData->gname, currentNode->gname,
+				strlen(currentNode->gname));
+		strncpy(currRespCertData->title, currentNode->title,
+				strlen(currentNode->title));
+		currRespCertData->status = currentNode->status;
+		currRespCertData->storeType = currentNode->storeType;
+		currentNode = tmpNode;
 	}
 
 	*certListBuffer = (char *) respCertData;
 	*bufferLen = count * sizeof(VcoreCertResponseData);
-
 	SLOGD("Success to create certificate list. cert_count=%d", count);
 	result = CERTSVC_SUCCESS;
-
 error:
+
 	if (query)
 		sqlite3_free(query);
 
@@ -1377,6 +1445,7 @@ error:
 
 	if (rootCertHead) {
 		currentNode = rootCertHead;
+
 		while (currentNode) {
 			tmpNode = currentNode->next;
 			free(currentNode->title);
@@ -1389,18 +1458,18 @@ error:
 	return result;
 }
 
-int getCertificateAliasFromStore(CertStoreType storeType, const char *gname, char *alias)
+int getCertificateAliasFromStore(CertStoreType storeType, const char *gname,
+								 char *alias)
 {
 	int result = CERTSVC_SUCCESS;
 	int records = 0;
 	sqlite3_stmt *stmt = NULL;
 	char *query = NULL;
 	const char *text = NULL;
-
 	query = sqlite3_mprintf("select common_name from %Q where gname=%Q",
-			storetype_to_string(storeType), gname);
-
+							storetype_to_string(storeType), gname);
 	result = execute_select_query(query, &stmt);
+
 	if (result != CERTSVC_SUCCESS) {
 		SLOGE("Querying database failed.");
 		result = CERTSVC_FAIL;
@@ -1408,8 +1477,9 @@ int getCertificateAliasFromStore(CertStoreType storeType, const char *gname, cha
 	}
 
 	records = sqlite3_step(stmt);
+
 	if (records != SQLITE_ROW || records == SQLITE_DONE) {
-		SLOGE("No valid records found for gname passed [%s].",gname);
+		SLOGE("No valid records found for gname passed [%s].", gname);
 		result = CERTSVC_FAIL;
 		goto error;
 	}
@@ -1429,9 +1499,9 @@ int getCertificateAliasFromStore(CertStoreType storeType, const char *gname, cha
 	}
 
 	result = CERTSVC_SUCCESS;
-
 	SLOGD("success : getCertificateAliasFromStore");
 error:
+
 	if (query)
 		sqlite3_free(query);
 
@@ -1443,7 +1513,7 @@ error:
 
 int loadCertificatesFromStore(
 	CertStoreType storeType,
-	const char* gname,
+	const char *gname,
 	char **ppCertBlockBuffer,
 	size_t *bufferLen,
 	size_t *certBlockCount)
@@ -1452,19 +1522,20 @@ int loadCertificatesFromStore(
 	char **certs = NULL;
 	size_t gnameSize = 0;
 	char *columnText = NULL;
-
 	/* Get associated_gname from store */
 	char *query = sqlite3_mprintf("select associated_gname from %Q "
 								  "where gname=%Q",
-								   storetype_to_string(storeType),
-								   gname);
+								  storetype_to_string(storeType),
+								  gname);
 	int result = execute_select_query(query, &stmt);
+
 	if (result != CERTSVC_SUCCESS) {
 		SLOGE("Querying database failed.");
 		goto error;
 	}
 
 	int records = sqlite3_step(stmt);
+
 	if (records != SQLITE_ROW) {
 		SLOGE("No valid records found for gname passed [%s].", gname);
 		result = CERTSVC_FAIL;
@@ -1472,14 +1543,15 @@ int loadCertificatesFromStore(
 	}
 
 	columnText = strdup((const char *)sqlite3_column_text(stmt, 0));
+
 	if (!columnText) {
 		SLOGE("Failed to get associated_gname.");
 		result = CERTSVC_FAIL;
 		goto error;
 	}
+
 	sqlite3_free(query);
 	sqlite3_finalize(stmt);
-
 	/* Get gnames from store */
 	query = sqlite3_mprintf("select gname from %Q "
 							"where associated_gname=%Q and enabled=%d and "
@@ -1489,21 +1561,25 @@ int loadCertificatesFromStore(
 							ENABLED,
 							ENABLED);
 	result = execute_select_query(query, &stmt);
+
 	if (result != CERTSVC_SUCCESS) {
 		SLOGE("Querying database failed.");
 		goto error;
 	}
 
-	certs = (char**)malloc(4 * sizeof(char *));
+	certs = (char **)malloc(4 * sizeof(char *));
+
 	if (!certs) {
 		SLOGE("Failed to allocate memory.");
 		result = CERTSVC_BAD_ALLOC;
 		goto error;
 	}
+
 	memset(certs, 0x00, 4 * sizeof(char *));
 
 	while (1) {
 		records = sqlite3_step(stmt);
+
 		if (records == SQLITE_DONE)
 			break;
 
@@ -1514,6 +1590,7 @@ int loadCertificatesFromStore(
 		}
 
 		const char *tmpText = (const char *)sqlite3_column_text(stmt, 0);
+
 		if (!tmpText) {
 			SLOGE("Failed to sqlite3_column_text.");
 			result = CERTSVC_FAIL;
@@ -1528,26 +1605,28 @@ int loadCertificatesFromStore(
 	}
 
 	if (gnameSize == 0) {
-		SLOGE("No valid records found for the gname passed [%s].",gname);
+		SLOGE("No valid records found for the gname passed [%s].", gname);
 		result = CERTSVC_FAIL;
 		goto error;
 	}
 
 	*certBlockCount = gnameSize;
 	*bufferLen = gnameSize * sizeof(ResponseCertBlock);
-
 	ResponseCertBlock *certBlockList = (ResponseCertBlock *)malloc(*bufferLen);
+
 	if (!certBlockList) {
 		SLOGE("Failed to allocate memory for ResponseCertBlock");
 		result = CERTSVC_BAD_ALLOC;
 		goto error;
 	}
-	memset(certBlockList, 0x00, *bufferLen);
 
+	memset(certBlockList, 0x00, *bufferLen);
 	ResponseCertBlock *currentBlock = NULL;
 	size_t i;
+
 	for (i = 0; i < gnameSize; i++) {
 		currentBlock = certBlockList + i;
+
 		if (sizeof(currentBlock->dataBlock) < strlen(certs[i])) {
 			SLOGE("src is longer than dst. src[%s] dst size[%d]",
 				  certs[i],
@@ -1556,16 +1635,16 @@ int loadCertificatesFromStore(
 			result = CERTSVC_FAIL;
 			goto error;
 		}
+
 		strncpy(currentBlock->dataBlock, certs[i], strlen(certs[i]));
 		currentBlock->dataBlockLen = strlen(certs[i]);
 	}
+
 	*ppCertBlockBuffer = (char *)certBlockList;
-
 	result = CERTSVC_SUCCESS;
-
 	SLOGD("success: loadCertificatesFromStore. CERT_COUNT=%d", gnameSize);
-
 error:
+
 	if (query)
 		sqlite3_free(query);
 
@@ -1576,7 +1655,7 @@ error:
 		free(columnText);
 
 	if (certs) {
-		for(i = 0; i < gnameSize; i++)
+		for (i = 0; i < gnameSize; i++)
 			free(certs[i]);
 
 		free(certs);
