@@ -412,13 +412,10 @@ void DirectoryIterator::reset(const std::string& dir)
 void DirectoryIterator::next()
 {
 	std::string name;
-	struct dirent entry, *ent;
+	struct dirent *ent;
 
 	while (1) {
-		if (readdir_r(directoryHandle, &entry, &ent) != 0) {
-			throw runtime::Exception(runtime::GetSystemErrorMessage());
-		}
-
+		ent = readdir(directoryHandle);
 		if (ent == NULL)
 			break;
 
