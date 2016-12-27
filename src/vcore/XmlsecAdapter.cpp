@@ -23,6 +23,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <memory>
 
 #include <libxml/tree.h>
 #include <libxml/xmlmemory.h>
@@ -51,38 +52,6 @@
 IMPLEMENT_SINGLETON(ValidationCore::XmlSec)
 
 namespace {
-
-template <typename Type>
-struct CustomPtr {
-	Type ptr;
-	std::function<void(Type)> deleter;
-
-	CustomPtr() = delete;
-
-	explicit CustomPtr(Type in, std::function<void(Type)> d)
-		: ptr(in)
-		, deleter(d) {}
-
-	~CustomPtr()
-	{
-		deleter(ptr);
-	}
-
-	inline Type get(void) const
-	{
-		return ptr;
-	}
-
-	inline Type operator->() const
-	{
-		return ptr;
-	}
-
-	inline bool operator!() const
-	{
-		return (ptr == nullptr) ? true : false;
-	}
-};
 
 struct FileWrapper {
 	FileWrapper(void *argFile, bool argReleased)
@@ -273,8 +242,8 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 		fileOpenCallback,
 		fileReadCallback,
 		fileCloseCallback);
-	CustomPtr<xmlDocPtr> docPtr(xmlParseFile(context.signatureFile.c_str()),
-											 xmlFreeDoc);
+	std::unique_ptr<xmlDoc, std::function<void(xmlDocPtr)>> docPtr(
+		xmlParseFile(context.signatureFile.c_str()), xmlFreeDoc);
 
 	if (!docPtr || xmlDocGetRootElement(docPtr.get()) == nullptr)
 		ThrowMsg(Exception::InvalidFormat,
@@ -289,11 +258,12 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 		ThrowMsg(Exception::InvalidFormat,
 				 "Start node not found in " << context.signatureFile);
 
-	CustomPtr<xmlSecDSigCtxPtr> dsigCtx(xmlSecDSigCtxCreate(mngrPtr),
-										[](xmlSecDSigCtxPtr dsigCtx) {
-		xmlSecProxyCtxDestroy(dsigCtx->skipReferences);
-		xmlSecProxyCtxDestroy(dsigCtx->checkReferences);
-		xmlSecDSigCtxDestroy(dsigCtx);
+	std::unique_ptr<xmlSecDSigCtx, std::function<void(xmlSecDSigCtxPtr)>> dsigCtx(
+		xmlSecDSigCtxCreate(mngrPtr),
+		[](xmlSecDSigCtxPtr dsigCtx) {
+			xmlSecProxyCtxDestroy(dsigCtx->skipReferences);
+			xmlSecProxyCtxDestroy(dsigCtx->checkReferences);
+			xmlSecDSigCtxDestroy(dsigCtx);
 	});
 
 	if (!dsigCtx)
@@ -438,7 +408,8 @@ void XmlSec::validateInternal(XmlSecContext &context)
 	if (!m_initialized)
 		ThrowMsg(Exception::InternalError, "XmlSec is not initialized");
 
-	CustomPtr<xmlSecKeysMngrPtr> mngrPtr(xmlSecKeysMngrCreate(), xmlSecKeysMngrDestroy);
+	std::unique_ptr<xmlSecKeysMngr, std::function<void(xmlSecKeysMngrPtr)>>
+		mngrPtr(xmlSecKeysMngrCreate(), xmlSecKeysMngrDestroy);
 
 	if (!mngrPtr)
 		ThrowMsg(Exception::InternalError, "Failed to create keys manager.");
