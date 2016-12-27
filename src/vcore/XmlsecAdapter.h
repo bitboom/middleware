@@ -28,7 +28,6 @@
 #include <xmlsec/keysmngr.h>
 
 #include <dpl/exception.h>
-#include <dpl/singleton.h>
 
 #include <vcore/Certificate.h>
 #include <vcore/SignatureData.h>
@@ -127,7 +126,6 @@ private:
 	};
 
 	ValidateMode m_mode;
-	bool m_initialized;
 	const std::list<std::string> *m_pList;
 
 	void loadDERCertificateMemory(XmlSecContext &context, xmlSecKeysMngrPtr mngr);
@@ -142,7 +140,5 @@ private:
 	static int fileCloseCallback(void *context);
 	static void fileExtractPrefix(XmlSecContext &context);
 };
-
-typedef VcoreDPL::Singleton<XmlSec> XmlSecSingleton;
 
 } // namespace ValidationCore

@@ -317,7 +317,7 @@ VCerr BaseValidator::baseCheck(const std::string &contentPath,
 			m_context.allowBrokenChain = true;
 
 		// XmlSec validate
-		XmlSecSingleton::Instance().validate(m_context);
+		m_xmlSec.validate(m_context);
 		// Check reference of 'Object' tag - OID
 		m_data.setReference(m_context.referenceSet);
 
@@ -387,9 +387,9 @@ VCerr BaseValidator::baseCheckList(bool checkOcsp, const UriList &uriList)
 
 		// XmlSec validate
 		if (uriList.size() == 0)
-			XmlSecSingleton::Instance().validateNoHash(m_context);
+			m_xmlSec.validateNoHash(m_context);
 		else
-			XmlSecSingleton::Instance().validatePartialHash(m_context, uriList);
+			m_xmlSec.validatePartialHash(m_context, uriList);
 
 		if (checkOcsp && Ocsp::check(m_data) == Ocsp::Result::REVOKED) {
 			LogError("Certificate is Revoked by OCSP server.");

@@ -71,6 +71,7 @@ private:
 	bool checkObjectReferences(void);
 
 	PluginHandler m_pluginHandler;
+	XmlSec m_xmlSec;
 };
 
 } // namespace ValidationCore

@@ -43,13 +43,10 @@
 
 #include <dpl/assert.h>
 #include <dpl/log/log.h>
-#include <dpl/singleton_impl.h>
 
 #include <vcore/XmlsecAdapter.h>
 
 #define VCORE_ERRORS_BUFFER_SIZE 1024
-
-IMPLEMENT_SINGLETON(ValidationCore::XmlSec)
 
 namespace {
 
@@ -168,9 +165,7 @@ void LogDebugPrint(const char *file,
 		LogDebug(buff);
 }
 
-XmlSec::XmlSec()
-	: m_initialized(false)
-	, m_pList(nullptr)
+XmlSec::XmlSec() : m_pList(nullptr)
 {
 	LIBXML_TEST_VERSION
 	xmlLoadExtDtdDefaultValue = XML_DETECT_IDS | XML_COMPLETE_ATTRS;
@@ -213,15 +208,10 @@ XmlSec::XmlSec()
 		ThrowMsg(Exception::InternalError,
 				 "Xmlsec-crypto initialization failed.");
 	}
-
-	m_initialized = true;
 }
 
 XmlSec::~XmlSec()
 {
-	if (m_initialized)
-		return;
-
 	xmlSecCryptoShutdown();
 	xmlSecCryptoAppShutdown();
 	xmlSecShutdown();
@@ -229,7 +219,6 @@ XmlSec::~XmlSec()
 	xsltCleanupGlobals();
 #endif
 	s_prefixPath.clear();
-	m_initialized = false;
 }
 
 void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
@@ -404,9 +393,6 @@ void XmlSec::validateInternal(XmlSecContext &context)
 	Assert(!context.signatureFile.empty());
 	Assert(!!context.certificatePtr || !context.certificatePath.empty());
 	xmlSecErrorsSetCallback(LogDebugPrint);
-
-	if (!m_initialized)
-		ThrowMsg(Exception::InternalError, "XmlSec is not initialized");
 
 	std::unique_ptr<xmlSecKeysMngr, std::function<void(xmlSecKeysMngrPtr)>>
 		mngrPtr(xmlSecKeysMngrCreate(), xmlSecKeysMngrDestroy);
