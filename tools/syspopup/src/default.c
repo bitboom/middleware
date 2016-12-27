@@ -16,11 +16,11 @@
  *
  */
 
-#define _TIZEN_PROFILE_WEARABLE (1)
-
 #include <system_info.h>
+#include <stdlib.h>
 
 #include "dpm-syspopup.h"
+#include "profile_decision.h"
 
 static const char icon_path[] = "/usr/share/icons/default/small/org.tizen.dpm-syspopup.png";
 static const char *delete_icon_file = "/usr/apps/org.tizen.dpm-syspopup/res/images/tw_ic_popup_btn_delete.png";
@@ -278,4 +278,23 @@ Evas_Object *create_default_popup(Evas_Object *parent, popup_info_s *info, void 
 	set_appcontrol(popup, info->id, user_data);
 
 	return popup;
+}
+
+int _tizen_whether_wearable = -1;
+int _get_tizen_profile()
+{
+       char *profileName;
+       system_info_get_platform_string("http://tizen.org/feature/profile", &profileName);
+       switch (*profileName) {
+       case 'w':
+       case 'W': /* It is "Wearable/wearable" */
+               _tizen_whether_wearable = 1;
+               break;
+       default:
+               _tizen_whether_wearable = 0;
+               break;
+       }
+       free(profileName);
+
+       return _tizen_whether_wearable;
 }

@@ -15,9 +15,8 @@
  *
  */
 
-#define _TIZEN_PROFILE_WEARABLE (0)
-
 #include "dpm-syspopup.h"
+#include "profile_decision.h"
 
 static void popup_timeout_cb(void *data, Evas_Object *obj, void *event_info)
 {
