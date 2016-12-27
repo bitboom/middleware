@@ -16,6 +16,8 @@
  *
  */
 
+#define _TIZEN_PROFILE_WEARABLE (0)
+
 #include <vconf.h>
 
 #include "dpm-syspopup.h"
@@ -124,7 +126,11 @@ static void create_popup_bottom_button(Evas_Object *popup, char *part, char *tex
 {
 	Evas_Object *button = NULL;
 
-	button = create_button(popup, "popup", __(text), callback, popup);
+	if (_TIZEN_PROFILE_WEARABLE)
+		button = create_button(popup, "bottom", __(text), callback, popup);
+	else
+		button = create_button(popup, "popup", __(text), callback, popup);
+
 	elm_object_part_content_set(popup, part, button);
 	return;
 }
@@ -132,10 +138,20 @@ static void create_popup_bottom_button(Evas_Object *popup, char *part, char *tex
 Evas_Object *create_password_enforce_change_popup(Evas_Object *parent, popup_info_s *info, void *user_data)
 {
 	Evas_Object *popup = NULL;
+	Evas_Object *layout = NULL;
 	app_control_h app_control = NULL;
 	char header[PATH_MAX] = "";
 	char body[PATH_MAX] = "";
 	char *lp_text = NULL;
+
+	if (_TIZEN_PROFILE_WEARABLE) {
+		popup = create_popup(parent, "circle");
+		elm_popup_align_set(popup, ELM_NOTIFY_ALIGN_FILL, 1.0);
+
+		layout = elm_layout_add(popup);
+		elm_object_content_set(popup, layout);
+		elm_layout_theme_set(layout, "layout", "popup", "content/circle/buttons1");
+	}
 
 	if (info->header != NULL && info->prefix) {
 		lp_text = __("IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS");
@@ -151,16 +167,25 @@ Evas_Object *create_password_enforce_change_popup(Evas_Object *parent, popup_inf
 		snprintf(body, PATH_MAX, "%s", __(info->body));
 	}
 
-	popup = create_popup(parent, "default");
-	elm_popup_align_set(popup, ELM_NOTIFY_ALIGN_FILL, 1.0);
+	if (!_TIZEN_PROFILE_WEARABLE) {
+		popup = create_popup(parent, "default");
+		elm_popup_align_set(popup, ELM_NOTIFY_ALIGN_FILL, 1.0);
+	}
 
 	if (strcmp(header, "")) {
-		elm_object_part_text_set(popup, "title,text", header);
-		elm_object_item_part_text_translatable_set(popup, "title,text", EINA_TRUE);
+		if (_TIZEN_PROFILE_WEARABLE) {
+			elm_object_part_text_set(layout, "elm.text.title", header);
+		} else {
+			elm_object_part_text_set(popup, "title,text", header);
+			elm_object_item_part_text_translatable_set(popup, "title,text", EINA_TRUE);
+		}
 	}
 
 	if (strcmp(body, "")) {
-		elm_object_text_set(popup, body);
+		if (_TIZEN_PROFILE_WEARABLE)
+			elm_object_part_text_set(layout, "elm.text", body);
+		else
+			elm_object_text_set(popup, body);
 	}
 
 	create_popup_bottom_button(popup, "button1", info->right_btn, confirm_button_cb);

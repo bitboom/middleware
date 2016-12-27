@@ -15,6 +15,8 @@
  *
  */
 
+#define _TIZEN_PROFILE_WEARABLE (1)
+
 #include "dpm-syspopup.h"
 
 static void popup_timeout_cb(void *data, Evas_Object *obj, void *event_info)
@@ -47,9 +49,14 @@ Evas_Object *create_toast_popup(Evas_Object *parent, popup_info_s *info, void *u
 		snprintf(body, PATH_MAX, "%s", __(info->body));
 	}
 
-	popup = create_popup(parent, "toast/circle");
-	elm_popup_orient_set(popup, ELM_POPUP_ORIENT_CENTER);
-	elm_object_part_text_set(popup, "elm.text", body);
+	if (_TIZEN_PROFILE_WEARABLE) {
+		popup = create_popup(parent, "toast/circle");
+		elm_popup_orient_set(popup, ELM_POPUP_ORIENT_CENTER);
+		elm_object_part_text_set(popup, "elm.text", body);
+	} else {
+		popup = create_popup(parent, "toast");
+		elm_object_text_set(popup, body);
+	}
 	elm_popup_timeout_set(popup, 3.0);
 	evas_object_smart_callback_add(popup, "timeout", popup_timeout_cb, NULL);
 	evas_object_smart_callback_add(popup, "block,clicked", block_clicked_cb, NULL);
