@@ -33,36 +33,46 @@ typedef struct CertSvcInstance_t {
 } CertSvcInstance;
 
 /**
- * Allocate internal data of CertSvc library and put it in the CertSvcInstance structure.
- * Initialize Openssl interanal structures.
+ * @brief Initializes and returns a CertSvcInstance.
  *
- * @param[out] instance  Pointer to CertSvcInstance
+ * @remarks @a instance should be released using certsvc_instance_free().
+ *
+ * @param[out] instance A pointer of CertSvcInstance.
  *
  * @return #CERTSVC_SUCCESS on success, otherwise a zero or negative error value
+ *
+ * @see certsvc_instance_free()
  */
 int certsvc_instance_new(CertSvcInstance *instance);
 
 /**
- * Free all allocated data. All certificate identificator will be released and all
- * strings allocated by certsvc_certificate_get_string_field() will be released also.
+ * @brief Releases and reallocates a CertSvcInstance.
  *
- * This fucntion does not release CertSvcInstnace itself!
+ * @remarks @a instance will be released and reallocated.
+ * @remarks strings allocated by certsvc_certificate_get_string_field() will be
+ *          released also.
+ * @remarks @a instance should be released using certsvc_instance_free().
  *
- * Plese note: It is safe to use this function after use certsvc_string_free().
+ * @param[in] instance CertSvcInstance returned by certsvc_instance_new().
  *
- * @param[in] instance  CertSvcInstance object
+ * @see certsvc_certificate_get_string_field()
+ * @see certsvc_instance_free()
  */
 void certsvc_instance_reset(CertSvcInstance instance);
 
 /**
- * Free all allocated data. All certificate identificator will be released and all strings
- * allocated by certsvc_certificate_get_string_field() will be released also.
+ * @brief Releases a CertSvcInstance.
  *
- * This fucntion also release CertSvcInstnace!
+ * @remarks @a instance will be released.
+ * @remarks strings allocated by certsvc_certificate_get_string_field() will be
+ *          released also.
+ * @remarks It is safe use this function after use certsvc_string_free().
  *
- * Please note: It is safe use this function after use certsvc_string_free().
+ * @param[in] instance CertSvcInstance returned by certsvc_instance_new().
  *
- * @param[in] instance CertSvcInstance object
+ * @see certsvc_instance_create()
+ * @see certsvc_certificate_get_string_field()
+ * @see certsvc_string_free()
  */
 void certsvc_instance_free(CertSvcInstance instance);
 
