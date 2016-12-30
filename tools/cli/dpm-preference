@@ -3,6 +3,9 @@
 PATH=/usr/bin:/bin/usr/sbin:/sbin
 
 DB_PATH="/opt/dbspace/.dpm.db"
+DB_UID="security_fw"
+DB_GID="security_fw"
+DB_LABEL="System"
 
 usage()
 {
@@ -44,6 +47,11 @@ if [ -z "$uid" ]; then
 	echo "'user' parameter is required"
 fi
 
+need_chsmack=true
+if [ -f ${DB_PATH} ]; then
+	need_chsmack=false
+fi
+
 # Execution
 sqlite3 ${DB_PATH} \
 "CREATE TABLE IF NOT EXISTS admin (       \
@@ -54,3 +62,8 @@ sqlite3 ${DB_PATH} \
     removable INTEGER                     \
 );                                        \
 INSERT INTO admin (pkg, uid, key, removable) VALUES ('$admin', $uid, '', 0);"
+
+if [ "$need_chsmack" == "true" ]; then
+	chsmack -a ${DB_LABEL} ${DB_PATH}*
+	chown ${DB_UID}:${DB_GID} ${DB_PATH}*
+fi
