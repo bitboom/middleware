@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 		ElmRaii er(argc, argv);
 
 		PopupService service(POPUP_STREAM);
-		service.setTimeout(10);
+		service.setTimeout(0);
 		service.start();
 
 		LogDebug("Finish running cert-checker popup successfully.");
