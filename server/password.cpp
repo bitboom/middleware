@@ -18,38 +18,30 @@
 
 #include <unordered_map>
 
-#include <aul.h>
-#include <vconf.h>
-#include <bundle.h>
-#include <notification.h>
-#include <system_settings.h>
 #include <klay/audit/logger.h>
 
 #include "privilege.h"
 #include "policy-builder.h"
+#include "policy-model.h"
+
 #include "password-manager.h"
+#include "app-bundle.h"
+#include "launchpad.h"
 
 #include "password.hxx"
-
-#define SIMPLE_PASSWORD_LENGTH 4
 
 namespace DevicePolicyManager {
 
 namespace {
 
-std::string PasswordPattern;
-std::vector<std::string> ForbiddenStrings;
+const int simplePasswordLength = 4;
+const int infinite = 32767;
 
-std::unordered_map<uid_t, int> PasswordStatus;
+std::unordered_map<uid_t, int> passwordStatus;
 
-inline int getPasswordPolicy(PolicyControlContext &ctx, const std::string &name)
+inline int canonicalize(int value)
 {
-	return ctx.getPolicy<int>(name, ctx.getPeerUid());
-}
-
-inline bool setPasswordPolicy(PolicyControlContext &ctx, const std::string &name, int value)
-{
-	return ctx.setPolicy<int>(name, value, "password", name);
+	return -value;
 }
 
 inline PasswordManager::QualityType getPasswordQualityType(int quality)
@@ -74,378 +66,303 @@ inline PasswordManager::QualityType getPasswordQualityType(int quality)
 
 } // namespace
 
-struct PasswordPolicy::Private {
+class PasswordPattern {
+public:
+	PasswordPattern() {}
+	PasswordPattern(const char *pattern_) : pattern(pattern_) {}
+	PasswordPattern(const std::string& pattern_) : pattern(pattern_) {}
+
+	bool empty() const { return pattern.empty(); }
+
+	operator const char* () const { return pattern.c_str(); }
+
+	bool operator<(const PasswordPattern& rhs)
+	{
+		pattern.append(rhs.pattern);
+		return true;
+	}
+
+	bool operator>(const PasswordPattern& rhs)
+	{
+		pattern.append(rhs.pattern);
+		return true;
+	}
+
+private:
+	std::string pattern;
+};
+
+class PasswordQualityEnforceModel : public BaseEnforceModel {
+public:
+	PasswordQualityEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, "password", false)
+	{
+	}
+
+	bool operator()(int quality, uid_t domain)
+	{
+		try {
+			int auth = PasswordPolicy::DPM_PASSWORD_QUALITY_UNSPECIFIED;
+
+			quality = canonicalize(quality);
+			if (quality & PasswordPolicy::DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD) {
+				auth = quality - PasswordPolicy::DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD;
+			}
+
+			PasswordManager::QualityType type = getPasswordQualityType(auth);
+
+			PasswordManager passwordManager(domain);
+			passwordManager.setQuality(type);
+			passwordManager.enforce();
+		} catch (runtime::Exception &e) {
+			ERROR(e.what());
+			return false;
+		}
+
+		return true;
+	}
+};
+
+class PasswordSequencesEnforceModel : public BaseEnforceModel {
+public:
+	PasswordSequencesEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, "password", false)
+	{
+	}
+
+	bool operator()(int value, uid_t domain)
+	{
+		try {
+			value = value == infinite ? 0 : value;
+			PasswordManager passwordManager(domain);
+			passwordManager.setMaximumNumericSequenceLength(value);
+			passwordManager.enforce();
+		} catch (runtime::Exception &e) {
+			ERROR(e.what());
+			return false;
+		}
+
+		return true;
+	}
+};
+
+class PasswordOccurrencesEnforceModel : public BaseEnforceModel {
+public:
+	PasswordOccurrencesEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, "password", false)
+	{
+	}
+
+	bool operator()(int value, uid_t domain)
+	{
+		try {
+			value = value == infinite ? 0 : value;
+			PasswordManager passwordManager(domain);
+			passwordManager.setMaximumCharacterOccurrences(value);
+			passwordManager.enforce();
+		} catch (runtime::Exception &e) {
+			ERROR(e.what());
+			return false;
+		}
+
+		return true;
+	}
+};
+
+class PasswordPatternEnforceModel : public BaseEnforceModel {
+public:
+	PasswordPatternEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, "password", false)
+	{
+	}
+
+	bool operator()(const PasswordPattern& value, uid_t domain)
+	{
+		try {
+			PasswordManager passwordManager(domain);
+			if (value.empty()) {
+				passwordManager.deletePatern();
+			} else {
+				passwordManager.setPattern(value);
+			}
+			passwordManager.enforce();
+		} catch (runtime::Exception &e) {
+			ERROR(e.what());
+			return false;
+		}
+
+		return true;
+	}
+};
+
+class PasswordHistoryEnforceModel : public BaseEnforceModel {
+public:
+	PasswordHistoryEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, "password", false)
+	{
+	}
+
+	bool operator()(int value, uid_t domain)
+	{
+		try {
+			PasswordManager passwordManager(domain);
+			passwordManager.setHistory(canonicalize(value));
+			passwordManager.enforce();
+		} catch (runtime::Exception &e) {
+			ERROR(e.what());
+			return false;
+		}
+
+		return true;
+	}
+};
+
+class PasswordExpireEnforceModel : public BaseEnforceModel {
+public:
+	PasswordExpireEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, "password", false)
+	{
+	}
+
+	bool operator()(int value, uid_t domain)
+	{
+		try {
+			PasswordManager passwordManager(domain);
+			passwordManager.setExpires(value);
+			passwordManager.enforce();
+		} catch (runtime::Exception &e) {
+			ERROR(e.what());
+			return false;
+		}
+
+		return true;
+	}
+};
+
+class PasswordFailureCountEnforceModel : public BaseEnforceModel {
+public:
+	PasswordFailureCountEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, "password", false)
+	{
+	}
+
+	bool operator()(int value, uid_t domain)
+	{
+		try {
+			PasswordManager passwordManager(domain);
+			passwordManager.setMaximumFailedForWipe(value);
+			passwordManager.enforce();
+		} catch (runtime::Exception &e) {
+			ERROR(e.what());
+			return false;
+		}
+
+		return true;
+	}
+};
+
+class PasswordComplexityEnforceModel : public BaseEnforceModel {
+public:
+	PasswordComplexityEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, "password", false)
+	{
+	}
+
+	bool operator()(int value, uid_t domain)
+	{
+		try {
+			PasswordManager passwordManager(domain);
+			passwordManager.setMinimumComplexCharacters(canonicalize(value));
+			passwordManager.enforce();
+		} catch (runtime::Exception &e) {
+			ERROR(e.what());
+			return false;
+		}
+
+		return true;
+	}
+};
+
+class PasswordLengthEnforceModel : public BaseEnforceModel {
+public:
+	PasswordLengthEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, "password", false)
+	{
+	}
+
+	bool operator()(int value, uid_t domain)
+	{
+		try {
+			PasswordManager passwordManager(domain);
+			passwordManager.setMinimumLength(canonicalize(value));
+			passwordManager.enforce();
+		} catch (runtime::Exception &e) {
+			ERROR(e.what());
+			return false;
+		}
+
+		return true;
+	}
+};
+
+class PasswordTimeoutEnforceModel : public BaseEnforceModel {
+public:
+	PasswordTimeoutEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, "password", false)
+	{
+	}
+
+	bool operator()(int value, uid_t domain)
+	{
+		return true;
+	}
+};
+
+class PasswordRecoveryEnforceModel : public BaseEnforceModel {
+public:
+	PasswordRecoveryEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, "password", false)
+	{
+	}
+
+	bool operator()(int value, uid_t domain)
+	{
+		return true;
+	}
+};
+
+typedef DomainPolicy<int, PasswordQualityEnforceModel> PasswordQualityPolicy;
+typedef DomainPolicy<int, PasswordHistoryEnforceModel> PasswordHistoryPolicy;
+typedef DomainPolicy<int, PasswordLengthEnforceModel> PasswordLengthPolicy;
+typedef DomainPolicy<int, PasswordComplexityEnforceModel> PasswordComplexityPolicy;
+typedef DomainPolicy<int, PasswordTimeoutEnforceModel> PasswordTimeoutPolicy;
+typedef DomainPolicy<int, PasswordExpireEnforceModel> PasswordExpirePolicy;
+typedef DomainPolicy<int, PasswordFailureCountEnforceModel> PasswordFailureCountPolicy;
+typedef DomainPolicy<int, PasswordSequencesEnforceModel> PasswordSequencesPolicy;
+typedef DomainPolicy<int, PasswordOccurrencesEnforceModel> PasswordOccurrencesPolicy;
+typedef DomainPolicy<int, PasswordRecoveryEnforceModel> PasswordRecoveryPolicy;
+typedef DomainPolicy<PasswordPattern, PasswordPatternEnforceModel> PasswordPatternPolicy;
+
+struct PasswordPolicy::Private : public PolicyHelper {
 	Private(PolicyControlContext& ctxt);
 
-	int setQuality(int quality);
-	int getQuality();
-	int setMinimumLength(int value);
-	int getMinimumLength();
-	int setMinComplexChars(int value);
-	int getMinComplexChars();
-	int setMaximumFailedForWipe(int value);
-	int getMaximumFailedForWipe();
-	int setExpires(int value);
-	int getExpires();
-	int setHistory(int value);
-	int getHistory();
-	int setPattern(const std::string &pattern);
-	int reset(const std::string &passwd);
-	int enforceChange();
-	int setMaxInactivityTimeDeviceLock(int value);
-	int getMaxInactivityTimeDeviceLock();
-	int setStatus(int status);
-	int getStatus();
-	int deletePattern();
-	std::string getPattern();
-	int setMaximumCharacterOccurrences(int value);
-	int getMaximumCharacterOccurrences();
-	int setMaximumNumericSequenceLength(int value);
-	int getMaximumNumericSequenceLength();
-	int setForbiddenStrings(const std::vector<std::string> &forbiddenStrings);
-	std::vector<std::string> getForbiddenStrings();
-	int setRecovery(int enable);
-	int getRecovery();
-
-	PolicyControlContext& context;
+	PasswordQualityPolicy      quality{context, "password-quality"};
+	PasswordHistoryPolicy      history{context, "password-history"};
+	PasswordLengthPolicy       length{context, "password-minimum-length"};
+	PasswordComplexityPolicy   complexity{context, "password-minimum-complexity"};
+	PasswordTimeoutPolicy      timeout{context, "password-inactivity-timeout"};
+	PasswordExpirePolicy       expire{context, "password-expired"};
+	PasswordFailureCountPolicy failureCount{context, "password-maximum-failure-count"};
+	PasswordSequencesPolicy    sequences{context, "password-numeric-sequences-length"};
+	PasswordOccurrencesPolicy  occurrences{context, "password-maximum-character-occurrences"};
+	PasswordRecoveryPolicy     recovery{context, "password-recovery"};
+	PasswordPatternPolicy      pattern{context, "password-pattern"};
 };
 
 PasswordPolicy::Private::Private(PolicyControlContext& ctxt) :
-	context(ctxt)
+	PolicyHelper(ctxt)
 {
-}
-
-int PasswordPolicy::Private::setQuality(int quality)
-{
-	try {
-		int authQuality = DPM_PASSWORD_QUALITY_UNSPECIFIED;
-		if (quality & DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD) {
-			authQuality = quality - DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD;
-		}
-		PasswordManager::QualityType type = getPasswordQualityType(authQuality);
-		if (!setPasswordPolicy(context, "password-quality", quality)) {
-			return 0;
-		}
-
-		if (quality & DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD) {
-			setPasswordPolicy(context, "password-minimum-length", SIMPLE_PASSWORD_LENGTH);
-		}
-
-		PasswordManager passwordManager(context.getPeerUid());
-		passwordManager.setQuality(type);
-
-		if (quality & DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD) {
-			passwordManager.setMinimumLength(SIMPLE_PASSWORD_LENGTH);
-		}
-		passwordManager.enforce();
-	} catch (runtime::Exception &e) {
-		ERROR(e.what());
-		return -1;
-	}
-	return 0;
-}
-
-int PasswordPolicy::Private::getQuality()
-{
-	return getPasswordPolicy(context, "password-quality");
-}
-
-int PasswordPolicy::Private::setMinimumLength(int value)
-{
-	try {
-		if (!setPasswordPolicy(context, "password-minimum-length", value)) {
-			return 0;
-		}
-
-		PasswordManager passwordManager(context.getPeerUid());
-		passwordManager.setMinimumLength(value);
-		passwordManager.enforce();
-	} catch (runtime::Exception &e) {
-		ERROR("Failed to set minimum length");
-		return -1;
-	}
-
-	return 0;
-}
-
-int PasswordPolicy::Private::getMinimumLength()
-{
-	return getPasswordPolicy(context, "password-minimum-length");
-}
-
-int PasswordPolicy::Private::setMinComplexChars(int value)
-{
-	try {
-		if (!setPasswordPolicy(context, "password-minimum-complexity", value)) {
-			return 0;
-		}
-
-		PasswordManager passwordManager(context.getPeerUid());
-		passwordManager.setMinimumComplexCharacters(value);
-		passwordManager.enforce();
-	} catch (runtime::Exception &e) {
-		ERROR("Failed to set minimum complex characters");
-		return -1;
-	}
-	return 0;
-}
-
-int PasswordPolicy::Private::getMinComplexChars()
-{
-	return getPasswordPolicy(context, "password-minimum-complexity");
-}
-
-int PasswordPolicy::Private::setMaximumFailedForWipe(int value)
-{
-	try {
-		if (!setPasswordPolicy(context, "password-maximum-failure-count", (value == 0) ? INT_MAX : value)) {
-			return 0;
-		}
-
-		PasswordManager passwordManager(context.getPeerUid());
-		passwordManager.setMaximumFailedForWipe(value);
-		passwordManager.enforce();
-	} catch (runtime::Exception &e) {
-		ERROR("Failed to set maximum failed count for wipe");
-		return -1;
-	}
-	return 0;
-}
-
-int PasswordPolicy::Private::getMaximumFailedForWipe()
-{
-	unsigned int result = getPasswordPolicy(context, "password-maximum-failure-count");
-	return (result == INT_MAX) ? 0 : result;
-}
-
-int PasswordPolicy::Private::setExpires(int value)
-{
-	try {
-		if (!setPasswordPolicy(context, "password-expired", (value == 0) ? INT_MAX : value)) {
-			return 0;
-		}
-
-		PasswordManager passwordManager(context.getPeerUid());
-		passwordManager.setExpires(value);
-		passwordManager.enforce();
-	} catch (runtime::Exception &e) {
-		ERROR("Failed to set expire");
-		return -1;
-	}
-	return 0;
-}
-
-int PasswordPolicy::Private::getExpires()
-{
-	unsigned int result = getPasswordPolicy(context, "password-expired");
-	return (result == INT_MAX) ? 0 : result;
-}
-
-int PasswordPolicy::Private::setHistory(int value)
-{
-	try {
-		if (!setPasswordPolicy(context, "password-history", value)) {
-			return 0;
-		}
-
-		PasswordManager passwordManager(context.getPeerUid());
-		passwordManager.setHistory(value);
-		passwordManager.enforce();
-	} catch (runtime::Exception &e) {
-		ERROR("Failed to set history size");
-		return -1;
-	}
-	return 0;
-}
-
-int PasswordPolicy::Private::getHistory()
-{
-	return getPasswordPolicy(context, "password-history");
-}
-
-int PasswordPolicy::Private::setPattern(const std::string &pattern)
-{
-	try {
-		PasswordManager passwordManager(context.getPeerUid());
-		passwordManager.setPattern(pattern.c_str());
-		passwordManager.enforce();
-	} catch (runtime::Exception &e) {
-		ERROR("Failed to set pattern");
-		return -1;
-	}
-
-	PasswordPattern = pattern;
-
-	return 0;
-}
-
-int PasswordPolicy::Private::reset(const std::string &passwd)
-{
-	try {
-		PasswordManager passwordManager(context.getPeerUid());
-		passwordManager.resetPassword(passwd);
-	} catch (runtime::Exception &e) {
-		ERROR(e.what());
-		return -1;
-	}
-
-	return 0;
-}
-
-int PasswordPolicy::Private::enforceChange()
-{
-	int ret = 0;
-	bundle *b = ::bundle_create();
-	::bundle_add_str(b, "id", "password-enforce-change");
-
-	ret = ::aul_launch_app_for_uid("org.tizen.dpm-syspopup", b, context.getPeerUid());
-	::bundle_free(b);
-
-	if (ret < 0) {
-		ERROR("Failed to launch Password Application.");
-		return -1;
-	}
-
-	PasswordStatus[context.getPeerUid()] = DPM_PASSWORD_STATUS_CHANGE_REQUIRED;
-	return 0;
-}
-
-int PasswordPolicy::Private::setMaxInactivityTimeDeviceLock(int value)
-{
-	try {
-		setPasswordPolicy(context, "password-inactivity-timeout", value);
-	} catch (runtime::Exception &e) {
-		ERROR(e.what());
-		return -1;
-	}
-	return 0;
-}
-
-int PasswordPolicy::Private::getMaxInactivityTimeDeviceLock()
-{
-	return getPasswordPolicy(context, "password-inactivity-timeout");
-}
-
-int PasswordPolicy::Private::setStatus(int status)
-{
-	if (status >= DPM_PASSWORD_STATUS_MAX) {
-		return -1;
-	}
-
-	PasswordStatus[context.getPeerUid()] = status;
-	context.notify("password", "password-status");
-
-	return 0;
-}
-
-int PasswordPolicy::Private::getStatus()
-{
-	return PasswordStatus[context.getPeerUid()];
-}
-
-int PasswordPolicy::Private::deletePattern()
-{
-	try {
-		PasswordManager passwordManager(context.getPeerUid());
-		passwordManager.deletePatern();
-		passwordManager.enforce();
-		PasswordPattern.clear();
-	} catch (runtime::Exception &e) {
-		ERROR(e.what());
-		return -1;
-	}
-
-	return 0;
-}
-
-std::string PasswordPolicy::Private::getPattern()
-{
-	return PasswordPattern;
-}
-
-int PasswordPolicy::Private::setMaximumCharacterOccurrences(int value)
-{
-	try {
-		if (!setPasswordPolicy(context, "password-maximum-character-occurrences", (value == 0) ? INT_MAX : value)) {
-			return 0;
-		}
-
-		PasswordManager passwordManager(context.getPeerUid());
-		passwordManager.setMaximumCharacterOccurrences(value);
-		passwordManager.enforce();
-	} catch (runtime::Exception &e) {
-		ERROR(e.what());
-		return -1;
-	}
-	return 0;
-}
-
-int PasswordPolicy::Private::getMaximumCharacterOccurrences()
-{
-	unsigned int result = getPasswordPolicy(context, "password-maximum-character-occurrences");
-	return (result == INT_MAX) ? 0 : result;
-}
-
-int PasswordPolicy::Private::setMaximumNumericSequenceLength(int value)
-{
-	try {
-		if (!setPasswordPolicy(context, "password-numeric-sequences-length", (value == 0) ? INT_MAX : value)) {
-			return 0;
-		}
-
-		PasswordManager passwordManager(context.getPeerUid());
-		passwordManager.setMaximumNumericSequenceLength(value);
-		passwordManager.enforce();
-	} catch (runtime::Exception &e) {
-		ERROR(e.what());
-		return -1;
-	}
-	return 0;
-}
-
-int PasswordPolicy::Private::getMaximumNumericSequenceLength()
-{
-	unsigned int result = getPasswordPolicy(context, "password-numeric-sequences-length");
-	return (result == INT_MAX) ? 0 : result;
-}
-
-int PasswordPolicy::Private::setForbiddenStrings(const std::vector<std::string> &forbiddenStrings)
-{
-	try {
-		PasswordManager passwordManager(context.getPeerUid());
-
-		passwordManager.setForbiddenStrings(forbiddenStrings);
-		passwordManager.enforce();
-	} catch (runtime::Exception &e) {
-		ERROR(e.what());
-		return -1;
-	}
-
-	std::copy(forbiddenStrings.begin(), forbiddenStrings.end(), std::back_inserter(ForbiddenStrings));
-
-	return 0;
-}
-
-std::vector<std::string> PasswordPolicy::Private::getForbiddenStrings()
-{
-	return ForbiddenStrings;
-}
-
-int PasswordPolicy::Private::setRecovery(int enable)
-{
-	try {
-		setPasswordPolicy(context, "password-recovery", enable);
-	} catch (runtime::Exception &e) {
-		ERROR("Failed to set recovery");
-		return -1;
-	}
-
-	return 0;
-}
-
-int PasswordPolicy::Private::getRecovery()
-{
-	return getPasswordPolicy(context, "password-recovery");
+	context.createNotification("password");
 }
 
 PasswordPolicy::PasswordPolicy(PasswordPolicy&& rhs) = default;
@@ -502,8 +419,6 @@ PasswordPolicy::PasswordPolicy(PolicyControlContext &context) :
 	context.expose(this, DPM_PRIVILEGE_PASSWORD, (int)(PasswordPolicy::getMaximumNumericSequenceLength)());
 	context.expose(this, DPM_PRIVILEGE_PASSWORD, (std::vector<std::string>)(PasswordPolicy::getForbiddenStrings)());
 	context.expose(this, "", (int)(PasswordPolicy::getRecovery)());
-
-	context.createNotification("password");
 }
 
 PasswordPolicy::~PasswordPolicy()
@@ -512,147 +427,286 @@ PasswordPolicy::~PasswordPolicy()
 
 int PasswordPolicy::setQuality(int quality)
 {
-	return pimpl->setQuality(quality);
+	try {
+		pimpl->setPolicy(pimpl->quality, canonicalize(quality));
+		if (quality & DPM_PASSWORD_QUALITY_SIMPLE_PASSWORD) {
+			pimpl->setPolicy(pimpl->length, canonicalize(simplePasswordLength));
+		}
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 int PasswordPolicy::getQuality()
 {
-	return pimpl->getQuality();
+	int value = pimpl->getPolicy(pimpl->quality);
+	return canonicalize(value);
 }
 
 int PasswordPolicy::setMinimumLength(int value)
 {
-	return pimpl->setMinimumLength(value);
+	try {
+		value = canonicalize(value);
+		pimpl->setPolicy(pimpl->length, value);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 int PasswordPolicy::getMinimumLength()
 {
-	return pimpl->getMinimumLength();
+	int value = pimpl->getPolicy(pimpl->length);
+	return canonicalize(value);
 }
 
 int PasswordPolicy::setMinComplexChars(int value)
 {
-	return pimpl->setMinComplexChars(value);
+	try {
+		value = canonicalize(value);
+		pimpl->setPolicy(pimpl->complexity, value);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 int PasswordPolicy::getMinComplexChars()
 {
-	return pimpl->getMinComplexChars();
+	int value = pimpl->getPolicy(pimpl->complexity);
+	return canonicalize(value);
 }
 
 int PasswordPolicy::setMaximumFailedForWipe(int value)
 {
-	return pimpl->setMaximumFailedForWipe(value);
+	try {
+		value = value == 0 ? infinite : value;
+		pimpl->setPolicy(pimpl->failureCount, value);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 int PasswordPolicy::getMaximumFailedForWipe()
 {
-	return pimpl->getMaximumFailedForWipe();
+	int value = pimpl->getPolicy(pimpl->failureCount);
+	return value == infinite ? 0 : value;
 }
 
 int PasswordPolicy::setExpires(int value)
 {
-	return pimpl->setExpires(value);
+	try {
+		value = value == 0 ? infinite : value;
+		pimpl->setPolicy(pimpl->expire, value);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 int PasswordPolicy::getExpires()
 {
-	return pimpl->getExpires();
+	int value = pimpl->getPolicy(pimpl->expire);
+	return value == infinite ? 0 : value;
 }
 
 int PasswordPolicy::setHistory(int value)
 {
-	return pimpl->setHistory(value);
+	try {
+		value = canonicalize(value);
+		pimpl->setPolicy(pimpl->history, value);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 int PasswordPolicy::getHistory()
 {
-	return pimpl->getHistory();
+	int value = pimpl->getPolicy(pimpl->history);
+	return canonicalize(value);
 }
 
 int PasswordPolicy::setPattern(const std::string &pattern)
 {
-	return pimpl->setPattern(pattern);
+	try {
+		pimpl->setPolicy(pimpl->pattern, pattern);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 int PasswordPolicy::reset(const std::string &passwd)
 {
-	return pimpl->reset(passwd);
+	try {
+		PolicyControlContext& ctx = pimpl->context;
+		PasswordManager passwordManager(ctx.getPeerUid());
+		passwordManager.resetPassword(passwd);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 int PasswordPolicy::enforceChange()
 {
-	return pimpl->enforceChange();
+	try {
+		Bundle bundle;
+		bundle.add("id", "password-enforce-change");
+
+		PolicyControlContext& ctx = pimpl->context;
+
+		Launchpad launchpad(ctx.getPeerUid());
+		launchpad.launch("org.tizen.dpm-syspopup", bundle);
+		passwordStatus[ctx.getPeerUid()] = DPM_PASSWORD_STATUS_CHANGE_REQUIRED;
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 int PasswordPolicy::setMaxInactivityTimeDeviceLock(int value)
 {
-	return pimpl->setMaxInactivityTimeDeviceLock(value);
+	try {
+		value = value == 0 ? infinite : value;
+		pimpl->setPolicy(pimpl->timeout, value);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 int PasswordPolicy::getMaxInactivityTimeDeviceLock()
 {
-	return pimpl->getMaxInactivityTimeDeviceLock();
+	int value = pimpl->getPolicy(pimpl->timeout);
+	return value == infinite ? 0 : value;
 }
 
 int PasswordPolicy::setStatus(int status)
 {
-	return pimpl->setStatus(status);
+	if (status >= DPM_PASSWORD_STATUS_MAX) {
+		ERROR("Invalid password status");
+		return -1;
+	}
+
+	PolicyControlContext& ctx = pimpl->context;
+	passwordStatus[ctx.getPeerUid()] = status;
+	ctx.notify("password", "password-status");
+
+	return 0;
 }
 
 int PasswordPolicy::getStatus()
 {
-	return pimpl->getStatus();
+	PolicyControlContext& ctx = pimpl->context;
+	return passwordStatus[ctx.getPeerUid()];
 }
 
 int PasswordPolicy::deletePattern()
 {
-	return pimpl->deletePattern();
+	try {
+		pimpl->setPolicy(pimpl->pattern, "");
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 std::string PasswordPolicy::getPattern()
 {
-	return pimpl->getPattern();
+	return std::string(pimpl->getPolicy(pimpl->pattern));
 }
 
 int PasswordPolicy::setMaximumCharacterOccurrences(int value)
 {
-	return pimpl->setMaximumCharacterOccurrences(value);
+	try {
+		value = value == 0 ? infinite : value;
+		pimpl->setPolicy(pimpl->occurrences, value);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 int PasswordPolicy::getMaximumCharacterOccurrences()
 {
-	return pimpl->getMaximumCharacterOccurrences();
+	int value = pimpl->getPolicy(pimpl->occurrences);
+	return value == infinite ? 0 : value;
 }
 
 int PasswordPolicy::setMaximumNumericSequenceLength(int value)
 {
-	return pimpl->setMaximumNumericSequenceLength(value);
+	try {
+		value = value == 0 ? infinite : value;
+		pimpl->setPolicy(pimpl->sequences, value);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 int PasswordPolicy::getMaximumNumericSequenceLength()
 {
-	return pimpl->getMaximumNumericSequenceLength();
+	int value = pimpl->getPolicy(pimpl->sequences);
+	return value == infinite ? 0 : value;
 }
 
 int PasswordPolicy::setForbiddenStrings(const std::vector<std::string> &forbiddenStrings)
 {
-	return pimpl->setForbiddenStrings(forbiddenStrings);
+	return 0;
 }
 
 std::vector<std::string> PasswordPolicy::getForbiddenStrings()
 {
-	return pimpl->getForbiddenStrings();
+	return std::vector<std::string>();
 }
 
 int PasswordPolicy::setRecovery(int enable)
 {
-	return pimpl->setRecovery(enable);
+	try {
+		enable = canonicalize(enable);
+		pimpl->setPolicy(pimpl->recovery, enable);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 int PasswordPolicy::getRecovery()
 {
-	return pimpl->getRecovery();
+	int value = pimpl->getPolicy(pimpl->recovery);
+	return canonicalize(value);
 }
 
 DEFINE_POLICY(PasswordPolicy);

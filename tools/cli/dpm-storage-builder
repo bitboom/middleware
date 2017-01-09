@@ -1,0 +1,77 @@
+#! /bin/bash
+
+PATH=/usr/bin:/bin/usr/sbin:/sbin
+
+DB_PATH="/opt/dbspace/.dpm.db"
+DB_UID="security_fw"
+DB_GID="security_fw"
+SECURITY_LABLE="System"
+
+rm -f ${DB_PATH}
+
+sqlite3 ${DB_PATH} \
+"CREATE TABLE IF NOT EXISTS admin ( \
+    id        INTEGER PRIMARY KEY AUTOINCREMENT, \
+    pkg       TEXT NOT NULL, \
+    uid       INTEGER, \
+    key       TEXT, \
+    removable INTEGER \
+); \
+CREATE TABLE IF NOT EXISTS managed_policy ( \
+    id        INTEGER PRIMARY KEY AUTOINCREMENT, \
+    aid       INTEGER, \
+    pid       INTEGER, \
+    value     INTEGER  \
+); \
+CREATE TABLE IF NOT EXISTS policy_definition ( \
+    id        INTEGER PRIMARY KEY AUTOINCREMENT, \
+    scope     INTEGER, \
+    name      TEXT NOT NULL, \
+    ivalue    INTEGER \
+); \
+CREATE TRIGGER IF NOT EXISTS prepare_storage AFTER INSERT ON admin \
+FOR EACH ROW \
+BEGIN \
+INSERT INTO managed_policy(aid, pid, value) \
+SELECT NEW.ID, policy_definition.id, policy_definition.ivalue \
+FROM policy_definition; \
+END; \
+CREATE TRIGGER IF NOT EXISTS remove_storage AFTER DELETE ON admin \
+FOR EACH ROW \
+BEGIN \
+DELETE FROM managed_policy WHERE managed_policy.aid = OLD.ID; \
+END; \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (1, 'password-history', 0); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (1, 'password-minimum-length', 0); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (1, 'password-minimum-complexity', 0); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (1, 'password-inactivity-timeout', 32767); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (1, 'password-expired', 32767); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (1, 'password-maximum-failure-count', 32767); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (1, 'password-numeric-sequences-length', 32767); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (1, 'password-maximum-character-occurrences', 32767); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (1, 'password-quality', 0); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (1, 'password-recovery', 0); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (1, 'password-pattern', ''); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (1, 'browser', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (1, 'clipboard', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'bluetooth', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'bluetooth-tethering', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'bluetooth-desktop-connectivity', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'bluetooth-pairing', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'bluetooth-uuid-restriction', 0); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'bluetooth-device-restriction', 0); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'camera', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'external-storage', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'location', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'messaging', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'microphone', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'popimap-email', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'usb-debugging', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'usb-tethering', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'wifi', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'wifi-hotspot', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'wifi-profile-change', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'wifi-ssid-restriction', 0);"
+
+chown ${DB_UID}:${DB_GID} ${DB_PATH}*
+chsmack -a ${SECURITY_LABLE} ${DB_PATH}*

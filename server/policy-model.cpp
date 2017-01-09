@@ -14,14 +14,4 @@
  *  limitations under the License
  */
 
-#ifndef __DPM_DATASOURCE_H__
-#define __DPM_DATASOURCE_H__
-
-#include <klay/db/connection.h>
-#include <klay/db/statement.h>
-#include <klay/db/column.h>
-#include <klay/audit/logger.h>
-
-typedef database::Connection DataSource;
-
-#endif //__DPM_DATASOURCE_H__
+#include "policy-model.h"

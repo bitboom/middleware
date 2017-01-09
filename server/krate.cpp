@@ -58,12 +58,12 @@ struct KratePolicy::Private {
 			return false;
 		}
 
-		bool exists = false;
+		bool exists;
 		try {
 			runtime::User user(name);
 			exists = true;
 		} catch (runtime::Exception& e) {
-			return false;
+			exists = false;
 		}
 
 		return !exists;
@@ -113,10 +113,6 @@ KratePolicy::~KratePolicy()
 int KratePolicy::createKrate(const std::string& name, const std::string& setupWizAppid)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (!std::regex_match(name, krateNamePattern)) {
-		return -1;
-	}
-
 	if (!pimpl->isAllowedName(name)) {
 		return -1;
 	}

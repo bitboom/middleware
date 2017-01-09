@@ -1,5 +1,7 @@
 [Unit]
 Description=Device Policy Manager
+Wants=lbs-server.service net-config.service pulseaudio.service
+After=lbs-server.service net-config.service pulseaudio.service
 
 [Service]
 Type=simple

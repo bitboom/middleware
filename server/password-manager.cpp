@@ -75,9 +75,9 @@ void PasswordManager::setHistory(int value)
 	}
 }
 
-void PasswordManager::setPattern(const std::string &pattern)
+void PasswordManager::setPattern(const char* pattern)
 {
-	if (auth_passwd_set_pattern(p_policy, pattern.c_str()) != AUTH_PASSWD_API_SUCCESS) {
+	if (auth_passwd_set_pattern(p_policy, pattern) != AUTH_PASSWD_API_SUCCESS) {
 		throw runtime::Exception("Failed to set pattern");
 	}
 }

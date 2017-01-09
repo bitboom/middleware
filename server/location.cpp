@@ -18,14 +18,35 @@
 
 #include "privilege.h"
 #include "policy-builder.h"
+#include "policy-model.h"
 
 #include "location.hxx"
 
 namespace DevicePolicyManager {
 
-struct LocationPolicy::Private {
-	Private(PolicyControlContext& ctxt) : context(ctxt) {}
-	PolicyControlContext& context;
+class LocationEnforceModel : public BaseEnforceModel {
+public:
+	LocationEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, name)
+	{
+	}
+
+	bool operator()(bool enable)
+	{
+		if (location_manager_enable_restriction(!enable) == LOCATIONS_ERROR_NONE) {
+			notify(enable == 0 ? "disallowed" : "allowed");
+			return true;
+		}
+
+		return false;
+	}
+};
+
+typedef GlobalPolicy<int, LocationEnforceModel> LocationStatePolicy;
+
+struct LocationPolicy::Private : public PolicyHelper {
+	Private(PolicyControlContext& ctxt) : PolicyHelper(ctxt) {}
+	LocationStatePolicy location{context, "location"};
 };
 
 LocationPolicy::LocationPolicy(LocationPolicy&& rhs) = default;
@@ -54,8 +75,6 @@ LocationPolicy::LocationPolicy(PolicyControlContext& context) :
 {
 	context.expose(this, DPM_PRIVILEGE_LOCATION, (int)(LocationPolicy::setLocationState)(bool));
 	context.expose(this, "", (bool)(LocationPolicy::getLocationState)());
-
-	context.createNotification("location");
 }
 
 LocationPolicy::~LocationPolicy()
@@ -64,13 +83,10 @@ LocationPolicy::~LocationPolicy()
 
 int LocationPolicy::setLocationState(bool enable)
 {
-	PolicyControlContext& context = pimpl->context;
-
-	if (!SetPolicyAllowed(context, "location", enable)) {
-		return 0;
-	}
-
-	if (location_manager_enable_restriction(!enable) != LOCATIONS_ERROR_NONE) {
+	try {
+		pimpl->setPolicy(pimpl->location, enable);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
 		return -1;
 	}
 
@@ -79,9 +95,7 @@ int LocationPolicy::setLocationState(bool enable)
 
 bool LocationPolicy::getLocationState()
 {
-	PolicyControlContext& context = pimpl->context;
-
-	return context.getPolicy<int>("location");
+	return pimpl->getPolicy(pimpl->location);
 }
 
 DEFINE_POLICY(LocationPolicy);

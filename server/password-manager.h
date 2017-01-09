@@ -36,7 +36,7 @@ public:
 	void setMaximumFailedForWipe(int value);
 	void setExpires(int value);
 	void setHistory(int value);
-	void setPattern(const std::string &pattern);
+	void setPattern(const char* pattern);
 	void deletePatern();
 	void setMaximumCharacterOccurrences(int value);
 	void setMaximumNumericSequenceLength(int value);

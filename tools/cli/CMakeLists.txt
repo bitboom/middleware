@@ -15,7 +15,7 @@
 #
 SET(DPM_ADMIN_CLI_TARGET	"dpm-admin-cli")
 SET(DPM_SYSPOPUP_TARGET		"dpm-syspopup")
-SET(DPM_PREFERENCE_TARGET	"dpm-preference")
+SET(DPM_PREFERENCE_TARGET	"dpm-storage-builder")
 
 SET(DPM_ADMIN_CLI_SOURCES dpm-admin-cli.cpp)
 

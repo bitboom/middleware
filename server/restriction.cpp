@@ -14,13 +14,13 @@
  *  limitations under the License
  */
 
-#include <vconf.h>
 #include <klay/exception.h>
 #include <klay/dbus/connection.h>
 #include <klay/audit/logger.h>
 
 #include "privilege.h"
 #include "policy-builder.h"
+#include "policy-model.h"
 
 #include "restriction.hxx"
 
@@ -37,49 +37,106 @@
 
 namespace DevicePolicyManager {
 
-namespace {
-
-std::vector<std::string> restrictionNotifications = {
-	"camera",
-	"clipboard",
-	"external-storage",
-	"microphone",
-	"usb-debugging",
-	"usb-tethering",
-	"popimap-email",
-	"messaging",
-	"browser"
-};
-
-} // namespace
-
-struct RestrictionPolicy::Private {
-	Private(PolicyControlContext& ctxt) :
-		context(ctxt)
+class RecordingEnforceModel : public BaseEnforceModel {
+public:
+	RecordingEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, name)
 	{
 	}
 
-	int setState(const std::string& name, int allow, bool* updated = nullptr)
+	bool operator()(bool value)
 	{
+		char *result = NULL;
 		try {
-			bool ret = SetPolicyAllowed(context, name, allow);
-			if (updated) {
-				*updated = ret;
-			}
+			dbus::Connection &systemDBus = dbus::Connection::getSystem();
+			systemDBus.methodcall(PULSEAUDIO_LOGIN_INTERFACE,
+								  "UpdateRestriction",
+								  -1,
+								  "(s)",
+								  "(su)",
+								  "block_recording_media",
+								  !value).get("(s)", &result);
 		} catch (runtime::Exception& e) {
-			ERROR("Failed to set " << name << "policy");
-			return -1;
+			ERROR("Failed to enforce microphone policy");
+			return false;
 		}
 
-		return 0;
-	}
+		if (strcmp(result, "STREAM_MANAGER_RETURN_OK") != 0) {
+			return false;
+		}
 
-	bool getState(const std::string& name)
+		notify(value == 0 ? "disallowed" : "allowed");
+		return true;
+	}
+};
+
+class StorageEnforceModel : public BaseEnforceModel {
+public:
+	StorageEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, name)
 	{
-		return context.getPolicy<int>(name);
 	}
 
-	PolicyControlContext& context;
+	bool operator()(bool value)
+	{
+		int ret;
+		try {
+			std::string pid(std::to_string(::getpid()));
+			std::string state(std::to_string(value));
+			dbus::Connection &systemDBus = dbus::Connection::getSystem();
+			systemDBus.methodcall(DEVICED_SYSNOTI_INTERFACE,
+								  -1, "(i)", "(sisss)",
+								  "control", 3, pid.c_str(), "2", state.c_str()).get("(i)", &ret);
+		} catch(runtime::Exception& e) {
+			ERROR("Failed to enforce external storage policy");
+			return false;
+		}
+
+		if (ret == 0) {
+			notify(value == 0 ? "disallowed" : "allowed");
+			return true;
+		}
+
+		return false;
+	}
+};
+
+class StateEnforceModel : public BaseEnforceModel {
+public:
+	StateEnforceModel(PolicyControlContext& ctxt, const std::string& name) :
+		BaseEnforceModel(ctxt, name)
+	{
+	}
+
+	bool operator()(bool value, uid_t domain = 0)
+	{
+		notify(value == 0 ? "disallowed" : "allowed");
+		return true;
+	}
+};
+
+typedef GlobalPolicy<int, StorageEnforceModel> ExternalStoragePolicy;
+typedef GlobalPolicy<int, RecordingEnforceModel> MicrophonePolicy;
+typedef GlobalPolicy<int, StateEnforceModel> CameraPolicy;
+typedef GlobalPolicy<int, StateEnforceModel> UsbDebuggingPolicy;
+typedef GlobalPolicy<int, StateEnforceModel> UsbTetheringPolicy;
+typedef GlobalPolicy<int, StateEnforceModel> EmailPolicy;
+typedef GlobalPolicy<int, StateEnforceModel> MessagingPolicy;
+typedef DomainPolicy<int, StateEnforceModel> ClipboardPolicy;
+typedef DomainPolicy<int, StateEnforceModel> BrowserPolicy;
+
+struct RestrictionPolicy::Private : public PolicyHelper {
+	Private(PolicyControlContext& ctxt) : PolicyHelper(ctxt) {}
+
+	CameraPolicy          camera{context, "camera"};
+	ClipboardPolicy       clipboard{context, "clipboard"};
+	ExternalStoragePolicy storage{context, "external-storage"};
+	MicrophonePolicy      microphone{context, "microphone"};
+	UsbDebuggingPolicy    usbDebugging{context, "usb-debugging"};
+	UsbTetheringPolicy    usbTethering{context, "usb-tethering"};
+	EmailPolicy           email{context, "popimap-email"};
+	MessagingPolicy       messaging{context, "messaging"};
+	BrowserPolicy         browser{context, "browser"};
 };
 
 RestrictionPolicy::RestrictionPolicy(RestrictionPolicy&& rhs) = default;
@@ -125,8 +182,6 @@ RestrictionPolicy::RestrictionPolicy(PolicyControlContext& context) :
 	context.expose(this, "", (bool)(RestrictionPolicy::getPopImapEmailState)());
 	context.expose(this, "", (bool)(RestrictionPolicy::getBrowserState)());
 	context.expose(this, "", (int)(RestrictionPolicy::getMessagingState)(std::string));
-
-	context.createNotification(restrictionNotifications);
 }
 
 RestrictionPolicy::~RestrictionPolicy()
@@ -135,41 +190,27 @@ RestrictionPolicy::~RestrictionPolicy()
 
 int RestrictionPolicy::setCameraState(bool enable)
 {
-	return pimpl->setState("camera", enable);
+	try {
+		pimpl->setPolicy(pimpl->camera, enable);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 bool RestrictionPolicy::getCameraState()
 {
-	return pimpl->getState("camera");
+	return pimpl->getPolicy(pimpl->camera);
 }
 
 int RestrictionPolicy::setMicrophoneState(bool enable)
 {
-	bool updated = false;
-	if (pimpl->setState("microphone", enable, &updated) != 0) {
-		return -1;
-	}
-
-	if (!updated) {
-		return 0;
-	}
-
-	char *result = NULL;
 	try {
-		dbus::Connection &systemDBus = dbus::Connection::getSystem();
-		systemDBus.methodcall(PULSEAUDIO_LOGIN_INTERFACE,
-							  "UpdateRestriction",
-							  -1,
-							  "(s)",
-							  "(su)",
-							  "block_recording_media",
-							  !enable).get("(s)", &result);
+		pimpl->setPolicy(pimpl->microphone, enable);
 	} catch (runtime::Exception& e) {
-		ERROR("Failed to enforce microphone policy");
-		return -1;
-	}
-
-	if (strcmp(result, "STREAM_MANAGER_RETURN_OK") != 0) {
+		ERROR(e.what());
 		return -1;
 	}
 
@@ -178,64 +219,66 @@ int RestrictionPolicy::setMicrophoneState(bool enable)
 
 bool RestrictionPolicy::getMicrophoneState()
 {
-	return pimpl->getState("microphone");
+	return pimpl->getPolicy(pimpl->microphone);
 }
 
 int RestrictionPolicy::setClipboardState(bool enable)
 {
-	return pimpl->setState("clipboard", enable);
+	try {
+		pimpl->setPolicy(pimpl->clipboard, enable);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 bool RestrictionPolicy::getClipboardState()
 {
-	return pimpl->getState("clipboard");
+	return pimpl->getPolicy(pimpl->clipboard);
 }
 
 int RestrictionPolicy::setUsbDebuggingState(bool enable)
 {
-	return pimpl->setState("usb-debugging", enable);
+	try {
+		pimpl->setPolicy(pimpl->usbDebugging, enable);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 bool RestrictionPolicy::getUsbDebuggingState()
 {
-	return pimpl->getState("usb-debugging");
+	return pimpl->getPolicy(pimpl->usbDebugging);
 }
 
 int RestrictionPolicy::setUsbTetheringState(bool enable)
 {
-	return pimpl->setState("usb-tethering", enable);
+	try {
+		pimpl->setPolicy(pimpl->usbTethering, enable);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 bool RestrictionPolicy::getUsbTetheringState()
 {
-	return pimpl->getState("usb-tethering");
+	return pimpl->getPolicy(pimpl->usbTethering);
 }
 
 int RestrictionPolicy::setExternalStorageState(bool enable)
 {
-	bool updated = false;
-	if (pimpl->setState("external-storage", enable, &updated) != 0) {
-		return -1;
-	}
-
-	if (!updated) {
-		return 0;
-	}
-
-	int ret;
 	try {
-		std::string pid(std::to_string(::getpid()));
-		std::string state(std::to_string(enable));
-		dbus::Connection &systemDBus = dbus::Connection::getSystem();
-		systemDBus.methodcall(DEVICED_SYSNOTI_INTERFACE,
-							  -1, "(i)", "(sisss)",
-							  "control", 3, pid.c_str(), "2", state.c_str()).get("(i)", &ret);
-	} catch(runtime::Exception& e) {
-		ERROR("Failed to enforce external storage policy");
-		return -1;
-	}
-
-	if (ret != 0) {
+		pimpl->setPolicy(pimpl->storage, enable);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
 		return -1;
 	}
 
@@ -244,37 +287,58 @@ int RestrictionPolicy::setExternalStorageState(bool enable)
 
 bool RestrictionPolicy::getExternalStorageState()
 {
-	return pimpl->getState("external-storage");
+	return pimpl->getPolicy(pimpl->storage);
 }
 
 int RestrictionPolicy::setPopImapEmailState(bool enable)
 {
-	return pimpl->setState("popimap-email", enable);
+	try {
+		pimpl->setPolicy(pimpl->email, enable);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 bool RestrictionPolicy::getPopImapEmailState()
 {
-	return pimpl->getState("popimap-email");
+	return pimpl->getPolicy(pimpl->email);
 }
 
 int RestrictionPolicy::setMessagingState(const std::string& sim_id, bool enable)
 {
-	return pimpl->setState("messaging", enable);
+	try {
+		pimpl->setPolicy(pimpl->messaging, enable);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 bool RestrictionPolicy::getMessagingState(const std::string& sim_id)
 {
-	return pimpl->getState("messaging");
+	return pimpl->getPolicy(pimpl->messaging);
 }
 
 int RestrictionPolicy::setBrowserState(bool enable)
 {
-	return pimpl->setState("browser", enable);
+	try {
+		pimpl->setPolicy(pimpl->browser, enable);
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+
+	return 0;
 }
 
 bool RestrictionPolicy::getBrowserState()
 {
-	return pimpl->getState("browser");
+	return pimpl->getPolicy(pimpl->browser);
 }
 
 DEFINE_POLICY(RestrictionPolicy);

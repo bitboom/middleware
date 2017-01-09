@@ -23,7 +23,27 @@
 #include <climits>
 #include <functional>
 
+#include "client-manager.h"
 #include "policy-context.hxx"
+
+struct PolicyHelper {
+	PolicyHelper(PolicyControlContext& ctxt) : context(ctxt) {}
+
+	template<typename U, typename V>
+	void setPolicy(U& policy, const V& value)
+	{
+		DeviceAdministrator admin(context);
+		policy.set(admin.getName(), admin.getUid(), value);
+	}
+
+	template<typename U>
+	typename U::valueType getPolicy(U& policy)
+	{
+		return policy.get(context.getPeerUid());
+	}
+
+	PolicyControlContext& context;
+};
 
 extern std::vector<std::function<void(PolicyControlContext& context)>> policyBuilder;
 
@@ -38,16 +58,6 @@ struct PolicyBuilder {
 
 	std::unique_ptr<T> instance;
 };
-
-inline bool SetPolicyAllowed(PolicyControlContext& context, const std::string& name, int allow)
-{
-	return context.setPolicy<int>(name, allow, name, allow ? "allowed" : "disallowed");
-}
-
-inline bool SetPolicyEnabled(PolicyControlContext& context, const std::string& name, int enable)
-{
-	return context.setPolicy<int>(name, enable, name, enable ? "enabled" : "disabled");
-}
 
 inline void PolicyBuild(PolicyControlContext& context)
 {

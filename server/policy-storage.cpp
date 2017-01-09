@@ -14,160 +14,93 @@
  *  limitations under the License
  */
 
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
-#include <klay/error.h>
-#include <klay/exception.h>
-#include <klay/xml/parser.h>
-#include <klay/audit/logger.h>
-
 #include "policy-storage.h"
-#include "policy-context.hxx"
 
-namespace {
+std::shared_ptr<database::Connection> PolicyStorage::database;
+Observerable PolicyStorage::listeners;
 
-const std::string defaultPolicyTemplate =
-"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-"<manifest>\n"
-"	<policy-version>0.1.0</policy-version>\n"
-"	<policy-group name=\"application\">\n"
-"		<policy name=\"package-installation-mode\">0</policy>\n"
-"		<policy name=\"package-uninstallation-mode\">0</policy>\n"
-"	</policy-group>\n"
-"	<policy-group name=\"password\">\n"
-"		<policy name=\"password-quality\">0</policy>\n"
-"		<policy name=\"password-minimum-length\">0</policy>\n"
-"		<policy name=\"password-maximum-failure-count\">0</policy>\n"
-"		<policy name=\"password-expired\">0</policy>\n"
-"		<policy name=\"password-minimum-complexity\">0</policy>\n"
-"		<policy name=\"password-history\">0</policy>\n"
-"		<policy name=\"password-recovery\">0</policy>\n"
-"		<policy name=\"password-lock-delay\">0</policy>\n"
-"		<policy name=\"password-inactivity-timeout\">1000</policy>\n"
-"		<policy name=\"password-status\">0</policy>\n"
-"		<policy name=\"password-change-timeout\">0</policy>\n"
-"		<policy name=\"password-maximum-character-occurrences\">0</policy>\n"
-"		<policy name=\"password-numeric-sequences-length\">0</policy>\n"
-"	</policy-group>\n"
-"	<policy-group name=\"security\">\n"
-"		<policy name=\"internal-storage-encryption\">0</policy>\n"
-"		<policy name=\"external-storage-encryption\">0</policy>\n"
-"	</policy-group>\n"
-"	<policy-group name=\"wifi\">\n"
-"		<policy name=\"wifi-profile-change\">1</policy>\n"
-"		<policy name=\"wifi-ssid-restriction\">0</policy>\n"
-"	</policy-group>\n"
-"	<policy-group name=\"bluetooth\">\n"
-"		<policy name=\"bluetooth-pairing\">1</policy>\n"
-"		<policy name=\"bluetooth-outgoing-call\">1</policy>\n"
-"		<policy name=\"bluetooth-profile-a2dp\">1</policy>\n"
-"		<policy name=\"bluetooth-profile-avrcp\">1</policy>\n"
-"		<policy name=\"bluetooth-profile-bpp\">1</policy>\n"
-"		<policy name=\"bluetooth-profile-dun\">1</policy>\n"
-"		<policy name=\"bluetooth-profile-ftp\">1</policy>\n"
-"		<policy name=\"bluetooth-profile-hfp\">1</policy>\n"
-"		<policy name=\"bluetooth-profile-hsp\">1</policy>\n"
-"		<policy name=\"bluetooth-profile-pbap\">1</policy>\n"
-"		<policy name=\"bluetooth-profile-sap\">1</policy>\n"
-"		<policy name=\"bluetooth-profile-spp\">1</policy>\n"
-"		<policy name=\"bluetooth-desktop-connectivity\">1</policy>\n"
-"		<policy name=\"bluetooth-descoverable\">1</policy>\n"
-"		<policy name=\"bluetooth-limited-discoverable\">1</policy>\n"
-"		<policy name=\"bluetooth-data-transfer\">1</policy>\n"
-"		<policy name=\"bluetooth-uuid-restriction\">0</policy>\n"
-"		<policy name=\"bluetooth-device-restriction\">0</policy>\n"
-"	</policy-group>\n"
-"	<policy-group name=\"restriction\">\n"
-"		<policy name=\"wifi\">1</policy>\n"
-"		<policy name=\"wifi-hotspot\">1</policy>\n"
-"		<policy name=\"bluetooth\">1</policy>\n"
-"		<policy name=\"camera\">1</policy>\n"
-"		<policy name=\"microphone\">1</policy>\n"
-"		<policy name=\"location\">1</policy>\n"
-"		<policy name=\"external-storage\">1</policy>\n"
-"		<policy name=\"messaging\">1</policy>\n"
-"		<policy name=\"popimap-email\">1</policy>\n"
-"		<policy name=\"browser\">1</policy>\n"
-"		<policy name=\"bluetooth-tethering\">1</policy>\n"
-"		<policy name=\"clipboard\">1</policy>\n"
-"		<policy name=\"screen-capture\">1</policy>\n"
-"		<policy name=\"usb-debugging\">1</policy>\n"
-"		<policy name=\"usb-tethering\">1</policy>\n"
-"	</policy-group>\n"
-"</manifest>\n";
-
-std::string StorageLocator(const std::string& base, const std::string& name, uid_t uid)
+void PolicyStorage::open(const std::string& path)
 {
-	return base + "/" + name + "-" + std::to_string(uid) + ".xml";
+	database.reset(new database::Connection(path, database::Connection::ReadWrite |
+												  database::Connection::Create));
 }
 
-} // namespace
-
-PolicyStorage::PolicyStorage(const std::string& storage, const std::string& name, uid_t uid, bool create) :
-	user(uid), owner(name), location(StorageLocator(storage, name, uid)), data(nullptr)
+void PolicyStorage::close()
 {
-	bool useDefaultPolicyTemplate = false;
+	database.reset();
+}
 
-	if (create) {
-		struct stat st;
-		if ((stat(location.c_str(), &st) == -1)) {
-			if (errno == ENOENT) {
-				useDefaultPolicyTemplate = true;
-			} else {
-				throw runtime::Exception(runtime::GetSystemErrorMessage());
-			}
-		}
+void PolicyStorage::apply()
+{
+	std::vector<uid_t> domains = getManagedDomainList();
+	listeners.notify(domains);
+}
+
+void PolicyStorage::addStorageEventListenr(Observer* listener)
+{
+	listeners.attach(listener);
+}
+
+void PolicyStorage::removeStorageEventListener(Observer* listener)
+{
+}
+
+DataSet PolicyStorage::prepare(const std::string& query)
+{
+	return DataSet(*database, query);
+}
+
+std::vector<uid_t> PolicyStorage::getManagedDomainList()
+{
+	std::vector<uid_t> managedDomains;
+	std::string query = "SELECT DISTINCT uid FROM admin;";
+	DataSet stmt = prepare(query);
+	while (stmt.step()) {
+		managedDomains.push_back(stmt.getColumn(0).getInt());
 	}
 
-	if (useDefaultPolicyTemplate)
-		data = std::unique_ptr<xml::Document>(xml::Parser::parseString(defaultPolicyTemplate));
-	else
-		data = std::unique_ptr<xml::Document>(xml::Parser::parseFile(location));
+	return managedDomains;
+}
 
-	xml::Node::NodeList nodes = data->evaluate("/manifest/policy-group/policy");
-	xml::Node::NodeList::iterator it = nodes.begin();
-	while (it != nodes.end()) {
-		policyMap.emplace(it->getProp("name"), std::move(*it));
-		++it;
+int PolicyStorage::prepareStorage(const std::string& admin, uid_t domain)
+{
+	std::string selectQuery = "SELECT * FROM admin WHERE pkg = ? AND uid = ?";
+	DataSet stmt0 = prepare(selectQuery);
+	stmt0.bind(1, admin);
+	stmt0.bind(2, static_cast<int>(domain));
+	if (stmt0.step()) {
+		ERROR("Admin client already registered");
+		return -1;
 	}
 
-	if (useDefaultPolicyTemplate)
-		flush();
-}
+	std::string key = "Not supported";
 
-PolicyStorage::~PolicyStorage()
-{
-}
-
-int PolicyStorage::getPolicy(const std::string& name)
-{
-	if (policyMap.count(name) == 0) {
-		throw runtime::Exception("Failed to find policy");
+	std::string insertQuery = "INSERT INTO admin (pkg, uid, key, removable) VALUES (?, ?, ?, ?)";
+	DataSet stmt = prepare(insertQuery);
+	stmt.bind(1, admin);
+	stmt.bind(2, static_cast<int>(domain));
+	stmt.bind(3, key);
+	stmt.bind(4, true);
+	if (!stmt.exec()) {
+		ERROR("I/O failure");
+		return -1;
 	}
 
-	return policyMap.at(name).getContent();
+	return 0;
 }
 
-void PolicyStorage::setPolicy(const std::string& name, int value)
+int PolicyStorage::removeStorage(const std::string& admin, uid_t domain)
 {
-	if (policyMap.count(name) == 0) {
-		throw runtime::Exception("Failed to find policy");
+	std::string query = "DELETE FROM admin WHERE pkg = ? AND uid = ?";
+	DataSet stmt = prepare(query);
+	stmt.bind(1, admin);
+	stmt.bind(2, static_cast<int>(domain));
+	if (!stmt.exec()) {
+		ERROR("Unknown device admin client: " + admin);
+		return -1;
 	}
 
-	policyMap.at(name).setContent(value);
+	listeners.notify({domain});
 
-	flush();
-}
-
-void PolicyStorage::flush()
-{
-	data->write(location, "UTF-8", true);
-}
-
-void PolicyStorage::remove()
-{
-	if (::unlink(location.c_str()) == -1)
-		::unlink(location.c_str());
+	return 0;
 }

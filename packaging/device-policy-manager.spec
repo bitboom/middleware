@@ -56,7 +56,7 @@ managing device policies.
 %attr(755,root,root) %{_bindir}/device-policy-manager
 %attr(700,root,root) %{_bindir}/dpm-admin-cli
 %attr(755,root,root) %{_bindir}/dpm-syspopup
-%attr(755,root,root) %{_bindir}/dpm-preference
+%attr(755,root,root) %{_bindir}/dpm-storage-builder
 %{_unitdir}/device-policy-manager.service
 %{_unitdir}/multi-user.target.wants/device-policy-manager.service
 
@@ -96,6 +96,9 @@ ln -s ../device-policy-manager.service %{buildroot}/%{_unitdir}/multi-user.targe
 
 %clean
 rm -rf %{buildroot}
+
+%post
+/usr/bin/dpm-storage-builder
 
 %preun
 

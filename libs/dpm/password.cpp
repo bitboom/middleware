@@ -30,6 +30,7 @@ using namespace DevicePolicyManager;
 EXPORT_API int dpm_password_set_quality(device_policy_manager_h handle, int quality)
 {
 	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(quality >= 0, DPM_ERROR_INVALID_PARAMETER);
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);
 	PasswordPolicy password = client.createPolicyInterface<PasswordPolicy>();
@@ -333,7 +334,7 @@ EXPORT_API int dpm_password_set_status(device_policy_manager_h handle, dpm_passw
 {
 	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
 	RET_ON_FAILURE(status >= DPM_PASSWORD_STATUS_NORMAL &&
-				   status <= DPM_PASSWORD_STATUS_MAX_ATTEMPTS_EXCEEDED,
+				   status <= DPM_PASSWORD_STATUS_PATTERN_CHANGED,
 				   DPM_ERROR_INVALID_PARAMETER);
 
 	DevicePolicyContext &client = GetDevicePolicyContext(handle);

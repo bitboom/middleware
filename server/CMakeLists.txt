@@ -22,7 +22,8 @@ SET(FOUNDATION		main.cpp
 					launchpad.cpp
 					packman.cpp
 					policy-builder.cpp
-					policy-manager.cpp
+					policy-storage.cpp
+					policy-model.cpp
 					syspopup.cpp
 					preference.cpp
 )

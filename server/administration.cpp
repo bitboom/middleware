@@ -17,6 +17,7 @@
 #include <klay/audit/logger.h>
 
 #include "policy-builder.h"
+#include "policy-storage.h"
 
 #include "administration.hxx"
 
@@ -61,10 +62,9 @@ AdministrationPolicy::~AdministrationPolicy()
 
 int AdministrationPolicy::registerPolicyClient(const std::string& name, uid_t uid)
 {
-	PolicyControlContext& context = pimpl->context;
 	int ret = -1;
 	try {
-		ret = context.getPolicyManager().prepareStorage(name, uid);
+		ret = PolicyStorage::prepareStorage(name, uid);
 	} catch (runtime::Exception& e) {
 		ERROR("Failed to register admin client");
 	}
@@ -74,10 +74,9 @@ int AdministrationPolicy::registerPolicyClient(const std::string& name, uid_t ui
 
 int AdministrationPolicy::deregisterPolicyClient(const std::string& name, uid_t uid)
 {
-	PolicyControlContext& context = pimpl->context;
 	int ret = -1;
 	try {
-		ret = context.getPolicyManager().removeStorage(name, uid);
+		ret = PolicyStorage::removeStorage(name, uid);
 	} catch (runtime::Exception& e) {
 		ERROR("Failed to deregister policy client");
 	}

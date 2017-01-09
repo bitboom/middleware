@@ -13,6 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+ #include <sys/types.h>
+ #include <sys/stat.h>
 
 #include <functional>
 
@@ -21,6 +23,7 @@
 
 #include "server.h"
 #include "policy-builder.h"
+#include "policy-storage.h"
 
 #include "exception.h"
 #include "filesystem.h"
@@ -37,7 +40,6 @@ const std::string POLICY_STORAGE_PATH = "/opt/dbspace/.dpm.db";
 
 Server::Server()
 {
-	policyManager.reset(new PolicyManager(POLICY_STORAGE_PATH));
 	service.reset(new rmi::Service(POLICY_MANAGER_ADDRESS));
 
 	service->setPrivilegeChecker(std::bind(&Server::checkPeerPrivilege, this, _1, _2));
@@ -52,9 +54,11 @@ Server::~Server()
 
 void Server::run()
 {
+	PolicyStorage::open(POLICY_STORAGE_PATH);
+
 	PolicyBuild(*this);
 
-	policyManager->apply();
+	PolicyStorage::apply();
 
 	::umask(0);
 	service->start(true);
@@ -100,4 +104,3 @@ bool Server::checkPeerPrivilege(const rmi::Credentials& cred, const std::string&
 
 	return true;
 }
-

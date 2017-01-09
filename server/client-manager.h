@@ -29,12 +29,14 @@
 
 #include <klay/exception.h>
 
+#include "policy-context.hxx"
+
 class DeviceAdministrator {
 public:
 	DeviceAdministrator(const DeviceAdministrator&) = delete;
 	DeviceAdministrator(DeviceAdministrator&&) = default;
-	DeviceAdministrator(const std::string& pkgid, uid_t user, const std::string& pk) :
-		name(pkgid), uid(user), key(pk)
+	DeviceAdministrator(PolicyControlContext& context) :
+		DeviceAdministrator(context.getPeerPid(), context.getPeerUid())
 	{
 	}
 
