@@ -190,7 +190,8 @@ void CertSvcServerComm(void)
 								   recv_data.gname,
 								   send_data.dataBlock);
 			send_data.dataBlockLen = strlen(send_data.dataBlock);
-			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+			result = send(client_sockfd, (char *)&send_data,
+						  sizeof(send_data), MSG_NOSIGNAL);
 			break;
 		}
 
@@ -199,7 +200,8 @@ void CertSvcServerComm(void)
 								   recv_data.gname,
 								   send_data.dataBlock);
 			send_data.dataBlockLen = strlen(send_data.dataBlock);
-			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+			result = send(client_sockfd, (char *)&send_data,
+						  sizeof(send_data), MSG_NOSIGNAL);
 			break;
 		}
 
@@ -211,7 +213,8 @@ void CertSvcServerComm(void)
 			if (send_data.result == CERTSVC_SUCCESS)
 				send_data.result = update_ca_certificate_file(NULL);
 
-			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+			result = send(client_sockfd, (char *)&send_data,
+						  sizeof(send_data), MSG_NOSIGNAL);
 			break;
 		}
 
@@ -220,7 +223,8 @@ void CertSvcServerComm(void)
 								   recv_data.storeType,
 								   recv_data.gname,
 								   &send_data.certStatus);
-			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+			result = send(client_sockfd, (char *)&send_data,
+						  sizeof(send_data), MSG_NOSIGNAL);
 			break;
 		}
 
@@ -234,7 +238,8 @@ void CertSvcServerComm(void)
 			if (send_data.result == CERTSVC_SUCCESS)
 				send_data.result = update_ca_certificate_file(NULL);
 
-			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+			result = send(client_sockfd, (char *)&send_data,
+						  sizeof(send_data), MSG_NOSIGNAL);
 			break;
 		}
 
@@ -243,7 +248,8 @@ void CertSvcServerComm(void)
 								   recv_data.storeType,
 								   recv_data.gname,
 								   &send_data.isAliasUnique);
-			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+			result = send(client_sockfd, (char *)&send_data,
+						  sizeof(send_data), MSG_NOSIGNAL);
 			break;
 		}
 
@@ -261,7 +267,8 @@ void CertSvcServerComm(void)
 					recv_data.certType == P12_TRUSTED))
 				send_data.result = update_ca_certificate_file(recv_data.dataBlock);
 
-			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+			result = send(client_sockfd, (char *)&send_data,
+						  sizeof(send_data), MSG_NOSIGNAL);
 			break;
 		}
 
@@ -275,10 +282,12 @@ void CertSvcServerComm(void)
 								   &certListBuffer,
 								   &bufferLen,
 								   &send_data.certCount);
-			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+			result = send(client_sockfd, (char *)&send_data,
+						  sizeof(send_data), MSG_NOSIGNAL);
 
 			if (bufferLen > 0)
-				result = send(client_sockfd, certListBuffer, bufferLen, 0);
+				result = send(client_sockfd, certListBuffer,
+							  bufferLen, MSG_NOSIGNAL);
 
 			break;
 		}
@@ -288,7 +297,8 @@ void CertSvcServerComm(void)
 								   recv_data.storeType,
 								   recv_data.gname,
 								   send_data.common_name);
-			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+			result = send(client_sockfd, (char *)&send_data,
+						  sizeof(send_data), MSG_NOSIGNAL);
 			break;
 		}
 
@@ -299,11 +309,12 @@ void CertSvcServerComm(void)
 								   &certBlockBuffer,
 								   &blockBufferLen,
 								   &send_data.certBlockCount);
-			result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+			result = send(client_sockfd, (char *)&send_data,
+						  sizeof(send_data), MSG_NOSIGNAL);
 
 			if (blockBufferLen > 0)
-				result = send(client_sockfd, certBlockBuffer, blockBufferLen, 0);
-
+				result = send(client_sockfd, certBlockBuffer,
+							  blockBufferLen, MSG_NOSIGNAL);
 			break;
 		}
 
@@ -323,7 +334,8 @@ Error_close_exit:
 	free(certBlockBuffer);
 
 	if (client_sockfd >= 0) {
-		result = send(client_sockfd, (char *)&send_data, sizeof(send_data), 0);
+		result = send(client_sockfd, (char *)&send_data,
+					  sizeof(send_data), MSG_NOSIGNAL);
 
 		if (result <= 0)
 			SLOGE("send failed :%d, errno %d try once", result, errno);
