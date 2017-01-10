@@ -332,43 +332,8 @@ int PasswordPolicy::setStatus(int status)
 		return -1;
 	}
 
-	switch (status) {
-	case DPM_PASSWORD_STATUS_CHANGED:
-		context.notify("password", "DPM_PASSWORD_STATUS_CHANGED");
-		break;
-	case DPM_PASSWORD_STATUS_NOT_CHANGED:
-		context.notify("password", "DPM_PASSWORD_STATUS_NOT_CHANGED");
-		break;
-	case DPM_PASSWORD_STATUS_CHANGE_REQUIRED:
-		context.notify("password", "DPM_PASSWORD_STATUS_CHANGE_REQUIRED");
-		break;
-	case DPM_PASSWORD_STATUS_MAX_ATTEMPTS_EXCEEDED:
-		context.notify("password", "DPM_PASSWORD_STATUS_MAX_ATTEMPTS_EXCEEDED");
-		break;
-	case DPM_PASSWORD_STATUS_EXPIRED:
-		context.notify("password", "DPM_PASSWORD_STATUS_EXPIRED");
-		break;
-	case DPM_PASSWORD_STATUS_RECOVERY_PASSWORD_FAILED:
-		context.notify("password", "DPM_PASSWORD_STATUS_RECOVERY_PASSWORD_FAILED");
-		break;
-	case DPM_PASSWORD_STATUS_RECOVERY_PASSWORD_SUCCEEDED:
-		context.notify("password", "DPM_PASSWORD_STATUS_RECOVERY_PASSWORD_SUCCEEDED");
-		break;
-	case DPM_PASSWORD_STATUS_QUALITY_CHANGED:
-		context.notify("password", "DPM_PASSWORD_STATUS_QUALITY_CHANGED");
-		break;
-	case DPM_PASSWORD_STATUS_MIN_LENGTH_CHANGED:
-		context.notify("password", "DPM_PASSWORD_STATUS_MIN_LENGTH_CHANGED");
-		break;
-	case DPM_PASSWORD_STATUS_COMPLEX_CHAR_CHANGED:
-		context.notify("password", "DPM_PASSWORD_STATUS_COMPLEX_CHAR_CHANGED");
-		break;
-	case DPM_PASSWORD_STATUS_PATTERN_CHANGED:
-		context.notify("password", "DPM_PASSWORD_STATUS_PATTERN_CHANGED");
-		break;
-	}
-
 	PasswordStatus[context.getPeerUid()] = status;
+	context.notify("password", "password-status");
 
 	return 0;
 }
