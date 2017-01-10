@@ -24,6 +24,9 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <klay/audit/logger.h>
+#include <klay/audit/dlog-sink.h>
+
 #include "preference.h"
 #include "syspopup.h"
 #include "server.h"
@@ -40,6 +43,9 @@ int main(int argc, char *argv[])
 	::umask(022);
 
 	try {
+		audit::Logger::setBackend(new audit::DlogLogSink());
+		audit::Logger::setTag("DPM");
+
 		PreferencesStore& instance = PreferencesStore::getInstance();
 		instance.load("/etc/device-policy-manager.ini");
 
