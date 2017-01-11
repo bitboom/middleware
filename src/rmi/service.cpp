@@ -33,6 +33,10 @@ Service::Service(const std::string& path) :
 {
 	setNewConnectionCallback(nullptr);
 	setCloseConnectionCallback(nullptr);
+
+	onMethodCall = [](const Credentials& cred, const std::string& privilege) {
+		return true;
+	};
 }
 
 Service::~Service()
@@ -68,10 +72,6 @@ Service::ConnectionRegistry::iterator Service::getConnectionIterator(const int i
 
 void Service::setPrivilegeChecker(const PrivilegeChecker& checker)
 {
-	auto check = [checker, this](const Credentials& cred, const std::string& privilege) {
-		return checker(cred, privilege);
-	};
-
 	onMethodCall = std::move(checker);
 }
 
