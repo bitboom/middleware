@@ -34,7 +34,7 @@ static Eina_Bool key_event_cb(void *data, int type, void *event)
 	return EINA_TRUE;
 }
 
-void create_syspopup(const char *id, void *user_data)
+void create_syspopup(const char *id, void *user_data, ui_data_s *ui_data)
 {
 	Evas_Object *window = NULL, *popup = NULL;
 	popup_info_s *info = NULL;
@@ -61,14 +61,16 @@ void create_syspopup(const char *id, void *user_data)
 			popup = create_password_enforce_change_popup(window, info, NULL);
 		} else {
 			popup = create_default_popup(window, info, user_data);
-			ecore_event_handler_add(ECORE_EVENT_KEY_DOWN, key_event_cb, popup);
+			if (strcmp(id, "password-enforce-change")) {
+				ui_data->key_event_handler = ecore_event_handler_add(ECORE_EVENT_KEY_DOWN, key_event_cb, popup);
+			}
 		}
 
 		free(manufacturer);
 		break;
 	case DPM_SYSPOPUP_TOAST:
 		popup = create_toast_popup(window, info, NULL);
-		ecore_event_handler_add(ECORE_EVENT_KEY_DOWN, key_event_cb, popup);
+		ui_data->key_event_handler = ecore_event_handler_add(ECORE_EVENT_KEY_DOWN, key_event_cb, popup);
 		break;
 	default:
 		dlog_print(DLOG_ERROR, LOG_TAG, "Invalid view type");

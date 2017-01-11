@@ -39,6 +39,7 @@ Evas_Object *create_window(const char *pkg_name)
 	elm_win_title_set(window, pkg_name);
 	elm_win_borderless_set(window, EINA_TRUE);
 	elm_win_alpha_set(window, EINA_TRUE);
+	elm_win_autodel_set(window, EINA_TRUE);
 
 	evas_object_smart_callback_add(window, "delete,request", win_delete_request_cb, NULL);
 	evas_object_show(window);

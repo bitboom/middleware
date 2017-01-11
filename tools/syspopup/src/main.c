@@ -29,6 +29,7 @@ static void app_control(app_control_h app_control, void *data)
 	int ret = 0;
 	char *id = NULL;
 	char *user_data = NULL;
+	ui_data_s *ui_data = (ui_data_s *)data;
 
 	ret = app_control_get_extra_data(app_control, "id", &id);
 	if (ret != APP_CONTROL_ERROR_NONE) {
@@ -47,7 +48,7 @@ static void app_control(app_control_h app_control, void *data)
 		return;
 	}
 
-	create_syspopup(id, user_data);
+	create_syspopup(id, user_data, ui_data);
 
 	free(id);
 	free(user_data);
@@ -57,6 +58,13 @@ static void app_control(app_control_h app_control, void *data)
 
 static void app_terminate(void *data)
 {
+	ui_data_s *ui_data = (ui_data_s *)data;
+
+	if (ui_data->key_event_handler) {
+		dlog_print(DLOG_INFO, LOG_TAG, "delete key event handler");
+		ecore_event_handler_del(ui_data->key_event_handler);
+		ui_data->key_event_handler = NULL;
+	}
 	return;
 }
 
@@ -91,6 +99,7 @@ int main(int argc, char *argv[])
 	int ret = 0;
 	ui_app_lifecycle_callback_s event_callback = {0, };
 	app_event_handler_h handlers[5] = {NULL, };
+	ui_data_s ui_data = {0,};
 
 	event_callback.create = app_create;
 	event_callback.terminate = app_terminate;
@@ -98,9 +107,9 @@ int main(int argc, char *argv[])
 	event_callback.resume = app_resume;
 	event_callback.app_control = app_control;
 
-	ui_app_add_event_handler(&handlers[APP_EVENT_LANGUAGE_CHANGED], APP_EVENT_LANGUAGE_CHANGED, ui_app_lang_changed, NULL);
+	ui_app_add_event_handler(&handlers[APP_EVENT_LANGUAGE_CHANGED], APP_EVENT_LANGUAGE_CHANGED, ui_app_lang_changed, &ui_data);
 
-	ret = ui_app_main(argc, argv, &event_callback, NULL);
+	ret = ui_app_main(argc, argv, &event_callback, &ui_data);
 	if (ret != APP_ERROR_NONE)
 		dlog_print(DLOG_ERROR, LOG_TAG, "app_main() is failed. err = %d", ret);
 

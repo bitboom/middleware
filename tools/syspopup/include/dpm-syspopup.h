@@ -77,6 +77,10 @@ typedef struct {
 	char *right_btn;
 } popup_info_s;
 
+typedef struct {
+	Ecore_Event_Handler *key_event_handler;
+} ui_data_s;
+
 app_control_h create_syspopup_app_control(appcontrol_s *list, const char *id);
 int create_syspopup_notification(notification_s *list, const char *id, app_control_h app_control);
 popup_info_s *get_popup_info(const char *id);
@@ -85,6 +89,6 @@ Evas_Object *create_default_popup(Evas_Object *parent, popup_info_s *info, void 
 Evas_Object *create_toast_popup(Evas_Object *parent, popup_info_s *body, void *user_data);
 Evas_Object *create_password_enforce_change_popup(Evas_Object *parent, popup_info_s *info, void *user_data);
 
-void create_syspopup(const char *id, void *user_data);
+void create_syspopup(const char *id, void *user_data, ui_data_s *ui_data);
 
 #endif /* __DPM_SYSPOPUP_H__ */
