@@ -12,6 +12,7 @@ BuildRequires: coreutils
 BuildRequires: findutils
 BuildRequires: openssl
 BuildRequires: pkgconfig(dlog)
+BuildRequires: pkgconfig(klay)
 BuildRequires: pkgconfig(openssl)
 BuildRequires: pkgconfig(libpcrecpp)
 BuildRequires: pkgconfig(xmlsec1)

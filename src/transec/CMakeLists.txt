@@ -16,7 +16,13 @@
 # @author      Sangwan Kwon (sangwan.kwon@samsung.com)
 # @breif       Make trasnport security library
 #
+PKG_CHECK_MODULES(${TARGET_TRANSEC_LIB}_DEP
+	REQUIRED
+		klay
+)
+
 SET(${TARGET_TRANSEC_LIB}_SRCS
+	InitLib.cpp
 	AppCustomTrustAnchor.cpp
 )
 
@@ -36,6 +42,9 @@ SET_TARGET_PROPERTIES(${TARGET_TRANSEC_LIB}
 		VERSION ${VERSION}
 )
 
+TARGET_LINK_LIBRARIES(${TARGET_TRANSEC_LIB}
+	${${TARGET_TRANSEC_LIB}_DEP_LIBRARIES}
+)
 INSTALL(TARGETS ${TARGET_TRANSEC_LIB} DESTINATION ${LIB_INSTALL_DIR})
 INSTALL(FILES
 			AppCustomTrustAnchor.h
