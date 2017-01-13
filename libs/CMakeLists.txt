@@ -41,7 +41,6 @@ SET(POLICY              administration.cpp
 )
 
 SET(CAPI                dpm/device-policy-manager.h
-						dpm/context.h
 						dpm/administration.h
 						dpm/application.h
 						dpm/bluetooth.h

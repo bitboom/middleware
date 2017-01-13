@@ -19,7 +19,6 @@ SET(API_TEST_SOURCES main.c
 					 testbench.c
 					 admin.c
 					 application.c
-					 context.c
 					 bluetooth.c
 					 manager.c
 					 restriction.c

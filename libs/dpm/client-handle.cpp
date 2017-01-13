@@ -17,7 +17,8 @@
 #include <cassert>
 #include <iostream>
 
-#include "context.h"
+#include "device-policy-manager.h"
+
 #include "policy-client.h"
 #include "debug.h"
 
@@ -25,85 +26,6 @@ DevicePolicyContext& GetDevicePolicyContext(void* handle)
 {
 	assert(handle);
 	return *reinterpret_cast<DevicePolicyContext*>(handle);
-}
-
-dpm_context_h dpm_context_create(void)
-{
-	DevicePolicyContext* client = new(std::nothrow) DevicePolicyContext();
-
-	if (client == nullptr) {
-		return NULL;
-	}
-
-	if (client->connect() < 0) {
-		delete client;
-		return NULL;
-	}
-
-	return reinterpret_cast<dpm_context_h>(client);
-}
-
-int dpm_context_destroy(dpm_context_h handle)
-{
-	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
-
-	delete &GetDevicePolicyContext(handle);
-
-	return 0;
-}
-
-int dpm_context_add_policy_changed_cb(dpm_context_h handle, const char* name, dpm_policy_changed_cb callback, void* user_data, int* id)
-{
-	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
-	RET_ON_FAILURE(name, DPM_ERROR_INVALID_PARAMETER);
-	RET_ON_FAILURE(callback, DPM_ERROR_INVALID_PARAMETER);
-	RET_ON_FAILURE(id, DPM_ERROR_INVALID_PARAMETER);
-
-	DevicePolicyContext& client = GetDevicePolicyContext(handle);
-	int ret = client.subscribePolicyChange(name, callback, user_data);
-	if (ret < 0) {
-		return -1;
-	}
-
-	*id = ret;
-	return 0;
-}
-
-int dpm_context_remove_policy_changed_cb(dpm_context_h handle, int id)
-{
-	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
-	RET_ON_FAILURE(id >= 0, DPM_ERROR_INVALID_PARAMETER);
-
-	DevicePolicyContext& client = GetDevicePolicyContext(handle);
-	client.unsubscribePolicyChange(id);
-
-	return 0;
-}
-
-int dpm_context_add_signal_cb(dpm_context_h handle, const char* signal, dpm_signal_cb callback, void* user_data, int *id)
-{
-	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
-	RET_ON_FAILURE(signal, DPM_ERROR_INVALID_PARAMETER);
-	RET_ON_FAILURE(callback, DPM_ERROR_INVALID_PARAMETER);
-	RET_ON_FAILURE(id, DPM_ERROR_INVALID_PARAMETER);
-
-	DevicePolicyContext& context = GetDevicePolicyContext(handle);
-	int ret = context.subscribeSignal(signal, callback, user_data);
-	if (ret < 0) {
-		return -1;
-	}
-
-	*id = ret;
-	return 0;
-}
-
-int dpm_context_remove_signal_cb(dpm_context_h handle, int id)
-{
-	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
-	RET_ON_FAILURE(id >= 0, DPM_ERROR_INVALID_PARAMETER);
-
-	DevicePolicyContext& context = GetDevicePolicyContext(handle);
-	return context.unsubscribeSignal(id);
 }
 
 EXPORT_API device_policy_manager_h dpm_manager_create(void)
