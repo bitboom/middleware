@@ -23,6 +23,7 @@ PKG_CHECK_MODULES(${TARGET_TRANSEC_LIB}_DEP
 
 SET(${TARGET_TRANSEC_LIB}_SRCS
 	InitLib.cpp
+	Exception.cpp
 	AppCustomTrustAnchor.cpp
 )
 

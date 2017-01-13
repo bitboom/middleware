@@ -24,9 +24,7 @@
 
 #include <AppCustomTrustAnchor.h>
 
-#define DUMMY_PKG_ID "dummmy-pkg-id"
-#define DUMMY_CERTS_DIR "/home/dummy"
-#define DUMMY_UID 5001
+#include "test-resource.h"
 
 RUNNER_TEST_GROUP_INIT(T0400_API_ACTA)
 
@@ -34,28 +32,28 @@ using namespace transec;
 
 RUNNER_TEST(T0401_ACTA_INSTALL_GLOBAL_APP_POSITIVE)
 {
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR);
+	AppCustomTrustAnchor acta(DUMMY_PKG_ID, APP_CERTS_DIR);
 	int ret = acta.install(false);
 	RUNNER_ASSERT_MSG(ret == 0, "ACTA install should be success.");
 }
 
 RUNNER_TEST(T0402_ACTA_INSTALL_GLOBAL_APP_WITH_SYS_POSITIVE)
 {
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR);
+	AppCustomTrustAnchor acta(DUMMY_PKG_ID, APP_CERTS_DIR);
 	int ret = acta.install(true);
 	RUNNER_ASSERT_MSG(ret == 0, "ACTA install should be success.");
 }
 
 RUNNER_TEST(T0403_ACTA_INSTALL_USER_APP_POSITIVE)
 {
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
+	AppCustomTrustAnchor acta(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID);
 	int ret = acta.install(false);
 	RUNNER_ASSERT_MSG(ret == 0, "ACTA install should be success.");
 }
 
 RUNNER_TEST(T0404_ACTA_INSTALL_USER_APP_WITH_SYS_POSITIVE)
 {
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
+	AppCustomTrustAnchor acta(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID);
 	int ret = acta.install(true);
 	RUNNER_ASSERT_MSG(ret == 0, "ACTA install should be success.");
 }
@@ -90,15 +88,21 @@ RUNNER_TEST(T0408_ACTA_INSTALL_USER_APP_WITH_SYS_NEGATIVE)
 
 RUNNER_TEST(T0421_ACTA_UNINSTALL_GLOBAL_APP_POSITIVE)
 {
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR);
-	int ret = acta.uninstall();
+	AppCustomTrustAnchor acta(DUMMY_PKG_ID, APP_CERTS_DIR);
+	int ret = acta.install(false);
+	RUNNER_ASSERT_MSG(ret == 0, "ACTA install should be success.");
+
+	ret = acta.uninstall();
 	RUNNER_ASSERT_MSG(ret == 0, "ACTA uninstall should be success.");
 }
 
 RUNNER_TEST(T0422_ACTA_UNINSTALL_USER_APP_POSITIVE)
 {
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
-	int ret = acta.uninstall();
+	AppCustomTrustAnchor acta(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID);
+	int ret = acta.install(false);
+	RUNNER_ASSERT_MSG(ret == 0, "ACTA install should be success.");
+
+	ret = acta.uninstall();
 	RUNNER_ASSERT_MSG(ret == 0, "ACTA uninstall should be success.");
 }
 
@@ -109,7 +113,7 @@ RUNNER_TEST(T0423_ACTA_UNINSTALL_GLOBAL_APP_NEGATIVE)
 	RUNNER_ASSERT_MSG(ret != 0, "ACTA uninstall should be fail.");
 }
 
-RUNNER_TEST(T0424_ACTA_INSTALL_USER_APP_NEGATIVE)
+RUNNER_TEST(T0424_ACTA_UNINSTALL_USER_APP_NEGATIVE)
 {
 	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
 	int ret = acta.uninstall();
