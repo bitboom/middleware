@@ -25,10 +25,11 @@
 
 #include <klay/exception.h>
 
-#include "policy-context.hxx"
-
 #include "policy-storage.h"
+#include "client-manager.h"
 #include "observer.h"
+
+#include "policy-context.hxx"
 
 /**
  * @brief This class provides primitives for event notification to clients.
@@ -113,7 +114,7 @@ DomainPolicy<DataType, EnforceModel>::DomainPolicy(PolicyControlContext& ctxt, c
 		id = stmt.getColumn(0);
 		DataType value(stmt.getColumn(1));
 		pivot = std::move(value);
-		PolicyStorage::addStorageEventListenr(this);
+		ClientManager::addEventListener(this);
 	}
 }
 
@@ -251,7 +252,7 @@ GlobalPolicy<DataType, EnforceModel>::GlobalPolicy(PolicyControlContext& ctxt, c
 		id = stmt.getColumn(0);
 		DataType value(stmt.getColumn(1));
 		pivot = current = std::move(value);
-		PolicyStorage::addStorageEventListenr(this);
+		ClientManager::addEventListener(this);
 	}
 }
 

@@ -29,54 +29,21 @@
 
 #include <klay/exception.h>
 
+#include "observer.h"
 #include "policy-context.hxx"
 
-class DeviceAdministrator {
+class PolicyClient {
 public:
-	DeviceAdministrator(const DeviceAdministrator&) = delete;
-	DeviceAdministrator(DeviceAdministrator&&) = default;
-	DeviceAdministrator(PolicyControlContext& context) :
-		DeviceAdministrator(context.getPeerPid(), context.getPeerUid())
-	{
-	}
+	PolicyClient(PolicyControlContext& context);
+	PolicyClient(pid_t pid, uid_t user);
 
-	DeviceAdministrator(pid_t pid, uid_t user)
-	{
-		char pkgid[PATH_MAX];
+	PolicyClient(const PolicyClient&) = delete;
+	PolicyClient(PolicyClient&&) = default;
 
-		if (aul_app_get_pkgid_bypid_for_uid(pid, pkgid, PATH_MAX, user) != 0) {
-			int fd = ::open(std::string("/proc/" + std::to_string(pid) + "/cmdline").c_str(), O_RDONLY);
-			if (fd == -1) {
-				throw runtime::Exception("Unknown PID");
-			}
+	~PolicyClient();
 
-			ssize_t ret, bytes = 0;
-			do {
-				ret = ::read(fd, &pkgid[bytes], PATH_MAX);
-				if (ret != -1) {
-					bytes += ret;
-				}
-			} while ((ret == -1) && (errno == EINTR));
-
-			while (::close(fd) == -1 && errno == EINTR);
-
-			if (ret == -1) {
-				throw runtime::Exception("Failed to get admin info");
-			}
-
-			pkgid[bytes] = '\0';
-		}
-
-		name = pkgid;
-		uid = user;
-	}
-
-	~DeviceAdministrator()
-	{
-	}
-
-	DeviceAdministrator& operator=(DeviceAdministrator&&) = default;
-	DeviceAdministrator& operator=(const DeviceAdministrator&) = delete;
+	PolicyClient& operator=(PolicyClient&&) = default;
+	PolicyClient& operator=(const PolicyClient&) = delete;
 
 	inline std::string getName() const
 	{
@@ -94,9 +61,27 @@ public:
 	}
 
 private:
+	int id;
 	std::string name;
 	uid_t uid;
 	std::string key;
+};
+
+class ClientManager {
+public:
+	static void loadAdministrators();
+
+	static void registerAdministrator(const std::string& name, uid_t domain);
+	static void deregisterAdministrator(const std::string& name, uid_t domain);
+
+	static void addEventListener(Observer* observer);
+	static void removeEventListener(Observer* observer);
+
+private:
+	static std::vector<uid_t> getManagedDomainList();
+
+private:
+	static Observerable observers;
 };
 
 #endif //__DPM_CLIENT_MANAGER_H__

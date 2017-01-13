@@ -13,8 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
- #include <sys/types.h>
- #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <functional>
 
@@ -24,6 +24,7 @@
 #include "server.h"
 #include "policy-builder.h"
 #include "policy-storage.h"
+#include "client-manager.h"
 
 #include "exception.h"
 #include "filesystem.h"
@@ -58,7 +59,7 @@ void Server::run()
 
 	PolicyBuild(*this);
 
-	PolicyStorage::apply();
+	ClientManager::loadAdministrators();
 
 	::umask(0);
 	service->start(true);

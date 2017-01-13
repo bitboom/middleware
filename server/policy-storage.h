@@ -26,8 +26,6 @@
 #include <klay/db/column.h>
 #include <klay/audit/logger.h>
 
-#include "observer.h"
-
 typedef database::Statement DataSet;
 
 class PolicyStorage {
@@ -35,19 +33,8 @@ public:
 	static void open(const std::string& location);
 	static DataSet prepare(const std::string& query);
 	static void close();
-	static void apply();
-
-	static void addStorageEventListenr(Observer* listener);
-	static void removeStorageEventListener(Observer* listener);
-
-	static int prepareStorage(const std::string& admin, uid_t domain);
-	static int removeStorage(const std::string& admin, uid_t domain);
 
 private:
-	static std::vector<uid_t> getManagedDomainList();
-
-private:
-	static Observerable listeners;
 	static std::shared_ptr<database::Connection> database;
 };
 

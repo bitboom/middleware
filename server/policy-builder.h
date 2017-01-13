@@ -32,7 +32,7 @@ struct PolicyHelper {
 	template<typename U, typename V>
 	void setPolicy(U& policy, const V& value)
 	{
-		DeviceAdministrator admin(context);
+		PolicyClient admin(context);
 		policy.set(admin.getName(), admin.getUid(), value);
 	}
 
