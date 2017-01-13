@@ -82,6 +82,11 @@ private:
 	std::thread handle;
 };
 
+void signalCallback(dbus::Variant variant)
+{
+	std::cout << "Signal Received" << std::endl;
+}
+
 TESTCASE(DbusRegisterObjectTest)
 {
 	runtime::Latch nameAcquired;
@@ -106,6 +111,7 @@ TESTCASE(DbusRegisterObjectTest)
 			return dbus::Variant();
         }
 
+		std::cout << "Unknown" << std::endl;
 		return dbus::Variant();
     };
 
@@ -117,9 +123,22 @@ TESTCASE(DbusRegisterObjectTest)
 		nameAcquired.wait();
 
 		svc.registerObject(TESTSVC_OBJECT_PATH, manifest, handler, nullptr);
+		svc.subscribeSignal("",
+							TESTSVC_OBJECT_PATH,
+							TESTSVC_INTERFACE,
+							TESTSVC_SIGNAL_NOTIFY,
+							signalCallback);
+
+		std::cout << "Signal Test" << std::endl;
+		dbus::Connection &client = dbus::Connection::getSystem();
+		client.emitSignal(TESTSVC_BUS_NAME,
+						  TESTSVC_OBJECT_PATH,
+						  TESTSVC_INTERFACE,
+						  TESTSVC_SIGNAL_NOTIFY,
+						  "(s)",
+						  "signal-data");
 
 		std::cout << "Method Call Test" << std::endl;
-		dbus::Connection &client = dbus::Connection::getSystem();
 		client.methodcall(TESTSVC_BUS_NAME,
 						  TESTSVC_OBJECT_PATH,
 						  TESTSVC_INTERFACE,
@@ -127,6 +146,7 @@ TESTCASE(DbusRegisterObjectTest)
 						  -1,
 						  "()",
 						  "()");
+
 
 		const dbus::Variant& result = client.methodcall(TESTSVC_BUS_NAME,
 														TESTSVC_OBJECT_PATH,

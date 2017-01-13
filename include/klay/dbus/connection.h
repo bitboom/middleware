@@ -59,8 +59,8 @@ public:
 										  const VoidCallback& nameLostCallback);
 
 	SubscriptionId subscribeSignal(const std::string& sender,
-								   const std::string& interface,
 								   const std::string& object,
+								   const std::string& interface,
 								   const std::string& member,
 								   const SignalCallback& callback);
 
@@ -74,6 +74,13 @@ public:
 							 const std::string& replyType,
 							 const std::string& paramType,
 							 ...);
+
+	void emitSignal(const std::string& busName,
+					const std::string& object,
+					const std::string& interface,
+					const std::string& name,
+					const std::string& paramType,
+					...);
 
 	ObjectId registerObject(const std::string& interface,
 							const std::string& manifest,

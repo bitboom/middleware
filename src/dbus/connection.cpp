@@ -76,16 +76,16 @@ Connection& Connection::getSystem()
 }
 
 Connection::SubscriptionId Connection::subscribeSignal(const std::string& sender,
-													   const std::string& interface,
 													   const std::string& object,
+													   const std::string& interface,
 													   const std::string& member,
 													   const SignalCallback& callback)
 {
 	return g_dbus_connection_signal_subscribe(connection,
 											  sender.empty()    ? NULL : sender.c_str(),
 											  interface.empty() ? NULL : interface.c_str(),
-											  object.empty()    ? NULL : object.c_str(),
 											  member.empty()    ? NULL : member.c_str(),
+											  object.empty()    ? NULL : object.c_str(),
 											  NULL,
 											  G_DBUS_SIGNAL_FLAGS_NONE,
 											  &onSignal,
@@ -133,6 +133,33 @@ const Variant Connection::methodcall(const std::string& busName,
 	}
 
 	return result;
+}
+
+void Connection::emitSignal(const std::string& busName,
+							const std::string& object,
+							const std::string& interface,
+							const std::string& name,
+							const std::string& paramType,
+							...)
+{
+	Error error;
+	va_list ap;
+
+	va_start(ap, paramType);
+	GVariant* variant = g_variant_new_va(paramType.c_str(), NULL, &ap);
+	va_end(ap);
+
+	g_dbus_connection_emit_signal(connection,
+								  busName.empty() ? NULL : busName.c_str(),
+								  object.c_str(),
+								  interface.c_str(),
+								  name.c_str(),
+								  paramType.empty() ? NULL : variant,
+								  &error);
+	if (error) {
+		ERROR(error->message);
+		throw runtime::Exception(error->message);
+	}
 }
 
 void Connection::setName(const std::string& name,
