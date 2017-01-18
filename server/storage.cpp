@@ -14,6 +14,7 @@
  *  limitations under the License
  */
 #include <thread>
+#include <vector>
 
 #include <dd-deviced.h>
 #include <dd-control.h>
@@ -33,7 +34,16 @@ namespace DevicePolicyManager {
 
 namespace {
 
-const std::string PROG_FACTORY_RESET = "/usr/bin/factory-reset";
+const std::string PROG_FACTORY_RESET = "/usr/bin/dbus-send";
+const std::vector<std::string> wipeCommand = {
+	"/usr/bin/dbus-send",
+	"--system",
+	"--type=signal",
+	"--print-reply",
+	"--dest=com.samsung.factoryreset",
+	"/com/samsung/factoryreset",
+	"com.samsung.factoryreset.start.setting"
+};
 
 } // namespace
 
@@ -143,14 +153,6 @@ StoragePolicy::~StoragePolicy()
 int StoragePolicy::wipeData(int id)
 {
 	auto worker = [id, this]() {
-		if (id & WIPE_INTERNAL_STORAGE) {
-			runtime::Process proc(PROG_FACTORY_RESET);
-			if (proc.execute() == -1) {
-				ERROR("Failed to launch factory-reset");
-				return -1;
-			}
-		}
-
 		if (id & WIPE_EXTERNAL_STORAGE) {
 			try {
 				std::vector<std::string> devices = pimpl->getStorageDeviceList("mmc");
@@ -161,6 +163,14 @@ int StoragePolicy::wipeData(int id)
 				}
 			} catch(runtime::Exception& e) {
 				ERROR("Failed to enforce external storage policy");
+				return -1;
+			}
+		}
+
+		if (id & WIPE_INTERNAL_STORAGE) {
+			runtime::Process proc(PROG_FACTORY_RESET, wipeCommand);
+			if (proc.execute() == -1) {
+				ERROR("Failed to launch factory-reset");
 				return -1;
 			}
 		}
