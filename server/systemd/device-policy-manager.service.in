@@ -8,6 +8,7 @@ Type=simple
 User=security_fw
 Group=security_fw
 SmackProcessLabel=System
+ExecStartPre=${CMAKE_INSTALL_PREFIX}/bin/dpm-storage-builder
 ExecStart=${CMAKE_INSTALL_PREFIX}/bin/device-policy-manager
 Restart=on-failure
 ExecReload=/bin/kill -HUP $MAINPID

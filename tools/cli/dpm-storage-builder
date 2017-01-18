@@ -3,11 +3,13 @@
 PATH=/usr/bin:/bin/usr/sbin:/sbin
 
 DB_PATH="/opt/dbspace/.dpm.db"
-DB_UID="security_fw"
-DB_GID="security_fw"
-SECURITY_LABLE="System"
+JOURNAL_PATH="/opt/dbspace/.dpm.db-journal"
 
-rm -f ${DB_PATH}
+if [[ -f ${DB_PATH} && -f ${JOURNAL_PATH} ]]; then
+	exit 0
+fi
+
+rm -f ${DB_PATH} ${JOURNAL_PATH}
 
 sqlite3 ${DB_PATH} \
 "CREATE TABLE IF NOT EXISTS admin ( \
@@ -73,5 +75,3 @@ INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'wifi-hotspot', 1)
 INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'wifi-profile-change', 1); \
 INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'wifi-ssid-restriction', 0);"
 
-chown ${DB_UID}:${DB_GID} ${DB_PATH}*
-chsmack -a ${SECURITY_LABLE} ${DB_PATH}*

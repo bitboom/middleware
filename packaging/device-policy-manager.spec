@@ -98,7 +98,6 @@ ln -s ../device-policy-manager.service %{buildroot}/%{_unitdir}/multi-user.targe
 rm -rf %{buildroot}
 
 %post
-/usr/bin/dpm-storage-builder
 
 %preun
 
