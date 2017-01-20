@@ -15,10 +15,6 @@
 # @file        CMakeLists.txt
 # @author      Jooseong Lee <jooseong.lee@samsung.com>
 #
-IF("${PROFILE}" STREQUAL "mobile")
-    INSTALL(FILES client-whitelist_mobile DESTINATION ${SYS_CONFIG_DIR}/${SERVICE_NAME} RENAME client-whitelist)
-ELSE("${PROFILE}" STREQUAL "mobile")
-    INSTALL(FILES client-whitelist DESTINATION ${SYS_CONFIG_DIR}/${SERVICE_NAME})
-ENDIF()
 
+INSTALL(FILES client-whitelist DESTINATION ${SYS_CONFIG_DIR}/${SERVICE_NAME})
 INSTALL(FILES admin-client-whitelist DESTINATION ${SYS_CONFIG_DIR}/${SERVICE_NAME})
