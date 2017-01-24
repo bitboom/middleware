@@ -75,7 +75,7 @@ private:
 	}
 
 	template<typename DataType, typename std::enable_if<::IsReflectable<DataType>::value, int>::type = 0>
-	void visitInternal(DataType& value)
+	void visitInternal(const DataType& value)
 	{
 		value.accept(*this);
 	}
