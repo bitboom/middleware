@@ -49,6 +49,7 @@ Requires: openssl
 %global cert_svc_pkcs12         %cert_svc_path/pkcs12
 %global cert_svc_transec        %cert_svc_path/transec
 %global cert_svc_ca_bundle      %cert_svc_path/ca-certificate.crt
+%global cert_svc_examples       %cert_svc_ro_path/examples
 %global cert_svc_tests          %rw_app_dir/cert-svc-tests
 
 %global cert_svc_old_db_path    /opt/share/cert-svc/dbspace
@@ -120,6 +121,7 @@ export FFLAGS="$FFLAGS -DTIZEN_EMULATOR_MODE"
 %if 0%{?certsvc_test_build}
          -DCERTSVC_TEST_BUILD=1 \
          -DCERT_SVC_TESTS=%cert_svc_tests \
+         -DCERT_SVC_EXAMPLES=%cert_svc_examples \
 %endif
          -DCMAKE_BUILD_TYPE=%build_type \
          -DSYSTEMD_UNIT_DIR=%_unitdir
@@ -190,6 +192,11 @@ fi
 %bin_dir/cert-svc-test*
 %cert_svc_tests
 %_libdir/libcert-svc-validator-plugin.so
+
 %attr(755, root, root) %upgrade_script_path/cert-svc-test-upgrade.sh
 %upgrade_data_path/certs-meta-old.db
+
+%bin_dir/cert-svc-example*
+%cert_svc_examples
+
 %endif
