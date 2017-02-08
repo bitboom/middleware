@@ -467,6 +467,7 @@ int update_ca_certificate_file(char *cert)
 				result = write_to_ca_cert_crt_file("wb", cert);
 			else
 				result = write_to_ca_cert_crt_file("ab", cert);
+			free(cert);
 
 			if (result != CERTSVC_SUCCESS) {
 				SLOGE("Failed to write to file.");

@@ -27,6 +27,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <limits.h>
 #include <string>
 #include <memory>
 #include <functional>
@@ -270,8 +271,8 @@ std::string readFromFile(const std::string &path)
 	fseek(fp, 0L, SEEK_END);
 	int len = ftell(fp);
 
-	if (len <= 0) {
-		LogError("Fail to get certificate length.");
+	if (len <= 0 || len == INT_MAX) {
+		LogError("Fail to get proper certificate.");
 		return std::string();
 	}
 

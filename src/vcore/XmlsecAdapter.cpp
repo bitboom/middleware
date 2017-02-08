@@ -165,7 +165,9 @@ void LogDebugPrint(const char *file,
 		LogDebug(buff);
 }
 
-XmlSec::XmlSec() : m_pList(nullptr)
+XmlSec::XmlSec() :
+	m_mode(ValidateMode::NORMAL),
+	m_pList(nullptr)
 {
 	LIBXML_TEST_VERSION
 	xmlLoadExtDtdDefaultValue = XML_DETECT_IDS | XML_COMPLETE_ATTRS;
