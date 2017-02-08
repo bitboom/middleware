@@ -59,7 +59,7 @@ public:
 private:
 	msghdr m_hdr;
 	iovec m_iov;
-	cmsghdr *m_cmsg;
+	cmsghdr *m_cmsg = nullptr;
 	unsigned char m_cmsgbuf[CMSG_SPACE(sizeof(int))];
 	int m_resultCode;
 	int m_fileDesc;

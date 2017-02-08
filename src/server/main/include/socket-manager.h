@@ -91,6 +91,8 @@ protected:
 			, useSendMsg(false)
 			, interfaceID(-1)
 			, service(NULL)
+			, timeout(0)
+			, counter(0)
 		{}
 	};
 

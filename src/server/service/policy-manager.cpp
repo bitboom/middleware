@@ -27,8 +27,8 @@
 #include <iostream>
 #include <iterator>
 #include <algorithm>
-
-#include <limits.h>
+#include <cassert>
+#include <climits>
 
 #include <dpl/log/log.h>
 
@@ -126,7 +126,9 @@ int PolicyManager::setPolicy(Policy policy)
 	PolicyFileMap::iterator itPolicy = m_policyFile.find(policy.uid);
 
 	// check if policies are correct
-	for (int i = POLICY_TYPE_FIRST ; i < POLICY_TYPE_LAST + 1 ; i++) {
+	assert(POLICY_TYPE_FIRST == POLICY_MAX_ATTEMPTS);
+	assert(POLICY_TYPE_LAST == POLICY_FORBIDDEN_PASSWDS);
+	for (int i = POLICY_TYPE_FIRST; i < POLICY_TYPE_LAST + 1; i++) {
 		if (!policy.isFlagOn(static_cast<password_policy_type>(i)))
 			continue;
 
@@ -185,9 +187,6 @@ int PolicyManager::setPolicy(Policy policy)
 
 			break;
 
-		case POLICY_FORBIDDEN_PASSWDS:
-			break;
-
 		case POLICY_QUALITY_TYPE:
 			if (policy.qualityType > AUTH_PWD_QUALITY_LAST) {
 				LogError("Incorrect input param.");
@@ -204,14 +203,13 @@ int PolicyManager::setPolicy(Policy policy)
 
 			break;
 
-		default:
-			LogError("Not supported policy type.");
-			return AUTH_PASSWD_API_ERROR_INPUT_PARAM;
+		default: // POLICY_FORBIDDEN_PASSWDS
+			break;
 		}
 	}
 
 	// update policies
-	for (int i = POLICY_TYPE_FIRST ; i < POLICY_TYPE_LAST + 1 ; i++) {
+	for (int i = POLICY_TYPE_FIRST; i < POLICY_TYPE_LAST + 1; i++) {
 		if (!policy.isFlagOn(static_cast<password_policy_type>(i)))
 			continue;
 
@@ -248,11 +246,6 @@ int PolicyManager::setPolicy(Policy policy)
 			itPolicy->second.setMaxNumSeqLength(policy.maxNumSeqLength);
 			break;
 
-		case POLICY_FORBIDDEN_PASSWDS:
-			LogSecureDebug("forbiddenPasswds number: " << policy.forbiddenPasswds.size());
-			itPolicy->second.setForbiddenPasswds(policy.forbiddenPasswds);
-			break;
-
 		case POLICY_QUALITY_TYPE:
 			LogSecureDebug("qualityType: " << policy.qualityType);
 			itPolicy->second.setQualityType(policy.qualityType);
@@ -263,9 +256,10 @@ int PolicyManager::setPolicy(Policy policy)
 			itPolicy->second.setPattern(policy.pattern);
 			break;
 
-		default:
-			LogError("Not supported policy type.");
-			return AUTH_PASSWD_API_ERROR_INPUT_PARAM;
+		default: // POLICY_FORBIDDEN_PASSWDS
+			LogSecureDebug("forbiddenPasswds number: " << policy.forbiddenPasswds.size());
+			itPolicy->second.setForbiddenPasswds(policy.forbiddenPasswds);
+			break;
 		}
 	}
 
