@@ -19,6 +19,7 @@
 SET(TEST_SRCS
 	main.cpp
 	test-app-custom-trust-anchor.cpp
+	test-certificate.cpp
 )
 
 SET(TEST_TRANSEC_PATH "${CERT_SVC_TESTS}/transec")

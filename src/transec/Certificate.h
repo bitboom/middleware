@@ -14,18 +14,20 @@
  *    limitations under the License.
  */
 /*
- * @file        test-resource.h
+ * @file        Certificate.h
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     0.1
- * @brief       Test resoure name and paths
+ * @brief
  */
 #pragma once
 
-#define DUMMY_PKG_ID "dummmy-pkg-id"
-#define DUMMY_UID 5001
-#define DUMMY_CERTS_DIR "/home/dummy"
+#include <string>
 
-#define APP_CERTS_DIR TEST_TRANSEC_PATH "/certs"
+namespace transec {
 
-#define TEST_PEM_PATH APP_CERTS_DIR "/02265526.0"
-#define TEST_PEM_HASH "02265526"
+class Certificate {
+public:
+	static std::string getSubjectNameHash(const std::string &path);
+};
+
+} // namespace transec

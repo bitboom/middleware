@@ -19,11 +19,13 @@
 PKG_CHECK_MODULES(${TARGET_TRANSEC_LIB}_DEP
 	REQUIRED
 		klay
+		openssl
 )
 
 SET(${TARGET_TRANSEC_LIB}_SRCS
 	InitLib.cpp
 	Exception.cpp
+	Certificate.cpp
 	AppCustomTrustAnchor.cpp
 )
 

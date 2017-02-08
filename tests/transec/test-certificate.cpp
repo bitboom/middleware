@@ -14,18 +14,33 @@
  *    limitations under the License.
  */
 /*
- * @file        test-resource.h
+ * @file        test-certificate.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     0.1
- * @brief       Test resoure name and paths
+ * @brief       Unit test program of Certificate
  */
-#pragma once
 
-#define DUMMY_PKG_ID "dummmy-pkg-id"
-#define DUMMY_UID 5001
-#define DUMMY_CERTS_DIR "/home/dummy"
+#include <dpl/test/test_runner.h>
 
-#define APP_CERTS_DIR TEST_TRANSEC_PATH "/certs"
+#include <iostream>
 
-#define TEST_PEM_PATH APP_CERTS_DIR "/02265526.0"
-#define TEST_PEM_HASH "02265526"
+#include <Certificate.h>
+
+#include "test-resource.h"
+
+RUNNER_TEST_GROUP_INIT(T0600_CERTIFICATE)
+
+using namespace transec;
+
+RUNNER_TEST(T0601_GET_SUBJECT_NAME_HASH)
+{
+	try {
+		auto hash = Certificate::getSubjectNameHash(TEST_PEM_PATH);
+		RUNNER_ASSERT_MSG(hash.compare(TEST_PEM_HASH) == 0,
+						  "Failed to get proper hash.");
+	} catch (const std::exception &e) {
+		std::cout << "std::exception occured." << e.what() << std::endl;
+	} catch (...) {
+		std::cout << "Unknown exception occured." << std::endl;
+	}
+}

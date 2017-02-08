@@ -24,9 +24,12 @@
 #include <unistd.h>
 #include <cerrno>
 
+#include <set>
+
 #include <klay/filesystem.h>
 #include <klay/audit/logger.h>
 
+#include "Certificate.h"
 #include "Exception.h"
 
 namespace transec {
@@ -47,7 +50,7 @@ public:
 private:
 	void linkTo(const std::string &src, const std::string &dst);
 	void makeCustomBundle(void);
-	std::string getSubHashName(const std::string &filePath);
+	std::string getHashName(const std::string &filePath);
 
 	std::string m_packageId;
 	std::string m_appCertsPath;
@@ -56,6 +59,8 @@ private:
 	std::string m_basePath;
 	std::string m_sysCertsPath;
 	std::string m_customCertsPath;
+
+	std::set<std::string> m_customCertNameSet;
 };
 
 AppCustomTrustAnchor::Impl::Impl(const std::string &packageId,
@@ -83,7 +88,6 @@ void AppCustomTrustAnchor::Impl::linkTo(const std::string &src,
 {
 	errno = 0;
 	int ret = ::symlink(src.c_str(), dst.c_str());
-	DEBUG("Make symlink from " << src << " to " << dst);
 	if (ret != 0)
 		throw std::logic_error("Fail to link " + src + " -> " + dst +
 							   "[" + std::to_string(errno) + "]");
@@ -95,7 +99,6 @@ int AppCustomTrustAnchor::Impl::install(bool withSystemCerts) noexcept
 
 	// make the package's custom directory
 	runtime::File customDir(this->m_customCertsPath);
-	DEBUG(this->m_customCertsPath);
 	if (customDir.exists()) {
 		WARN("App custom certs directory is already exist. remove it!");
 		customDir.remove(true);
@@ -108,6 +111,7 @@ int AppCustomTrustAnchor::Impl::install(bool withSystemCerts) noexcept
 		while (iter != end) {
 			linkTo(iter->getPath(),
 				   this->m_customCertsPath + "/" + iter->getName());
+			this->m_customCertNameSet.emplace(iter->getName());
 			++iter;
 		}
 	}
@@ -120,15 +124,17 @@ int AppCustomTrustAnchor::Impl::install(bool withSystemCerts) noexcept
 
 	runtime::DirectoryIterator iter(this->m_appCertsPath), end;
 	while (iter != end) {
-		std::string hashName = this->getSubHashName(iter->getPath());
+		std::string hashName = this->getHashName(iter->getPath());
 		linkTo(iter->getPath(),
 			   this->m_customCertsPath + "/" + hashName);
+		this->m_customCertNameSet.emplace(std::move(hashName));
 		++iter;
 	}
 
 	this->makeCustomBundle();
 
-	INFO("Success to install : " << this->m_packageId);
+	INFO("Success to install[" << this->m_packageId <<
+		 "] to " << this->m_customCertsPath);
 	return 0;
 
 	EXCEPTION_GUARD_END
@@ -158,28 +164,16 @@ int AppCustomTrustAnchor::Impl::launch(bool withSystemCerts)
 		return -1;
 }
 
-/*
-	This function returns 'dummy file name' temporary.
-	It should be replaced with Openssl Class.
-*/
-std::string AppCustomTrustAnchor::Impl::getSubHashName(const std::string &filePath)
+std::string AppCustomTrustAnchor::Impl::getHashName(const std::string &filePath)
 {
-	runtime::File rawCert(filePath);
-
+	auto hashName = Certificate::getSubjectNameHash(filePath);
 	int sameFileNameCnt = 0;
-	// TODO (openssl) rename certificates to subject_hash
-	runtime::DirectoryIterator iter(this->m_customCertsPath), end;
-	while(iter != end) {
-		if (iter->getName() == rawCert.getName())
-			sameFileNameCnt++;
+	std::string uniqueName;
+	do {
+		uniqueName = hashName + "." + std::to_string(sameFileNameCnt++);
+	} while (this->m_customCertNameSet.find(uniqueName) != this->m_customCertNameSet.end());
 
-		++iter;
-	}
-
-	size_t dotPos = rawCert.getName().rfind(".");
-	std::string fileName = rawCert.getName();
-	fileName.replace(dotPos + 1, std::string::npos, std::to_string(sameFileNameCnt));
-	return fileName;
+	return uniqueName;
 }
 
 void AppCustomTrustAnchor::Impl::makeCustomBundle(void)
