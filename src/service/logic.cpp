@@ -38,9 +38,10 @@ namespace CCHECKER {
 namespace {
 
 struct PkgmgrEvent {
-	PkgmgrEvent(uid_t _uid, const char *_pkgid)
-		: uid(_uid)
-		, pkgid(_pkgid) {}
+	PkgmgrEvent(uid_t _uid, const char *_pkgid) :
+		uid(_uid), pkgid(_pkgid), type(EVENT_INSTALL)
+	{
+	}
 
 	inline bool operator==(const PkgmgrEvent &rhs) const
 	{
@@ -120,6 +121,8 @@ Logic::Logic(void) :
 	m_is_online_enabled(false),
 	m_should_exit(false),
 	m_proxy_connman(NULL),
+	m_reqid_install(-1),
+	m_reqid_uninstall(-1),
 	m_pc_install(nullptr, nullptr),
 	m_pc_uninstall(nullptr, nullptr)
 {
