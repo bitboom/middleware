@@ -22,12 +22,30 @@
 #pragma once
 
 #include <string>
+#include <memory>
+#include <cstdio>
 
 namespace transec {
 
+using FilePtr = std::unique_ptr<FILE, decltype(&::fclose)>;
+
 class Certificate {
 public:
-	static std::string getSubjectNameHash(const std::string &path);
+	explicit Certificate(const std::string &path);
+	virtual ~Certificate(void) = default;
+
+	Certificate(const Certificate &) = delete;
+	Certificate(Certificate &&) = delete;
+	Certificate &operator=(const Certificate &) = delete;
+	Certificate &operator=(Certificate &&) = delete;
+
+	std::string getSubjectNameHash() const;
+	std::string getCertificateData() const;
+
+private:
+	std::string parseData(const std::string &data) const;
+
+	FilePtr m_fp;
 };
 
 } // namespace transec

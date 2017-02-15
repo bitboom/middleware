@@ -35,9 +35,24 @@ using namespace transec;
 RUNNER_TEST(T0601_GET_SUBJECT_NAME_HASH)
 {
 	try {
-		auto hash = Certificate::getSubjectNameHash(TEST_PEM_PATH);
+		Certificate certificate(TEST_PEM_PATH);
+		auto hash = certificate.getSubjectNameHash();
 		RUNNER_ASSERT_MSG(hash.compare(TEST_PEM_HASH) == 0,
 						  "Failed to get proper hash.");
+	} catch (const std::exception &e) {
+		std::cout << "std::exception occured." << e.what() << std::endl;
+	} catch (...) {
+		std::cout << "Unknown exception occured." << std::endl;
+	}
+}
+
+RUNNER_TEST(T0602_GET_CERTIFICATE_DATA)
+{
+	try {
+		Certificate certificate(TEST_PEM_PATH);
+		auto data = certificate.getCertificateData();
+		RUNNER_ASSERT_MSG(data.compare(TEST_PEM_DATA) == 0,
+						  "Failed to get proper certificate data.");
 	} catch (const std::exception &e) {
 		std::cout << "std::exception occured." << e.what() << std::endl;
 	} catch (...) {

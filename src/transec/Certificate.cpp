@@ -23,7 +23,6 @@
 
 #include <cstdio>
 #include <vector>
-#include <memory>
 #include <stdexcept>
 
 #include <openssl/pem.h>
@@ -32,23 +31,31 @@ namespace transec {
 
 namespace {
 
-using FilePtr = std::unique_ptr<FILE, decltype(&::fclose)>;
 using X509Ptr = std::unique_ptr<X509, decltype(&::X509_free)>;
+
+const std::string START_CERT    = "-----BEGIN CERTIFICATE-----";
+const std::string END_CERT      = "-----END CERTIFICATE-----";
+const std::string START_TRUSTED = "-----BEGIN TRUSTED CERTIFICATE-----";
+const std::string END_TRUSTED   = "-----END TRUSTED CERTIFICATE-----";
 
 const int HASH_LENGTH = 8;
 
 } // namespace anonymous
 
-std::string Certificate::getSubjectNameHash(const std::string &path)
+Certificate::Certificate(const std::string &path) :
+	m_fp(FilePtr(fopen(path.c_str(), "rb"), ::fclose))
 {
-	FilePtr fp(fopen(path.c_str(), "r"), ::fclose);
-	if (fp == nullptr)
+	if (this->m_fp == nullptr)
 		throw std::invalid_argument("Faild to open certificate.");
+}
 
-	X509Ptr x509(::PEM_read_X509(fp.get(), NULL, NULL, NULL), ::X509_free);
+std::string Certificate::getSubjectNameHash() const
+{
+	X509Ptr x509(::PEM_read_X509(this->m_fp.get(), NULL, NULL, NULL),
+				 ::X509_free);
 	if (x509 == nullptr) {
-		::rewind(fp.get());
-		x509 = X509Ptr(::PEM_read_X509_AUX(fp.get(), NULL, NULL, NULL),
+		::rewind(this->m_fp.get());
+		x509 = X509Ptr(::PEM_read_X509_AUX(this->m_fp.get(), NULL, NULL, NULL),
 					   ::X509_free);
 	}
 
@@ -60,6 +67,41 @@ std::string Certificate::getSubjectNameHash(const std::string &path)
 			 "%08lx", ::X509_subject_name_hash(x509.get()));
 
 	return std::string(buf.data(), HASH_LENGTH);
+}
+
+std::string Certificate::getCertificateData() const
+{
+	std::fseek(this->m_fp.get(), 0L, SEEK_END);
+	unsigned int fsize = std::ftell(this->m_fp.get());
+	std::rewind(this->m_fp.get());
+
+	std::string content(fsize, 0);
+	if (fsize != std::fread(static_cast<void*>(&content[0]), 1, fsize,
+							this->m_fp.get()))
+		throw std::logic_error("Failed to read certificate from fp.");
+
+	return this->parseData(content);
+}
+
+std::string Certificate::parseData(const std::string &data) const
+{
+	if (data.empty())
+		throw std::logic_error("There is no data to parse.");
+
+	size_t from = data.find(START_CERT);
+	size_t to = data.find(END_CERT);
+	size_t tailLen = END_CERT.length();
+
+	if (from == std::string::npos || to == std::string::npos || from > to) {
+		from = data.find(START_TRUSTED);
+		to = data.find(END_TRUSTED);
+		tailLen = END_TRUSTED.length();
+	}
+
+	if (from == std::string::npos || to == std::string::npos || from > to)
+		throw std::logic_error("Failed to parse certificate.");
+
+	return std::string(data, from, to - from + tailLen);
 }
 
 } // namespace transec
