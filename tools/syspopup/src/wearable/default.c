@@ -16,6 +16,8 @@
  *
  */
 
+#define _TIZEN_PROFILE_WEARABLE (1)
+
 #include <system_info.h>
 
 #include "dpm-syspopup.h"
@@ -87,27 +89,29 @@ static notification_s notification_list[] = {
 	}
 };
 
-static void confirm_button_cb(void *data, Evas_Object *obj, void *event_info)
-{
-	Evas_Object *popup = (Evas_Object *) data;
-
-	/* call application */
-	app_control_h app_control = NULL;
-	app_control = (app_control_h)evas_object_data_get(popup, "app-control");
-	if (app_control) {
-		if (app_control_send_launch_request(app_control, NULL, NULL) != APP_CONTROL_ERROR_NONE)
-			dlog_print(DLOG_ERROR, LOG_TAG, "failed to send launch request");
-	}
-
-	evas_object_data_set(popup, "status", "confirm");
-	evas_object_del(popup);
-	return;
-}
-
 static void cancel_button_cb(void *data, Evas_Object *obj, void *event_info)
 {
 	Evas_Object *popup = (Evas_Object *) data;
 	evas_object_data_set(popup, "status", "cancel");
+	evas_object_del(popup);
+	return;
+}
+
+static void confirm_button_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	Evas_Object *popup = (Evas_Object *) data;
+	app_control_h app_control = NULL;
+	int ret = 0;
+
+	/* call application */
+	app_control = (app_control_h)evas_object_data_get(popup, "app-control");
+	if (app_control) {
+		ret = app_control_send_launch_request(app_control, NULL, NULL);
+		if (ret != APP_CONTROL_ERROR_NONE)
+			dlog_print(DLOG_ERROR, LOG_TAG, "failed to send launch request");
+	}
+
+	evas_object_data_set(popup, "status", "confirm");
 	evas_object_del(popup);
 	return;
 }
@@ -140,7 +144,10 @@ static void create_popup_bottom_button(Evas_Object *popup, const char *part, cha
 {
 	Evas_Object *button = NULL;
 
-	button = create_button(popup, "bottom", __(text), callback, popup);
+	if (_TIZEN_PROFILE_WEARABLE)
+		button = create_button(popup, "bottom", __(text), callback, popup);
+	else
+		button = create_button(popup, "popup", __(text), callback, popup);
 	elm_object_part_content_set(popup, part, button);
 
 	return;
@@ -207,19 +214,25 @@ Evas_Object *create_default_popup(Evas_Object *parent, popup_info_s *info, void 
 	char body[PATH_MAX] = "";
 	char *lp_text = NULL;
 
-	popup = create_popup(parent, "circle");
+	if (_TIZEN_PROFILE_WEARABLE)
+		popup = create_popup(parent, "circle");
+	else
+		popup = create_popup(parent, "default");
+
 	elm_popup_align_set(popup, ELM_NOTIFY_ALIGN_FILL, 1.0);
 
-	layout = elm_layout_add(popup);
-	elm_object_content_set(popup, layout);
+	if (_TIZEN_PROFILE_WEARABLE) {
+		layout = elm_layout_add(popup);
+		elm_object_content_set(popup, layout);
 
-	if (info->left_btn != NULL) {
-		elm_layout_theme_set(layout, "layout", "popup", "content/circle/buttons2");
-		create_popup_left_button(popup, cancel_button_cb);
-		create_popup_right_button(popup, confirm_button_cb);
-	} else {
-		elm_layout_theme_set(layout, "layout", "popup", "content/circle/buttons1");
-		create_popup_bottom_button(popup, "button1", __(info->right_btn), confirm_button_cb);
+		if (info->left_btn != NULL) {
+			elm_layout_theme_set(layout, "layout", "popup", "content/circle/buttons2");
+			create_popup_left_button(popup, cancel_button_cb);
+			create_popup_right_button(popup, confirm_button_cb);
+		} else {
+			elm_layout_theme_set(layout, "layout", "popup", "content/circle/buttons1");
+			create_popup_bottom_button(popup, "button1", __(info->right_btn), confirm_button_cb);
+		}
 	}
 
 	if (info->header != NULL && info->prefix) {
@@ -237,11 +250,28 @@ Evas_Object *create_default_popup(Evas_Object *parent, popup_info_s *info, void 
 	}
 
 	if (strcmp(header, "")) {
-		elm_object_part_text_set(layout, "elm.text.title", header);
+		if (_TIZEN_PROFILE_WEARABLE) {
+			elm_object_part_text_set(layout, "elm.text.title", header);
+		} else {
+			elm_object_part_text_set(popup, "title,text", header);
+			elm_object_item_part_text_translatable_set(popup, "title,text", EINA_TRUE);
+		}
 	}
 
 	if (strcmp(body, "")) {
-		elm_object_part_text_set(layout, "elm.text", body);
+		if (_TIZEN_PROFILE_WEARABLE)
+			elm_object_part_text_set(layout, "elm.text", body);
+		else
+			elm_object_text_set(popup, body);
+	}
+
+	if (!_TIZEN_PROFILE_WEARABLE) {
+		if (info->left_btn) {
+			create_popup_bottom_button(popup, "button1", info->left_btn, cancel_button_cb);
+			create_popup_bottom_button(popup, "button2", info->right_btn, confirm_button_cb);
+		} else {
+			create_popup_bottom_button(popup, "button1", info->right_btn, confirm_button_cb);
+		}
 	}
 
 	evas_object_event_callback_add(popup, EVAS_CALLBACK_DEL, popup_deleted_cb, info);
