@@ -180,6 +180,10 @@ size_t File::size() const
 
 void File::create(mode_t mode)
 {
+	if (descriptor != -1) {
+		close();
+	}
+
 	while (1) {
 		descriptor = ::creat(path.c_str(), mode);
 		if (descriptor == -1) {
@@ -194,6 +198,10 @@ void File::create(mode_t mode)
 
 void File::open(int flags)
 {
+	if (descriptor != -1) {
+		close();
+	}
+
 	while (1) {
 		descriptor = ::open(path.c_str(), flags);
 		if (descriptor == -1) {
