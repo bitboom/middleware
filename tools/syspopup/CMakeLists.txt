@@ -26,17 +26,11 @@ SET(PKG_SRC	src/main.c
 		src/widget.c
 		src/popup-list.c
 		src/appcontrol.c
-		src/notification.c)
-
-IF (${TIZEN_PROFILE_NAME} MATCHES "wearable")
-	SET(PKG_SRC ${PKG_SRC}	src/wearable/default.c
-				src/wearable/toast.c
-				src/wearable/password-enforce-change.c)
-ELSE (${TIZEN_PROFILE_NAME} MATCHES "wearable")
-	SET(PKG_SRC ${PKG_SRC} 	src/mobile/default.c
-				src/mobile/toast.c
-				src/mobile/password-enforce-change.c)
-ENDIF (${TIZEN_PROFILE_NAME} MATCHES "wearable")
+		src/notification.c
+		src/default.c
+		src/toast.c
+		src/password-enforce-change.c
+)
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIE")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie")

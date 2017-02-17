@@ -199,14 +199,37 @@ rm -rf %{buildroot}
 %postun
 
 ## Client Package #############################################################
+%package -n libdpm
+Summary: Metapacakge for Tizen Device Policy Client Library
+Group: Development/Libraries
+Requires: libdpm-compat = %{version}-%{release}
+%if "%{?profile}" != "tv" && "%{?profile}" != "wearable" && "%{?profile}" != "mobile"
+Recommends: libdpm-full = %{version}-%{release}
+%endif
+%if "%{?profile}" == "tv"
+Requires: libdpm-profile_tv = %{version}-%{release}
+%endif
+%if "%{?profile}" == "wearable"
+Requires: libdpm-profile_wearable = %{version}-%{release}
+%endif
+%if "%{?profile}" == "mobile"
+Requires: libdpm-profile_mobile = %{version}-%{release}
+%endif
+
+%description -n libdpm
+Metapackage for Tizen Device Policy Client Library.
+This is to support libdpm-full/minimal/ext with the common name.
+%files -n libdpm
+# Null (this is a meta package)
+
 %if "%{?profile}" != "tv" && "%{?profile}" != "wearable"
 %package -n libdpm-full
 Summary: Tizen Device Policy Client library (full: mobile, ivi, common)
 Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
+Requires: %{name}-full = %{version}-%{release}
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
-Provides: libdpm = %{version}-%{release}
+Provides: libdpm-compat = %{version}-%{release}
 Provides: libdpm-profile_common = %{version}-%{release}
 Provides: libdpm-profile_mobile = %{version}-%{release}
 Provides: libdpm-profile_ivi = %{version}-%{release}
@@ -233,7 +256,7 @@ Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
-Provides: libdpm = %{version}-%{release}
+Provides: libdpm-compat = %{version}-%{release}
 Provides: libdpm-profile_tv = %{version}-%{release}
 %description -n libdpm-minimal
 The libdpm package contains the libraries needed to run DPM client.
@@ -253,7 +276,7 @@ Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
-Provides: libdpm = %{version}-%{release}
+Provides: libdpm-compat = %{version}-%{release}
 Provides: libdpm-profile_wearable = %{version}-%{release}
 Requires: libdpm-minimal = %{version}-%{release}
 %description -n libdpm-ext-password
@@ -272,8 +295,18 @@ This containts the minimal + password library (wearable)
 %package -n libdpm-devel
 Summary: Libraries and header files for device policy client development
 Group: Development/Libraries
+%if "%{?profile}" == "tv"
+# Obsolete Build System Support
+Requires: libdpm-minimal = %{version}-%{release}
+%endif
+%if "%{?profile}" == "wearable"
+# Obsolete Build System Support
+Requires: libdpm-ext-password = %{version}-%{release}
+%endif
+%if "%{?profile}" != "tv" && "%{?profile}" != "wearable"
+Requires: libdpm-full = %{version}-%{release}
+%endif
 Requires: libdpm = %{version}-%{release}
-Recommends: libdpm-full = %{version}-%{release}
 
 %description -n libdpm-devel
 The libdpm-devel package includes the libraries and header files necessary for

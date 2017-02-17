@@ -16,11 +16,10 @@
  *
  */
 
-#define _TIZEN_PROFILE_WEARABLE (0)
-
 #include <vconf.h>
 
 #include "dpm-syspopup.h"
+#include "profile_decision.h"
 
 static appdata_s password_enforce_change_appdata[] = {
 	{"caller", "DPM"},
