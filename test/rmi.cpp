@@ -32,7 +32,16 @@
 
 #include <klay/testbench.h>
 
+namespace {
+
 const std::string IPC_TEST_ADDRESS = "/tmp/.dpm-test";
+
+void AuditTrail(const rmi::Credentials& cred, const std::string& method, int condition)
+{
+	std::cout << "AuditTrail pid: " << cred.pid << " method: " << method << std::endl;
+}
+
+};
 
 class TestServer {
 public:
@@ -50,6 +59,8 @@ public:
 
 		service->expose(this, "", (int)(TestServer::sendSignal)());
 		service->expose(this, "", (int)(TestServer::sendPolicyChangeNotification)());
+
+		service->setAuditTrail(AuditTrail);
 
 		service->createNotification("TestPolicyChanged");
 		service->createNotification("TestSignal");

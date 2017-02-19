@@ -34,8 +34,11 @@ Service::Service(const std::string& path) :
 	setNewConnectionCallback(nullptr);
 	setCloseConnectionCallback(nullptr);
 
-	onMethodCall = [](const Credentials& cred, const std::string& privilege) {
+	onPrivilegeCheck = [](const Credentials& cred, const std::string& privilege) {
 		return true;
+	};
+
+	onAuditTrail = [](const Credentials& cred, const std::string& name, int condition) {
 	};
 }
 
@@ -72,7 +75,12 @@ Service::ConnectionRegistry::iterator Service::getConnectionIterator(const int i
 
 void Service::setPrivilegeChecker(const PrivilegeChecker& checker)
 {
-	onMethodCall = std::move(checker);
+	onPrivilegeCheck = std::move(checker);
+}
+
+void Service::setAuditTrail(const AuditTrail& trail)
+{
+	onAuditTrail = std::move(trail);
 }
 
 void Service::setNewConnectionCallback(const ConnectionCallback& connectionCallback)
@@ -192,7 +200,9 @@ void Service::onMessageProcess(const std::shared_ptr<Connection>& connection)
 			std::shared_ptr<MethodContext> methodContext = methodRegistry.at(request.target());
 
 			processingContext = ProcessingContext(connection);
-			if (onMethodCall(processingContext.credentials, methodContext->privilege) != true) {
+			bool allowed = onPrivilegeCheck(processingContext.credentials, methodContext->privilege);
+			onAuditTrail(processingContext.credentials, request.target(), allowed);
+			if (!allowed) {
 				throw runtime::Exception("Permission denied");
 			}
 

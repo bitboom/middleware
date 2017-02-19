@@ -143,6 +143,7 @@ namespace rmi {
 
 typedef std::function<bool(const Connection& connection)> ConnectionCallback;
 typedef std::function<bool(const Credentials& cred, const std::string& privilege)> PrivilegeChecker;
+typedef std::function<void(const Credentials& cred, const std::string& method, int condition)> AuditTrail;
 
 class Service {
 public:
@@ -155,6 +156,7 @@ public:
 	void start(bool useGMainloop = false);
 	void stop();
 
+	void setAuditTrail(const AuditTrail& trail);
 	void setPrivilegeChecker(const PrivilegeChecker& checker);
 	void setNewConnectionCallback(const ConnectionCallback& callback);
 	void setCloseConnectionCallback(const ConnectionCallback& callback);
@@ -220,7 +222,8 @@ private:
 
 	CallbackDispatcher onNewConnection;
 	CallbackDispatcher onCloseConnection;
-	PrivilegeChecker onMethodCall;
+	PrivilegeChecker onPrivilegeCheck;
+	AuditTrail onAuditTrail;
 
 	MethodRegistry methodRegistry;
 	NotificationRegistry notificationRegistry;
