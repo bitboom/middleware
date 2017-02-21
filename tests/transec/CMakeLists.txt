@@ -18,7 +18,8 @@
 #
 SET(TEST_SRCS
 	main.cpp
-	test-app-custom-trust-anchor.cpp
+	test-acta-installer.cpp
+	test-acta-launcher.cpp
 	test-certificate.cpp
 )
 

@@ -14,19 +14,24 @@
  *    limitations under the License.
  */
 /*
- * @file        test-app-custom-trust-anchor.cpp
+ * @file        test-acta-installer.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     0.1
- * @brief       Unit test program of AppCustomTrustAnchor
+ * @brief       Unit test program of ACTA for installer
  */
 
 #include <dpl/test/test_runner.h>
 
 #include <AppCustomTrustAnchor.h>
 
+#include <sched.h>
+#include <unistd.h>
+
+#include <iostream>
+
 #include "test-resource.h"
 
-RUNNER_TEST_GROUP_INIT(T0400_API_ACTA)
+RUNNER_TEST_GROUP_INIT(T0400_API_ACTA_INSTALLER)
 
 using namespace transec;
 
@@ -118,60 +123,4 @@ RUNNER_TEST(T0424_ACTA_UNINSTALL_USER_APP_NEGATIVE)
 	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
 	int ret = acta.uninstall();
 	RUNNER_ASSERT_MSG(ret != 0, "ACTA uninstall should be fail.");
-}
-
-RUNNER_TEST(T0441_ACTA_LAUNCH_GLOBAL_APP_POSITIVE)
-{
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR);
-	int ret = acta.launch(false);
-	RUNNER_ASSERT_MSG(ret == 0, "ACTA launch should be success.");
-}
-
-RUNNER_TEST(T0442_ACTA_LAUNCH_GLOBAL_APP_WITH_SYS_POSITIVE)
-{
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR);
-	int ret = acta.launch(true);
-	RUNNER_ASSERT_MSG(ret == 0, "ACTA launch should be success.");
-}
-
-RUNNER_TEST(T0443_ACTA_LAUNCH_USER_APP_POSITIVE)
-{
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
-	int ret = acta.launch(false);
-	RUNNER_ASSERT_MSG(ret == 0, "ACTA launch should be success.");
-}
-
-RUNNER_TEST(T0444_ACTA_INSTALL_USER_APP_WITH_SYS_POSITIVE)
-{
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
-	int ret = acta.launch(true);
-	RUNNER_ASSERT_MSG(ret == 0, "ACTA launch should be success.");
-}
-
-RUNNER_TEST(T0445_ACTA_LAUNCH_GLOBAL_APP_NEGATIVE)
-{
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR);
-	int ret = acta.launch(false);
-	RUNNER_ASSERT_MSG(ret != 0, "ACTA launch should be fail.");
-}
-
-RUNNER_TEST(T0446_ACTA_LAUNCH_GLOBAL_APP_WITH_SYS_NEGATIVE)
-{
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR);
-	int ret = acta.launch(true);
-	RUNNER_ASSERT_MSG(ret != 0, "ACTA launch should be fail.");
-}
-
-RUNNER_TEST(T0447_ACTA_LAUNCH_USER_APP_NEGATIVE)
-{
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
-	int ret = acta.launch(false);
-	RUNNER_ASSERT_MSG(ret != 0, "ACTA launch should be fail.");
-}
-
-RUNNER_TEST(T0448_ACTA_LAUNCH_USER_APP_WITH_SYS_NEGATIVE)
-{
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
-	int ret = acta.launch(true);
-	RUNNER_ASSERT_MSG(ret != 0, "ACTA launch should be fail.");
 }

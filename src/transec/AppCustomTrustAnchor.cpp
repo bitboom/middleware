@@ -21,9 +21,11 @@
  */
 #include "AppCustomTrustAnchor.h"
 
+#include <climits>
 #include <unistd.h>
 #include <cerrno>
 #include <fcntl.h>
+#include <sys/mount.h>
 
 #include <set>
 #include <vector>
@@ -43,6 +45,8 @@ const std::string BASE_CERTS_PATH(BASE_PATH + "/certs");
 const std::string BASE_BUNDLE_PATH(BASE_PATH + "/bundle");
 const std::string SYS_CERTS_PATH(TZ_SYS_CA_CERTS);
 const std::string SYS_BUNDLE_PATH(TZ_SYS_CA_BUNDLE);
+const std::string MOUNT_POINT_CERTS(TZ_SYS_CA_CERTS);
+const std::string MOUNT_POINT_BUNDLE(TZ_SYS_CA_BUNDLE);
 const std::string BUNDLE_NAME("ca-bundle.pem");
 const std::string NEW_LINE("\n");
 
@@ -65,6 +69,7 @@ private:
 	void preInstall(void) const;
 	void linkTo(const std::string &src, const std::string &dst) const;
 	void makeCustomBundle(const std::vector<std::string> &certs) const;
+	std::string readLink(const std::string &path) const;
 	std::string getUniqueHashName(const std::string &hashName) const;
 
 	std::string m_packageId;
@@ -99,6 +104,13 @@ AppCustomTrustAnchor::Impl::Impl(const std::string &packageId,
 	m_customCertsPath(BASE_CERTS_PATH + "/global/" + packageId),
 	m_customBundlePath(BASE_BUNDLE_PATH + "/global/" + packageId),
 	m_customCertNameSet() {}
+
+std::string AppCustomTrustAnchor::Impl::readLink(const std::string &path) const
+{
+	std::vector<char> buf(PATH_MAX);
+	ssize_t count = readlink(path.c_str(), buf.data(), buf.size());
+	return std::string(buf.data(), (count > 0) ? count : 0);
+}
 
 void AppCustomTrustAnchor::Impl::linkTo(const std::string &src,
 										const std::string &dst) const
@@ -144,7 +156,7 @@ int AppCustomTrustAnchor::Impl::install(bool withSystemCerts) noexcept
 		// link system certificates to the custom directory
 		runtime::DirectoryIterator iter(SYS_CERTS_PATH), end;
 		while (iter != end) {
-			linkTo(iter->getPath(),
+			linkTo(readLink(iter->getPath()),
 				   this->m_customCertsPath + "/" + iter->getName());
 			this->m_customCertNameSet.emplace(iter->getName());
 			++iter;
@@ -208,10 +220,40 @@ int AppCustomTrustAnchor::Impl::uninstall(bool isRollback) noexcept
 
 int AppCustomTrustAnchor::Impl::launch(bool withSystemCerts)
 {
-	if (withSystemCerts)
-		return 0;
-	else
-		return -1;
+	EXCEPTION_GUARD_START
+
+	// TODO(sangwan.kwon) add logic to check system certificates's change
+	(void) withSystemCerts;
+
+	errno = 0;
+	// disassociate from the parent namespace
+	if (::unshare(CLONE_NEWNS))
+		throw std::logic_error("Failed to unshare namespace > " +
+							   std::to_string(errno));
+
+	// convert it to a slave for preventing propagation
+	if (::mount(NULL, "/", NULL, MS_SLAVE | MS_REC, NULL))
+		throw std::logic_error("Failed to disconnect root fs.");
+
+	if (::mount(this->m_customCertsPath.c_str(),
+				MOUNT_POINT_CERTS.c_str(),
+				NULL,
+				MS_BIND,
+				NULL))
+		throw std::logic_error("Failed to mount certs.");
+
+	auto bundle = this->m_customBundlePath + "/" + BUNDLE_NAME;
+	if (::mount(bundle.c_str(),
+				MOUNT_POINT_BUNDLE.c_str(),
+				NULL,
+				MS_BIND,
+				NULL))
+		throw std::logic_error("Failed to mount bundle.");
+
+	INFO("Success to launch. : " << this->m_packageId);
+	return 0;
+
+	EXCEPTION_GUARD_END
 }
 
 std::string AppCustomTrustAnchor::Impl::getUniqueHashName(
