@@ -40,9 +40,9 @@ namespace transec {
 
 namespace {
 
-const std::string BASE_PATH(CERTSVC_TRANSEC_DIR);
-const std::string BASE_CERTS_PATH(BASE_PATH + "/certs");
-const std::string BASE_BUNDLE_PATH(BASE_PATH + "/bundle");
+const std::string BASE_USR_PATH(CERTSVC_TRANSEC_USR_DIR);
+const std::string BASE_GLOBAL_PATH(CERTSVC_TRANSEC_GLOBAL_DIR);
+const std::string TRANSEC_BUNDLE_PATH(CERTSVC_TRANSEC_BUNDLE);
 const std::string SYS_CERTS_PATH(TZ_SYS_CA_CERTS);
 const std::string SYS_BUNDLE_PATH(TZ_SYS_CA_BUNDLE);
 const std::string MOUNT_POINT_CERTS(TZ_SYS_CA_CERTS);
@@ -76,6 +76,7 @@ private:
 	std::string m_appCertsPath;
 	uid_t m_uid;
 
+	std::string m_customBasePath;
 	std::string m_customCertsPath;
 	std::string m_customBundlePath;
 
@@ -88,12 +89,11 @@ AppCustomTrustAnchor::Impl::Impl(const std::string &packageId,
 	m_packageId(packageId),
 	m_appCertsPath(certsDir),
 	m_uid(uid),
-	m_customCertsPath(BASE_CERTS_PATH + "/usr/" +
-					  std::to_string(static_cast<int>(uid)) + "/" +
-					  packageId),
-	m_customBundlePath(BASE_BUNDLE_PATH + "/usr/" +
-					   std::to_string(static_cast<int>(uid)) + "/" +
-					   packageId),
+	m_customBasePath(BASE_USR_PATH + "/" +
+					 std::to_string(static_cast<int>(uid)) + "/" +
+					 packageId),
+	m_customCertsPath(m_customBasePath + "/certs"),
+	m_customBundlePath(m_customBasePath + "/bundle"),
 	m_customCertNameSet() {}
 
 AppCustomTrustAnchor::Impl::Impl(const std::string &packageId,
@@ -101,8 +101,9 @@ AppCustomTrustAnchor::Impl::Impl(const std::string &packageId,
 	m_packageId(packageId),
 	m_appCertsPath(certsDir),
 	m_uid(-1),
-	m_customCertsPath(BASE_CERTS_PATH + "/global/" + packageId),
-	m_customBundlePath(BASE_BUNDLE_PATH + "/global/" + packageId),
+	m_customBasePath(BASE_GLOBAL_PATH + "/" + packageId),
+	m_customCertsPath(m_customBasePath + "/certs"),
+	m_customBundlePath(m_customBasePath + "/bundle"),
 	m_customCertNameSet() {}
 
 std::string AppCustomTrustAnchor::Impl::readLink(const std::string &path) const
@@ -124,19 +125,18 @@ void AppCustomTrustAnchor::Impl::linkTo(const std::string &src,
 
 void AppCustomTrustAnchor::Impl::preInstall(void) const
 {
-	runtime::File customCertsDir(this->m_customCertsPath);
-	if (customCertsDir.exists()) {
-		WARN("App custom certs directory is already exist. remove it!");
-		customCertsDir.remove(true);
+	runtime::File customBaseDir(this->m_customBasePath);
+	if (customBaseDir.exists()) {
+		WARN("App custom directory is already exist. remove it!");
+		customBaseDir.remove(true);
 	}
-	customCertsDir.makeDirectory(true);
+	customBaseDir.makeDirectory(true);
+
+	runtime::File customCertsDir(this->m_customCertsPath);
+	customCertsDir.makeDirectory();
 
 	runtime::File customBundleDir(this->m_customBundlePath);
-	if (customBundleDir.exists()) {
-		WARN("App custom bundle directory is already exist. remove it!");
-		customBundleDir.remove(true);
-	}
-	customBundleDir.makeDirectory(true);
+	customBundleDir.makeDirectory();
 
 	runtime::File appCertsDir(this->m_appCertsPath);
 	if (!appCertsDir.exists() || !appCertsDir.isDirectory())
@@ -188,7 +188,7 @@ int AppCustomTrustAnchor::Impl::install(bool withSystemCerts) noexcept
 	this->makeCustomBundle(customCertData);
 
 	INFO("Success to install[" << this->m_packageId <<
-		 "] to " << this->m_customCertsPath);
+		 "] to " << this->m_customBasePath);
 	return 0;
 
 	EXCEPTION_GUARD_END
@@ -198,19 +198,12 @@ int AppCustomTrustAnchor::Impl::uninstall(bool isRollback) noexcept
 {
 	EXCEPTION_GUARD_START
 
-	runtime::File customCertsDir(this->m_customCertsPath);
-	if (!customCertsDir.exists() && !isRollback)
-		throw std::invalid_argument("There is no installed certs previous.");
+	runtime::File customBaseDir(this->m_customBasePath);
+	if (!customBaseDir.exists() && !isRollback)
+		throw std::invalid_argument("There is no installed acta previous.");
 
-	runtime::File customBundleDir(this->m_customBundlePath);
-	if (!customBundleDir.exists() && !isRollback)
-		throw std::invalid_argument("There is no installed bundle previous.");
-
-	if (customCertsDir.exists())
-		customCertsDir.remove(true);
-
-	if (!customBundleDir.exists())
-		customBundleDir.remove(true);
+	if (customBaseDir.exists())
+		customBaseDir.remove(true);
 
 	INFO("Success to uninstall. : " << this->m_packageId);
 	return 0;
@@ -276,7 +269,11 @@ void AppCustomTrustAnchor::Impl::makeCustomBundle(
 							   BUNDLE_NAME);
 	if (!customBundle.exists()) {
 		DEBUG("Make bundle only used by app certificates.");
-		customBundle.create(755);
+		// copy transec bundle to the custom path
+		runtime::File transecBundle(TRANSEC_BUNDLE_PATH);
+		if (!transecBundle.exists())
+			throw std::logic_error("There is no transec bundle file.");
+		transecBundle.copyTo(this->m_customBundlePath);
 	}
 
 	customBundle.open(O_RDWR | O_APPEND);
