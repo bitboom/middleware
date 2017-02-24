@@ -85,13 +85,13 @@ RUNNER_TEST(T0601_ACTA_LAUNCH)
 	auto beforeCat = ::cat(TZ_SYS_RO_CA_BUNDLE);
 
 	AppCustomTrustAnchor acta(DUMMY_PKG_ID, APP_CERTS_DIR);
-	int ret = acta.install(false);
+	int ret = acta.install(true);
 
 	// pre-condition
 	int pid = fork();
 
 	if (pid == 0) {
-		ret = acta.launch(false);
+		ret = acta.launch(true);
 		RUNNER_ASSERT_MSG(ret == 0, "ACTA launch should be success.");
 
 		auto afterLsChild = ::ls(TZ_SYS_RO_CA_CERTS);

@@ -22,10 +22,13 @@
 #include "AppCustomTrustAnchor.h"
 
 #include <climits>
-#include <unistd.h>
 #include <cerrno>
+#include <ctime>
+
+#include <unistd.h>
 #include <fcntl.h>
 #include <sys/mount.h>
+#include <sys/stat.h>
 
 #include <set>
 #include <vector>
@@ -68,9 +71,10 @@ public:
 private:
 	void preInstall(void) const;
 	void linkTo(const std::string &src, const std::string &dst) const;
-	void makeCustomBundle(const std::vector<std::string> &certs) const;
+	void makeCustomBundle(bool withSystemCerts);
 	std::string readLink(const std::string &path) const;
 	std::string getUniqueHashName(const std::string &hashName) const;
+	bool isSystemCertsModified(void) const;
 
 	std::string m_packageId;
 	std::string m_appCertsPath;
@@ -81,6 +85,7 @@ private:
 	std::string m_customBundlePath;
 
 	std::set<std::string> m_customCertNameSet;
+	std::vector<std::string> m_customCertsData;
 };
 
 AppCustomTrustAnchor::Impl::Impl(const std::string &packageId,
@@ -94,7 +99,8 @@ AppCustomTrustAnchor::Impl::Impl(const std::string &packageId,
 					 packageId),
 	m_customCertsPath(m_customBasePath + "/certs"),
 	m_customBundlePath(m_customBasePath + "/bundle"),
-	m_customCertNameSet() {}
+	m_customCertNameSet(),
+	m_customCertsData() {}
 
 AppCustomTrustAnchor::Impl::Impl(const std::string &packageId,
 								 const std::string &certsDir) noexcept :
@@ -104,7 +110,8 @@ AppCustomTrustAnchor::Impl::Impl(const std::string &packageId,
 	m_customBasePath(BASE_GLOBAL_PATH + "/" + packageId),
 	m_customCertsPath(m_customBasePath + "/certs"),
 	m_customBundlePath(m_customBasePath + "/bundle"),
-	m_customCertNameSet() {}
+	m_customCertNameSet(),
+	m_customCertsData() {}
 
 std::string AppCustomTrustAnchor::Impl::readLink(const std::string &path) const
 {
@@ -161,19 +168,11 @@ int AppCustomTrustAnchor::Impl::install(bool withSystemCerts) noexcept
 			this->m_customCertNameSet.emplace(iter->getName());
 			++iter;
 		}
-
-		// copy system bundle to the custom path
-		runtime::File sysBundle(SYS_BUNDLE_PATH);
-		if (!sysBundle.exists())
-			throw std::logic_error("There is no system bundle file.");
-		sysBundle.copyTo(this->m_customBundlePath);
-
-		DEBUG("Success to migrate system certificates and bundle.");
+		DEBUG("Success to migrate system certificates.");
 	}
 
 	// link app certificates to the custom directory as subjectNameHash
 	runtime::DirectoryIterator iter(this->m_appCertsPath), end;
-	std::vector<std::string> customCertData;
 	while (iter != end) {
 		Certificate cert(iter->getPath());
 		std::string hashName = this->getUniqueHashName(cert.getSubjectNameHash());
@@ -181,11 +180,11 @@ int AppCustomTrustAnchor::Impl::install(bool withSystemCerts) noexcept
 			   this->m_customCertsPath + "/" + hashName);
 		this->m_customCertNameSet.emplace(std::move(hashName));
 
-		customCertData.emplace_back(cert.getCertificateData());
+		this->m_customCertsData.emplace_back(cert.getCertificateData());
 		++iter;
 	}
 
-	this->makeCustomBundle(customCertData);
+	this->makeCustomBundle(withSystemCerts);
 
 	INFO("Success to install[" << this->m_packageId <<
 		 "] to " << this->m_customBasePath);
@@ -211,12 +210,26 @@ int AppCustomTrustAnchor::Impl::uninstall(bool isRollback) noexcept
 	EXCEPTION_GUARD_END
 }
 
+bool AppCustomTrustAnchor::Impl::isSystemCertsModified(void) const
+{
+	struct stat systemAttr, customAttr;
+
+	stat(SYS_BUNDLE_PATH.c_str(), &systemAttr);
+	DEBUG("System bundle mtime : " << ::ctime(&systemAttr.st_mtime));
+
+	auto customBundle = this->m_customBundlePath + "/" + BUNDLE_NAME;
+	stat(customBundle.c_str(), &customAttr);
+	DEBUG("Custom bundle mtime : " << ::ctime(&customAttr.st_mtime));
+
+	return systemAttr.st_mtime > customAttr.st_mtime;
+}
+
 int AppCustomTrustAnchor::Impl::launch(bool withSystemCerts)
 {
 	EXCEPTION_GUARD_START
 
-	// TODO(sangwan.kwon) add logic to check system certificates's change
-	(void) withSystemCerts;
+	if (withSystemCerts && this->isSystemCertsModified())
+		this->makeCustomBundle(true);
 
 	errno = 0;
 	// disassociate from the parent namespace
@@ -262,25 +275,47 @@ std::string AppCustomTrustAnchor::Impl::getUniqueHashName(
 	return uniqueName;
 }
 
-void AppCustomTrustAnchor::Impl::makeCustomBundle(
-	const std::vector<std::string> &certs) const
+void AppCustomTrustAnchor::Impl::makeCustomBundle(bool withSystemCerts)
 {
 	runtime::File customBundle(this->m_customBundlePath + "/" +
 							   BUNDLE_NAME);
-	if (!customBundle.exists()) {
-		DEBUG("Make bundle only used by app certificates.");
-		// copy transec bundle to the custom path
+	if (customBundle.exists()) {
+		WARN("App custom bundle is already exist. remove it!");
+		customBundle.remove();
+	}
+
+	DEBUG("Start to migrate previous bundle.");
+	if (withSystemCerts) {
+		runtime::File sysBundle(SYS_BUNDLE_PATH);
+		if (!sysBundle.exists())
+			throw std::logic_error("There is no system bundle file.");
+		sysBundle.copyTo(this->m_customBundlePath);
+	} else {
 		runtime::File transecBundle(TRANSEC_BUNDLE_PATH);
 		if (!transecBundle.exists())
 			throw std::logic_error("There is no transec bundle file.");
 		transecBundle.copyTo(this->m_customBundlePath);
 	}
+	DEBUG("Finish migrating previous bundle.");
 
+	if (this->m_customCertsData.empty()) {
+		DEBUG("System certificates is changed after ACTA installation.");
+		runtime::DirectoryIterator iter(this->m_appCertsPath), end;
+		while (iter != end) {
+			Certificate cert(iter->getPath());
+			this->m_customCertsData.emplace_back(cert.getCertificateData());
+			++iter;
+		}
+	}
+
+	DEBUG("Start to add app's certificate to bundle.");
 	customBundle.open(O_RDWR | O_APPEND);
-	for (const auto &cert : certs) {
+	for (const auto &cert : this->m_customCertsData) {
 		customBundle.write(cert.c_str(), cert.length());
 		customBundle.write(NEW_LINE.c_str(), NEW_LINE.length());
 	}
+
+	INFO("Success to make app custom bundle.");
 }
 
 AppCustomTrustAnchor::AppCustomTrustAnchor(const std::string &packageId,
