@@ -16,37 +16,12 @@
 # @author      Sangwan Kwon (sangwan.kwon@samsung.com)
 # @breif
 #
-SET(TEST_SRCS
-	main.cpp
-	test-acta-installer.cpp
-	test-acta-launcher.cpp
-	test-certificate.cpp
-)
 
-SET(TEST_TRANSEC_PATH "${CERT_SVC_TESTS}/transec")
-ADD_DEFINITIONS("-DTEST_TRANSEC_PATH=\"${TEST_TRANSEC_PATH}\"")
-
-INCLUDE_DIRECTORIES(
-	.
-	SYSTEM
-	${PROJECT_SOURCE_DIR}/src/transec
-)
-
-ADD_EXECUTABLE(${TARGET_TRANSEC_TEST}
-	${TEST_SRCS}
-	${DPL_TEST_SOURCES}
-)
-
-TARGET_LINK_LIBRARIES(${TARGET_TRANSEC_TEST}
-	${TARGET_VCORE_LIB}
-	${TARGET_TRANSEC_LIB}
-	${TEST_DEP_LIBRARIES}
-)
-
-INSTALL(TARGETS
-			${TARGET_TRANSEC_TEST}
+CONFIGURE_FILE(pre-test.sh.in pre-test.sh @ONLY)
+INSTALL(FILES
+			pre-test.sh
 		DESTINATION
-			${BIN_DIR}
+			${TEST_TRANSEC_PATH}/script
 		PERMISSIONS
 			OWNER_READ
 			OWNER_WRITE
@@ -54,8 +29,4 @@ INSTALL(TARGETS
 			GROUP_READ
 			GROUP_EXECUTE
 			WORLD_READ
-			WORLD_EXECUTE
-)
-
-ADD_SUBDIRECTORY(resource)
-ADD_SUBDIRECTORY(script)
+			WORLD_EXECUTE)
