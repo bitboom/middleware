@@ -28,7 +28,7 @@ typedef std::function<void(const char*, const char*, void*)> SignalListener;
 
 class DevicePolicyContext {
 public:
-	typedef std::unique_ptr<rmi::Client> PolicyControlContext;
+	typedef DevicePolicyContext PolicyControlContext;
 
 	DevicePolicyContext() noexcept;
 	~DevicePolicyContext() noexcept;
@@ -49,13 +49,25 @@ public:
 		return Policy(getPolicyControlContext(), std::forward<Args>(args)...);
 	}
 
+	template<typename Type, typename... Args>
+	Type methodCall(const std::string& method, Args&&... args)
+	{
+		return client->methodCall<Type, Args...>(method, std::forward<Args>(args)...);
+	}
+
+	bool isMaintenanceMode()
+	{
+		return maintenanceMode;
+	}
 private:
 	PolicyControlContext& getPolicyControlContext()
 	{
-		return client;
+		return *this;
 	}
 
-	PolicyControlContext client;
+private:
+	int maintenanceMode;
+	std::unique_ptr<rmi::Client> client;
 };
 
 DevicePolicyContext& GetDevicePolicyContext(void* handle);

@@ -55,7 +55,11 @@ StoragePolicy::~StoragePolicy()
 int StoragePolicy::wipeData(int type)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("StoragePolicy::wipeData", type);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("StoragePolicy::wipeData", type);
+	}
+
+	return -1;
 }
 
 } //namespace DevicePolicyManager

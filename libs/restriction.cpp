@@ -57,108 +57,181 @@ RestrictionPolicy::~RestrictionPolicy()
 int RestrictionPolicy::setMicrophoneState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("RestrictionPolicy::setMicrophoneState", enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("RestrictionPolicy::setMicrophoneState", enable);
+	}
+
+	return -1;
 }
 
 bool RestrictionPolicy::getMicrophoneState()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("RestrictionPolicy::getMicrophoneState");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("RestrictionPolicy::getMicrophoneState");
+	}
+
+	return true;
 }
 
 int RestrictionPolicy::setCameraState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("RestrictionPolicy::setCameraState", enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("RestrictionPolicy::setCameraState", enable);
+	}
+
+	return -1;
 }
 
 bool RestrictionPolicy::getCameraState()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("RestrictionPolicy::getCameraState");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("RestrictionPolicy::getCameraState");
+	}
+
+	return true;
 }
 
 int RestrictionPolicy::setClipboardState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("RestrictionPolicy::setClipboardState", enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("RestrictionPolicy::setClipboardState", enable);
+	}
+
+	return -1;
 }
 
 bool RestrictionPolicy::getClipboardState()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("RestrictionPolicy::getClipboardState");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("RestrictionPolicy::getClipboardState");
+	}
+
+	return true;
 }
 
 int RestrictionPolicy::setUsbDebuggingState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("RestrictionPolicy::setUsbDebuggingState", enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("RestrictionPolicy::setUsbDebuggingState", enable);
+	}
+
+	return -1;
 }
 
 bool RestrictionPolicy::getUsbDebuggingState()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("RestrictionPolicy::getUsbDebuggingState");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("RestrictionPolicy::getUsbDebuggingState");
+	}
+
+	return true;
 }
 
 int RestrictionPolicy::setUsbTetheringState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("RestrictionPolicy::setUsbTetheringState", enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("RestrictionPolicy::setUsbTetheringState", enable);
+	}
+
+	return -1;
 }
+
 bool RestrictionPolicy::getUsbTetheringState()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("RestrictionPolicy::getUsbTetheringState");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("RestrictionPolicy::getUsbTetheringState");
+	}
+
+	return true;
 }
 
 int RestrictionPolicy::setExternalStorageState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("RestrictionPolicy::setExternalStorageState", enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("RestrictionPolicy::setExternalStorageState", enable);
+	}
+
+	return -1;
 }
 
 bool RestrictionPolicy::getExternalStorageState()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("RestrictionPolicy::getExternalStorageState");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("RestrictionPolicy::getExternalStorageState");
+	}
+
+	return true;
 }
 
 int RestrictionPolicy::setPopImapEmailState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("RestrictionPolicy::setPopImapEmailState", enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("RestrictionPolicy::setPopImapEmailState", enable);
+	}
+
+	return -1;
 }
 
 bool RestrictionPolicy::getPopImapEmailState()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("RestrictionPolicy::getPopImapEmailState");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("RestrictionPolicy::getPopImapEmailState");
+	}
+
+	return true;
 }
 
 int RestrictionPolicy::setMessagingState(const std::string &sim_id, bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("RestrictionPolicy::setMessagingState", sim_id, enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("RestrictionPolicy::setMessagingState", sim_id, enable);
+	}
+
+	return -1;
 }
 
 bool RestrictionPolicy::getMessagingState(const std::string &sim_id)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("RestrictionPolicy::getMessagingState", sim_id);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("RestrictionPolicy::getMessagingState", sim_id);
+	}
+
+	return true;
 }
 
 int RestrictionPolicy::setBrowserState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("RestrictionPolicy::setBrowserState", enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("RestrictionPolicy::setBrowserState", enable);
+	}
+
+	return -1;
 }
 
 bool RestrictionPolicy::getBrowserState()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("RestrictionPolicy::getBrowserState");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("RestrictionPolicy::getBrowserState");
+	}
+
+	return true;
 }
 
 } //namespace DevicePolicyManager

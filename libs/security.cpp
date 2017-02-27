@@ -55,31 +55,51 @@ SecurityPolicy::~SecurityPolicy()
 int SecurityPolicy::lockoutScreen()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("SecurityPolicy::lockoutScreen");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("SecurityPolicy::lockoutScreen");
+	}
+
+	return -1;
 }
 
 int SecurityPolicy::setInternalStorageEncryption(bool encrypt)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("SecurityPolicy::setInternalStorageEncryption", encrypt);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("SecurityPolicy::setInternalStorageEncryption", encrypt);
+	}
+
+	return -1;
 }
 
 bool SecurityPolicy::isInternalStorageEncrypted()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("SecurityPolicy::isInternalStorageEncrypted");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("SecurityPolicy::isInternalStorageEncrypted");
+	}
+
+	return false;
 }
 
 int SecurityPolicy::setExternalStorageEncryption(bool encrypt)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("SecurityPolicy::setExternalStorageEncryption", encrypt);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("SecurityPolicy::setExternalStorageEncryption", encrypt);
+	}
+
+	return -1;
 }
 
 bool SecurityPolicy::isExternalStorageEncrypted()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("SecurityPolicy::isExternalStorageEncrypted");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("SecurityPolicy::isExternalStorageEncrypted");
+	}
+
+	return false;
 }
 
 } // namespace DevicePolicyManager

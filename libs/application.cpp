@@ -55,48 +55,80 @@ ApplicationPolicy::~ApplicationPolicy()
 int ApplicationPolicy::installPackage(const std::string& pkgpath)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("ApplicationPolicy::installPackage", pkgpath);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("ApplicationPolicy::installPackage", pkgpath);
+	}
+
+	return -1;
 }
 
 int ApplicationPolicy::uninstallPackage(const std::string& pkgid)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("ApplicationPolicy::uninstallPackage", pkgid);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("ApplicationPolicy::uninstallPackage", pkgid);
+	}
+
+	return -1;
 }
 
 int ApplicationPolicy::setModeRestriction(int mode)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("ApplicationPolicy::setModeRestriction", mode);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("ApplicationPolicy::setModeRestriction", mode);
+	}
+
+	return -1;
 }
 
 int ApplicationPolicy::unsetModeRestriction(int mode)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("ApplicationPolicy::unsetModeRestriction", mode);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("ApplicationPolicy::unsetModeRestriction", mode);
+	}
+
+	return -1;
 }
 
 int ApplicationPolicy::getModeRestriction()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("ApplicationPolicy::getModeRestriction");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("ApplicationPolicy::getModeRestriction");
+	}
+
+	return 0;
 }
 
 int ApplicationPolicy::addPrivilegeToBlacklist(int type, const std::string& privilege)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("ApplicationPolicy::addPrivilegeToBlacklist", type, privilege);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("ApplicationPolicy::addPrivilegeToBlacklist", type, privilege);
+	}
+
+	return -1;
 }
 
 int ApplicationPolicy::removePrivilegeFromBlacklist(int type, const std::string& privilege)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("ApplicationPolicy::removePrivilegeFromBlacklist", type, privilege);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("ApplicationPolicy::removePrivilegeFromBlacklist", type, privilege);
+	}
+
+	return -1;
 }
 
 int ApplicationPolicy::checkPrivilegeIsBlacklisted(int type, const std::string& privilege)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("ApplicationPolicy::checkPrivilegeIsBlacklisted", type, privilege);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("ApplicationPolicy::checkPrivilegeIsBlacklisted", type, privilege);
+	}
+
+	return 0;
 }
 } // namespace DevicePolicyManager

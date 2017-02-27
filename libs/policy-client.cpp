@@ -14,6 +14,7 @@
  *  limitations under the License
  */
 #include "policy-client.h"
+#include <system_info.h>
 
 namespace {
 
@@ -22,10 +23,31 @@ const std::string SUBSCRIBER_UNREGISTER = "Server::unregisterNotificationSubscri
 
 const std::string POLICY_MANAGER_ADDRESS = "/tmp/.device-policy-manager.sock";
 
+int GetPolicyEnforceMode()
+{
+	char *profileName;
+
+	system_info_get_platform_string("http://tizen.org/feature/profile", &profileName);
+	switch (*profileName) {
+	case 'w':
+	case 'W':
+	case 'm':
+	case 'M':
+	case 't':
+	case 'T':
+		free(profileName);
+		return 1;
+	}
+	free(profileName);
+
+	return 0;
+}
+
 } // namespace
 
 
-DevicePolicyContext::DevicePolicyContext() noexcept
+DevicePolicyContext::DevicePolicyContext() noexcept :
+	maintenanceMode(GetPolicyEnforceMode())
 {
 }
 
@@ -38,7 +60,9 @@ int DevicePolicyContext::connect(const std::string& address) noexcept
 {
 	try {
 		client.reset(new rmi::Client(address));
-		client->connect();
+		if (maintenanceMode) {
+			client->connect();
+		}
 	} catch (runtime::Exception& e) {
 		return -1;
 	}
@@ -64,6 +88,10 @@ int DevicePolicyContext::subscribePolicyChange(const std::string& name,
 		listener(policy.c_str(), state.c_str(), data);
 	};
 
+	if (!maintenanceMode) {
+		return 0;
+	}
+
 	try {
 		return client->subscribe<std::string, std::string>(SUBSCRIBER_REGISTER,
 														   name, listenerDispatcher);
@@ -75,6 +103,10 @@ int DevicePolicyContext::subscribePolicyChange(const std::string& name,
 
 int DevicePolicyContext::unsubscribePolicyChange(int subscriberId)
 {
+	if (!maintenanceMode) {
+		return 0;
+	}
+
 	return client->unsubscribe(SUBSCRIBER_UNREGISTER, subscriberId);
 }
 
@@ -85,6 +117,10 @@ int DevicePolicyContext::subscribeSignal(const std::string& name,
 	auto listenerDispatcher = [listener, data](std::string &name, std::string &from, std::string &object) {
 		listener(from.c_str(), object.c_str(), data);
 	};
+
+	if (!maintenanceMode) {
+		return 0;
+	}
 
 	try {
 		return client->subscribe<std::string, std::string, std::string>(SUBSCRIBER_REGISTER,
@@ -97,5 +133,9 @@ int DevicePolicyContext::subscribeSignal(const std::string& name,
 
 int DevicePolicyContext::unsubscribeSignal(int subscriberId)
 {
+	if (!maintenanceMode) {
+		return 0;
+	}
+
 	return client->unsubscribe(SUBSCRIBER_UNREGISTER, subscriberId);
 }

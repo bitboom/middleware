@@ -57,13 +57,21 @@ AdministrationPolicy::~AdministrationPolicy()
 int AdministrationPolicy::registerPolicyClient(const std::string& name, uid_t uid)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("AdministrationPolicy::registerPolicyClient", name, uid);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("AdministrationPolicy::registerPolicyClient", name, uid);
+	}
+
+	return -1;
 }
 
 int AdministrationPolicy::deregisterPolicyClient(const std::string& name, uid_t uid)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("AdministrationPolicy::deregisterPolicyClient", name, uid);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("AdministrationPolicy::deregisterPolicyClient", name, uid);
+	}
+
+	return -1;
 }
 
 } // namespace DevicePolicyManager

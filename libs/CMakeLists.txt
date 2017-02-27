@@ -94,6 +94,7 @@ PKG_CHECK_MODULES(LIBS_DEPS	REQUIRED
 							klay
 							glib-2.0
 							capi-base-common
+							capi-system-info
 )
 
 INCLUDE_DIRECTORIES(SYSTEM ${LIBS_DEPS_INCLUDE_DIRS} ${DPM_POLICY} ${DPM_LIBS})

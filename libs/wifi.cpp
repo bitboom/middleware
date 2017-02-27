@@ -56,61 +56,102 @@ WifiPolicy::~WifiPolicy()
 int WifiPolicy::setState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("WifiPolicy::setState", enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("WifiPolicy::setState", enable);
+	}
+
+
+	return -1;
 }
 
 bool WifiPolicy::getState()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("WifiPolicy::getState");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("WifiPolicy::getState");
+	}
+
+	return true;
 }
 
 int WifiPolicy::setHotspotState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("WifiPolicy::setHotspotState", enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("WifiPolicy::setHotspotState", enable);
+	}
+
+	return -1;
 }
 
 bool WifiPolicy::getHotspotState()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("WifiPolicy::getHotspotState");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("WifiPolicy::getHotspotState");
+	}
+
+	return true;
 }
 
 int WifiPolicy::setProfileChangeRestriction(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("WifiPolicy::setProfileChangeRestriction", enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("WifiPolicy::setProfileChangeRestriction", enable);
+	}
+
+	return -1;
 }
 
 bool WifiPolicy::isProfileChangeRestricted()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("WifiPolicy::isProfileChangeRestricted");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("WifiPolicy::isProfileChangeRestricted");
+	}
+
+	return false;
 }
 
 int WifiPolicy::setNetworkAccessRestriction(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("WifiPolicy::setNetworkAccessRestriction", enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("WifiPolicy::setNetworkAccessRestriction", enable);
+	}
+
+	return -1;
 }
 
 bool WifiPolicy::isNetworkAccessRestricted()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("WifiPolicy::isNetworkAccessRestricted");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("WifiPolicy::isNetworkAccessRestricted");
+	}
+
+	return false;
 }
 
 int WifiPolicy::addSsidToBlocklist(const std::string& ssid)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("WifiPolicy::addSsidToBlocklist", ssid);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("WifiPolicy::addSsidToBlocklist", ssid);
+	}
+
+	return -1;
 }
 
 int WifiPolicy::removeSsidFromBlocklist(const std::string& ssid)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("WifiPolicy::removeSsidFromBlocklist", ssid);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("WifiPolicy::removeSsidFromBlocklist", ssid);
+	}
+
+	return -1;
 }
 
 } // namespace DevicePolicyManager

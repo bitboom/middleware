@@ -55,13 +55,21 @@ LocationPolicy::~LocationPolicy()
 int LocationPolicy::setLocationState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("LocationPolicy::setLocationState", enable);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("LocationPolicy::setLocationState", enable);
+	}
+
+	return -1;
 }
 
 bool LocationPolicy::getLocationState()
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<bool>("LocationPolicy::getLocationState");
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<bool>("LocationPolicy::getLocationState");
+	}
+
+	return true;
 }
 
 } //namespace DevicePolicyManager

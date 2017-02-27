@@ -55,25 +55,41 @@ KratePolicy::~KratePolicy()
 int KratePolicy::createKrate(const std::string& name, const std::string& setupWizAppid)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("KratePolicy::createKrate", name, setupWizAppid);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("KratePolicy::createKrate", name, setupWizAppid);
+	}
+
+	return -1;
 }
 
 int KratePolicy::removeKrate(const std::string& name)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("KratePolicy::removeKrate", name);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("KratePolicy::removeKrate", name);
+	}
+
+	return -1;
 }
 
 int KratePolicy::getKrateState(const std::string& name)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<int>("KratePolicy::getKrateState", name);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("KratePolicy::getKrateState", name);
+	}
+
+	return 0;
 }
 
 std::vector<std::string> KratePolicy::getKrateList(int state)
 {
 	PolicyControlContext& context = pimpl->context;
-	return context->methodCall<std::vector<std::string>>("KratePolicy::getKrateList", state);
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<std::vector<std::string>>("KratePolicy::getKrateList", state);
+	}
+
+	return std::vector<std::string>();
 }
 
 } // namespace DevicePolicyManager
