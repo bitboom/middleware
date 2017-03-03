@@ -35,10 +35,7 @@ public:
 	void write(const void* ptr, const size_t sz);
 	void read(void* ptr, const size_t sz);
 
-	void reserve(size_t size)
-	{
-		produce = size;
-	}
+	void reserve(size_t size);
 
 	void reset()
 	{

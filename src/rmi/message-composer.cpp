@@ -16,7 +16,10 @@
 
 #include <cstring>
 #include <algorithm>
+#include <iostream>
+#include <fstream>
 
+#include <klay/audit/logger.h>
 #include <klay/rmi/message-composer.h>
 
 namespace rmi {
@@ -106,10 +109,24 @@ MessageComposer& MessageComposer::operator=(MessageComposer&& rhs)
 void MessageComposer::write(const void* ptr, const size_t sz)
 {
 	size_t bytes = sz;
+	size_t new_capacity = capacity;
+
+	  // If write exeeds capacity, increase capacity
+	while( ((produce + bytes) > new_capacity) && new_capacity) {
+		new_capacity += new_capacity;
+	}
+	if ( new_capacity > capacity ) {
+		// If we increased capacity, alloc new buffer
+		char *new_buffer = new char[new_capacity];
+		std::copy(buffer, buffer + produce, new_buffer);
+
+		delete [] buffer;
+		buffer = new_buffer;
+		capacity = new_capacity;
+	}
 	if ((produce + bytes) > capacity) {
 		bytes = capacity - produce;
 	}
-
 	::memcpy(reinterpret_cast<char *>(buffer + produce), ptr, bytes);
 	produce += bytes;
 }
@@ -128,6 +145,19 @@ void MessageComposer::read(void* ptr, const size_t sz)
 	if (consume == produce) {
 		consume = produce = 0;
 	}
+}
+
+void MessageComposer::reserve(size_t size)
+{
+	if ( size > capacity ) {
+		char *new_buffer = new char[size];
+		std::copy(buffer, buffer + produce, new_buffer);
+
+		delete [] buffer;
+		buffer = new_buffer;
+		capacity = size;
+	}
+	produce = size;
 }
 
 } // namespae rmi
