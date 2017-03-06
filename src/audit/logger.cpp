@@ -39,6 +39,8 @@ std::unique_ptr<LogSink> Logger::backend([]() {
 std::string LogLevelToString(const LogLevel level)
 {
 	switch (level) {
+	case LogLevel::Silent:
+		return "SILENT";
 	case LogLevel::Error:
 		return "ERROR";
 	case LogLevel::Warning:
@@ -54,7 +56,9 @@ std::string LogLevelToString(const LogLevel level)
 
 LogLevel StringToLogLevel(const std::string& level)
 {
-	if (level == "ERROR")
+	if (level == "SILENT")
+		return LogLevel::Silent;
+	else if (level == "ERROR")
 		return LogLevel::Error;
 	else if (level == "WARN")
 		return LogLevel::Warning;

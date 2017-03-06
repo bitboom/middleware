@@ -220,8 +220,8 @@ void Message::decode(const T& device)
 {
 	MessageHeader header;
 	device.read(&header, sizeof(header));
-	device.read(buffer.begin(), header.length);
 	buffer.reserve(header.length);
+	device.read(buffer.begin(), header.length);
 
 	int fds[header.ancillary];
 
