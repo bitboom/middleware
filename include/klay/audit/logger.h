@@ -28,6 +28,7 @@
 namespace audit {
 
 enum class LogLevel : int {
+	Silent,
 	Error,
 	Warning,
 	Debug,
