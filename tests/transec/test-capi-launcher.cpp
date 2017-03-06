@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 /*
- * @file        test-actc-launcher.cpp
+ * @file        test-capi-launcher.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     0.1
  * @brief       Unit test program of ACTA for launcher
@@ -22,31 +22,28 @@
 
 #include <dpl/test/test_runner.h>
 
-#include <AppCustomTrustAnchor.h>
+#include <acta/app-custom-trust-anchor.h>
 
 #include <unistd.h>
 
 #include "test-util.h"
 #include "test-resource.h"
 
-RUNNER_TEST_GROUP_INIT(T0600_API_ACTA_LAUNCER)
-
-using namespace transec;
+RUNNER_TEST_GROUP_INIT(T0500_CAPI_ACTA_LAUNCER)
 
 // Launch needs CAP_SYS_ADMIN
-RUNNER_TEST(T0601_ACTA_LAUNCH)
+RUNNER_TEST(T0501_ACTA_LAUNCH)
 {
 	auto beforeLs = test::util::ls(TZ_SYS_RO_CA_CERTS);
 	auto beforeCat = test::util::cat(TZ_SYS_RO_CA_BUNDLE);
 
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, APP_CERTS_DIR);
-	int ret = acta.install(true);
+	int ret = acta_global_install(DUMMY_PKG_ID, APP_CERTS_DIR, true);
 
 	// pre-condition
 	int pid = fork();
 
 	if (pid == 0) {
-		ret = acta.launch(true);
+		ret = acta_global_launch(DUMMY_PKG_ID, APP_CERTS_DIR, true);
 		RUNNER_ASSERT_MSG(ret == 0, "ACTA launch should be success.");
 
 		auto afterLsChild = test::util::ls(TZ_SYS_RO_CA_CERTS);

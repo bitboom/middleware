@@ -18,6 +18,9 @@
 #
 SET(TEST_SRCS
 	main.cpp
+	test-util.cpp
+	test-capi-installer.cpp
+	test-capi-launcher.cpp
 	test-acta-installer.cpp
 	test-acta-launcher.cpp
 	test-certificate.cpp
