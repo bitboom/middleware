@@ -86,13 +86,17 @@ Certification service (tests)
 %setup -q
 
 %build
+%if 0%{?sec_build_binary_debug_enable}
 export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
 export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
 export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
+%endif
 
+%if 0%{?tizen_build_devel_mode}
 export CFLAGS="$CFLAGS -DTIZEN_ENGINEER_MODE"
 export CXXFLAGS="$CXXFLAGS -DTIZEN_ENGINEER_MODE"
 export FFLAGS="$FFLAGS -DTIZEN_ENGINEER_MODE"
+%endif
 
 %ifarch %{ix86}
 export CFLAGS="$CFLAGS -DTIZEN_EMULATOR_MODE"

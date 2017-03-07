@@ -637,10 +637,10 @@ int insertToStore(CertStoreType storeTypes,
 		for (size_t i = 0; i < ncerts; i++) {
 			if (i == ncerts - 1)
 				result = installChainCert(storeType, certChainBuffer[i], certChainName[i], endCertName,
-										  P12_INTERMEDIATE);
+										  P12_TRUSTED);
 			else
 				result = installChainCert(storeType, certChainBuffer[i], certChainName[i], endCertName,
-										  P12_TRUSTED);
+										  P12_INTERMEDIATE);
 
 			if (result != CERTSVC_SUCCESS) {
 				LogError("Failed to install the ca certificates. result : " << result);

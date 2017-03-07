@@ -396,6 +396,7 @@ int update_ca_certificate_file(char *cert)
 			return result;
 		}
 
+		SLOGD("Successfully update bundle file.");
 		return CERTSVC_SUCCESS;
 	}
 

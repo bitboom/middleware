@@ -263,9 +263,9 @@ void CertSvcServerComm(void)
 								   recv_data.dataBlock,
 								   recv_data.certType);
 
-			if (send_data.result == CERTSVC_SUCCESS && (recv_data.certType == PEM_CRT ||
-					recv_data.certType == P12_TRUSTED))
-				send_data.result = update_ca_certificate_file(recv_data.dataBlock);
+			if (send_data.result == CERTSVC_SUCCESS)
+				if (recv_data.certType == PEM_CRT || recv_data.certType == P12_TRUSTED)
+					send_data.result = update_ca_certificate_file(recv_data.dataBlock);
 
 			result = send(client_sockfd, (char *)&send_data,
 						  sizeof(send_data), MSG_NOSIGNAL);
