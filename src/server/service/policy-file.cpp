@@ -25,7 +25,7 @@
 
 #include <fstream>
 #include <vector>
-#include <regex.h>
+#include <regex>
 
 #include <fcntl.h>
 #include <string.h>
@@ -323,12 +323,19 @@ bool PolicyFile::checkQualityType(const std::string &password) const
 		return false;
 	}
 
-	regex_t re;
-
-	if (regcomp(&re, pattern.c_str(), REG_EXTENDED | REG_NEWLINE) != 0)
+	try {
+		std::regex rx(pattern);
+		std::smatch match;
+		return std::regex_search(password, match, rx);
+	} catch (const std::regex_error& rerr) {
+		LogError("Fail to check quality due to invalid pattern: QualityType="
+			<< m_policy.qualityType << ", Pattern=" << pattern << ", error=" << rerr.code());
 		return false;
-
-	return (regexec(&re, password.c_str(), 0, NULL, 0) == 0);
+	} catch (...) {
+		LogError("Fail to check quality with unknown reason : QualityType="
+			<< m_policy.qualityType << ", Pattern=" << pattern );
+		return false;
+	}
 }
 
 void PolicyFile::setQualityType(unsigned int qualityType)
@@ -342,8 +349,16 @@ bool PolicyFile::isValidPattern(const std::string &pattern) const
 	if (pattern.empty())
 		return true;
 
-	regex_t re;
-	return (regcomp(&re, pattern.c_str(), REG_EXTENDED | REG_NEWLINE) == 0);
+	try {
+		std::regex rx(pattern);
+		return true;
+	} catch (const std::regex_error& rerr) {
+		LogError("isValidPattern : invalid pattern. Pattern=" << pattern << ", error=" << rerr.code());
+		return false;
+	} catch (...) {
+		LogError("isValidPattern : unknown error. Pattern=" << pattern);
+		return false;
+	}
 }
 
 bool PolicyFile::checkPattern(const std::string &password) const
@@ -351,12 +366,18 @@ bool PolicyFile::checkPattern(const std::string &password) const
 	if (m_policy.pattern.empty())
 		return true;
 
-	regex_t re;
-
-	if (regcomp(&re, m_policy.pattern.c_str(), REG_EXTENDED | REG_NEWLINE) != 0)
+	try {
+		std::regex rx(m_policy.pattern);
+		std::smatch match;
+		return std::regex_search(password, match, rx);
+	} catch (const std::regex_error& rerr) {
+		LogError("Fail to check Pattern due to invalid pattern: Pattern=" << m_policy.pattern
+			<< ", error=" << rerr.code());
 		return false;
-
-	return (regexec(&re, password.c_str(), 0, NULL, 0) == 0);
+	} catch (...) {
+		LogError("Fail to check Pattern with unknown reason: Pattern=" << m_policy.pattern);
+		return false;
+	}
 }
 
 void PolicyFile::setPattern(const std::string &pattern)
