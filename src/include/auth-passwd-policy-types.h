@@ -58,6 +58,15 @@ typedef enum {
 	AUTH_PWD_QUALITY_LAST = AUTH_PWD_QUALITY_ALPHANUMERIC
 } password_quality_type;
 
+typedef enum {
+	AUTH_PWD_COMPLEX_CHAR_UNSPECIFIED = 0,
+	AUTH_PWD_COMPLEX_CHAR_GROUP_1 = 1, // Character + Number
+	AUTH_PWD_COMPLEX_CHAR_GROUP_2 = 2, // Same with GROUP1(It is the requirement from EAS.)
+	AUTH_PWD_COMPLEX_CHAR_GROUP_3 = 3, // Character + Number + Special character
+	AUTH_PWD_COMPLEX_CHAR_GROUP_4 = 4, // Upper case + Lower case + Number + Special character
+	AUTH_PWD_COMPLEX_CHAR_LAST = AUTH_PWD_COMPLEX_CHAR_GROUP_4,
+} password_complex_char_group;
+
 #ifdef __cplusplus
 }
 #endif

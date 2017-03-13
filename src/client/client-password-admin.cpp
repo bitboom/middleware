@@ -159,6 +159,8 @@ int auth_passwd_set_min_complex_char_num(policy_h *p_policy, unsigned int val)
 {
 	if (!p_policy)
 		return AUTH_PASSWD_API_ERROR_INPUT_PARAM;
+	if (val > AUTH_PWD_COMPLEX_CHAR_LAST)
+		return AUTH_PASSWD_API_ERROR_INPUT_PARAM;
 
 	auto policy = reinterpret_cast<AuthPasswd::Policy *>(p_policy);
 	policy->setFlag(POLICY_MIN_COMPLEX_CHAR_NUMBER);

@@ -50,6 +50,17 @@ const unsigned int CURRENT_FILE_VERSION = 1;
 } // namespace anonymous
 
 namespace AuthPasswd {
+
+// This is a same policy wiht Android.
+// complexity 1 : Character + Number
+// complexity 2 : Character + Number (same with complexity1. It is the requirement from EAS.)
+// complexity 3 : Character + Number + Special character
+// complexity 4 : Upper case + Lower case + Number + Special character
+const std::string REGEX_COMPLEX_GROUP1 = "(?=.*[A-Za-z]+.*)(?=.*[0-9]+.*)";
+const std::string REGEX_COMPLEX_GROUP2 = REGEX_COMPLEX_GROUP1;
+const std::string REGEX_COMPLEX_GROUP3 = "(?=.*[A-Za-z]+.*)(?=.*[0-9]+.*)(?=.*[^A-Za-z0-9]+.*)";
+const std::string REGEX_COMPLEX_GROUP4 = "(?=.*[A-Z]+.*)(?=.*[a-z]+.*)(?=.*[0-9]+.*)(?=.*[^A-Za-z0-9]+.*)";
+
 PolicyFile::PolicyFile(unsigned int user): m_user(user), m_enable(false)
 {
 	// check if data directory exists
@@ -185,20 +196,45 @@ void PolicyFile::setMinLength(unsigned int minLength)
 // policy minComplexCharNumber
 bool PolicyFile::checkMinComplexCharNumber(const std::string &password) const
 {
-	unsigned int i = 0, cnt = 0;
-	char ch;
+	std::string pattern;
 
-	if (m_policy.minComplexCharNumber == 0)
+	switch (m_policy.minComplexCharNumber) {
+	case AUTH_PWD_COMPLEX_CHAR_UNSPECIFIED:
 		return true;
 
-	for (i = 0; i < password.size(); i++) {
-		ch = password[i];
+	case AUTH_PWD_COMPLEX_CHAR_GROUP_1:
+		pattern = REGEX_COMPLEX_GROUP1;
+		break;
 
-		if (ch < '0' || ('9' < ch && ch < 'A') || ('Z' < ch && ch < 'a')  || 'z' < ch)
-			cnt++;
+	case AUTH_PWD_COMPLEX_CHAR_GROUP_2:
+		pattern = REGEX_COMPLEX_GROUP2;
+		break;
+
+	case AUTH_PWD_COMPLEX_CHAR_GROUP_3:
+		pattern = REGEX_COMPLEX_GROUP3;
+		break;
+
+	case AUTH_PWD_COMPLEX_CHAR_GROUP_4:
+		pattern = REGEX_COMPLEX_GROUP4;
+		break;
+
+	default:
+		return false;
 	}
 
-	return (cnt >= m_policy.minComplexCharNumber);
+	try {
+		std::regex rx(pattern);
+		std::smatch match;
+		return std::regex_search(password, match, rx);
+	} catch (const std::regex_error& rerr) {
+		LogError("Fail to check min complex char number due to invalid pattern: minComplexCharNumber="
+			<< m_policy.minComplexCharNumber << ", Pattern=" << pattern << ", error=" << rerr.code());
+		return false;
+	} catch (...) {
+		LogError("Fail to check min complex char number with unknown reason: minComplexCharNumber="
+			<< m_policy.minComplexCharNumber << ", Pattern=" << pattern);
+		return false;
+	}
 }
 
 void PolicyFile::setMinComplexCharNumber(unsigned int minComplexCharNumber)
