@@ -17,34 +17,34 @@
  * @file        test-capi-launcher.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     0.1
- * @brief       Unit test program of ACTA for launcher
+ * @brief       Unit test program of Trust Anchor for launcher
  */
 
 #include <dpl/test/test_runner.h>
 
-#include <acta/app-custom-trust-anchor.h>
+#include <tanchor/trust-anchor.h>
 
 #include <unistd.h>
 
 #include "test-util.h"
 #include "test-resource.h"
 
-RUNNER_TEST_GROUP_INIT(T0500_CAPI_ACTA_LAUNCER)
+RUNNER_TEST_GROUP_INIT(T0500_CAPI_TRUST_ANCHOR_LAUNCER)
 
 // Launch needs CAP_SYS_ADMIN
-RUNNER_TEST(T0501_ACTA_LAUNCH)
+RUNNER_TEST(T0501_TRUST_ANCHOR_LAUNCH)
 {
 	auto beforeLs = test::util::ls(TZ_SYS_RO_CA_CERTS);
 	auto beforeCat = test::util::cat(TZ_SYS_RO_CA_BUNDLE);
 
-	int ret = acta_global_install(DUMMY_PKG_ID, APP_CERTS_DIR, true);
+	int ret = trust_anchor_global_install(DUMMY_PKG_ID, APP_CERTS_DIR, true);
 
 	// pre-condition
 	int pid = fork();
 
 	if (pid == 0) {
-		ret = acta_global_launch(DUMMY_PKG_ID, APP_CERTS_DIR, true);
-		RUNNER_ASSERT_MSG(ret == 0, "ACTA launch should be success.");
+		ret = trust_anchor_global_launch(DUMMY_PKG_ID, APP_CERTS_DIR, true);
+		RUNNER_ASSERT_MSG(ret == 0, "Trust Anchor launch should be success.");
 
 		auto afterLsChild = test::util::ls(TZ_SYS_RO_CA_CERTS);
 		RUNNER_ASSERT_MSG(beforeLs != afterLsChild, "Failed to launch.");

@@ -17,59 +17,59 @@
  * @file        Api.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     0.1
- * @brief       Implementation of App custom trust anchor CAPI.
+ * @brief       Implementation of trust anchor CAPI.
  */
-#include "acta/app-custom-trust-anchor.h"
+#include "tanchor/trust-anchor.h"
 
-#include "AppCustomTrustAnchor.h"
+#include "TrustAnchor.h"
 
 using namespace transec;
 
-int acta_global_install(const char *package_id,
-						const char *app_certificates_path,
-						bool with_system_certificates)
+int trust_anchor_global_install(const char *package_id,
+								const char *app_certificates_path,
+								bool with_system_certificates)
 {
-	AppCustomTrustAnchor acta(package_id, app_certificates_path);
-	return acta.install(with_system_certificates);
+	TrustAnchor ta(package_id, app_certificates_path);
+	return ta.install(with_system_certificates);
 }
 
-int acta_usr_install(const char *package_id,
-					 const char *app_certificates_path,
-					 uid_t uid,
-					 bool with_system_certificates)
+int trust_anchor_usr_install(const char *package_id,
+							 const char *app_certificates_path,
+							 uid_t uid,
+							 bool with_system_certificates)
 {
-	AppCustomTrustAnchor acta(package_id, app_certificates_path, uid);
-	return acta.install(with_system_certificates);
+	TrustAnchor ta(package_id, app_certificates_path, uid);
+	return ta.install(with_system_certificates);
 }
 
-int acta_global_launch(const char *package_id,
-					   const char *app_certificates_path,
-					   bool with_system_certificates)
+int trust_anchor_global_launch(const char *package_id,
+							   const char *app_certificates_path,
+							   bool with_system_certificates)
 {
-	AppCustomTrustAnchor acta(package_id, app_certificates_path);
-	return acta.launch(with_system_certificates);
+	TrustAnchor ta(package_id, app_certificates_path);
+	return ta.launch(with_system_certificates);
 }
 
-int acta_usr_launch(const char *package_id,
-					const char *app_certificates_path,
-					uid_t uid,
-					bool with_system_certificates)
+int trust_anchor_usr_launch(const char *package_id,
+							const char *app_certificates_path,
+							uid_t uid,
+							bool with_system_certificates)
 {
-	AppCustomTrustAnchor acta(package_id, app_certificates_path, uid);
-	return acta.launch(with_system_certificates);
+	TrustAnchor ta(package_id, app_certificates_path, uid);
+	return ta.launch(with_system_certificates);
 }
 
-int acta_global_uninstall(const char *package_id,
-						  const char *app_certificates_path)
+int trust_anchor_global_uninstall(const char *package_id,
+								  const char *app_certificates_path)
 {
-	AppCustomTrustAnchor acta(package_id, app_certificates_path);
-	return acta.uninstall();
+	TrustAnchor ta(package_id, app_certificates_path);
+	return ta.uninstall();
 }
 
-int acta_usr_uninstall(const char *package_id,
-					   const char *app_certificates_path,
-					   uid_t uid)
+int trust_anchor_usr_uninstall(const char *package_id,
+							   const char *app_certificates_path,
+							   uid_t uid)
 {
-	AppCustomTrustAnchor acta(package_id, app_certificates_path, uid);
-	return acta.uninstall();
+	TrustAnchor ta(package_id, app_certificates_path, uid);
+	return ta.uninstall();
 }

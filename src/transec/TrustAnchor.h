@@ -14,10 +14,10 @@
  *    limitations under the License.
  */
 /*
- * @file        AppCustomTrustAnchor.h
+ * @file        TrustAnchor.h
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     0.1
- * @brief       App custom trust anchor C++ API header
+ * @brief       Trust anchor C++ API header
  */
 #pragma once
 
@@ -27,19 +27,19 @@
 
 namespace transec {
 
-class AppCustomTrustAnchor {
+class TrustAnchor {
 public:
-	explicit AppCustomTrustAnchor(const std::string &packageId,
-								  const std::string &certsDir,
-								  uid_t uid) noexcept;
-	explicit AppCustomTrustAnchor(const std::string &packageId,
-								  const std::string &certsDir) noexcept;
-	virtual ~AppCustomTrustAnchor(void);
+	explicit TrustAnchor(const std::string &packageId,
+						 const std::string &certsDir,
+						 uid_t uid) noexcept;
+	explicit TrustAnchor(const std::string &packageId,
+						 const std::string &certsDir) noexcept;
+	virtual ~TrustAnchor(void);
 
-	AppCustomTrustAnchor(const AppCustomTrustAnchor &) = delete;
-	AppCustomTrustAnchor(AppCustomTrustAnchor &&) = delete;
-	AppCustomTrustAnchor &operator=(const AppCustomTrustAnchor &) = delete;
-	AppCustomTrustAnchor &operator=(AppCustomTrustAnchor &&) = delete;
+	TrustAnchor(const TrustAnchor &) = delete;
+	TrustAnchor(TrustAnchor &&) = delete;
+	TrustAnchor &operator=(const TrustAnchor &) = delete;
+	TrustAnchor &operator=(TrustAnchor &&) = delete;
 
 	int install(bool withSystemCerts) noexcept;
 	int uninstall(void) noexcept;

@@ -21,8 +21,8 @@ SET(TEST_SRCS
 	test-util.cpp
 	test-capi-installer.cpp
 	test-capi-launcher.cpp
-	test-acta-installer.cpp
-	test-acta-launcher.cpp
+	test-installer.cpp
+	test-launcher.cpp
 	test-certificate.cpp
 )
 

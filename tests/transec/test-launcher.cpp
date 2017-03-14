@@ -14,40 +14,40 @@
  *    limitations under the License.
  */
 /*
- * @file        test-actc-launcher.cpp
+ * @file        test-launcher.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     0.1
- * @brief       Unit test program of ACTA for launcher
+ * @brief       Unit test program of Trust Anchor for launcher
  */
 
 #include <dpl/test/test_runner.h>
 
-#include <AppCustomTrustAnchor.h>
+#include <TrustAnchor.h>
 
 #include <unistd.h>
 
 #include "test-util.h"
 #include "test-resource.h"
 
-RUNNER_TEST_GROUP_INIT(T0600_API_ACTA_LAUNCER)
+RUNNER_TEST_GROUP_INIT(T0600_API_TRUST_ANCHOR_LAUNCER)
 
 using namespace transec;
 
 // Launch needs CAP_SYS_ADMIN
-RUNNER_TEST(T0601_ACTA_LAUNCH)
+RUNNER_TEST(T0601_TRUST_ANCHOR_LAUNCH)
 {
 	auto beforeLs = test::util::ls(TZ_SYS_RO_CA_CERTS);
 	auto beforeCat = test::util::cat(TZ_SYS_RO_CA_BUNDLE);
 
-	AppCustomTrustAnchor acta(DUMMY_PKG_ID, APP_CERTS_DIR);
-	int ret = acta.install(true);
+	TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
+	int ret = ta.install(true);
 
 	// pre-condition
 	int pid = fork();
 
 	if (pid == 0) {
-		ret = acta.launch(true);
-		RUNNER_ASSERT_MSG(ret == 0, "ACTA launch should be success.");
+		ret = ta.launch(true);
+		RUNNER_ASSERT_MSG(ret == 0, "TA launch should be success.");
 
 		auto afterLsChild = test::util::ls(TZ_SYS_RO_CA_CERTS);
 		RUNNER_ASSERT_MSG(beforeLs != afterLsChild, "Failed to launch.");

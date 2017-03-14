@@ -27,7 +27,7 @@ SET(${TARGET_TRANSEC_LIB}_SRCS
 	Exception.cpp
 	Api.cpp
 	Certificate.cpp
-	AppCustomTrustAnchor.cpp
+	TrustAnchor.cpp
 )
 
 INCLUDE_DIRECTORIES(
@@ -53,12 +53,12 @@ TARGET_LINK_LIBRARIES(${TARGET_TRANSEC_LIB}
 INSTALL(TARGETS ${TARGET_TRANSEC_LIB} DESTINATION ${LIB_INSTALL_DIR})
 
 INSTALL(FILES
-			AppCustomTrustAnchor.h
+			TrustAnchor.h
 		DESTINATION
 			${INCLUDEDIR}/cert-svc/transec
 )
 
 INSTALL(DIRECTORY
-			acta
+			tanchor
 		DESTINATION
 			${INCLUDEDIR})

@@ -16,13 +16,13 @@
 
 
 /**
- * @file acta_error.h
+ * @file error.h
  * @brief Error enums and defines.
  */
 
 
-#ifndef ACTA_ERROR_H
-#define ACTA_ERROR_H
+#ifndef TRUST_ANCHOR_ERROR_H
+#define TRUST_ANCHOR_ERROR_H
 
 
 #include <errno.h>
@@ -33,18 +33,18 @@ extern "C" {
 #endif
 
 
-#define ACTA_ERROR_BASE -0x01000000
+#define TRUST_ANCHOR_ERROR_BASE -0x01000000
 
 
 /**
- * @brief Enumeration for ACTA error values.
+ * @brief Enumeration for trust anchor error values.
  */
 typedef enum {
-	ACTA_ERROR_NONE = 0,
-	ACTA_ERROR_INVALID_PARAMETER = -EINVAL,
-	ACTA_ERROR_OUT_OF_MEMORY = -ENOMEM,
-	ACTA_ERROR_INTERNAL = ACTA_ERROR_BASE | 0x01
-} acta_error_e;
+	TRUST_ANCHOR_ERROR_NONE = 0,
+	TRUST_ANCHOR_ERROR_INVALID_PARAMETER = -EINVAL,
+	TRUST_ANCHOR_ERROR_OUT_OF_MEMORY = -ENOMEM,
+	TRUST_ANCHOR_ERROR_INTERNAL = TRUST_ANCHOR_ERROR_BASE | 0x01
+} trust_anchor_error_e;
 
 
 #ifdef __cplusplus
@@ -52,4 +52,4 @@ typedef enum {
 #endif
 
 
-#endif /* ACTA_ERROR_H */
+#endif /* TRUST_ANCHOR_ERROR_H */

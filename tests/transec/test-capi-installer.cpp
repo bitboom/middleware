@@ -17,91 +17,91 @@
  * @file        test-capi-installer.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     0.1
- * @brief       Unit test program of ACTA CAPI for installer
+ * @brief       Unit test program of Trust Anchor CAPI for installer
  */
 
 #include <dpl/test/test_runner.h>
 
-#include "acta/app-custom-trust-anchor.h"
+#include "tanchor/trust-anchor.h"
 
 #include "test-resource.h"
 
-RUNNER_TEST_GROUP_INIT(T0800_CAPI_ACTA_INSTALLER)
+RUNNER_TEST_GROUP_INIT(T0800_CAPI_TRUST_ANCHOR_INSTALLER)
 
-RUNNER_TEST(T0801_CAPI_ACTA_INSTALL_GLOBAL_APP_POSITIVE)
+RUNNER_TEST(T0801_CAPI_TRUST_ANCHOR_INSTALL_GLOBAL_APP_POSITIVE)
 {
-	int ret = acta_global_install(DUMMY_PKG_ID, APP_CERTS_DIR, false);
-	RUNNER_ASSERT_MSG(ret == 0, "ACTA install should be success.");
+	int ret = trust_anchor_global_install(DUMMY_PKG_ID, APP_CERTS_DIR, false);
+	RUNNER_ASSERT_MSG(ret == 0, "Trust Anchor install should be success.");
 }
 
-RUNNER_TEST(T0802_CAPI_ACTA_INSTALL_GLOBAL_APP_WITH_SYS_POSITIVE)
+RUNNER_TEST(T0802_CAPI_TRUST_ANCHOR_INSTALL_GLOBAL_APP_WITH_SYS_POSITIVE)
 {
-	int ret = acta_global_install(DUMMY_PKG_ID, APP_CERTS_DIR, true);
-	RUNNER_ASSERT_MSG(ret == 0, "ACTA install should be success.");
+	int ret = trust_anchor_global_install(DUMMY_PKG_ID, APP_CERTS_DIR, true);
+	RUNNER_ASSERT_MSG(ret == 0, "Trust Anchor install should be success.");
 }
 
-RUNNER_TEST(T0803_CAPI_ACTA_INSTALL_USER_APP_POSITIVE)
+RUNNER_TEST(T0803_CAPI_TRUST_ANCHOR_INSTALL_USER_APP_POSITIVE)
 {
-	int ret = acta_usr_install(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID, false);
-	RUNNER_ASSERT_MSG(ret == 0, "ACTA install should be success.");
+	int ret = trust_anchor_usr_install(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID, false);
+	RUNNER_ASSERT_MSG(ret == 0, "Trust Anchor install should be success.");
 }
 
-RUNNER_TEST(T0804_CAPI_ACTA_INSTALL_USER_APP_WITH_SYS_POSITIVE)
+RUNNER_TEST(T0804_CAPI_TRUST_ANCHOR_INSTALL_USER_APP_WITH_SYS_POSITIVE)
 {
-	int ret = acta_usr_install(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID, true);
-	RUNNER_ASSERT_MSG(ret == 0, "ACTA install should be success.");
+	int ret = trust_anchor_usr_install(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID, true);
+	RUNNER_ASSERT_MSG(ret == 0, "Trust Anchor install should be success.");
 }
 
-RUNNER_TEST(T0805_CAPI_ACTA_INSTALL_GLOBAL_APP_NEGATIVE)
+RUNNER_TEST(T0805_CAPI_TRUST_ANCHOR_INSTALL_GLOBAL_APP_NEGATIVE)
 {
-	int ret = acta_global_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, false);
-	RUNNER_ASSERT_MSG(ret != 0, "ACTA install should be fail.");
+	int ret = trust_anchor_global_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, false);
+	RUNNER_ASSERT_MSG(ret != 0, "Trust Anchor install should be fail.");
 }
 
-RUNNER_TEST(T0806_CAPI_ACTA_INSTALL_GLOBAL_APP_WITH_SYS_NEGATIVE)
+RUNNER_TEST(T0806_CAPI_TRUST_ANCHOR_INSTALL_GLOBAL_APP_WITH_SYS_NEGATIVE)
 {
-	int ret = acta_global_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, true);
-	RUNNER_ASSERT_MSG(ret != 0, "ACTA install should be fail.");
+	int ret = trust_anchor_global_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, true);
+	RUNNER_ASSERT_MSG(ret != 0, "Trust Anchor install should be fail.");
 }
 
-RUNNER_TEST(T0807_CAPI_ACTA_INSTALL_USER_APP_NEGATIVE)
+RUNNER_TEST(T0807_CAPI_TRUST_ANCHOR_INSTALL_USER_APP_NEGATIVE)
 {
-	int ret = acta_usr_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID, false);
-	RUNNER_ASSERT_MSG(ret != 0, "ACTA install should be fail.");
+	int ret = trust_anchor_usr_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID, false);
+	RUNNER_ASSERT_MSG(ret != 0, "Trust Anchor install should be fail.");
 }
 
-RUNNER_TEST(T0808_CAPI_ACTA_INSTALL_USER_APP_WITH_SYS_NEGATIVE)
+RUNNER_TEST(T0808_CAPI_TRUST_ANCHOR_INSTALL_USER_APP_WITH_SYS_NEGATIVE)
 {
-	int ret = acta_usr_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID, true);
-	RUNNER_ASSERT_MSG(ret != 0, "ACTA install should be fail.");
+	int ret = trust_anchor_usr_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID, true);
+	RUNNER_ASSERT_MSG(ret != 0, "Trust Anchor install should be fail.");
 }
 
-RUNNER_TEST(T0821_CAPI_ACTA_UNINSTALL_GLOBAL_APP_POSITIVE)
+RUNNER_TEST(T0821_CAPI_TRUST_ANCHOR_UNINSTALL_GLOBAL_APP_POSITIVE)
 {
-	int ret = acta_global_install(DUMMY_PKG_ID, APP_CERTS_DIR, false);
-	RUNNER_ASSERT_MSG(ret == 0, "ACTA install should be success.");
+	int ret = trust_anchor_global_install(DUMMY_PKG_ID, APP_CERTS_DIR, false);
+	RUNNER_ASSERT_MSG(ret == 0, "Trust Anchor install should be success.");
 
-	ret = acta_global_uninstall(DUMMY_PKG_ID, APP_CERTS_DIR);
-	RUNNER_ASSERT_MSG(ret == 0, "ACTA uninstall should be success.");
+	ret = trust_anchor_global_uninstall(DUMMY_PKG_ID, APP_CERTS_DIR);
+	RUNNER_ASSERT_MSG(ret == 0, "Trust Anchor uninstall should be success.");
 }
 
-RUNNER_TEST(T0822_CAPI_ACTA_UNINSTALL_USER_APP_POSITIVE)
+RUNNER_TEST(T0822_CAPI_TRUST_ANCHOR_UNINSTALL_USER_APP_POSITIVE)
 {
-	int ret = acta_usr_install(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID, false);
-	RUNNER_ASSERT_MSG(ret == 0, "ACTA install should be success.");
+	int ret = trust_anchor_usr_install(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID, false);
+	RUNNER_ASSERT_MSG(ret == 0, "Trust Anchor install should be success.");
 
-	ret = acta_usr_uninstall(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID);
-	RUNNER_ASSERT_MSG(ret == 0, "ACTA uninstall should be success.");
+	ret = trust_anchor_usr_uninstall(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID);
+	RUNNER_ASSERT_MSG(ret == 0, "Trust Anchor uninstall should be success.");
 }
 
-RUNNER_TEST(T0823_CAPI_ACTA_UNINSTALL_GLOBAL_APP_NEGATIVE)
+RUNNER_TEST(T0823_CAPI_TRUST_ANCHOR_UNINSTALL_GLOBAL_APP_NEGATIVE)
 {
-	int ret = acta_global_uninstall(DUMMY_PKG_ID, DUMMY_CERTS_DIR);
-	RUNNER_ASSERT_MSG(ret != 0, "ACTA uninstall should be fail.");
+	int ret = trust_anchor_global_uninstall(DUMMY_PKG_ID, DUMMY_CERTS_DIR);
+	RUNNER_ASSERT_MSG(ret != 0, "Trust Anchor uninstall should be fail.");
 }
 
-RUNNER_TEST(T0824_CAPI_ACTA_UNINSTALL_USER_APP_NEGATIVE)
+RUNNER_TEST(T0824_CAPI_TRUST_ANCHOR_UNINSTALL_USER_APP_NEGATIVE)
 {
-	int ret = acta_usr_uninstall(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
-	RUNNER_ASSERT_MSG(ret != 0, "ACTA uninstall should be fail.");
+	int ret = trust_anchor_usr_uninstall(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
+	RUNNER_ASSERT_MSG(ret != 0, "Trust Anchor uninstall should be fail.");
 }

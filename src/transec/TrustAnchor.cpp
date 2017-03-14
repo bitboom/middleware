@@ -14,12 +14,12 @@
  *    limitations under the License.
  */
 /*
- * @file        AppCustomTrustAnchor.cpp
+ * @file        TrustAnchor.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     0.1
- * @brief       Implementation of App custom trust anchor
+ * @brief       Implementation of trust anchor
  */
-#include "AppCustomTrustAnchor.h"
+#include "TrustAnchor.h"
 
 #include <climits>
 #include <cerrno>
@@ -55,7 +55,7 @@ const std::string NEW_LINE("\n");
 
 } // namespace anonymous
 
-class AppCustomTrustAnchor::Impl {
+class TrustAnchor::Impl {
 public:
 	explicit Impl(const std::string &packageId,
 				  const std::string &certsDir,
@@ -88,9 +88,9 @@ private:
 	std::vector<std::string> m_customCertsData;
 };
 
-AppCustomTrustAnchor::Impl::Impl(const std::string &packageId,
-								 const std::string &certsDir,
-								 uid_t uid) noexcept :
+TrustAnchor::Impl::Impl(const std::string &packageId,
+						const std::string &certsDir,
+						uid_t uid) noexcept :
 	m_packageId(packageId),
 	m_appCertsPath(certsDir),
 	m_uid(uid),
@@ -102,8 +102,8 @@ AppCustomTrustAnchor::Impl::Impl(const std::string &packageId,
 	m_customCertNameSet(),
 	m_customCertsData() {}
 
-AppCustomTrustAnchor::Impl::Impl(const std::string &packageId,
-								 const std::string &certsDir) noexcept :
+TrustAnchor::Impl::Impl(const std::string &packageId,
+						const std::string &certsDir) noexcept :
 	m_packageId(packageId),
 	m_appCertsPath(certsDir),
 	m_uid(-1),
@@ -113,15 +113,15 @@ AppCustomTrustAnchor::Impl::Impl(const std::string &packageId,
 	m_customCertNameSet(),
 	m_customCertsData() {}
 
-std::string AppCustomTrustAnchor::Impl::readLink(const std::string &path) const
+std::string TrustAnchor::Impl::readLink(const std::string &path) const
 {
 	std::vector<char> buf(PATH_MAX);
 	ssize_t count = readlink(path.c_str(), buf.data(), buf.size());
 	return std::string(buf.data(), (count > 0) ? count : 0);
 }
 
-void AppCustomTrustAnchor::Impl::linkTo(const std::string &src,
-										const std::string &dst) const
+void TrustAnchor::Impl::linkTo(const std::string &src,
+							   const std::string &dst) const
 {
 	errno = 0;
 	int ret = ::symlink(src.c_str(), dst.c_str());
@@ -130,7 +130,7 @@ void AppCustomTrustAnchor::Impl::linkTo(const std::string &src,
 							   "[" + std::to_string(errno) + "]");
 }
 
-void AppCustomTrustAnchor::Impl::preInstall(void) const
+void TrustAnchor::Impl::preInstall(void) const
 {
 	runtime::File customBaseDir(this->m_customBasePath);
 	if (customBaseDir.exists()) {
@@ -153,7 +153,7 @@ void AppCustomTrustAnchor::Impl::preInstall(void) const
 	DEBUG("Success to pre-install stage.");
 }
 
-int AppCustomTrustAnchor::Impl::install(bool withSystemCerts) noexcept
+int TrustAnchor::Impl::install(bool withSystemCerts) noexcept
 {
 	EXCEPTION_GUARD_START
 
@@ -193,13 +193,13 @@ int AppCustomTrustAnchor::Impl::install(bool withSystemCerts) noexcept
 	EXCEPTION_GUARD_END
 }
 
-int AppCustomTrustAnchor::Impl::uninstall(bool isRollback) noexcept
+int TrustAnchor::Impl::uninstall(bool isRollback) noexcept
 {
 	EXCEPTION_GUARD_START
 
 	runtime::File customBaseDir(this->m_customBasePath);
 	if (!customBaseDir.exists() && !isRollback)
-		throw std::invalid_argument("There is no installed acta previous.");
+		throw std::invalid_argument("There is no installed anchor previous.");
 
 	if (customBaseDir.exists())
 		customBaseDir.remove(true);
@@ -210,7 +210,7 @@ int AppCustomTrustAnchor::Impl::uninstall(bool isRollback) noexcept
 	EXCEPTION_GUARD_END
 }
 
-bool AppCustomTrustAnchor::Impl::isSystemCertsModified(void) const
+bool TrustAnchor::Impl::isSystemCertsModified(void) const
 {
 	struct stat systemAttr, customAttr;
 
@@ -224,7 +224,7 @@ bool AppCustomTrustAnchor::Impl::isSystemCertsModified(void) const
 	return systemAttr.st_mtime > customAttr.st_mtime;
 }
 
-int AppCustomTrustAnchor::Impl::launch(bool withSystemCerts)
+int TrustAnchor::Impl::launch(bool withSystemCerts)
 {
 	EXCEPTION_GUARD_START
 
@@ -262,7 +262,7 @@ int AppCustomTrustAnchor::Impl::launch(bool withSystemCerts)
 	EXCEPTION_GUARD_END
 }
 
-std::string AppCustomTrustAnchor::Impl::getUniqueHashName(
+std::string TrustAnchor::Impl::getUniqueHashName(
 	const std::string &hashName) const
 {
 	int sameFileNameCnt = 0;
@@ -275,7 +275,7 @@ std::string AppCustomTrustAnchor::Impl::getUniqueHashName(
 	return uniqueName;
 }
 
-void AppCustomTrustAnchor::Impl::makeCustomBundle(bool withSystemCerts)
+void TrustAnchor::Impl::makeCustomBundle(bool withSystemCerts)
 {
 	runtime::File customBundle(this->m_customBundlePath + "/" +
 							   BUNDLE_NAME);
@@ -299,7 +299,7 @@ void AppCustomTrustAnchor::Impl::makeCustomBundle(bool withSystemCerts)
 	DEBUG("Finish migrating previous bundle.");
 
 	if (this->m_customCertsData.empty()) {
-		DEBUG("System certificates is changed after ACTA installation.");
+		DEBUG("System certificates is changed after TrustAnchor installation.");
 		runtime::DirectoryIterator iter(this->m_appCertsPath), end;
 		while (iter != end) {
 			Certificate cert(iter->getPath());
@@ -318,18 +318,18 @@ void AppCustomTrustAnchor::Impl::makeCustomBundle(bool withSystemCerts)
 	INFO("Success to make app custom bundle.");
 }
 
-AppCustomTrustAnchor::AppCustomTrustAnchor(const std::string &packageId,
-										   const std::string &certsDir,
-										   uid_t uid) noexcept :
+TrustAnchor::TrustAnchor(const std::string &packageId,
+						 const std::string &certsDir,
+						 uid_t uid) noexcept :
 	m_pImpl(new Impl(packageId, certsDir, uid)) {}
 
-AppCustomTrustAnchor::AppCustomTrustAnchor(const std::string &packageId,
+TrustAnchor::TrustAnchor(const std::string &packageId,
 										   const std::string &certsDir) noexcept :
 	m_pImpl(new Impl(packageId, certsDir)) {}
 
-AppCustomTrustAnchor::~AppCustomTrustAnchor(void) = default;
+TrustAnchor::~TrustAnchor(void) = default;
 
-int AppCustomTrustAnchor::install(bool withSystemCerts) noexcept
+int TrustAnchor::install(bool withSystemCerts) noexcept
 {
 	if (this->m_pImpl == nullptr)
 		return -1;
@@ -344,7 +344,7 @@ int AppCustomTrustAnchor::install(bool withSystemCerts) noexcept
 	return ret;
 }
 
-int AppCustomTrustAnchor::uninstall(void) noexcept
+int TrustAnchor::uninstall(void) noexcept
 {
 	if (this->m_pImpl == nullptr)
 		return -1;
@@ -352,7 +352,7 @@ int AppCustomTrustAnchor::uninstall(void) noexcept
 	return this->m_pImpl->uninstall();
 }
 
-int AppCustomTrustAnchor::launch(bool withSystemCerts) noexcept
+int TrustAnchor::launch(bool withSystemCerts) noexcept
 {
 	if (this->m_pImpl == nullptr)
 		return -1;
