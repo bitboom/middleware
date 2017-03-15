@@ -61,7 +61,6 @@ public:
 	}
 
 private:
-	int id;
 	std::string name;
 	uid_t uid;
 	std::string key;
