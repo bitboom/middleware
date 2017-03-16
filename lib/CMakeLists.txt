@@ -14,7 +14,10 @@
 #
 # @file      CMakeLists.txt
 # @author    Sangwan kwon (sangwan.kwon@samsung.com)
+# @brief     Configure pkgconfig files
 #
 
-INSTALL(DIRECTORY ${TANCHOR_INCLUDE}/tanchor
-		DESTINATION ${INCLUDE_INSTALL_DIR})
+CONFIGURE_FILE(${LIB_NAME}.pc.in ${LIB_NAME}.pc @ONLY)
+
+INSTALL(FILES ${LIB_NAME}.pc
+		DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
