@@ -14,31 +14,21 @@
  *  limitations under the License
  */
 /*
- * @file        init-lib.cpp
+ * @file        test-util.h
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     0.1
- * @brief       Init global configuration for library
+ * @brief
  */
+#pragma once
 
-#include <klay/audit/logger.h>
-#include <klay/audit/dlog-sink.h>
+#include <stddef.h>
+#include <string>
 
-#include <memory>
+namespace test {
+namespace util {
 
-namespace tanchor {
-namespace {
+std::string ls(const char *path);
+std::string cat(const char *path);
 
-class InitLib {
-public:
-	InitLib()
-	{
-		audit::Logger::setBackend(new audit::DlogLogSink());
-		audit::Logger::setTag("TRUST_ANCHOR");
-	};
-	~InitLib() = default;
-};
-
-static std::unique_ptr<InitLib> init(new(std::nothrow)(InitLib));
-
-} // namespace anonymous
-} // namespace tanchor
+} // namespace util
+} // namespace test

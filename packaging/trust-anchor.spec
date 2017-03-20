@@ -21,11 +21,12 @@ Requires(postun): /sbin/ldconfig
 %global group_name      security_fw
 %global smack_label     System
 
-%global tanchor_base    %{TZ_SYS_DATA}
+%global tanchor_base    %{TZ_SYS_DATA}/%{lib_name}
 %global tanchor_res     %{tanchor_base}/res
 %global tanchor_usr     %{tanchor_base}/usr
 %global tanchor_global  %{tanchor_base}/global
 %global tanchor_bundle  %{tanchor_base}/ca-bundle.pem
+%global tanchor_test    %{tanchor_base}/test
 
 %description
 The package provides trust-anchor which the application can assign
@@ -46,6 +47,11 @@ SSL root certificates for its HTTPS communication.
 %build
 %{!?build_type:%define build_type "RELEASE"}
 
+%if %{build_type} == "DEBUG" || %{build_type} == "PROFILING" || %{build_type} == "CCOV"
+	CFLAGS="$CFLAGS -Wp,-U_FORTIFY_SOURCE"
+	CXXFLAGS="$CXXFLAGS -Wp,-U_FORTIFY_SOURCE"
+%endif
+
 %cmake . -DCMAKE_BUILD_TYPE=%{build_type} \
 		 -DLIB_NAME=%{lib_name} \
 		 -DLIB_VERSION=%{version} \
@@ -57,8 +63,11 @@ SSL root certificates for its HTTPS communication.
 		 -DTANCHOR_USR=%{tanchor_usr} \
 		 -DTANCHOR_GLOBAL=%{tanchor_global} \
 		 -DTANCHOR_BUNDLE=%{tanchor_bundle} \
+		 -DTANCHOR_TEST=%{tanchor_test} \
 		 -DTZ_SYS_CA_CERTS=%{TZ_SYS_CA_CERTS} \
-		 -DTZ_SYS_CA_BUNDLE=%{TZ_SYS_CA_BUNDLE}
+		 -DTZ_SYS_CA_BUNDLE=%{TZ_SYS_CA_BUNDLE} \
+		 -DTZ_SYS_RO_CA_CERTS=%{TZ_SYS_RO_CA_CERTS} \
+		 -DTZ_SYS_RO_CA_BUNDLE=%{TZ_SYS_RO_CA_BUNDLE}
 
 make %{?_smp_mflags}
 
@@ -90,3 +99,20 @@ The package provides Trust Anchor API development files.
 %{_includedir}/%{lib_name}/trust-anchor.hxx
 %{_libdir}/lib%{lib_name}.so
 %{_libdir}/pkgconfig/%{lib_name}.pc
+
+## Test Package ##############################################################
+%package -n trust-anchor-test
+Summary: Trust Anchor API test
+Group: Development/Libraries
+
+%description -n trust-anchor-test
+Testcases for trust anchor library
+
+%files -n trust-anchor-test
+%{_bindir}/%{lib_name}-test-installer
+%{_bindir}/%{lib_name}-test-launcher
+%{_bindir}/%{lib_name}-test-capi-launcher
+%{_bindir}/%{lib_name}-test-internal
+%{TZ_SYS_DATA}/%{lib_name}/test
+%{TZ_SYS_DATA}/%{lib_name}/test/certs
+%{TZ_SYS_DATA}/%{lib_name}/test/script

@@ -14,31 +14,21 @@
  *  limitations under the License
  */
 /*
- * @file        init-lib.cpp
+ * @file        main.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     0.1
- * @brief       Init global configuration for library
+ * @brief       Implemetation of testbench driver
  */
 
 #include <klay/audit/logger.h>
-#include <klay/audit/dlog-sink.h>
 
-#include <memory>
+#include <klay/testbench.h>
 
-namespace tanchor {
-namespace {
+int main(int /*argc*/, char** /*argv*/)
+{
+	audit::Logger::setLogLevel(audit::LogLevel::Trace);
 
-class InitLib {
-public:
-	InitLib()
-	{
-		audit::Logger::setBackend(new audit::DlogLogSink());
-		audit::Logger::setTag("TRUST_ANCHOR");
-	};
-	~InitLib() = default;
-};
+	testbench::Testbench::runAllTestSuites();
 
-static std::unique_ptr<InitLib> init(new(std::nothrow)(InitLib));
-
-} // namespace anonymous
-} // namespace tanchor
+	return 0;
+}
