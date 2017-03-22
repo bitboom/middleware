@@ -334,35 +334,48 @@ bool PolicyFile::checkQualityType(const std::string &password) const
 {
 	std::string pattern;
 
-	switch (m_policy.qualityType) {
-	case AUTH_PWD_QUALITY_UNSPECIFIED:
-		pattern = REGEX_QUALITY_UNSPECIFIED;
-		break;
-
-	case AUTH_PWD_QUALITY_SOMETHING:
-		pattern = REGEX_QUALITY_SOMETHING;
-		break;
-
-	case AUTH_PWD_QUALITY_NUMERIC:
-		pattern = REGEX_QUALITY_NUMERIC;
-		break;
-
-	case AUTH_PWD_QUALITY_ALPHABETIC:
-		pattern = REGEX_QUALITY_ALPHABETIC;
-		break;
-
-	case AUTH_PWD_QUALITY_ALPHANUMERIC:
-		pattern = REGEX_QUALITY_ALPHANUMERIC;
-		break;
-
-	default:
-		return false;
-	}
-
 	try {
-		std::regex rx(pattern);
-		std::smatch match;
-		return std::regex_search(password, match, rx);
+		if (m_policy.qualityType <= AUTH_PWD_QUALITY_UNSPECIFIED) {
+			pattern = REGEX_QUALITY_UNSPECIFIED;
+			std::regex rx(pattern);
+			std::smatch match;
+			if (std::regex_search(password, match, rx))
+				return true;
+		}
+
+		if (m_policy.qualityType <= AUTH_PWD_QUALITY_SOMETHING) {
+			pattern = REGEX_QUALITY_SOMETHING;
+			std::regex rx(pattern);
+			std::smatch match;
+			if (std::regex_search(password, match, rx))
+				return true;
+		}
+
+		if (m_policy.qualityType <= AUTH_PWD_QUALITY_NUMERIC) {
+			pattern = REGEX_QUALITY_NUMERIC;
+			std::regex rx(pattern);
+			std::smatch match;
+			if (std::regex_search(password, match, rx))
+				return true;
+		}
+
+		if (m_policy.qualityType <= AUTH_PWD_QUALITY_ALPHABETIC) {
+			pattern = REGEX_QUALITY_ALPHABETIC;
+			std::regex rx(pattern);
+			std::smatch match;
+			if (std::regex_search(password, match, rx))
+				return true;
+		}
+
+		if (m_policy.qualityType <= AUTH_PWD_QUALITY_ALPHANUMERIC) {
+			pattern = REGEX_QUALITY_ALPHANUMERIC;
+			std::regex rx(pattern);
+			std::smatch match;
+			if (std::regex_search(password, match, rx))
+				return true;
+		}
+
+		return false;
 	} catch (const std::regex_error& rerr) {
 		LogError("Fail to check quality due to invalid pattern: QualityType="
 			<< m_policy.qualityType << ", Pattern=" << pattern << ", error=" << rerr.code());
