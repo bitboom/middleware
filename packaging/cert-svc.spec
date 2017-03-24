@@ -47,11 +47,6 @@ Requires: openssl
 %global cert_svc_ro_path        %ro_data_dir/cert-svc
 %global cert_svc_db_path        %cert_svc_path/dbspace
 %global cert_svc_pkcs12         %cert_svc_path/pkcs12
-%global cert_svc_transec        %cert_svc_path/transec
-%global cert_svc_transec_res    %cert_svc_transec/res
-%global cert_svc_transec_usr    %cert_svc_transec/usr
-%global cert_svc_transec_global %cert_svc_transec/global
-%global cert_svc_transec_bundle %cert_svc_transec_res/ca-bundle.pem
 %global cert_svc_ca_bundle      %cert_svc_path/ca-certificate.crt
 %global cert_svc_examples       %cert_svc_ro_path/examples
 %global cert_svc_tests          %rw_app_dir/cert-svc-tests
@@ -123,9 +118,6 @@ export FFLAGS="$FFLAGS -DTIZEN_EMULATOR_MODE"
          -DCERT_SVC_PATH=%cert_svc_path \
          -DCERT_SVC_RO_PATH=%cert_svc_ro_path \
          -DCERT_SVC_PKCS12=%cert_svc_pkcs12 \
-         -DCERT_SVC_TRANSEC_USR=%cert_svc_transec_usr \
-         -DCERT_SVC_TRANSEC_GLOBAL=%cert_svc_transec_global \
-         -DCERT_SVC_TRANSEC_BUNDLE=%cert_svc_transec_bundle \
          -DCERT_SVC_DB_PATH=%cert_svc_db_path \
          -DCERT_SVC_OLD_DB_PATH=%cert_svc_old_db_path \
          -DUPGRADE_SCRIPT_PATH=%upgrade_script_path \
@@ -145,12 +137,8 @@ make %{?_smp_mflags}
 %install_service sockets.target.wants cert-server.socket
 
 mkdir -p %buildroot%cert_svc_pkcs12
-mkdir -p %buildroot%cert_svc_transec_res
-mkdir -p %buildroot%cert_svc_transec_usr
-mkdir -p %buildroot%cert_svc_transec_global
 
 touch %buildroot%cert_svc_db_path/certs-meta.db-journal
-touch %buildroot%cert_svc_transec_bundle
 
 ln -sf %TZ_SYS_CA_BUNDLE %buildroot%cert_svc_ca_bundle
 
@@ -182,7 +170,6 @@ fi
 %_unitdir/cert-server.socket
 %_unitdir/sockets.target.wants/cert-server.socket
 %_libdir/libcert-svc-vcore.so.*
-%_libdir/libcert-svc-transec.so.*
 %bin_dir/cert-server
 %dir %attr(-, %{user_name}, %{group_name}) %cert_svc_path
 %dir %attr(-, %{user_name}, %{group_name}) %cert_svc_pkcs12
@@ -191,7 +178,6 @@ fi
 %attr(-, %{user_name}, %{group_name}) %cert_svc_db_path/certs-meta.db
 %attr(-, %{user_name}, %{group_name}) %cert_svc_db_path/certs-meta.db-journal
 %attr(-, %{user_name}, %{group_name}) %cert_svc_ro_path
-%attr(-, %{user_name}, %{group_name}) %cert_svc_transec/*
 
 %attr(755, root, root) %upgrade_script_path/202.cert-svc-db-upgrade.sh
 %attr(755, root, root) %upgrade_script_path/203.cert-svc-disabled-certs-upgrade.sh
@@ -201,7 +187,6 @@ fi
 %_includedir/*
 %_libdir/pkgconfig/*
 %_libdir/libcert-svc-vcore.so
-%_libdir/libcert-svc-transec.so
 
 %if 0%{?certsvc_test_build}
 %files test

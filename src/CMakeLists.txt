@@ -165,5 +165,3 @@ INSTALL(FILES
     cert-svc/cstring.h
     DESTINATION ${INCLUDEDIR}/cert-svc/cert-svc
     )
-
-ADD_SUBDIRECTORY(transec)
