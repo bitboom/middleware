@@ -50,7 +50,6 @@ const std::string SYS_CERTS_PATH(TZ_SYS_CA_CERTS);
 const std::string SYS_BUNDLE_PATH(TZ_SYS_CA_BUNDLE);
 const std::string MOUNT_POINT_CERTS(TZ_SYS_CA_CERTS);
 const std::string MOUNT_POINT_BUNDLE(TZ_SYS_CA_BUNDLE);
-const std::string BUNDLE_NAME("ca-bundle.pem");
 const std::string NEW_LINE("\n");
 
 } // namespace anonymous
@@ -74,6 +73,7 @@ private:
 	void makeCustomBundle(bool withSystemCerts);
 	std::string readLink(const std::string &path) const;
 	std::string getUniqueHashName(const std::string &hashName) const;
+	std::string getBundleName(void) const;
 	bool isSystemCertsModified(void) const;
 
 	std::string m_packageId;
@@ -217,7 +217,7 @@ bool TrustAnchor::Impl::isSystemCertsModified(void) const
 	stat(SYS_BUNDLE_PATH.c_str(), &systemAttr);
 	DEBUG("System bundle mtime : " << ::ctime(&systemAttr.st_mtime));
 
-	auto customBundle = this->m_customBundlePath + "/" + BUNDLE_NAME;
+	auto customBundle = this->m_customBundlePath + "/" + this->getBundleName();
 	stat(customBundle.c_str(), &customAttr);
 	DEBUG("Custom bundle mtime : " << ::ctime(&customAttr.st_mtime));
 
@@ -248,7 +248,7 @@ int TrustAnchor::Impl::launch(bool withSystemCerts)
 				NULL))
 		throw std::logic_error("Failed to mount certs.");
 
-	auto bundle = this->m_customBundlePath + "/" + BUNDLE_NAME;
+	auto bundle = this->m_customBundlePath + "/" + this->getBundleName();
 	if (::mount(bundle.c_str(),
 				MOUNT_POINT_BUNDLE.c_str(),
 				NULL,
@@ -260,6 +260,15 @@ int TrustAnchor::Impl::launch(bool withSystemCerts)
 	return 0;
 
 	EXCEPTION_GUARD_END
+}
+
+std::string TrustAnchor::Impl::getBundleName(void) const
+{
+	size_t pos = SYS_BUNDLE_PATH.rfind('/');
+	if (pos == std::string::npos)
+		throw std::logic_error("Bundle path is wrong." + SYS_BUNDLE_PATH);
+
+	return SYS_BUNDLE_PATH.substr(pos + 1);
 }
 
 std::string TrustAnchor::Impl::getUniqueHashName(
@@ -278,7 +287,7 @@ std::string TrustAnchor::Impl::getUniqueHashName(
 void TrustAnchor::Impl::makeCustomBundle(bool withSystemCerts)
 {
 	runtime::File customBundle(this->m_customBundlePath + "/" +
-							   BUNDLE_NAME);
+							   this->getBundleName());
 	if (customBundle.exists()) {
 		WARN("App custom bundle is already exist. remove it!");
 		customBundle.remove();
