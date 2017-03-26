@@ -384,8 +384,10 @@ void PasswordManager::setPasswordMaxAttempts(unsigned int receivedUser,
 	PasswordFileMap::iterator itPwd = m_pwdFile.find(receivedUser);
 	itPwd->second.setMaxAttempt(receivedAttempts);
 	itPwd->second.writeMemoryToFile();
-	itPwd->second.resetAttempt();
-	itPwd->second.writeAttemptToFile();
+	// Do not reset current attempt when max attempt is reset.
+	// It's a platform policy(2017.0327).
+	//itPwd->second.resetAttempt();
+	//itPwd->second.writeAttemptToFile();
 }
 
 void PasswordManager::setPasswordValidity(unsigned int receivedUser,
