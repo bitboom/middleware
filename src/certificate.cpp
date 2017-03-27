@@ -23,7 +23,7 @@
 
 #include <cstdio>
 #include <vector>
-#include <stdexcept>
+#include "exception.hxx"
 
 #include <openssl/pem.h>
 
@@ -43,10 +43,10 @@ const int HASH_LENGTH = 8;
 } // namespace anonymous
 
 Certificate::Certificate(const std::string &path) :
-	m_fp(FilePtr(fopen(path.c_str(), "rb"), ::fclose))
+	m_fp(FilePtr(::fopen(path.c_str(), "rb"), ::fclose))
 {
 	if (this->m_fp == nullptr)
-		throw std::invalid_argument("Faild to open certificate.");
+		throw std::invalid_argument("Failed to open [" + path + "].");
 }
 
 std::string Certificate::getSubjectNameHash() const

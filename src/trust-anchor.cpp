@@ -75,6 +75,7 @@ private:
 	std::string getUniqueHashName(const std::string &hashName) const;
 	std::string getBundleName(void) const;
 	bool isSystemCertsModified(void) const;
+	void checkFileValidity(const runtime::File &file) const;
 
 	std::string m_packageId;
 	std::string m_appCertsPath;
@@ -126,8 +127,7 @@ void TrustAnchor::Impl::linkTo(const std::string &src,
 	errno = 0;
 	int ret = ::symlink(src.c_str(), dst.c_str());
 	if (ret != 0)
-		throw std::logic_error("Fail to link " + src + " -> " + dst +
-							   "[" + std::to_string(errno) + "]");
+		ThrowErrno(errno, "Failed to link " + src + " -> " + dst);
 }
 
 void TrustAnchor::Impl::preInstall(void) const
@@ -146,9 +146,10 @@ void TrustAnchor::Impl::preInstall(void) const
 	customBundleDir.makeDirectory();
 
 	runtime::File appCertsDir(this->m_appCertsPath);
-	if (!appCertsDir.exists() || !appCertsDir.isDirectory())
-		throw std::invalid_argument("App custom certs path is wrong. : " +
-									m_appCertsPath);
+	this->checkFileValidity(appCertsDir);
+	if (!appCertsDir.isDirectory())
+		throw std::invalid_argument("[" + this->m_appCertsPath +
+									"] should be directory.");
 
 	DEBUG("Success to pre-install stage.");
 }
@@ -188,7 +189,7 @@ int TrustAnchor::Impl::install(bool withSystemCerts) noexcept
 
 	INFO("Success to install[" << this->m_packageId <<
 		 "] to " << this->m_customBasePath);
-	return 0;
+	return TRUST_ANCHOR_ERROR_NONE;
 
 	EXCEPTION_GUARD_END
 }
@@ -199,27 +200,42 @@ int TrustAnchor::Impl::uninstall(bool isRollback) noexcept
 
 	runtime::File customBaseDir(this->m_customBasePath);
 	if (!customBaseDir.exists() && !isRollback)
-		throw std::invalid_argument("There is no installed anchor previous.");
+		throw std::logic_error("There is no installed anchor previous.");
 
 	if (customBaseDir.exists())
 		customBaseDir.remove(true);
 
 	INFO("Success to uninstall. : " << this->m_packageId);
-	return 0;
+	return TRUST_ANCHOR_ERROR_NONE;
 
 	EXCEPTION_GUARD_END
+}
+
+void TrustAnchor::Impl::checkFileValidity(const runtime::File &file) const
+{
+	if (!file.exists())
+		ThrowExc(TRUST_ANCHOR_ERROR_NO_SUCH_FILE,
+				 "File [" << file.getPath() << "] does not exist.");
+
+	if (!file.canRead())
+		ThrowExc(TRUST_ANCHOR_ERROR_PERMISSION_DENIED,
+				 "No permission to read [" << file.getPath() << "]");
 }
 
 bool TrustAnchor::Impl::isSystemCertsModified(void) const
 {
 	struct stat systemAttr, customAttr;
 
-	stat(SYS_BUNDLE_PATH.c_str(), &systemAttr);
-	DEBUG("System bundle mtime : " << ::ctime(&systemAttr.st_mtime));
+	errno = 0;
+	if (::stat(SYS_BUNDLE_PATH.c_str(), &systemAttr))
+		ThrowErrno(errno, SYS_BUNDLE_PATH);
 
 	auto customBundle = this->m_customBundlePath + "/" + this->getBundleName();
-	stat(customBundle.c_str(), &customAttr);
-	DEBUG("Custom bundle mtime : " << ::ctime(&customAttr.st_mtime));
+	if (::stat(customBundle.c_str(), &customAttr))
+		ThrowErrno(errno, customBundle);
+
+	DEBUG("System bundle mtime : " << ::ctime(&systemAttr.st_mtime) << ", " <<
+		  "Custom bundle mtime : " << ::ctime(&customAttr.st_mtime));
 
 	return systemAttr.st_mtime > customAttr.st_mtime;
 }
@@ -234,19 +250,20 @@ int TrustAnchor::Impl::launch(bool withSystemCerts)
 	errno = 0;
 	// disassociate from the parent namespace
 	if (::unshare(CLONE_NEWNS))
-		throw std::logic_error("Failed to unshare namespace > " +
-							   std::to_string(errno));
+		ThrowErrno(errno, "Failed to unshare.");
 
 	// convert it to a slave for preventing propagation
 	if (::mount(NULL, "/", NULL, MS_SLAVE | MS_REC, NULL))
-		throw std::logic_error("Failed to disconnect root fs.");
+		ThrowErrno(errno, "Failed to mount.");
 
 	if (::mount(this->m_customCertsPath.c_str(),
 				MOUNT_POINT_CERTS.c_str(),
 				NULL,
 				MS_BIND,
 				NULL))
-		throw std::logic_error("Failed to mount certs.");
+		ThrowErrno(errno, "Failed to mount. src[" +
+						  this->m_customCertsPath + "] to dst[" +
+						  MOUNT_POINT_CERTS + "]");
 
 	auto bundle = this->m_customBundlePath + "/" + this->getBundleName();
 	if (::mount(bundle.c_str(),
@@ -254,10 +271,11 @@ int TrustAnchor::Impl::launch(bool withSystemCerts)
 				NULL,
 				MS_BIND,
 				NULL))
-		throw std::logic_error("Failed to mount bundle.");
+		ThrowErrno(errno, "Failed to mount. src[" + bundle +
+						  "] to dst[" + MOUNT_POINT_BUNDLE + "]");
 
 	INFO("Success to launch. : " << this->m_packageId);
-	return 0;
+	return TRUST_ANCHOR_ERROR_NONE;
 
 	EXCEPTION_GUARD_END
 }
@@ -296,13 +314,11 @@ void TrustAnchor::Impl::makeCustomBundle(bool withSystemCerts)
 	DEBUG("Start to migrate previous bundle.");
 	if (withSystemCerts) {
 		runtime::File sysBundle(SYS_BUNDLE_PATH);
-		if (!sysBundle.exists())
-			throw std::logic_error("There is no system bundle file.");
+		this->checkFileValidity(sysBundle);
 		sysBundle.copyTo(this->m_customBundlePath);
 	} else {
 		runtime::File tanchorBundle(TANCHOR_BUNDLE_PATH);
-		if (!tanchorBundle.exists())
-			throw std::logic_error("There is no tanchor bundle file.");
+		this->checkFileValidity(tanchorBundle);
 		tanchorBundle.copyTo(this->m_customBundlePath);
 	}
 	DEBUG("Finish migrating previous bundle.");
@@ -333,7 +349,7 @@ TrustAnchor::TrustAnchor(const std::string &packageId,
 	m_pImpl(new Impl(packageId, certsDir, uid)) {}
 
 TrustAnchor::TrustAnchor(const std::string &packageId,
-										   const std::string &certsDir) noexcept :
+						 const std::string &certsDir) noexcept :
 	m_pImpl(new Impl(packageId, certsDir)) {}
 
 TrustAnchor::~TrustAnchor(void) = default;
@@ -341,11 +357,11 @@ TrustAnchor::~TrustAnchor(void) = default;
 int TrustAnchor::install(bool withSystemCerts) noexcept
 {
 	if (this->m_pImpl == nullptr)
-		return -1;
+		return TRUST_ANCHOR_ERROR_OUT_OF_MEMORY;
 
 	int ret = this->m_pImpl->install(withSystemCerts);
 
-	if (ret != 0) {
+	if (ret != TRUST_ANCHOR_ERROR_NONE) {
 		ERROR("Failed to intall ACTA. Remove custom directory for rollback.");
 		this->m_pImpl->uninstall(true);
 	}
@@ -356,7 +372,7 @@ int TrustAnchor::install(bool withSystemCerts) noexcept
 int TrustAnchor::uninstall(void) noexcept
 {
 	if (this->m_pImpl == nullptr)
-		return -1;
+		return TRUST_ANCHOR_ERROR_OUT_OF_MEMORY;
 
 	return this->m_pImpl->uninstall();
 }
@@ -364,7 +380,7 @@ int TrustAnchor::uninstall(void) noexcept
 int TrustAnchor::launch(bool withSystemCerts) noexcept
 {
 	if (this->m_pImpl == nullptr)
-		return -1;
+		return TRUST_ANCHOR_ERROR_OUT_OF_MEMORY;
 
 	return this->m_pImpl->launch(withSystemCerts);
 }

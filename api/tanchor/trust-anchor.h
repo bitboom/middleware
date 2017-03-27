@@ -45,6 +45,9 @@ extern "C" {
  *         negative on error
  * @retval #TRUST_ANCHOR_ERROR_NONE Successful
  * @retval #TRUST_ANCHOR_ERROR_OUT_OF_MEMORY Out of memory error
+ * @retval #TRUST_ANCHOR_ERROR_INVALID_PARAMETER Invalid parameter error
+ * @retval #TRUST_ANCHOR_ERROR_PERMISSION_DENIED Permission denied error
+ * @retval #TRUST_ANCHOR_ERROR_NO_SUCH_FILE No such file or directory error
  * @retval #TRUST_ANCHOR_ERROR_INTERNAL Internal error
  * @see trust_anchor_global_launch()
  * @see trust_anchor_global_uninstall()
@@ -66,6 +69,9 @@ int trust_anchor_global_install(const char *package_id,
  *         negative on error
  * @retval #TRUST_ANCHOR_ERROR_NONE Successful
  * @retval #TRUST_ANCHOR_ERROR_OUT_OF_MEMORY Out of memory error
+ * @retval #TRUST_ANCHOR_ERROR_INVALID_PARAMETER Invalid parameter error
+ * @retval #TRUST_ANCHOR_ERROR_PERMISSION_DENIED Permission denied error
+ * @retval #TRUST_ANCHOR_ERROR_NO_SUCH_FILE No such file or directory error
  * @retval #TRUST_ANCHOR_ERROR_INTERNAL Internal error
  * @see trust_anchor_usr_launch()
  * @see trust_anchor_usr_uninstall()
@@ -86,6 +92,9 @@ int trust_anchor_usr_install(const char *package_id,
  *         negative on error
  * @retval #TRUST_ANCHOR_ERROR_NONE Successful
  * @retval #TRUST_ANCHOR_ERROR_OUT_OF_MEMORY Out of memory error
+ * @retval #TRUST_ANCHOR_ERROR_INVALID_PARAMETER Invalid parameter error
+ * @retval #TRUST_ANCHOR_ERROR_PERMISSION_DENIED Permission denied error
+ * @retval #TRUST_ANCHOR_ERROR_NO_SUCH_FILE No such file or directory error
  * @retval #TRUST_ANCHOR_ERROR_INTERNAL Internal error
  * @see trust_anchor_global_install()
  */
@@ -104,6 +113,9 @@ int trust_anchor_global_launch(const char *package_id,
  *         negative on error
  * @retval #TRUST_ANCHOR_ERROR_NONE Successful
  * @retval #TRUST_ANCHOR_ERROR_OUT_OF_MEMORY Out of memory error
+ * @retval #TRUST_ANCHOR_ERROR_INVALID_PARAMETER Invalid parameter error
+ * @retval #TRUST_ANCHOR_ERROR_PERMISSION_DENIED Permission denied error
+ * @retval #TRUST_ANCHOR_ERROR_NO_SUCH_FILE No such file or directory error
  * @retval #TRUST_ANCHOR_ERROR_INTERNAL Internal error
  * @see trust_anchor_usr_install()
  */

@@ -21,31 +21,68 @@
  */
 #include "exception.hxx"
 
-#include <exception>
-
 #include <klay/exception.h>
-#include <klay/audit/logger.h>
 
 namespace tanchor {
 
 int exceptionGuard(const std::function<int()> &func)
 {
-	// TODO add custom error code
 	try {
 		return func();
-	} catch (runtime::Exception &e) {
+	} catch (const tanchor::Exception &e) {
+		std::string errStr;
+		switch (e.error()) {
+		case ENOENT:
+			errStr = "No such file or directory.";
+			break;
+		case ENOMEM:
+			errStr = "Out of memory.";
+			break;
+		case EACCES:
+		case EPERM:
+			errStr = "Permission denied.";
+			break;
+		default:
+			errStr = "Internal error.";
+			break;
+		}
+		ERROR(errStr + e.what());
+		return e.error();
+	} catch (const runtime::Exception &e) {
 		ERROR(e.what());
-		return -1;
+		return TRUST_ANCHOR_ERROR_INTERNAL;
 	} catch (const std::invalid_argument &e) {
-		ERROR("Invalid argument: " << e.what());
-		return -1;
+		ERROR(e.what());
+		return TRUST_ANCHOR_ERROR_INVALID_PARAMETER;
+	} catch (const std::logic_error &e) {
+		ERROR(e.what());
+		return TRUST_ANCHOR_ERROR_INTERNAL;
 	} catch (const std::exception &e) {
 		ERROR(e.what());
-		return -1;
+		return TRUST_ANCHOR_ERROR_INTERNAL;
 	} catch (...) {
 		ERROR("Unknown exception occurred.");
-		return -1;
+		return TRUST_ANCHOR_ERROR_INTERNAL;
 	}
+}
+
+Exception::Exception(int ec, const char *file, const char *function,
+					 unsigned int line, const std::string &message) noexcept :
+	m_ec(ec),
+	m_message(FORMAT("[" << file << ":" << line << " " <<
+					 function << "()]" << message))
+{
+	ERROR(this->m_message);
+}
+
+const char *Exception::what() const noexcept
+{
+	return this->m_message.c_str();
+}
+
+int Exception::error(void) const noexcept
+{
+	return this->m_ec;
 }
 
 } // namespace tanchor
