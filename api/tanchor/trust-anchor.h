@@ -38,7 +38,7 @@ extern "C" {
  * @brief Install trust anchor for global app.
  * @details App custom certificates would be installed on system.
  *          This function should be called before trust_anchor_global_launch().
- * @param[in] package_id Global package id
+ * @param[in] package_id Package id
  * @param[in] app_certificates_path App custom certificates path
  * @param[in] with_system_certificates Whether system certificates use or not
  * @return #TRUST_ANCHOR_ERROR_NONE on success,
@@ -58,7 +58,7 @@ int trust_anchor_global_install(const char *package_id,
  * @brief Install trust anchor for user app.
  * @details App custom certificates would be installed on system.
  *          This function should be called before trust_anchor_usr_launch().
- * @param[in] package_id User package id
+ * @param[in] package_id Package id
  * @param[in] app_certificates_path App custom certificates path
  * @param[in] uid user id
  * @param[in] with_system_certificates Whether system certificates use or not
@@ -79,7 +79,7 @@ int trust_anchor_usr_install(const char *package_id,
 /**
  * @brief Launch trust anchor for global app.
  * @details After lauching trust anchor, app can use custom certificates.
- * @param[in] package_id Global package id
+ * @param[in] package_id Package id
  * @param[in] app_certificates_path App custom certificates path
  * @param[in] with_system_certificates Whether system certificates use or not
  * @return #TRUST_ANCHOR_ERROR_NONE on success,
@@ -97,7 +97,7 @@ int trust_anchor_global_launch(const char *package_id,
 /**
  * @brief Launch trust anchor for user app.
  * @details After lauching trust anchor, app can use custom certificates.
- * @param[in] package_id User package id
+ * @param[in] package_id Package id
  * @param[in] app_certificates_path App custom certificates path
  * @param[in] with_system_certificates Whether system certificates use or not
  * @return #TRUST_ANCHOR_ERROR_NONE on success,
@@ -105,7 +105,7 @@ int trust_anchor_global_launch(const char *package_id,
  * @retval #TRUST_ANCHOR_ERROR_NONE Successful
  * @retval #TRUST_ANCHOR_ERROR_OUT_OF_MEMORY Out of memory error
  * @retval #TRUST_ANCHOR_ERROR_INTERNAL Internal error
- * @see trust_anchor_global_install()
+ * @see trust_anchor_usr_install()
  */
 int trust_anchor_usr_launch(const char *package_id,
 							const char *app_certificates_path,
@@ -115,7 +115,7 @@ int trust_anchor_usr_launch(const char *package_id,
 
 /**
  * @brief Uninstall trust anchor for global app.
- * @param[in] package_id Global package id
+ * @param[in] package_id Package id
  * @param[in] app_certificates_path App custom certificates path
  * @return #TRUST_ANCHOR_ERROR_NONE on success,
  *         negative on error
@@ -130,7 +130,7 @@ int trust_anchor_global_uninstall(const char *package_id,
 
 /**
  * @brief Uninstall trust anchor for user app.
- * @param[in] package_id User package id
+ * @param[in] package_id Package id
  * @param[in] app_certificates_path App custom certificates path
  * @return #TRUST_ANCHOR_ERROR_NONE on success,
  *         negative on error
