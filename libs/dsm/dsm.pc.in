@@ -1,0 +1,12 @@
+# Package Information for pkg-config
+
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=@CMAKE_INSTALL_PREFIX@
+libdir=@LIB_INSTALL_DIR@
+includedir=@INCLUDE_INSTALL_DIR@
+
+Name: dsm
+Description: Tizen Device Security Monitor Client library
+Version: @VERSION@
+Libs: -L${libdir} -ldsm
+Cflags: -I${includedir}/dpm -I${includedir}/dsm

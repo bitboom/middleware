@@ -411,3 +411,37 @@ Tizen DPM system popup interface package
 %{TZ_SYS_RO_PACKAGES}/org.tizen.dpm-syspopup.xml
 /usr/share/icons/default/small/org.tizen.dpm-syspopup.png
 %{TZ_SYS_RO_APP}/org.tizen.dpm-syspopup/res/images/*
+
+## DSM Client Package ######################################################
+%package -n libdsm
+Summary: Tizen Device Security Monitor Client Library
+Group: Development/Libraries
+
+%description -n libdsm
+Tizen Device Security Monitor Client Library.
+
+%post -n libdsm -p /sbin/ldconfig
+
+%postun -n libdsm -p /sbin/ldconfig
+
+%files -n libdsm
+%manifest device-policy-manager.manifest
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libdsm.so.%{version}
+%{_libdir}/libdsm.so.0
+
+## DSM Devel Package ##############################################################
+%package -n libdsm-devel
+Summary: Libraries and header files for device security monitor client development
+Group: Development/Libraries
+
+%description -n libdsm-devel
+The libdsm-devel package includes the libraries and header files necessary for
+developing the DSM client program.
+
+%files -n libdsm-devel
+%manifest device-policy-manager.manifest
+%defattr(644,root,root,755)
+%{_libdir}/libdsm.so
+%{_includedir}/dsm
+%{_libdir}/pkgconfig/dsm.pc
