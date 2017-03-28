@@ -29,7 +29,15 @@ SET(FOUNDATION		main.cpp
 					preference.cpp
 )
 
-SET(POLICY			administration.cpp
+SET(SECURITY_MONITOR	dsm/smack.cpp
+						dsm/smack_report_issuer.cpp
+						dsm/smack_log_parser.cpp
+						dsm/smack_kernel_log_collector.cpp
+						dsm/smack_kernel_log_parser.cpp
+)
+
+SET(POLICY			${SECURITY_MONITOR}
+					administration.cpp
 					application.cpp
 					restriction.cpp
 					security.cpp
@@ -70,6 +78,7 @@ SET(DEPENDENCY		klay
 					notification
 					cynara-client
 					cynara-session
+					jsoncpp
 )
 IF(NOT DEFINED NO_EXT_PASSWORD)
 SET(DEPENDENCY	${DEPENDENCY}	capi-location-manager
@@ -90,7 +99,7 @@ ENDIF(NOT DEFINED NO_EXT_PASSWORD)
 
 PKG_CHECK_MODULES(SERVER_DEPS REQUIRED ${DEPENDENCY})
 
-INCLUDE_DIRECTORIES(SYSTEM ${SERVER_DEPS_INCLUDE_DIRS} ${DPM_POLICY} ${DPM_SERVER})
+INCLUDE_DIRECTORIES(SYSTEM ${SERVER_DEPS_INCLUDE_DIRS} ${DPM_POLICY} ${DPM_SERVER} dsm)
 
 ADD_EXECUTABLE(${TARGET}.minimal ${FOUNDATION} ${POLICY})
 TARGET_LINK_LIBRARIES(${TARGET}.minimal ${SERVER_DEPS_LIBRARIES} pthread sqlite3)

@@ -24,6 +24,7 @@ SET(API_TEST_SOURCES main.c
 					 restriction.c
 					 security.c
 					 wifi.c
+                                         smack.c
 )
 SET(API_TEST_SOURCES_1		${API_TEST_SOURCES}
 					password.c
@@ -31,23 +32,23 @@ SET(API_TEST_SOURCES_1		${API_TEST_SOURCES}
 SET(API_TEST_SOURCES_2		${API_TEST_SOURCES_1}
 					zone.c
 )
-INCLUDE_DIRECTORIES(SYSTEM ${DPM_LIBS} ${DPM_TESTS})
+INCLUDE_DIRECTORIES(SYSTEM ${DPM_LIBS} ${DPM_LIBS}/dsm ${DPM_TESTS})
 
 
 ADD_EXECUTABLE(${API_TEST_TARGET}.minimal ${API_TEST_SOURCES})
-TARGET_LINK_LIBRARIES(${API_TEST_TARGET}.minimal dpm glib-2.0)
+TARGET_LINK_LIBRARIES(${API_TEST_TARGET}.minimal dpm dsm glib-2.0)
 INSTALL(TARGETS ${API_TEST_TARGET}.minimal DESTINATION bin)
 
 # Add "Password" (no TV). (password, location, bluetooth)
 IF(NOT DEFINED NO_EXT_PASSWORD)
   ADD_EXECUTABLE(${API_TEST_TARGET}.ext-pwd ${API_TEST_SOURCES_1})
-  TARGET_LINK_LIBRARIES(${API_TEST_TARGET}.ext-pwd dpm dpm-ext-password glib-2.0)
+  TARGET_LINK_LIBRARIES(${API_TEST_TARGET}.ext-pwd dpm dpm-ext-password dsm glib-2.0)
   INSTALL(TARGETS ${API_TEST_TARGET}.ext-pwd DESTINATION bin)
  
 # Add "Krate" (no TV, WEARABLE). (krate)
 IF (NOT DEFINED NO_EXT_KRATE_ZONE)
   ADD_EXECUTABLE(${API_TEST_TARGET} ${API_TEST_SOURCES_2})
-  TARGET_LINK_LIBRARIES(${API_TEST_TARGET} dpm dpm-ext-password dpm-ext-krate_zone glib-2.0)
+  TARGET_LINK_LIBRARIES(${API_TEST_TARGET} dpm dpm-ext-password dpm-ext-krate_zone dsm glib-2.0)
   INSTALL(TARGETS ${API_TEST_TARGET} DESTINATION bin)
 
 ENDIF(NOT DEFINED NO_EXT_KRATE_ZONE)

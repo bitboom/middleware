@@ -36,6 +36,7 @@ BuildRequires: pkgconfig(notification)
 BuildRequires: pkgconfig(key-manager)
 BuildRequires: pkgconfig(cynara-client)
 BuildRequires: pkgconfig(cynara-session)
+BuildRequires: pkgconfig(jsoncpp)
 BuildRequires: sed
 
 # The usage of "profile" in the following expressions is for
