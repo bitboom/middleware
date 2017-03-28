@@ -47,12 +47,47 @@ static int smack_get_report(struct testcase *tc)
 	return ret;
 }
 
+static int smack_get_issue_count(struct testcase *tc)
+{
+	int ret;
+	device_policy_manager_h handle;
+
+	handle = dpm_manager_create();
+	if (handle == NULL) {
+		printf("Failed to create client handle\n");
+		return TEST_FAILED;
+	}
+
+	int count = -1;
+
+	ret = TEST_SUCCESSED;
+	if (dpm_smack_get_issue_count(handle, &count) != DPM_ERROR_NONE) {
+		ret = TEST_FAILED;
+	}
+
+	if (count == -1) {
+		ret = TEST_FAILED;
+	}
+
+	printf("Count: %d\n", count);
+
+	dpm_manager_destroy(handle);
+
+	return ret;
+}
+
 struct testcase smack_testcase_get_report = {
 	.description = "smack_testcase_get_report",
 	.handler = smack_get_report
 };
 
+struct testcase smack_testcase_get_issue_count = {
+	.description = "smack_testcase_get_issue_count",
+	.handler = smack_get_issue_count
+};
+
 void TESTCASE_CONSTRUCTOR smack_security_monitor_build_testcase(void)
 {
 	testbench_populate_testcase(&smack_testcase_get_report);
+	testbench_populate_testcase(&smack_testcase_get_issue_count);
 }

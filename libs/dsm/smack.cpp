@@ -64,4 +64,14 @@ std::string SmackSecurityMonitor::getReport()
 	return "";
 }
 
+int SmackSecurityMonitor::getIssueCount()
+{
+	PolicyControlContext &context = pimpl->context;
+	if (context.isMaintenanceMode()) {
+		return context.methodCall<int>("SmackSecurityMonitor::getIssueCount");
+	}
+
+	return -1;
+}
+
 } // namespace DevicePolicyManager

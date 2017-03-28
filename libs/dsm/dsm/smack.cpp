@@ -71,3 +71,25 @@ EXPORT_API int dpm_smack_release_report(char **report)
 	*report = nullptr;
 	return DPM_ERROR_NONE;
 }
+
+EXPORT_API int dpm_smack_get_issue_count(device_policy_manager_h handle, int *count)
+{
+	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(count, DPM_ERROR_INVALID_PARAMETER);
+
+	DevicePolicyContext &client = GetDevicePolicyContext(handle);
+	SmackSecurityMonitor smack = client.createPolicyInterface<SmackSecurityMonitor>();
+
+	try {
+		int issueCount = smack.getIssueCount();
+		if (issueCount == -1) {
+			return DPM_ERROR_OUT_OF_MEMORY;
+		}
+
+		*count = issueCount;
+
+		return DPM_ERROR_NONE;
+	} catch (...) {
+		return -1;
+	}
+}

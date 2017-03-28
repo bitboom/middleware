@@ -54,6 +54,13 @@ public:
 	*/
 	std::string getReport();
 
+	/**
+	 * @brief       Returns number of SMACK issues.
+	 * @details     This API can be used for requesting current number of of SMACK issues
+	 * @return      Number of threats
+	 */
+	int getIssueCount();
+
 private:
 	struct Private;
 	std::unique_ptr<Private> pimpl;

@@ -75,6 +75,21 @@ int dpm_smack_get_report(device_policy_manager_h handle, char **report);
  */
 int dpm_smack_release_report(char **report);
 
+/**
+ * @brief       Returns number of SMACK issues.
+ * @details     This API can be used for requesting current number of
+                SMACK issues
+ * @param[in]   handle SMACK report handle
+ * @param[out]  count Number of SMACK Issues
+ * @return      #DPM_ERROR_NONE on success, otherwise a negative value
+ * @retval      #DPM_ERROR_NONE Successful
+ * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval      #DPM_ERROR_TIMED_OUT Time out
+ * @retval      #DPM_ERROR_OUT_OF_MEMORY Out of memory
+ * @pre         The handle must be created by dpm_context_create().
+ */
+int dpm_smack_get_issue_count(device_policy_manager_h handle, int *count);
+
 #ifdef __cplusplus
 }
 #endif

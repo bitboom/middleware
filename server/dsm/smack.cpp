@@ -54,6 +54,7 @@ SmackSecurityMonitor::SmackSecurityMonitor(PolicyControlContext &context) :
 	pimpl(new Private(context))
 {
 	context.expose(this, "", (std::string)(SmackSecurityMonitor::getReport)());
+	context.expose(this, "", (int)(SmackSecurityMonitor::getIssueCount)());
 }
 
 SmackSecurityMonitor::~SmackSecurityMonitor()
@@ -65,6 +66,13 @@ std::string SmackSecurityMonitor::getReport()
 	SmackReportIssuer issuer;
 
 	return issuer.generateReport();
+}
+
+int SmackSecurityMonitor::getIssueCount()
+{
+	SmackReportIssuer issuer;
+
+	return issuer.getIssueCount();
 }
 
 DEFINE_POLICY(SmackSecurityMonitor);

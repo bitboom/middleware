@@ -66,4 +66,31 @@ std::string SmackReportIssuer::generateReport()
 	}
 }
 
+int SmackReportIssuer::getIssueCount()
+{
+	try {
+		ISmackLogCollectorPtr kernelLogCollector = std::make_shared<SmackKernelLogCollector>();
+
+		std::vector<SmackLogParserPtr> parsers;
+
+		SmackLogParserPtr kernelParser = std::make_shared<SmackKernelLogParser>(kernelLogCollector);
+		parsers.push_back(kernelParser);
+
+		for (const auto &it : parsers)
+			it->generateReport();
+
+		int count = 0;
+
+		for (const auto &it : parsers)
+			count += it->getIssueCount();
+
+		return count;
+		//
+	} catch (...) {
+		ERROR("Caugnt exception");
+
+		return -1;
+	}
+}
+
 } // namespace DevicePolicyManager

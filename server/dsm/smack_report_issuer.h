@@ -37,6 +37,8 @@ public:
 	SmackReportIssuer() {}
 
 	std::string generateReport();
+
+	int getIssueCount();
 };
 
 } // namespace DevicePolicyManager
