@@ -22,7 +22,6 @@ Requires(postun): /sbin/ldconfig
 %global smack_label     System
 
 %global tanchor_base    %{TZ_SYS_DATA}/%{lib_name}
-%global tanchor_res     %{tanchor_base}/res
 %global tanchor_usr     %{tanchor_base}/usr
 %global tanchor_global  %{tanchor_base}/global
 %global tanchor_bundle  %{tanchor_base}/ca-bundle.pem
@@ -37,6 +36,7 @@ SSL root certificates for its HTTPS communication.
 %license LICENSE
 %{_libdir}/lib%{lib_name}.so.0
 %{_libdir}/lib%{lib_name}.so.%{version}
+%dir %attr(770, %{user_name}, %{group_name}) %{tanchor_base}
 %dir %attr(-, %{user_name}, %{group_name}) %{tanchor_usr}
 %dir %attr(-, %{user_name}, %{group_name}) %{tanchor_global}
 %attr(-, %{user_name}, %{group_name}) %{tanchor_bundle}
@@ -59,7 +59,6 @@ SSL root certificates for its HTTPS communication.
 		 -DGROUP_NAME=%{group_name} \
 		 -DSMACK_LABEL=%{smack_label} \
 		 -DTANCHOR_BASE=%{tanchor_base} \
-		 -DTANCHOR_RES=%{tanchor_res} \
 		 -DTANCHOR_USR=%{tanchor_usr} \
 		 -DTANCHOR_GLOBAL=%{tanchor_global} \
 		 -DTANCHOR_BUNDLE=%{tanchor_bundle} \
@@ -74,7 +73,6 @@ make %{?_smp_mflags}
 %install
 %make_install
 
-mkdir -p %{buildroot}%{tanchor_res}
 mkdir -p %{buildroot}%{tanchor_usr}
 mkdir -p %{buildroot}%{tanchor_global}
 
@@ -111,7 +109,7 @@ Testcases for trust anchor library
 %files -n trust-anchor-test
 %{_bindir}/%{lib_name}-test-installer
 %{_bindir}/%{lib_name}-test-launcher
-%{_bindir}/%{lib_name}-test-capi-launcher
+%{_bindir}/%{lib_name}-test-clauncher
 %{_bindir}/%{lib_name}-test-internal
 %{TZ_SYS_DATA}/%{lib_name}/test
 %{TZ_SYS_DATA}/%{lib_name}/test/certs

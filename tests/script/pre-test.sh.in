@@ -20,17 +20,22 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin
 # @brief       Set permission script for test
 #
 
-CLAUNCHER=@BIN_INSTALL_DIR@/@TARGET_TANCHOR_TEST@-capi-launcher
-CPPLAUNCHER=@BIN_INSTALL_DIR@/@TARGET_TANCHOR_TEST@-launcher
+INSTALLER=@BIN_INSTALL_DIR@/@TEST_INSTALLER@
+LAUNCHER=@BIN_INSTALL_DIR@/@TEST_LAUNCHER@
+CLAUNCHER=@BIN_INSTALL_DIR@/@TEST_CLAUNCHER@
+INTERNAL=@BIN_INSTALL_DIR@/@TEST_INTERNAL@
 
-# change owner to system
-chown @USER_NAME@:@GROUP_NAME@ $CLAUNCHER
-chown @USER_NAME@:@GROUP_NAME@ $CPPLAUNCHER
+declare -a TESTS=("$INSTALLER $LAUNCHER $CLAUNCER $INTERNAL")
 
-# run test program as owner
-chmod 4755 $CLAUNCHER
-chmod 4755 $CPPLAUNCHER
+for t in "${TESTS[@]}"
+	do
+		# change owner to system
+		chown @USER_NAME@:@GROUP_NAME@ $t
+		# run test program as owner
+		chmod 4755 $t
+		chsmack -e "@SMACK_LABEL@" $t
+done
 
 # launch() needs CAP_SYS_ADMIN
+setcap cap_sys_admin+ep $LAUNCHER
 setcap cap_sys_admin+ep $CLAUNCHER
-setcap cap_sys_admin+ep $CPPLAUNCHER
