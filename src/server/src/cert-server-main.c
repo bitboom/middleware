@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2017 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ int CertSvcGetSocketFromSystemd(int *pSockfd)
 void CertSvcServerComm(void)
 {
 	int server_sockfd = 0;
-	int client_sockfd = 0;
+	int client_sockfd = -1;
 	int read_len = 0;
 	int client_len = 0;
 	struct sockaddr_un clientaddr;
@@ -296,7 +296,8 @@ void CertSvcServerComm(void)
 			send_data.result = getCertificateAliasFromStore(
 								   recv_data.storeType,
 								   recv_data.gname,
-								   send_data.common_name);
+								   send_data.common_name,
+								   sizeof(send_data.common_name));
 			result = send(client_sockfd, (char *)&send_data,
 						  sizeof(send_data), MSG_NOSIGNAL);
 			break;
@@ -325,6 +326,9 @@ void CertSvcServerComm(void)
 
 		if (result <= 0)
 			SLOGE("send failed :%d, errno %d try once", result, errno);
+
+		close(client_sockfd);
+		client_sockfd = -1;
 	}
 
 Error_close_exit:

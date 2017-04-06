@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2017 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -136,20 +136,20 @@ CertificatePtr Certificate::createFromFile(const std::string &location)
 		VcoreThrowMsg(Certificate::Exception::WrongParamError,
 					  "File content is empty : " << location);
 
-	unsigned char *content = new unsigned char[filesize + 1];
+	std::unique_ptr<unsigned char[]> content(new unsigned char[filesize + 1]);
 	if (content == NULL)
 		VcoreThrowMsg(Certificate::Exception::InternalError,
 					  "Fail to allocate memory.");
 
-	memset(content, 0x00, filesize + 1);
+	memset(content.get(), 0x00, filesize + 1);
 	rewind(fp);
 
-	if (fread(content, sizeof(unsigned char), filesize, fp) != static_cast<size_t>(filesize))
+	if (fread(content.get(), sizeof(unsigned char), filesize, fp) != static_cast<size_t>(filesize))
 		VcoreThrowMsg(Certificate::Exception::InternalError,
 					  "file read failed. wrong size : " << location);
 
 	content[filesize] = '\0';
-	const unsigned char *ptr = reinterpret_cast<const unsigned char *>(content);
+	const unsigned char *ptr = reinterpret_cast<const unsigned char *>(content.get());
 	x509 = d2i_X509(NULL, &ptr, filesize);
 
 	if (x509 == NULL)

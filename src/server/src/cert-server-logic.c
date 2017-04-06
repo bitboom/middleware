@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2017 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -1461,7 +1461,7 @@ error:
 }
 
 int getCertificateAliasFromStore(CertStoreType storeType, const char *gname,
-								 char *alias)
+								 char *alias, size_t aliasSize)
 {
 	int result = CERTSVC_SUCCESS;
 	int records = 0;
@@ -1492,7 +1492,13 @@ int getCertificateAliasFromStore(CertStoreType storeType, const char *gname,
 		goto error;
 	}
 
-	strncpy(alias, text, strlen(text));
+	if (strlen(text) >= aliasSize) {
+		SLOGE("Unable to get the alias name for the gname passed, common_name too long.");
+		result = CERTSVC_FAIL;
+		goto error;
+	}
+
+	strncpy(alias, text, aliasSize);
 
 	if (strlen(alias) == 0) {
 		SLOGE("Unable to get the alias name for the gname passed.");
