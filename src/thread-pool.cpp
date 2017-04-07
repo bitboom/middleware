@@ -68,7 +68,7 @@ void ThreadPool::submit(std::function<void()>&& task)
 {
 	__BEGIN_CRITICAL__
 	if (!stop) {
-		tasks.push_back(std::move(task));
+		tasks.push_back(std::forward<std::function<void()>>(task));
 	}
 	__END_CRITICAL__
 
