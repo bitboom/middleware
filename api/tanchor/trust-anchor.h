@@ -108,6 +108,7 @@ int trust_anchor_global_launch(const char *package_id,
  * @details After lauching trust anchor, app can use custom certificates.
  * @param[in] package_id Package id
  * @param[in] app_certificates_path App custom certificates path
+ * @param[in] uid user id
  * @param[in] with_system_certificates Whether system certificates use or not
  * @return #TRUST_ANCHOR_ERROR_NONE on success,
  *         negative on error
@@ -144,6 +145,7 @@ int trust_anchor_global_uninstall(const char *package_id,
  * @brief Uninstall trust anchor for user app.
  * @param[in] package_id Package id
  * @param[in] app_certificates_path App custom certificates path
+ * @param[in] uid user id
  * @return #TRUST_ANCHOR_ERROR_NONE on success,
  *         negative on error
  * @retval #TRUST_ANCHOR_ERROR_NONE Successful
