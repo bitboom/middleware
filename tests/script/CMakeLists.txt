@@ -16,9 +16,10 @@
 # @author      Sangwan Kwon (sangwan.kwon@samsung.com)
 #
 
-CONFIGURE_FILE(pre-test.sh.in pre-test.sh @ONLY)
-INSTALL(FILES pre-test.sh
-		DESTINATION ${TANCHOR_TEST}/script
+SET(TEST_INIT ${TARGET_TANCHOR_TEST}-init.sh)
+CONFIGURE_FILE(pre-test.sh.in ${TEST_INIT} @ONLY)
+INSTALL(FILES ${TEST_INIT}
+		DESTINATION ${BIN_INSTALL_DIR}
 		PERMISSIONS OWNER_READ
 					OWNER_WRITE
 					OWNER_EXECUTE

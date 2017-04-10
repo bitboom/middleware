@@ -30,5 +30,7 @@ namespace util {
 std::string ls(const char *path);
 std::string cat(const char *path);
 
+int connectSSL(const std::string &addr);
+
 } // namespace util
 } // namespace test

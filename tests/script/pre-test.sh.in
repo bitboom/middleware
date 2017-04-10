@@ -25,6 +25,8 @@ LAUNCHER=@BIN_INSTALL_DIR@/@TEST_LAUNCHER@
 CLAUNCHER=@BIN_INSTALL_DIR@/@TEST_CLAUNCHER@
 INTERNAL=@BIN_INSTALL_DIR@/@TEST_INTERNAL@
 
+CURL=@BIN_INSTALL_DIR@/curl
+
 declare -a TESTS=("$INSTALLER $LAUNCHER $CLAUNCER $INTERNAL")
 
 for t in "${TESTS[@]}"
@@ -35,6 +37,9 @@ for t in "${TESTS[@]}"
 		chmod 4755 $t
 		chsmack -e "@SMACK_LABEL@" $t
 done
+
+# curl should be System label for https communication test
+chsmack -e "@SMACK_LABEL@" $CURL
 
 # launch() needs CAP_SYS_ADMIN
 setcap cap_sys_admin+ep $LAUNCHER

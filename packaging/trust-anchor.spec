@@ -102,6 +102,7 @@ The package provides Trust Anchor API development files.
 %package -n trust-anchor-test
 Summary: Trust Anchor API test
 Group: Development/Libraries
+BuildRequires: pkgconfig(libcurl)
 
 %description -n trust-anchor-test
 Testcases for trust anchor library
@@ -111,6 +112,6 @@ Testcases for trust anchor library
 %{_bindir}/%{lib_name}-test-launcher
 %{_bindir}/%{lib_name}-test-clauncher
 %{_bindir}/%{lib_name}-test-internal
+%{_bindir}/%{lib_name}-test-init.sh
 %{TZ_SYS_DATA}/%{lib_name}/test
 %{TZ_SYS_DATA}/%{lib_name}/test/certs
-%{TZ_SYS_DATA}/%{lib_name}/test/script

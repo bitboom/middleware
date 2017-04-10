@@ -26,6 +26,8 @@
 
 #include <unistd.h>
 
+#include <iostream>
+
 #include "test-util.hxx"
 #include "test-resource.hxx"
 
@@ -36,25 +38,41 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 	auto beforeCat = test::util::cat(TZ_SYS_RO_CA_BUNDLE);
 
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
-	int ret = ta.install(true);
+	int ret = ta.install(false);
+
+	std::cout << "## Before trust-anchor launch#############" << std::endl;
+	ret = test::util::connectSSL("https://google.com");
+	std::cout << "##########################################" << std::endl;
+	TEST_EXPECT(true, ret == 0);
 
 	// pre-condition
 	int pid = fork();
 
 	if (pid == 0) {
-		ret = ta.launch(true);
+		ret = ta.launch(false);
 		TEST_EXPECT(true, ret == 0);
 
+		// check file-system
 		auto afterLsChild = test::util::ls(TZ_SYS_RO_CA_CERTS);
 		TEST_EXPECT(true, beforeLs != afterLsChild);
 
 		auto afterCatChild = test::util::cat(TZ_SYS_RO_CA_BUNDLE);
 		TEST_EXPECT(true, beforeCat != afterCatChild);
+
+		// check SSL communication
+		std::cout << "## After trust-anchor launch(APP)#########" << std::endl;
+		ret = test::util::connectSSL("https://google.com");
+		std::cout << "##########################################" << std::endl;
+		TEST_EXPECT(false, ret == 0);
+
 	} else {
 		auto afterLsParent = test::util::ls(TZ_SYS_RO_CA_CERTS);
 		TEST_EXPECT(true, beforeLs == afterLsParent);
 
 		auto afterCatParent = test::util::cat(TZ_SYS_RO_CA_BUNDLE);
 		TEST_EXPECT(true, beforeCat == afterCatParent);
+
+		ret = test::util::connectSSL("https://google.com");
+		TEST_EXPECT(true, ret == 0);
 	}
 }

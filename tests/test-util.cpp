@@ -23,9 +23,12 @@
 
 #include <sched.h>
 
+#include <iostream>
 #include <cstdio>
 #include <memory>
 #include <vector>
+
+#include <curl/curl.h>
 
 namespace test {
 namespace util {
@@ -64,6 +67,30 @@ std::string cat(const char *path)
 		ret.append(buf.data());
 
 	return ret;
+}
+
+int connectSSL(const std::string &addr)
+{
+	if (addr.empty())
+		return -1;
+
+	using CURLPtr = std::unique_ptr<CURL, decltype(&::curl_easy_cleanup)>;
+	CURLPtr curl(::curl_easy_init(), ::curl_easy_cleanup);
+	if (curl == nullptr) {
+		std::cout << "Failed to get curl object." << std::endl;
+		return -1;
+	}
+
+	curl_easy_setopt(curl.get(), CURLOPT_URL, addr.c_str());
+
+	CURLcode res = curl_easy_perform(curl.get());
+	if(res != CURLE_OK) {
+		std::cout << "Failed to connect failed: "
+				  << curl_easy_strerror(res) << std::endl;
+		return -1;
+	}
+
+	return 0;
 }
 
 } // namespace util

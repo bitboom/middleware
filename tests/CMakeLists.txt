@@ -16,15 +16,18 @@
 # @author      Sangwan Kwon (sangwan.kwon@samsung.com)
 # @breif       Make trust anchor test program
 #
+PKG_CHECK_MODULES(${TARGET_TANCHOR_TEST}_DEP REQUIRED libcurl)
 
 INCLUDE_DIRECTORIES(SYSTEM .
 						   ${TANCHOR_INCLUDE}
 						   ${TANCHOR_SRC}
-						   ${${TARGET_TANCHOR_LIB}_DEP_INCLUDE_DIRS})
+						   ${${TARGET_TANCHOR_LIB}_DEP_INCLUDE_DIRS}
+						   ${${TARGET_TANCHOR_TEST}_DEP_INCLUDE_DIRS})
 
 FUNCTION(BUILD_TEST TEST_NAME TEST_SRCS)
 	ADD_EXECUTABLE(${TEST_NAME} ${TEST_SRCS})
-	TARGET_LINK_LIBRARIES(${TEST_NAME} ${TARGET_TANCHOR_LIB})
+	TARGET_LINK_LIBRARIES(${TEST_NAME} ${TARGET_TANCHOR_LIB}
+									   ${${TARGET_TANCHOR_TEST}_DEP_LIBRARIES})
 	SET_SOURCE_FILES_PROPERTIES(${TEST_SRCS}
 		PROPERTIES
 			COMPILE_FLAGS "-D_GNU_SOURCE -fPIE")
@@ -52,6 +55,8 @@ SET(CAPI_LAUNCHER_SRCS main.cpp
 					   test-util.cpp
 					   test-capi-launcher.cpp)
 SET(INTERNAL_SRCS main.cpp
+				  test-curl.cpp
+				  test-util.cpp
 				  test-certificate.cpp)
 
 SET(TEST_INSTALLER ${TARGET_TANCHOR_TEST}-installer)

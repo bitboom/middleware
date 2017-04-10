@@ -14,27 +14,25 @@
  *  limitations under the License
  */
 /*
- * @file        main.cpp
+ * @file        test-curl.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     0.1
- * @brief       Implemetation of testbench driver
+ * @brief       Unit test program of Curl
  */
-
-#include <klay/audit/logger.h>
 
 #include <klay/testbench.h>
 
-#include <curl/curl.h>
+#include <iostream>
+#include <stdexcept>
 
-int main(int /*argc*/, char** /*argv*/)
+#include "test-util.hxx"
+#include "test-resource.hxx"
+
+TESTCASE(CONNECT_SSL)
 {
-	audit::Logger::setLogLevel(audit::LogLevel::Trace);
+	int ret = test::util::connectSSL("https://google.com");
+	TEST_EXPECT(true, ret == 0);
 
-	curl_global_init(CURL_GLOBAL_DEFAULT);
-
-	testbench::Testbench::runAllTestSuites();
-
-	curl_global_cleanup();
-
-	return 0;
+	if (ret != 0)
+		std::cout << "Check wifi connection.." << std::endl;
 }
