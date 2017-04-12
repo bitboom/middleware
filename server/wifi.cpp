@@ -20,7 +20,7 @@
 #include <functional>
 #include <unordered_set>
 
-#include <wifi.h>
+#include <wifi-manager.h>
 
 #include <klay/audit/logger.h>
 #include <klay/dbus/connection.h>
@@ -100,31 +100,38 @@ struct WifiPolicy::Private : public PolicyHelper {
 	Private(PolicyControlContext& ctxt);
 	~Private();
 
-	static void onConnectionStateChanged(wifi_connection_state_e state,
-										 wifi_ap_h ap, void *user_data);
+	static void onConnectionStateChanged(wifi_manager_connection_state_e state,
+										 wifi_manager_ap_h ap, void *user_data);
 
 	WifiStatePolicy wifiState{context, "wifi"};
 	WifiHotspotPolicy wifiHotspot{context, "wifi-hotspot"};
 	WifiProfileChangePolicy wifiProfileChange{context, "wifi-profile-change"};
+	wifi_manager_h wifiHandle;
 };
 
 WifiPolicy::Private::Private(PolicyControlContext& ctxt) :
-	PolicyHelper(ctxt)
+	PolicyHelper(ctxt), wifiHandle(nullptr)
 {
-	::wifi_initialize();
-	::wifi_set_connection_state_changed_cb(&onConnectionStateChanged, this);
+	if (::wifi_manager_initialize(&wifiHandle) != WIFI_MANAGER_ERROR_NONE) {
+		throw runtime::Exception("WiFi Manager initialization failed");
+	}
+
+	if (::wifi_manager_set_connection_state_changed_cb(wifiHandle, &onConnectionStateChanged, this) != WIFI_MANAGER_ERROR_NONE) {
+		throw runtime::Exception("WiFi Manager set connection state changed callback failed");
+	}
 }
 
 WifiPolicy::Private::~Private()
 {
-	::wifi_unset_connection_state_changed_cb();
+	::wifi_manager_unset_connection_state_changed_cb(wifiHandle);
+	::wifi_manager_deinitialize(wifiHandle);
 }
 
-void WifiPolicy::Private::onConnectionStateChanged(wifi_connection_state_e state,
-												 wifi_ap_h ap, void *user_data)
+void WifiPolicy::Private::onConnectionStateChanged(wifi_manager_connection_state_e state,
+												 wifi_manager_ap_h ap, void *user_data)
 {
-	if (state == WIFI_CONNECTION_STATE_FAILURE ||
-		state == WIFI_CONNECTION_STATE_DISCONNECTED) {
+	if (state == WIFI_MANAGER_CONNECTION_STATE_FAILURE ||
+		state == WIFI_MANAGER_CONNECTION_STATE_DISCONNECTED) {
 		return;
 	}
 }

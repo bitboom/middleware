@@ -70,7 +70,7 @@ SET(DEPENDENCY		klay
 					libtzplatform-config
 					security-privilege-manager
 					bluetooth-api
-					capi-network-wifi
+					capi-network-wifi-manager
 					capi-system-info
 					capi-system-system-settings
 					capi-network-connection
