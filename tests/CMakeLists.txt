@@ -57,7 +57,9 @@ SET(CAPI_LAUNCHER_SRCS main.cpp
 SET(INTERNAL_SRCS main.cpp
 				  test-curl.cpp
 				  test-util.cpp
-				  test-certificate.cpp)
+				  test-certificate.cpp
+
+				  ${TANCHOR_SRC}/certificate.cpp)
 
 SET(TEST_INSTALLER ${TARGET_TANCHOR_TEST}-installer)
 SET(TEST_LAUNCHER ${TARGET_TANCHOR_TEST}-launcher)

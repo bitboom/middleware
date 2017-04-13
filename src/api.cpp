@@ -22,8 +22,11 @@
 #include "tanchor/trust-anchor.h"
 #include "tanchor/trust-anchor.hxx"
 
+#include "macros.hxx"
+
 using namespace tanchor;
 
+TANCHOR_API
 int trust_anchor_global_install(const char *package_id,
 								const char *app_certificates_path,
 								bool with_system_certificates)
@@ -32,6 +35,7 @@ int trust_anchor_global_install(const char *package_id,
 	return ta.install(with_system_certificates);
 }
 
+TANCHOR_API
 int trust_anchor_usr_install(const char *package_id,
 							 const char *app_certificates_path,
 							 uid_t uid,
@@ -41,6 +45,7 @@ int trust_anchor_usr_install(const char *package_id,
 	return ta.install(with_system_certificates);
 }
 
+TANCHOR_API
 int trust_anchor_global_launch(const char *package_id,
 							   const char *app_certificates_path,
 							   bool with_system_certificates)
@@ -49,6 +54,7 @@ int trust_anchor_global_launch(const char *package_id,
 	return ta.launch(with_system_certificates);
 }
 
+TANCHOR_API
 int trust_anchor_usr_launch(const char *package_id,
 							const char *app_certificates_path,
 							uid_t uid,
@@ -58,6 +64,7 @@ int trust_anchor_usr_launch(const char *package_id,
 	return ta.launch(with_system_certificates);
 }
 
+TANCHOR_API
 int trust_anchor_global_uninstall(const char *package_id,
 								  const char *app_certificates_path)
 {
@@ -65,6 +72,7 @@ int trust_anchor_global_uninstall(const char *package_id,
 	return ta.uninstall();
 }
 
+TANCHOR_API
 int trust_anchor_usr_uninstall(const char *package_id,
 							   const char *app_certificates_path,
 							   uid_t uid)

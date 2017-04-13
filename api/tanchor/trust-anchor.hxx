@@ -29,9 +29,12 @@
 #include <memory>
 
 
+#define TANCHOR_API __attribute__((visibility("default")))
+
+
 namespace tanchor {
 
-class TrustAnchor {
+class TANCHOR_API TrustAnchor {
 public:
 	explicit TrustAnchor(const std::string &packageId,
 						 const std::string &certsDir,
