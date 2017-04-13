@@ -23,7 +23,6 @@
 
 #include <sched.h>
 
-#include <iostream>
 #include <cstdio>
 #include <memory>
 #include <vector>

@@ -22,7 +22,18 @@
 #pragma once
 
 #include <stddef.h>
+#include <iostream>
 #include <string>
+#include <chrono>
+
+using namespace std::chrono;
+
+#define TIME_MEASURE_START auto start = system_clock::now(); \
+						   std::cout << "Start to measure time" << std::endl;
+#define TIME_MEASURE_END auto end = system_clock::now(); \
+						 auto mill = duration_cast<milliseconds>(end - start); \
+						 std::cout << "Elapsed time : " << mill.count() \
+								   << "ms" << std::endl;
 
 namespace test {
 namespace util {

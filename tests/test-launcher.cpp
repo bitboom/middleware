@@ -40,16 +40,20 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
 	int ret = ta.install(false);
 
-	std::cout << "## Before trust-anchor launch#############" << std::endl;
-	ret = test::util::connectSSL("https://google.com");
 	std::cout << "##########################################" << std::endl;
+	std::cout << "## Before trust-anchor launch#############" << std::endl;
+	std::cout << "##########################################" << std::endl;
+	ret = test::util::connectSSL("https://google.com");
 	TEST_EXPECT(true, ret == 0);
 
 	// pre-condition
 	int pid = fork();
+	TEST_EXPECT(true, pid >= 0);
 
 	if (pid == 0) {
+		TIME_MEASURE_START
 		ret = ta.launch(false);
+		TIME_MEASURE_END
 		TEST_EXPECT(true, ret == 0);
 
 		// check file-system
@@ -60,11 +64,13 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 		TEST_EXPECT(true, beforeCat != afterCatChild);
 
 		// check SSL communication
-		std::cout << "## After trust-anchor launch(APP)#########" << std::endl;
-		ret = test::util::connectSSL("https://google.com");
 		std::cout << "##########################################" << std::endl;
+		std::cout << "## After trust-anchor launch(APP)#########" << std::endl;
+		std::cout << "##########################################" << std::endl;
+		ret = test::util::connectSSL("https://google.com");
 		TEST_EXPECT(false, ret == 0);
 
+		exit(0);
 	} else {
 		auto afterLsParent = test::util::ls(TZ_SYS_RO_CA_CERTS);
 		TEST_EXPECT(true, beforeLs == afterLsParent);
@@ -72,6 +78,63 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 		auto afterCatParent = test::util::cat(TZ_SYS_RO_CA_BUNDLE);
 		TEST_EXPECT(true, beforeCat == afterCatParent);
 
+		std::cout << "##########################################" << std::endl;
+		std::cout << "## After trust-anchor launch(parent)######" << std::endl;
+		std::cout << "##########################################" << std::endl;
+		ret = test::util::connectSSL("https://google.com");
+		TEST_EXPECT(true, ret == 0);
+	}
+}
+
+TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
+{
+	auto beforeLs = test::util::ls(TZ_SYS_RO_CA_CERTS);
+	auto beforeCat = test::util::cat(TZ_SYS_RO_CA_BUNDLE);
+
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
+	int ret = ta.install(true);
+
+	std::cout << "##########################################" << std::endl;
+	std::cout << "## Before trust-anchor launch#############" << std::endl;
+	std::cout << "##########################################" << std::endl;
+	ret = test::util::connectSSL("https://google.com");
+	TEST_EXPECT(true, ret == 0);
+
+	// pre-condition
+	int pid = fork();
+	TEST_EXPECT(true, pid >= 0);
+
+	if (pid == 0) {
+		TIME_MEASURE_START
+		ret = ta.launch(true);
+		TIME_MEASURE_END
+		TEST_EXPECT(true, ret == 0);
+
+		// check file-system
+		auto afterLsChild = test::util::ls(TZ_SYS_RO_CA_CERTS);
+		TEST_EXPECT(true, beforeLs != afterLsChild);
+
+		auto afterCatChild = test::util::cat(TZ_SYS_RO_CA_BUNDLE);
+		TEST_EXPECT(true, beforeCat != afterCatChild);
+
+		// check SSL communication
+		std::cout << "###########################################" << std::endl;
+		std::cout << "## After trust-anchor launch(APP) with SYS#" << std::endl;
+		std::cout << "###########################################" << std::endl;
+		ret = test::util::connectSSL("https://google.com");
+		TEST_EXPECT(true, ret == 0);
+
+		exit(0);
+	} else {
+		auto afterLsParent = test::util::ls(TZ_SYS_RO_CA_CERTS);
+		TEST_EXPECT(true, beforeLs == afterLsParent);
+
+		auto afterCatParent = test::util::cat(TZ_SYS_RO_CA_BUNDLE);
+		TEST_EXPECT(true, beforeCat == afterCatParent);
+
+		std::cout << "##########################################" << std::endl;
+		std::cout << "## After trust-anchor launch(parent)######" << std::endl;
+		std::cout << "##########################################" << std::endl;
 		ret = test::util::connectSSL("https://google.com");
 		TEST_EXPECT(true, ret == 0);
 	}

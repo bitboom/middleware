@@ -30,19 +30,24 @@
 #include <iostream>
 
 #include "test-resource.hxx"
+#include "test-util.hxx"
 
 TESTCASE(TRUST_ANCHOR_INSTALL_GLOBAL_APP_POSITIVE)
 {
+	TIME_MEASURE_START
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
 	int ret = ta.install(false);
 	TEST_EXPECT(true, ret == 0);
+	TIME_MEASURE_END
 }
 
 TESTCASE(TRUST_ANCHOR_INSTALL_GLOBAL_APP_WITH_SYS_POSITIVE)
 {
+	TIME_MEASURE_START
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
 	int ret = ta.install(true);
 	TEST_EXPECT(true, ret == 0);
+	TIME_MEASURE_END
 }
 
 TESTCASE(TRUST_ANCHOR_INSTALL_USER_APP_POSITIVE)
