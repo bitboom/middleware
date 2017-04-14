@@ -26,6 +26,7 @@ Requires(postun): /sbin/ldconfig
 %global tanchor_global  %{tanchor_base}/global
 %global tanchor_bundle  %{tanchor_base}/ca-bundle.pem
 %global tanchor_test    %{tanchor_base}/test
+%global tanchor_example %{tanchor_base}/example
 
 %description
 The package provides trust-anchor which the application can assign
@@ -63,6 +64,7 @@ SSL root certificates for its HTTPS communication.
 		 -DTANCHOR_GLOBAL=%{tanchor_global} \
 		 -DTANCHOR_BUNDLE=%{tanchor_bundle} \
 		 -DTANCHOR_TEST=%{tanchor_test} \
+		 -DTANCHOR_EXAMPLE=%{tanchor_example} \
 		 -DTZ_SYS_CA_CERTS=%{TZ_SYS_CA_CERTS} \
 		 -DTZ_SYS_CA_BUNDLE=%{TZ_SYS_CA_BUNDLE} \
 		 -DTZ_SYS_RO_CA_CERTS=%{TZ_SYS_RO_CA_CERTS} \
@@ -101,7 +103,7 @@ The package provides Trust Anchor API development files.
 ## Test Package ##############################################################
 %package -n trust-anchor-test
 Summary: Trust Anchor API test
-Group: Development/Libraries
+Group: Security/Development
 BuildRequires: pkgconfig(libcurl)
 
 %description -n trust-anchor-test
@@ -113,5 +115,17 @@ Testcases for trust anchor library
 %{_bindir}/%{lib_name}-test-clauncher
 %{_bindir}/%{lib_name}-test-internal
 %{_bindir}/%{lib_name}-test-init.sh
-%{TZ_SYS_DATA}/%{lib_name}/test
-%{TZ_SYS_DATA}/%{lib_name}/test/certs
+%{tanchor_test}
+%{tanchor_test}/certs
+
+## Example Package ############################################################
+%package -n trust-anchor-example
+Summary: Trust Anchor API example
+Group: Security/Other
+
+%description -n trust-anchor-example
+Examples for trust anchor library
+
+%files -n trust-anchor-example
+%{tanchor_example}/installer.c
+%{tanchor_example}/launcher.c
