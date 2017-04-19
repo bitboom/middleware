@@ -24,7 +24,9 @@ Client::Client(const std::string& path) :
 
 Client::~Client()
 {
-	disconnect();
+	try {
+		disconnect();
+	} catch (runtime::Exception& e) {}
 }
 
 void Client::connect()
