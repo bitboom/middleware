@@ -45,14 +45,15 @@ SmackKernelLogCollector::~SmackKernelLogCollector()
 	m_file.close();
 }
 
-
 bool SmackKernelLogCollector::getLog(std::string &log)
 {
 	if (!m_file.is_open()) {
 		return false;
 	}
 
-	return std::getline(m_file, log);
+	std::getline(m_file, log);
+
+	return !log.empty();
 }
 
 int SmackKernelLogCollector::getLogCount()
