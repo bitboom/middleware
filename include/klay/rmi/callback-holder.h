@@ -47,7 +47,7 @@ struct CallbackHolder {
 	const typename MethodHandler<Type, Args...>::type& callback;
 
 	CallbackHolder(const typename MethodHandler<Type, Args...>::type& m) :
-		callback(m)
+		callback(m), parameters(std::tuple<Args...>())
 	{
 	}
 
