@@ -266,7 +266,7 @@ pid_t PrepareTestServer(void)
 class IpcTestSuite : public testbench::TestSuite {
 public:
 	IpcTestSuite(const std::string& name) :
-		testbench::TestSuite(name)
+		testbench::TestSuite(name), pid(-1)
 	{
 		addTest(IpcTestSuite::connectionTest);
 		addTest(IpcTestSuite::remoteMethodCallTest);
