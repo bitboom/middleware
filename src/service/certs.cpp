@@ -61,7 +61,7 @@ static void get_cert_chain(const char *pkgid, uid_t uid, int sig_type, chain_t &
 	auto pm_certinfo = std::make_shared<PkgmgrinfoCertInfo>();
 
 	if (pm_certinfo->ret != PMINFO_R_OK) {
-		LogError("Get pkgmgrinfo certinfo failed. ret : " << ret);
+		LogError("Get pkgmgrinfo certinfo failed. ret : " << pm_certinfo->ret);
 		return;
 	}
 
