@@ -14,7 +14,12 @@
  */
 // Boost.Test
 #include <colour_log_formatter.h>
+#include <boost/test/impl/execution_monitor.ipp>
+#if BOOST_VERSION >= 105900
+#include <boost/test/tree/test_unit.hpp>
+#else
 #include <boost/test/unit_test_suite_impl.hpp>
+#endif
 #include <boost/test/framework.hpp>
 #include <boost/test/utils/basic_cstring/io.hpp>
 #include <boost/test/utils/lazy_ostream.hpp>
@@ -38,11 +43,29 @@ namespace CCHECKER {
 namespace {
 
 const_string
+test_unit_type_name(const test_unit &tu)
+{
+#if BOOST_VERSION >= 105900
+	return const_string(tu.p_type_name);
+#else
+	return tu.p_type_name.get();
+#endif
+}
+
+const_string
+test_unit_name(const test_unit &tu)
+{
+#if BOOST_VERSION >= 105900
+	return const_string(tu.p_name);
+#else
+	return tu.p_name.get();
+#endif
+}
+
+const_string
 test_phase_identifier()
 {
-	return framework::is_initialized()
-		   ? const_string(framework::current_test_case().p_name.get())
-		   : BOOST_TEST_L("Test setup");
+    return test_unit_name(framework::current_test_case());
 }
 
 const_string
@@ -55,6 +78,12 @@ std::string
 get_basename(const std::string &file_name)
 {
 	return basename(file_name.c_str());
+}
+
+bool
+test_unit_type_name_contains(const test_unit &tu, const std::string &substr)
+{
+	return test_unit_type_name(tu).find(const_string(substr)) == 0;
 }
 
 } // local namespace
@@ -99,11 +128,12 @@ colour_log_formatter::test_unit_start(
 	std::ostream &output,
 	test_unit const &tu)
 {
-	if (tu.p_type_name->find(const_string("suite")) == 0) {
-		output << "Starting test " << tu.p_type_name << " \"" << tu.p_name << "\"" << std::endl;
+	if (test_unit_type_name_contains(tu, "suite")) {
+		output << "Starting test "; 
 	} else {
-		output << "Running test " << tu.p_type_name << " \"" << tu.p_name << "\"" << std::endl;
+		output << "Running test ";
 	}
+	output <<  test_unit_type_name(tu) << " \"" << test_unit_name(tu) << "\"" << std::endl;
 }
 
 //____________________________________________________________________________//
@@ -114,8 +144,8 @@ colour_log_formatter::test_unit_finish(
 	test_unit const &tu,
 	unsigned long elapsed)
 {
-	if (tu.p_type_name->find(const_string("suite")) == 0) {
-		output << "Finished test " << tu.p_type_name << " \"" << tu.p_name << "\"" << std::endl;
+	if (test_unit_type_name_contains(tu, "suite")) {
+		output << "Finished test " << test_unit_type_name(tu) << " \"" << test_unit_name(tu) << "\"" << std::endl;
 		return;
 	}
 
@@ -150,13 +180,13 @@ colour_log_formatter::test_unit_skipped(
 	std::ostream &output,
 	test_unit const &tu)
 {
-	output  << "Test " << tu.p_type_name << " \"" << tu.p_name << "\"" << "is skipped" << std::endl;
+	output  << "Test " << test_unit_type_name(tu) << " \"" << test_unit_name(tu) << "\"" << "is skipped" << std::endl;
 }
 
 //____________________________________________________________________________//
 
 void
-colour_log_formatter::log_exception(
+colour_log_formatter::log_exception_start(
 	std::ostream &output,
 	log_checkpoint_data const &checkpoint_data,
 	boost::execution_exception const &ex)
@@ -181,6 +211,11 @@ colour_log_formatter::log_exception(
 	m_isTestCaseFailed = true;
 }
 
+void
+colour_log_formatter::log_exception_finish(std::ostream &os)
+{
+	(void)os;
+}
 //____________________________________________________________________________//
 
 void
@@ -250,6 +285,25 @@ colour_log_formatter::log_entry_finish(
 	output << std::endl;
 }
 
+//____________________________________________________________________________//
+
+void
+colour_log_formatter::entry_context_start(std::ostream& os, boost::unit_test::log_level l)
+{
+	(void)os;
+	(void)l;
+}
+void
+colour_log_formatter::log_entry_context(std::ostream& os, boost::unit_test::const_string value)
+{
+	(void)os;
+	(void)value;
+}
+void
+colour_log_formatter::entry_context_finish(std::ostream& os)
+{
+	(void)os;
+}
 //____________________________________________________________________________//
 
 //____________________________________________________________________________//
