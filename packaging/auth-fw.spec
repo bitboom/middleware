@@ -85,7 +85,8 @@ export LDFLAGS+="-Wl,--rpath=%{_libdir}"
         -DSOCK_PASSWD_CHECK=%{sock_passwd_check} \
         -DSOCK_PASSWD_SET=%{sock_passwd_set} \
         -DSOCK_PASSWD_RESET=%{sock_passwd_reset} \
-        -DSOCK_PASSWD_POLICY=%{sock_passwd_policy}
+        -DSOCK_PASSWD_POLICY=%{sock_passwd_policy} \
+        -DADDITIONAL_LIBRARIES=%{?asan:"-lpthread"}
 
 make %{?jobs:-j%jobs}
 
