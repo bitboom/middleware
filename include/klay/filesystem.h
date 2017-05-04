@@ -93,7 +93,7 @@ public:
 	ino_t getInode() const;
 	dev_t getDevice() const;
 
-	size_t size() const;
+	off_t size() const;
 
 	void create(mode_t mode);
 	void open(int flags);
