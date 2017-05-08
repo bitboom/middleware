@@ -114,6 +114,7 @@ Testcases for trust anchor library
 %{_bindir}/%{lib_name}-test-launcher
 %{_bindir}/%{lib_name}-test-clauncher
 %{_bindir}/%{lib_name}-test-internal
+%{_bindir}/%{lib_name}-test-ssl
 %{_bindir}/%{lib_name}-test-init.sh
 %{tanchor_test}
 %{tanchor_test}/certs

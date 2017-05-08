@@ -55,21 +55,24 @@ SET(CAPI_LAUNCHER_SRCS main.cpp
 					   test-util.cpp
 					   test-capi-launcher.cpp)
 SET(INTERNAL_SRCS main.cpp
-				  test-curl.cpp
 				  test-util.cpp
 				  test-certificate.cpp
-
 				  ${TANCHOR_SRC}/certificate.cpp)
+SET(SSL_SRCS main.cpp
+			 test-curl.cpp
+			 test-util.cpp)
 
 SET(TEST_INSTALLER ${TARGET_TANCHOR_TEST}-installer)
 SET(TEST_LAUNCHER ${TARGET_TANCHOR_TEST}-launcher)
 SET(TEST_CLAUNCHER ${TARGET_TANCHOR_TEST}-clauncher)
 SET(TEST_INTERNAL ${TARGET_TANCHOR_TEST}-internal)
+SET(TEST_SSL ${TARGET_TANCHOR_TEST}-ssl)
 
 BUILD_TEST(${TEST_INSTALLER} "${INSTALLER_SRCS}")
 BUILD_TEST(${TEST_LAUNCHER} "${LAUNCHER_SRCS}")
 BUILD_TEST(${TEST_CLAUNCHER} "${CAPI_LAUNCHER_SRCS}")
 BUILD_TEST(${TEST_INTERNAL} "${INTERNAL_SRCS}")
+BUILD_TEST(${TEST_SSL} "${SSL_SRCS}")
 
 ADD_SUBDIRECTORY(res)
 ADD_SUBDIRECTORY(script)

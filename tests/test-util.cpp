@@ -83,7 +83,7 @@ int connectSSL(const std::string &addr)
 	curl_easy_setopt(curl.get(), CURLOPT_URL, addr.c_str());
 
 	CURLcode res = curl_easy_perform(curl.get());
-	if(res != CURLE_OK) {
+	if (res != CURLE_OK) {
 		std::cout << "Failed to connect failed: "
 				  << curl_easy_strerror(res) << std::endl;
 		return -1;

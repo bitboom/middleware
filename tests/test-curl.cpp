@@ -20,10 +20,13 @@
  * @brief       Unit test program of Curl
  */
 
+#include <tanchor/trust-anchor.hxx>
+
 #include <klay/testbench.h>
 
+#include <unistd.h>
+
 #include <iostream>
-#include <stdexcept>
 
 #include "test-util.hxx"
 #include "test-resource.hxx"
@@ -35,4 +38,78 @@ TESTCASE(CONNECT_SSL)
 
 	if (ret != 0)
 		std::cout << "Check wifi connection.." << std::endl;
+}
+
+TESTCASE(TRUST_ANCHOR_LAUNCH)
+{
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
+	int ret = ta.install(false);
+	TEST_EXPECT(true, ret == 0);
+
+	std::cout << "##########################################" << std::endl;
+	std::cout << "## Before trust-anchor launch#############" << std::endl;
+	std::cout << "##########################################" << std::endl;
+	ret = test::util::connectSSL("https://google.com");
+	TEST_EXPECT(true, ret == 0);
+
+	// pre-condition
+	int pid = fork();
+	TEST_EXPECT(true, pid >= 0);
+
+	if (pid == 0) {
+		ret = ta.launch(false);
+		TEST_EXPECT(true, ret == 0);
+
+		// check SSL communication
+		std::cout << "##########################################" << std::endl;
+		std::cout << "## After trust-anchor launch(APP)#########" << std::endl;
+		std::cout << "##########################################" << std::endl;
+		ret = test::util::connectSSL("https://google.com");
+		TEST_EXPECT(false, ret == 0);
+
+		exit(0);
+	} else {
+		std::cout << "##########################################" << std::endl;
+		std::cout << "## After trust-anchor launch(parent)######" << std::endl;
+		std::cout << "##########################################" << std::endl;
+		ret = test::util::connectSSL("https://google.com");
+		TEST_EXPECT(true, ret == 0);
+	}
+}
+
+TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
+{
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
+	int ret = ta.install(true);
+	TEST_EXPECT(true, ret == 0);
+
+	std::cout << "##########################################" << std::endl;
+	std::cout << "## Before trust-anchor launch#############" << std::endl;
+	std::cout << "##########################################" << std::endl;
+	ret = test::util::connectSSL("https://google.com");
+	TEST_EXPECT(true, ret == 0);
+
+	// pre-condition
+	int pid = fork();
+	TEST_EXPECT(true, pid >= 0);
+
+	if (pid == 0) {
+		ret = ta.launch(true);
+		TEST_EXPECT(true, ret == 0);
+
+		// check SSL communication
+		std::cout << "###########################################" << std::endl;
+		std::cout << "## After trust-anchor launch(APP) with SYS#" << std::endl;
+		std::cout << "###########################################" << std::endl;
+		ret = test::util::connectSSL("https://google.com");
+		TEST_EXPECT(true, ret == 0);
+
+		exit(0);
+	} else {
+		std::cout << "##########################################" << std::endl;
+		std::cout << "## After trust-anchor launch(parent)######" << std::endl;
+		std::cout << "##########################################" << std::endl;
+		ret = test::util::connectSSL("https://google.com");
+		TEST_EXPECT(true, ret == 0);
+	}
 }
