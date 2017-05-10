@@ -6,7 +6,8 @@ libdir=@LIB_INSTALL_DIR@
 includedir=@INCLUDE_INSTALL_DIR@
 
 Name: klay
-Description: Tizen Klay library and header files
+Description: Tizen Klay static library and header files
+Requires : dlog glib-2.0 sqlite3 libxml-2.0 libtzplatform-config
 Version: @VERSION@
 Libs: -L${libdir} -lklay
 Cflags: -I${includedir}/klay
