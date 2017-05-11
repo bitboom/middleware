@@ -106,7 +106,7 @@ private:
 
 template<typename DataType, typename EnforceModel>
 DomainPolicy<DataType, EnforceModel>::DomainPolicy(PolicyControlContext& ctxt, const std::string& name) :
-	enforceModel(ctxt, name)
+	id(0), pivot(), current(), enforceModel(ctxt, name)
 {
 	DataSet stmt = PolicyStorage::prepare("SELECT id, ivalue FROM policy_definition WHERE name = ?");
 	stmt.bind(1, name);
@@ -244,7 +244,7 @@ private:
 
 template<typename DataType, typename EnforceModel>
 GlobalPolicy<DataType, EnforceModel>::GlobalPolicy(PolicyControlContext& ctxt, const std::string& name) :
-	enforceModel(ctxt, name)
+	id(0), pivot(), current(), enforceModel(ctxt, name)
 {
 	DataSet stmt = PolicyStorage::prepare("SELECT id, ivalue FROM policy_definition WHERE name = ?");
 	stmt.bind(1, name);
