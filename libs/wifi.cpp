@@ -13,6 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+
+#include "status.h"
 #include "wifi.hxx"
 
 namespace DevicePolicyManager {
@@ -56,102 +58,111 @@ WifiPolicy::~WifiPolicy()
 int WifiPolicy::setState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("WifiPolicy::setState", enable);
-	}
 
+	Status<int> status { -1 };
 
-	return -1;
+	status = context.methodCall<int>("WifiPolicy::setState", enable);
+
+	return status.get();
 }
 
 bool WifiPolicy::getState()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<bool>("WifiPolicy::getState");
-	}
 
-	return true;
+	Status<bool> status { true };
+
+	status = context.methodCall<bool>("WifiPolicy::getState");
+
+	return status.get();
 }
 
 int WifiPolicy::setHotspotState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("WifiPolicy::setHotspotState", enable);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("WifiPolicy::setHotspotState", enable);
+
+	return status.get();
 }
 
 bool WifiPolicy::getHotspotState()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<bool>("WifiPolicy::getHotspotState");
-	}
 
-	return true;
+	Status<bool> status { true };
+
+	status = context.methodCall<bool>("WifiPolicy::getHotspotState");
+
+	return status.get();
 }
 
 int WifiPolicy::setProfileChangeRestriction(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("WifiPolicy::setProfileChangeRestriction", enable);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("WifiPolicy::setProfileChangeRestriction", enable);
+
+	return status.get();
 }
 
 bool WifiPolicy::isProfileChangeRestricted()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<bool>("WifiPolicy::isProfileChangeRestricted");
-	}
 
-	return false;
+	Status<bool> status { false };
+
+	status = context.methodCall<bool>("WifiPolicy::isProfileChangeRestricted");
+
+	return status.get();
 }
 
 int WifiPolicy::setNetworkAccessRestriction(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("WifiPolicy::setNetworkAccessRestriction", enable);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("WifiPolicy::setNetworkAccessRestriction", enable);
+
+	return status.get();
 }
 
 bool WifiPolicy::isNetworkAccessRestricted()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<bool>("WifiPolicy::isNetworkAccessRestricted");
-	}
 
-	return false;
+	Status<bool> status { false };
+
+	status = context.methodCall<bool>("WifiPolicy::isNetworkAccessRestricted");
+
+	return status.get();
 }
 
 int WifiPolicy::addSsidToBlocklist(const std::string& ssid)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("WifiPolicy::addSsidToBlocklist", ssid);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("WifiPolicy::addSsidToBlocklist", ssid);
+
+	return status.get();
 }
 
 int WifiPolicy::removeSsidFromBlocklist(const std::string& ssid)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("WifiPolicy::removeSsidFromBlocklist", ssid);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("WifiPolicy::removeSsidFromBlocklist", ssid);
+
+	return status.get();
 }
 
 } // namespace DevicePolicyManager

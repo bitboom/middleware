@@ -13,6 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+
+#include "status.h"
 #include "location.hxx"
 
 namespace DevicePolicyManager {
@@ -55,21 +57,23 @@ LocationPolicy::~LocationPolicy()
 int LocationPolicy::setLocationState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("LocationPolicy::setLocationState", enable);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("LocationPolicy::setLocationState", enable);
+
+	return status.get();
 }
 
 bool LocationPolicy::getLocationState()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<bool>("LocationPolicy::getLocationState");
-	}
 
-	return true;
+	Status<bool> status { true };
+
+	status = context.methodCall<bool>("LocationPolicy::getLocationState");
+
+	return status.get();
 }
 
 } //namespace DevicePolicyManager

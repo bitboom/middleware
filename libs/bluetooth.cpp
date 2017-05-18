@@ -13,6 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+
+#include "status.h"
 #include "bluetooth.hxx"
 
 namespace DevicePolicyManager {
@@ -56,161 +58,177 @@ BluetoothPolicy::~BluetoothPolicy()
 int BluetoothPolicy::setModeChangeState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("BluetoothPolicy::setModeChangeState", enable);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("BluetoothPolicy::setModeChangeState", enable);
+
+	return status.get();
 }
 
 bool BluetoothPolicy::getModeChangeState()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<bool>("BluetoothPolicy::getModeChangeState");
-	}
 
-	return true;
+	Status<bool> status { true };
+
+	status = context.methodCall<bool>("BluetoothPolicy::getModeChangeState");
+
+	return status.get();
 }
 
 int BluetoothPolicy::setDesktopConnectivityState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<bool>("BluetoothPolicy::setDesktopConnectivityState", enable);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<bool>("BluetoothPolicy::setDesktopConnectivityState", enable);
+
+	return status.get();
 }
 
 bool BluetoothPolicy::getDesktopConnectivityState()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<bool>("BluetoothPolicy::getDesktopConnectivityState");
-	}
 
-	return true;
+	Status<bool> status { true };
+
+	status = context.methodCall<bool>("BluetoothPolicy::getDesktopConnectivityState");
+
+	return status.get();
 }
 
 int BluetoothPolicy::setTetheringState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("BluetoothPolicy::setTetheringState", enable);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("BluetoothPolicy::setTetheringState", enable);
+
+	return status.get();
 }
 
 bool BluetoothPolicy::getTetheringState()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<bool>("BluetoothPolicy::getTetheringState");
-	}
 
-	return true;
+	Status<bool> status { true };
+
+	status = context.methodCall<bool>("BluetoothPolicy::getTetheringState");
+
+	return status.get();
 }
 
 int BluetoothPolicy::setPairingState(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("BluetoothPolicy::setPairingState", enable);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("BluetoothPolicy::setPairingState", enable);
+
+	return status.get();
 }
 
 bool BluetoothPolicy::getPairingState()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<bool>("BluetoothPolicy::getPairingState");
-	}
 
-	return true;
+	Status<bool> status { true };
+
+	status = context.methodCall<bool>("BluetoothPolicy::getPairingState");
+
+	return status.get();
 }
 
 int BluetoothPolicy::addDeviceToBlacklist(const std::string& mac)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("BluetoothPolicy::addDeviceToBlacklist", mac);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("BluetoothPolicy::addDeviceToBlacklist", mac);
+
+	return status.get();
 }
 
 int BluetoothPolicy::removeDeviceFromBlacklist(const std::string& mac)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("BluetoothPolicy::removeDeviceFromBlacklist", mac);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("BluetoothPolicy::removeDeviceFromBlacklist", mac);
+
+	return status.get();
 }
 
 int BluetoothPolicy::setDeviceRestriction(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("BluetoothPolicy::setDeviceRestriction", enable);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("BluetoothPolicy::setDeviceRestriction", enable);
+
+	return status.get();
 }
 
 bool BluetoothPolicy::isDeviceRestricted()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<bool>("BluetoothPolicy::isDeviceRestricted");
-	}
 
-	return false;
+	Status<bool> status { false };
+
+	status = context.methodCall<bool>("BluetoothPolicy::isDeviceRestricted");
+
+	return status.get();
 }
 
 int BluetoothPolicy::addUuidToBlacklist(const std::string& uuid)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("BluetoothPolicy::addUuidToBlacklist", uuid);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("BluetoothPolicy::addUuidToBlacklist", uuid);
+
+	return status.get();
 }
 
 int BluetoothPolicy::removeUuidFromBlacklist(const std::string& uuid)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("BluetoothPolicy::removeUuidFromBlacklist", uuid);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("BluetoothPolicy::removeUuidFromBlacklist", uuid);
+
+	return status.get();
 }
 
 int BluetoothPolicy::setUuidRestriction(bool enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("BluetoothPolicy::setUuidRestriction", enable);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("BluetoothPolicy::setUuidRestriction", enable);
+
+	return status.get();
 }
 
 bool BluetoothPolicy::isUuidRestricted()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<bool>("BluetoothPolicy::isUuidRestricted");
-	}
 
-	return false;
+	Status<bool> status { false };
+
+	status = context.methodCall<bool>("BluetoothPolicy::isUuidRestricted");
+
+	return status.get();
 }
 
 } // namespace DevicePolicyManager

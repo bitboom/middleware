@@ -14,6 +14,7 @@
  *  limitations under the License
  */
 
+#include "status.h"
 #include "administration.hxx"
 
 namespace DevicePolicyManager {
@@ -57,21 +58,23 @@ AdministrationPolicy::~AdministrationPolicy()
 int AdministrationPolicy::registerPolicyClient(const std::string& name, uid_t uid)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("AdministrationPolicy::registerPolicyClient", name, uid);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("AdministrationPolicy::registerPolicyClient", name, uid);
+
+	return status.get();
 }
 
 int AdministrationPolicy::deregisterPolicyClient(const std::string& name, uid_t uid)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("AdministrationPolicy::deregisterPolicyClient", name, uid);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("AdministrationPolicy::deregisterPolicyClient", name, uid);
+
+	return status.get();
 }
 
 } // namespace DevicePolicyManager

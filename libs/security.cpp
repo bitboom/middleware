@@ -13,6 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+
+#include "status.h"
 #include "security.hxx"
 
 namespace DevicePolicyManager {
@@ -55,51 +57,56 @@ SecurityPolicy::~SecurityPolicy()
 int SecurityPolicy::lockoutScreen()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("SecurityPolicy::lockoutScreen");
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("SecurityPolicy::lockoutScreen");
+
+	return status.get();
 }
 
 int SecurityPolicy::setInternalStorageEncryption(bool encrypt)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("SecurityPolicy::setInternalStorageEncryption", encrypt);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("SecurityPolicy::setInternalStorageEncryption", encrypt);
+
+	return status.get();
 }
 
 bool SecurityPolicy::isInternalStorageEncrypted()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("SecurityPolicy::isInternalStorageEncrypted");
-	}
 
-	return false;
+	Status<bool> status { false };
+
+	status = context.methodCall<int>("SecurityPolicy::isInternalStorageEncrypted");
+
+	return status.get();
 }
 
 int SecurityPolicy::setExternalStorageEncryption(bool encrypt)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("SecurityPolicy::setExternalStorageEncryption", encrypt);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("SecurityPolicy::setExternalStorageEncryption", encrypt);
+
+	return status.get();
 }
 
 bool SecurityPolicy::isExternalStorageEncrypted()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("SecurityPolicy::isExternalStorageEncrypted");
-	}
 
-	return false;
+	Status<bool> status { false };
+
+	status = context.methodCall<int>("SecurityPolicy::isExternalStorageEncrypted");
+
+	return status.get();
 }
 
 } // namespace DevicePolicyManager

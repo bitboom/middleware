@@ -13,6 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+
+#include "status.h"
 #include "krate.hxx"
 
 namespace DevicePolicyManager {
@@ -55,41 +57,45 @@ KratePolicy::~KratePolicy()
 int KratePolicy::createKrate(const std::string& name, const std::string& setupWizAppid)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("KratePolicy::createKrate", name, setupWizAppid);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("KratePolicy::createKrate", name, setupWizAppid);
+
+	return status.get();
 }
 
 int KratePolicy::removeKrate(const std::string& name)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("KratePolicy::removeKrate", name);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("KratePolicy::removeKrate", name);
+
+	return status.get();
 }
 
 int KratePolicy::getKrateState(const std::string& name)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("KratePolicy::getKrateState", name);
-	}
 
-	return 0;
+	Status<int> status { 0 };
+
+	status = context.methodCall<int>("KratePolicy::getKrateState", name);
+
+	return status.get();
 }
 
 std::vector<std::string> KratePolicy::getKrateList(int state)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<std::vector<std::string>>("KratePolicy::getKrateList", state);
-	}
 
-	return std::vector<std::string>();
+	Status<std::vector<std::string>> status { std::vector<std::string>() };
+
+	status = context.methodCall<std::vector<std::string>>("KratePolicy::getKrateList", state);
+
+	return status.get();
 }
 
 } // namespace DevicePolicyManager

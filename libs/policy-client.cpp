@@ -13,8 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-#include "policy-client.h"
+
 #include <system_info.h>
+#include <klay/filesystem.h>
+
+#include "policy-client.h"
 
 namespace {
 
@@ -25,20 +28,11 @@ const std::string POLICY_MANAGER_ADDRESS = "/tmp/.device-policy-manager.sock";
 
 int GetPolicyEnforceMode()
 {
-	char *profileName;
+	runtime::File policyManagerSocket(POLICY_MANAGER_ADDRESS);
 
-	system_info_get_platform_string("http://tizen.org/feature/profile", &profileName);
-	switch (*profileName) {
-	case 'w':
-	case 'W':
-	case 'm':
-	case 'M':
-	case 't':
-	case 'T':
-		free(profileName);
+	if (policyManagerSocket.exists()) {
 		return 1;
 	}
-	free(profileName);
 
 	return 0;
 }

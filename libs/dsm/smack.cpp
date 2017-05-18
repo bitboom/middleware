@@ -14,6 +14,7 @@
  *  limitations under the License
  */
 
+#include "status.h"
 #include "smack.hxx"
 
 namespace DevicePolicyManager {
@@ -57,21 +58,23 @@ SmackSecurityMonitor::~SmackSecurityMonitor()
 std::string SmackSecurityMonitor::getReport()
 {
 	PolicyControlContext &context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<std::string>("SmackSecurityMonitor::getReport");
-	}
 
-	return "";
+	Status<std::string> status { std::string() };
+
+	status = context.methodCall<std::string>("SmackSecurityMonitor::getReport");
+
+	return status.get();
 }
 
 int SmackSecurityMonitor::getIssueCount()
 {
 	PolicyControlContext &context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("SmackSecurityMonitor::getIssueCount");
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("SmackSecurityMonitor::getIssueCount");
+
+	return status.get();
 }
 
 } // namespace DevicePolicyManager

@@ -13,6 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+
+#include "status.h"
 #include "password.hxx"
 
 namespace DevicePolicyManager {
@@ -55,289 +57,319 @@ PasswordPolicy::~PasswordPolicy()
 int PasswordPolicy::setQuality(const int quality)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::setQuality", quality);
-	}
-	return -1;
+
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::setQuality", quality);
+
+	return status.get();
 }
 
 int PasswordPolicy::getQuality()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::getQuality");
-	}
 
-	return 0;
+	Status<int> status { 0 };
+
+	status = context.methodCall<int>("PasswordPolicy::getQuality");
+
+	return status.get();
 }
 
 int PasswordPolicy::setMinimumLength(int value)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::setMinimumLength", value);
-	}
 
-	return 0;
+	Status<int> status { 0 };
+
+	status = context.methodCall<int>("PasswordPolicy::setMinimumLength", value);
+
+	return status.get();
 }
 
 int PasswordPolicy::getMinimumLength()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::getMinimumLength");
-	}
 
-	return 0;
+	Status<int> status { 0 };
+
+	status = context.methodCall<int>("PasswordPolicy::getMinimumLength");
+
+	return status.get();
 }
 
 int PasswordPolicy::setMinComplexChars(int value)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::setMinComplexChars", value);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::setMinComplexChars", value);
+
+	return status.get();
 }
 
 int PasswordPolicy::getMinComplexChars()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::getMinComplexChars");
-	}
 
-	return 0;
+	Status<int> status { 0 };
+
+	status = context.methodCall<int>("PasswordPolicy::getMinComplexChars");
+
+	return status.get();
 }
 
 int PasswordPolicy::setMaximumFailedForWipe(int value)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::setMaximumFailedForWipe", value);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::setMaximumFailedForWipe", value);
+
+	return status.get();
 }
 
 int PasswordPolicy::getMaximumFailedForWipe()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::getMaximumFailedForWipe");
-	}
 
-	return 0;
+	Status<int> status { 0 };
+
+	status = context.methodCall<int>("PasswordPolicy::getMaximumFailedForWipe");
+
+	return status.get();
 }
 
 int PasswordPolicy::setExpires(int value)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::setExpires", value);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::setExpires", value);
+
+	return status.get();
 }
 
 int PasswordPolicy::getExpires()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::getExpires");
-	}
 
-	return 0;
+	Status<int> status { 0 };
+
+	status = context.methodCall<int>("PasswordPolicy::getExpires");
+
+	return status.get();
 }
 
 int PasswordPolicy::setHistory(int value)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::setHistory", value);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::setHistory", value);
+
+	return status.get();
 }
 
 int PasswordPolicy::getHistory()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::getHistory");
-	}
 
-	return 0;
+	Status<int> status { 0 };
+
+	status = context.methodCall<int>("PasswordPolicy::getHistory");
+
+	return status.get();
 }
 
 int PasswordPolicy::setPattern(const std::string &pattern)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::setPattern", pattern);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::setPattern", pattern);
+
+	return status.get();
 }
 
 int PasswordPolicy::reset(const std::string &passwd)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::reset", passwd);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::reset", passwd);
+
+	return status.get();
 }
 
 int PasswordPolicy::enforceChange()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::enforceChange");
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::enforceChange");
+
+	return status.get();
 }
 
 int PasswordPolicy::setMaxInactivityTimeDeviceLock(int value)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::setMaxInactivityTimeDeviceLock", value);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::setMaxInactivityTimeDeviceLock", value);
+
+	return status.get();
 }
 
 int PasswordPolicy::getMaxInactivityTimeDeviceLock()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::getMaxInactivityTimeDeviceLock");;
-	}
 
-	return 0;
+	Status<int> status { 0 };
+
+	status = context.methodCall<int>("PasswordPolicy::getMaxInactivityTimeDeviceLock");;
+
+	return status.get();
 }
 
 int PasswordPolicy::setStatus(int status)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::setStatus", status);
-	}
 
-	return -1;
+	Status<int> rstatus { -1 };
+
+	rstatus = context.methodCall<int>("PasswordPolicy::setStatus", status);
+
+	return rstatus.get();
 }
 
 int PasswordPolicy::getStatus()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::getStatus");
-	}
 
-	return 0;
+	Status<int> status { 0 };
+
+	status = context.methodCall<int>("PasswordPolicy::getStatus");
+
+	return status.get();
 }
 
 int PasswordPolicy::deletePattern()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::deletePattern");
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::deletePattern");
+
+	return status.get();
 }
 
 std::string PasswordPolicy::getPattern()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<std::string>("PasswordPolicy::getPattern");
-	}
 
-	return std::string();
+	Status<std::string> status { std::string() };
+
+	status = context.methodCall<std::string>("PasswordPolicy::getPattern");
+
+	return status.get();
 }
 
 int PasswordPolicy::setMaximumCharacterOccurrences(int value)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::setMaximumCharacterOccurrences", value);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::setMaximumCharacterOccurrences", value);
+
+	return status.get();
 }
 
 int PasswordPolicy::getMaximumCharacterOccurrences()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::getMaximumCharacterOccurrences");
-	}
 
-	return 0;
+	Status<int> status { 0 };
+
+	status = context.methodCall<int>("PasswordPolicy::getMaximumCharacterOccurrences");
+
+	return status.get();
 }
 
 int PasswordPolicy::setMaximumNumericSequenceLength(int value)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::setMaximumNumericSequenceLength", value);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::setMaximumNumericSequenceLength", value);
+
+	return status.get();
 }
 
 int PasswordPolicy::getMaximumNumericSequenceLength()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::getMaximumNumericSequenceLength");
-	}
 
-	return 0;
+	Status<int> status { 0 };
+
+	status = context.methodCall<int>("PasswordPolicy::getMaximumNumericSequenceLength");
+
+	return status.get();
 }
 
 int PasswordPolicy::setForbiddenStrings(const std::vector<std::string> &forbiddenStrings)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::setForbiddenStrings", forbiddenStrings);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::setForbiddenStrings", forbiddenStrings);
+
+	return status.get();
 }
 
 std::vector<std::string> PasswordPolicy::getForbiddenStrings()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<std::vector<std::string>>("PasswordPolicy::getForbiddenStrings");
-	}
 
-	return std::vector<std::string>();
+	Status<std::vector<std::string>> status { std::vector<std::string>() };
+
+	status = context.methodCall<std::vector<std::string>>("PasswordPolicy::getForbiddenStrings");
+
+	return status.get();
 }
 
 int PasswordPolicy::setRecovery(int enable)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::setRecovery", enable);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("PasswordPolicy::setRecovery", enable);
+
+	return status.get();
 }
 
 int PasswordPolicy::getRecovery()
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("PasswordPolicy::getRecovery");
-	}
 
-	return false;
+	Status<int> status { false };
+
+	status = context.methodCall<int>("PasswordPolicy::getRecovery");
+
+	return status.get();
 }
 } /* namespace DevicePolicyManager */

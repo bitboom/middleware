@@ -20,6 +20,7 @@
 #include <string>
 #include <memory>
 #include <functional>
+#include <cerrno>
 
 #include <klay/rmi/client.h>
 
@@ -52,13 +53,14 @@ public:
 	template<typename Type, typename... Args>
 	Type methodCall(const std::string& method, Args&&... args)
 	{
-		return client->methodCall<Type, Args...>(method, std::forward<Args>(args)...);
+		if (maintenanceMode) {
+			return client->methodCall<Type, Args...>(method, std::forward<Args>(args)...);
+		}
+
+		errno = EPROTONOSUPPORT;
+		return Type();
 	}
 
-	bool isMaintenanceMode()
-	{
-		return maintenanceMode;
-	}
 private:
 	PolicyControlContext& getPolicyControlContext()
 	{
@@ -71,4 +73,5 @@ private:
 };
 
 DevicePolicyContext& GetDevicePolicyContext(void* handle);
+
 #endif //__POLICY_CLIENT_H__

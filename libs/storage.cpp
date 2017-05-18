@@ -13,6 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+
+#include "status.h"
 #include "storage.hxx"
 
 namespace DevicePolicyManager {
@@ -55,11 +57,12 @@ StoragePolicy::~StoragePolicy()
 int StoragePolicy::wipeData(int type)
 {
 	PolicyControlContext& context = pimpl->context;
-	if (context.isMaintenanceMode()) {
-		return context.methodCall<int>("StoragePolicy::wipeData", type);
-	}
 
-	return -1;
+	Status<int> status { -1 };
+
+	status = context.methodCall<int>("StoragePolicy::wipeData", type);
+
+	return status.get();
 }
 
 } //namespace DevicePolicyManager
