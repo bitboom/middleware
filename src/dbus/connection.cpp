@@ -98,14 +98,14 @@ void Connection::unsubscribeSignal(Connection::SubscriptionId id)
 	g_dbus_connection_signal_unsubscribe(connection, id);
 }
 
-const Variant Connection::methodcall(const std::string& busName,
-									 const std::string& object,
-									 const std::string& interface,
-									 const std::string& method,
-									 int timeout,
-									 const std::string& replyType,
-									 const std::string& paramType,
-									 ...)
+Variant Connection::methodcall(const std::string& busName,
+							   const std::string& object,
+							   const std::string& interface,
+							   const std::string& method,
+							   int timeout,
+							   const std::string& replyType,
+							   const std::string& paramType,
+							   ...)
 {
 	Variant result;
 	Error error;
