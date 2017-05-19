@@ -9,6 +9,8 @@ BuildRequires: gcc
 BuildRequires: cmake
 BuildRequires: pam-devel
 BuildRequires: gettext-tools
+BuildRequires: pkgconfig(dpm)
+BuildRequires: pkgconfig(dsm)
 BuildRequires: pkgconfig(klay)
 BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(libxml-2.0)
@@ -95,37 +97,6 @@ rm -rf %{buildroot}
 
 %postun
 
-## Client Package #############################################################
-%package -n libdpm
-Summary: Metapacakge for Tizen Device Policy Client Library
-Group: Development/Libraries
-
-%description -n libdpm
-Metapackage for Tizen Device Policy Client Library.
-
-%files -n libdpm
-%manifest device-policy-manager.manifest
-%defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/libdpm.so.%{version}
-%{_libdir}/libdpm.so.0
-
-## Devel Package ##############################################################
-%package -n libdpm-devel
-Summary: Libraries and header files for device policy client development
-Group: Development/Libraries
-Requires: libdpm = %{version}-%{release}
-
-%description -n libdpm-devel
-The libdpm-devel package includes the libraries and header files necessary for
-developing the DPM client program.
-
-%files -n libdpm-devel
-%manifest device-policy-manager.manifest
-%defattr(644,root,root,755)
-%{_libdir}/libdpm.so
-%{_includedir}/dpm
-%{_libdir}/pkgconfig/dpm.pc
-
 ## Test Package ##############################################################
 %package -n dpm-testcases
 Summary: Device Policy Manager test cases
@@ -159,37 +130,3 @@ Tizen DPM system popup interface package
 %{TZ_SYS_RO_PACKAGES}/org.tizen.dpm-syspopup.xml
 /usr/share/icons/default/small/org.tizen.dpm-syspopup.png
 %{TZ_SYS_RO_APP}/org.tizen.dpm-syspopup/res/images/*
-
-## DSM Client Package ######################################################
-%package -n libdsm
-Summary: Tizen Device Security Monitor Client Library
-Group: Development/Libraries
-
-%description -n libdsm
-Tizen Device Security Monitor Client Library.
-
-%post -n libdsm -p /sbin/ldconfig
-
-%postun -n libdsm -p /sbin/ldconfig
-
-%files -n libdsm
-%manifest device-policy-manager.manifest
-%defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/libdsm.so.%{version}
-%{_libdir}/libdsm.so.0
-
-## DSM Devel Package ##############################################################
-%package -n libdsm-devel
-Summary: Libraries and header files for device security monitor client development
-Group: Development/Libraries
-
-%description -n libdsm-devel
-The libdsm-devel package includes the libraries and header files necessary for
-developing the DSM client program.
-
-%files -n libdsm-devel
-%manifest device-policy-manager.manifest
-%defattr(644,root,root,755)
-%{_libdir}/libdsm.so
-%{_includedir}/dsm
-%{_libdir}/pkgconfig/dsm.pc
