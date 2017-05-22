@@ -168,7 +168,7 @@ dev_t File::getDevice() const
 	return st.st_dev;
 }
 
-size_t File::size() const
+off_t File::size() const
 {
 	struct stat st;
 	if (::stat(path.c_str(), &st) != 0) {
