@@ -280,7 +280,14 @@ File File::copyTo(const std::string& destDir)
 	} else {
 		open(O_RDONLY);
 		destFile.create(getMode());
-		::sendfile(destFile.descriptor, descriptor, 0, size());
+		off_t s = 0;
+		while (s < size()) {
+			ssize_t ret;
+			ret = ::sendfile(destFile.descriptor, descriptor, &s, size() - s);
+			if (ret < 0) {
+				throw runtime::Exception(runtime::GetSystemErrorMessage());
+			}
+		}
 		destFile.close();
 		close();
 	}
