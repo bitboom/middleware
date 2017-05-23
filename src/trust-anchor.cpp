@@ -46,6 +46,7 @@ namespace {
 const std::string BASE_USR_PATH(TANCHOR_USR_DIR);
 const std::string BASE_GLOBAL_PATH(TANCHOR_GLOBAL_DIR);
 const std::string TANCHOR_BUNDLE_PATH(TANCHOR_BUNDLE);
+const std::string TANCHOR_SYSCA_PATH(TANCHOR_SYSCA);
 const std::string SYS_CERTS_PATH(TZ_SYS_CA_CERTS);
 const std::string SYS_BUNDLE_PATH(TZ_SYS_CA_BUNDLE);
 const std::string MOUNT_POINT_CERTS(TZ_SYS_CA_CERTS);
@@ -65,15 +66,17 @@ public:
 
 	int install(bool withSystemCerts) noexcept;
 	int uninstall(bool isRollback = false) noexcept;
-	int launch(bool withSystemCerts);
+	int launch(void);
 
 private:
 	void preInstall(void) const;
+	void preLaunch(void);
 	void linkTo(const std::string &src, const std::string &dst) const;
+	void makeCustomCerts(bool withSystemCerts);
 	void makeCustomBundle(bool withSystemCerts);
 	std::string readLink(const std::string &path) const;
 	std::string getUniqueHashName(const std::string &hashName) const;
-	std::string getBundleName(void) const;
+	std::string getFileName(const std::string &path) const;
 	bool isSystemCertsModified(void) const;
 	void checkFileValidity(const runtime::File &file) const;
 
@@ -117,7 +120,7 @@ TrustAnchor::Impl::Impl(const std::string &packageId,
 std::string TrustAnchor::Impl::readLink(const std::string &path) const
 {
 	std::vector<char> buf(PATH_MAX);
-	ssize_t count = readlink(path.c_str(), buf.data(), buf.size());
+	ssize_t count = ::readlink(path.c_str(), buf.data(), buf.size());
 	return std::string(buf.data(), (count > 0) ? count : 0);
 }
 
@@ -160,31 +163,7 @@ int TrustAnchor::Impl::install(bool withSystemCerts) noexcept
 
 	this->preInstall();
 
-	if (withSystemCerts) {
-		// link system certificates to the custom directory
-		runtime::DirectoryIterator iter(SYS_CERTS_PATH), end;
-		while (iter != end) {
-			linkTo(readLink(iter->getPath()),
-				   this->m_customCertsPath + "/" + iter->getName());
-			this->m_customCertNameSet.emplace(iter->getName());
-			++iter;
-		}
-		DEBUG("Success to migrate system certificates.");
-	}
-
-	// link app certificates to the custom directory as subjectNameHash
-	runtime::DirectoryIterator iter(this->m_appCertsPath), end;
-	while (iter != end) {
-		Certificate cert(iter->getPath());
-		std::string hashName = this->getUniqueHashName(cert.getSubjectNameHash());
-		linkTo(iter->getPath(),
-			   this->m_customCertsPath + "/" + hashName);
-		this->m_customCertNameSet.emplace(std::move(hashName));
-
-		this->m_customCertsData.emplace_back(cert.getCertificateData());
-		++iter;
-	}
-
+	this->makeCustomCerts(withSystemCerts);
 	this->makeCustomBundle(withSystemCerts);
 
 	INFO("Success to install[" << this->m_packageId <<
@@ -230,7 +209,8 @@ bool TrustAnchor::Impl::isSystemCertsModified(void) const
 	if (::stat(SYS_BUNDLE_PATH.c_str(), &systemAttr))
 		ThrowErrno(errno, SYS_BUNDLE_PATH);
 
-	auto customBundle = this->m_customBundlePath + "/" + this->getBundleName();
+	auto customBundle = this->m_customBundlePath + "/" +
+						this->getFileName(SYS_BUNDLE_PATH);
 	if (::stat(customBundle.c_str(), &customAttr))
 		ThrowErrno(errno, customBundle);
 
@@ -240,12 +220,30 @@ bool TrustAnchor::Impl::isSystemCertsModified(void) const
 	return systemAttr.st_mtime > customAttr.st_mtime;
 }
 
-int TrustAnchor::Impl::launch(bool withSystemCerts)
+void TrustAnchor::Impl::preLaunch(void)
+{
+	// check whether system certificates use or not
+	runtime::File customSysCA(this->m_customBasePath + "/" +
+							  this->getFileName(TANCHOR_SYSCA_PATH));
+	if (!customSysCA.exists()) {
+		INFO("This package only use custom certificates.");
+		return;
+	}
+
+	INFO("This package use system certificates.");
+	if (this->isSystemCertsModified()) {
+		WARN("System certificates be changed. Remake custom bundle.");
+		this->makeCustomBundle(true);
+	}
+
+	DEBUG("Success to pre-install stage.");
+}
+
+int TrustAnchor::Impl::launch()
 {
 	EXCEPTION_GUARD_START
 
-	if (withSystemCerts && this->isSystemCertsModified())
-		this->makeCustomBundle(true);
+	this->preLaunch();
 
 	errno = 0;
 	// disassociate from the parent namespace
@@ -265,7 +263,8 @@ int TrustAnchor::Impl::launch(bool withSystemCerts)
 						  this->m_customCertsPath + "] to dst[" +
 						  MOUNT_POINT_CERTS + "]");
 
-	auto bundle = this->m_customBundlePath + "/" + this->getBundleName();
+	auto bundle = this->m_customBundlePath + "/" +
+				  this->getFileName(SYS_BUNDLE_PATH);
 	if (::mount(bundle.c_str(),
 				MOUNT_POINT_BUNDLE.c_str(),
 				NULL,
@@ -280,13 +279,13 @@ int TrustAnchor::Impl::launch(bool withSystemCerts)
 	EXCEPTION_GUARD_END
 }
 
-std::string TrustAnchor::Impl::getBundleName(void) const
+std::string TrustAnchor::Impl::getFileName(const std::string &path) const
 {
-	size_t pos = SYS_BUNDLE_PATH.rfind('/');
+	size_t pos = path.rfind('/');
 	if (pos == std::string::npos)
-		throw std::logic_error("Bundle path is wrong." + SYS_BUNDLE_PATH);
+		throw std::logic_error("Path is wrong. > " + path);
 
-	return SYS_BUNDLE_PATH.substr(pos + 1);
+	return path.substr(pos + 1);
 }
 
 std::string TrustAnchor::Impl::getUniqueHashName(
@@ -302,10 +301,44 @@ std::string TrustAnchor::Impl::getUniqueHashName(
 	return uniqueName;
 }
 
+void TrustAnchor::Impl::makeCustomCerts(bool withSystemCerts)
+{
+	if (withSystemCerts) {
+		// link system certificates to the custom directory
+		runtime::DirectoryIterator iter(SYS_CERTS_PATH), end;
+		while (iter != end) {
+			linkTo(this->readLink(iter->getPath()),
+				   this->m_customCertsPath + "/" + iter->getName());
+			this->m_customCertNameSet.emplace(iter->getName());
+			++iter;
+		}
+		DEBUG("Success to migrate system certificates.");
+
+		// copy sysca(withSystemCerts flag) and check at launching time
+		runtime::File tanchorSysCA(TANCHOR_SYSCA_PATH);
+		this->checkFileValidity(tanchorSysCA);
+		tanchorSysCA.copyTo(this->m_customBasePath);
+		DEBUG("Success to set SYSCA flag.");
+	}
+
+	// link app certificates to the custom directory as subjectNameHash
+	runtime::DirectoryIterator iter(this->m_appCertsPath), end;
+	while (iter != end) {
+		Certificate cert(iter->getPath());
+		std::string hashName = this->getUniqueHashName(cert.getSubjectNameHash());
+		linkTo(iter->getPath(),
+			   this->m_customCertsPath + "/" + hashName);
+		this->m_customCertNameSet.emplace(std::move(hashName));
+
+		this->m_customCertsData.emplace_back(cert.getCertificateData());
+		++iter;
+	}
+}
+
 void TrustAnchor::Impl::makeCustomBundle(bool withSystemCerts)
 {
 	runtime::File customBundle(this->m_customBundlePath + "/" +
-							   this->getBundleName());
+							   this->getFileName(SYS_BUNDLE_PATH));
 	if (customBundle.exists()) {
 		WARN("App custom bundle is already exist. remove it!");
 		customBundle.remove();
@@ -377,12 +410,12 @@ int TrustAnchor::uninstall(void) noexcept
 	return this->m_pImpl->uninstall();
 }
 
-int TrustAnchor::launch(bool withSystemCerts) noexcept
+int TrustAnchor::launch(void) noexcept
 {
 	if (this->m_pImpl == nullptr)
 		return TRUST_ANCHOR_ERROR_OUT_OF_MEMORY;
 
-	return this->m_pImpl->launch(withSystemCerts);
+	return this->m_pImpl->launch();
 }
 
 } // namespace tanchor

@@ -41,7 +41,7 @@ TESTCASE(CAPI_TRUST_ANCHOR_LAUNCH)
 	int pid = fork();
 
 	if (pid == 0) {
-		ret = trust_anchor_global_launch(DUMMY_PKG_ID, APP_CERTS_DIR, true);
+		ret = trust_anchor_global_launch(DUMMY_PKG_ID, APP_CERTS_DIR);
 		TEST_EXPECT(true, ret == 0);
 
 		auto afterLsChild = test::util::ls(TZ_SYS_RO_CA_CERTS);

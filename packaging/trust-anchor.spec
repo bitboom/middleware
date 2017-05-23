@@ -25,6 +25,7 @@ Requires(postun): /sbin/ldconfig
 %global tanchor_usr     %{tanchor_base}/usr
 %global tanchor_global  %{tanchor_base}/global
 %global tanchor_bundle  %{tanchor_base}/ca-bundle.pem
+%global tanchor_sysca   %{tanchor_base}/.sysca
 %global tanchor_test    %{tanchor_base}/test
 %global tanchor_example %{tanchor_base}/example
 
@@ -37,10 +38,11 @@ SSL root certificates for its HTTPS communication.
 %license LICENSE
 %{_libdir}/lib%{lib_name}.so.0
 %{_libdir}/lib%{lib_name}.so.%{version}
-%dir %attr(770, %{user_name}, %{group_name}) %{tanchor_base}
+%dir %attr(-, %{user_name}, %{group_name}) %{tanchor_base}
 %dir %attr(-, %{user_name}, %{group_name}) %{tanchor_usr}
 %dir %attr(-, %{user_name}, %{group_name}) %{tanchor_global}
 %attr(-, %{user_name}, %{group_name}) %{tanchor_bundle}
+%attr(444 %{user_name}, %{group_name}) %{tanchor_sysca}
 
 %prep
 %setup -q
@@ -63,6 +65,7 @@ SSL root certificates for its HTTPS communication.
 		 -DTANCHOR_USR=%{tanchor_usr} \
 		 -DTANCHOR_GLOBAL=%{tanchor_global} \
 		 -DTANCHOR_BUNDLE=%{tanchor_bundle} \
+		 -DTANCHOR_SYSCA=%{tanchor_sysca} \
 		 -DTANCHOR_TEST=%{tanchor_test} \
 		 -DTANCHOR_EXAMPLE=%{tanchor_example} \
 		 -DTZ_SYS_CA_CERTS=%{TZ_SYS_CA_CERTS} \
@@ -79,6 +82,7 @@ mkdir -p %{buildroot}%{tanchor_usr}
 mkdir -p %{buildroot}%{tanchor_global}
 
 touch %{buildroot}%{tanchor_bundle}
+touch %{buildroot}%{tanchor_sysca}
 
 %post -p /sbin/ldconfig
 

@@ -57,7 +57,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 	TEST_EXPECT(true, pid >= 0);
 
 	if (pid == 0) {
-		ret = ta.launch(false);
+		ret = ta.launch();
 		TEST_EXPECT(true, ret == 0);
 
 		// check SSL communication
@@ -94,7 +94,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
 	TEST_EXPECT(true, pid >= 0);
 
 	if (pid == 0) {
-		ret = ta.launch(true);
+		ret = ta.launch();
 		TEST_EXPECT(true, ret == 0);
 
 		// check SSL communication

@@ -47,7 +47,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 
 	if (pid == 0) {
 		TIME_MEASURE_START
-		ret = ta.launch(false);
+		ret = ta.launch();
 		TIME_MEASURE_END
 		TEST_EXPECT(true, ret == 0);
 
@@ -83,7 +83,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
 
 	if (pid == 0) {
 		TIME_MEASURE_START
-		ret = ta.launch(true);
+		ret = ta.launch();
 		TIME_MEASURE_END
 		TEST_EXPECT(true, ret == 0);
 

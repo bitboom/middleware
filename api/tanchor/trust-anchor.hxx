@@ -50,7 +50,7 @@ public:
 
 	int install(bool withSystemCerts) noexcept;
 	int uninstall(void) noexcept;
-	int launch(bool withSystemCerts) noexcept;
+	int launch(void) noexcept;
 
 private:
 	class Impl;

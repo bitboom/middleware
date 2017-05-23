@@ -37,11 +37,8 @@ int main()
 	 *
 	 * [pre-condition]
 	 * 1. Launcher should have CAP_SYS_ADMIN.
-	 * 2. Get with_sys_certs information.(It should be saved when app installed.)
 	 */
-	bool with_sys = false;
-
-	int ret = trust_anchor_global_launch("pkgid", "/app_certs_path", with_sys);
+	int ret = trust_anchor_global_launch("pkgid", "/app_certs_path");
 	if (ret != TRUST_ANCHOR_ERROR_NONE) {
 		printf("Failed to launch operation");
 		return -1;

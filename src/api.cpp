@@ -47,21 +47,19 @@ int trust_anchor_usr_install(const char *package_id,
 
 TANCHOR_API
 int trust_anchor_global_launch(const char *package_id,
-							   const char *app_certificates_path,
-							   bool with_system_certificates)
+							   const char *app_certificates_path)
 {
 	TrustAnchor ta(package_id, app_certificates_path);
-	return ta.launch(with_system_certificates);
+	return ta.launch();
 }
 
 TANCHOR_API
 int trust_anchor_usr_launch(const char *package_id,
 							const char *app_certificates_path,
-							uid_t uid,
-							bool with_system_certificates)
+							uid_t uid)
 {
 	TrustAnchor ta(package_id, app_certificates_path, uid);
-	return ta.launch(with_system_certificates);
+	return ta.launch();
 }
 
 TANCHOR_API
