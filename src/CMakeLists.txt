@@ -45,6 +45,7 @@ SET (KLAY_SOURCES		${KLAY_SRC}/error.cpp
 						${KLAY_SRC}/audit/null-sink.cpp
 						${KLAY_SRC}/audit/console-sink.cpp
 						${KLAY_SRC}/audit/dlog-sink.cpp
+						${KLAY_SRC}/audit/audit-trail.cpp
 )
 
 SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,noexecstack")
