@@ -17,6 +17,7 @@ SET (KLAY_SOURCES		${KLAY_SRC}/error.cpp
 						${KLAY_SRC}/process.cpp
 						${KLAY_SRC}/eventfd.cpp
 						${KLAY_SRC}/mainloop.cpp
+						${KLAY_SRC}/namespace.cpp
 						${KLAY_SRC}/testbench.cpp
 						${KLAY_SRC}/file-user.cpp
 						${KLAY_SRC}/filesystem.cpp
