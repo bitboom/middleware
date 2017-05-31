@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 SET (KLAY_SOURCES		${KLAY_SRC}/error.cpp
+						${KLAY_SRC}/cgroup.cpp
 						${KLAY_SRC}/process.cpp
 						${KLAY_SRC}/eventfd.cpp
 						${KLAY_SRC}/mainloop.cpp
