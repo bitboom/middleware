@@ -23,6 +23,8 @@ SET(${TARGET_TANCHOR_LIB}_SRCS ${TANCHOR_SRC}/init-lib.cpp
 							   ${TANCHOR_SRC}/exception.cpp
 							   ${TANCHOR_SRC}/api.cpp
 							   ${TANCHOR_SRC}/certificate.cpp
+							   ${TANCHOR_SRC}/file-system.cpp
+							   ${TANCHOR_SRC}/logic.cpp
 							   ${TANCHOR_SRC}/trust-anchor.cpp)
 
 INCLUDE_DIRECTORIES(SYSTEM ${TANCHOR_INCLUDE}
