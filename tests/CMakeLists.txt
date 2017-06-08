@@ -26,10 +26,9 @@ SET(API_TEST_SOURCES main.c
 					 wifi.c
 					 password.c
 					 zone.c
-                     smack.c
 )
 
-PKG_CHECK_MODULES(API_TEST_DEPS REQUIRED dpm dsm glib-2.0)
+PKG_CHECK_MODULES(API_TEST_DEPS REQUIRED dpm glib-2.0)
 
 INCLUDE_DIRECTORIES(SYSTEM ${API_TEST_DEPS_INCLUDE_DIRS} ${DPM_TESTS})
 

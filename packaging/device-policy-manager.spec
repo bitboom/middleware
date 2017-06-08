@@ -10,7 +10,6 @@ BuildRequires: cmake
 BuildRequires: pam-devel
 BuildRequires: gettext-tools
 BuildRequires: pkgconfig(dpm)
-BuildRequires: pkgconfig(dsm)
 BuildRequires: pkgconfig(klay)
 BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(libxml-2.0)

@@ -29,13 +29,6 @@ SET(FOUNDATION		main.cpp
 					preference.cpp
 )
 
-SET(SECURITY_MONITOR	dsm/smack.cpp
-						dsm/smack_report_issuer.cpp
-						dsm/smack_log_parser.cpp
-						dsm/smack_kernel_log_collector.cpp
-						dsm/smack_kernel_log_parser.cpp
-)
-
 SET(POLICY			${SECURITY_MONITOR}
 					administration.cpp
 					application.cpp
@@ -84,7 +77,7 @@ SET(DEPENDENCY		klay
 
 PKG_CHECK_MODULES(SERVER_DEPS REQUIRED ${DEPENDENCY})
 
-INCLUDE_DIRECTORIES(SYSTEM ${SERVER_DEPS_INCLUDE_DIRS} ${DPM_POLICY} ${DPM_SERVER} dsm)
+INCLUDE_DIRECTORIES(SYSTEM ${SERVER_DEPS_INCLUDE_DIRS} ${DPM_POLICY} ${DPM_SERVER})
 
 ADD_EXECUTABLE(${TARGET} ${FOUNDATION} ${POLICY})
 TARGET_LINK_LIBRARIES(${TARGET} ${SERVER_DEPS_LIBRARIES} pthread sqlite3)
