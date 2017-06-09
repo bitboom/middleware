@@ -28,6 +28,11 @@
 
 #include "bluetooth.hxx"
 
+#ifdef BLUETOOTH_MAX_DPM_LIST
+#define BLUETOOTH_DPM_SUPPORTED
+#endif
+
+#ifdef BLUETOOTH_DPM_SUPPORTED
 #define BT_FAILED(ret)                                  \
 	(((ret) == BLUETOOTH_DPM_RESULT_ACCESS_DENIED) ||   \
 	 ((ret) == BLUETOOTH_DPM_RESULT_FAIL))
@@ -39,6 +44,7 @@
 #define STATE_CHANGE_IS_ALLOWED(enable)                 \
 	((enable) ? BLUETOOTH_DPM_BT_ALLOWED :              \
 				BLUETOOTH_DPM_BT_RESTRICTED)
+#endif
 
 namespace DevicePolicyManager {
 
@@ -60,11 +66,13 @@ public:
 
 	bool operator()(bool enable)
 	{
+#ifdef BLUETOOTH_DPM_SUPPORTED
 		int ret = bluetooth_dpm_set_allow_mode(STATE_CHANGE_IS_ALLOWED(enable));
 		if (!BT_FAILED(ret)) {
 			notify(enable);
 			return true;
 		}
+#endif
 		return false;
 	}
 };
@@ -78,11 +86,13 @@ public:
 
 	bool operator()(bool enable)
 	{
+#ifdef BLUETOOTH_DPM_SUPPORTED
 		int ret = bluetooth_dpm_set_desktop_connectivity_state(POLICY_IS_ALLOWED(enable));
 		if (!BT_FAILED(ret)) {
 			notify(enable == 0 ? "disallowed" : "allowed");
 			return true;
 		}
+#endif
 		return false;
 	}
 };
@@ -96,12 +106,14 @@ public:
 
 	bool operator()(bool enable)
 	{
+#ifdef BLUETOOTH_DPM_SUPPORTED
 		enable = canonicalize(enable);
 		int ret = bluetooth_dpm_activate_uuid_restriction(POLICY_IS_ALLOWED(!enable));
 		if (!BT_FAILED(ret)) {
 			notify(enable == 0 ? "enabled" : "disabled");
 			return true;
 		}
+#endif
 		return false;
 	}
 };
@@ -115,12 +127,14 @@ public:
 
 	bool operator()(bool enable)
 	{
+#ifdef BLUETOOTH_DPM_SUPPORTED
 		enable = canonicalize(enable);
 		int ret = bluetooth_dpm_activate_device_restriction(POLICY_IS_ALLOWED(!enable));
 		if (!BT_FAILED(ret)) {
 			notify(enable == 0 ? "enabled" : "disabled");
 			return true;
 		}
+#endif
 		return false;
 	}
 };
@@ -134,11 +148,13 @@ public:
 
 	bool operator()(bool enable)
 	{
+#ifdef BLUETOOTH_DPM_SUPPORTED
 		int ret = bluetooth_dpm_set_pairing_state(POLICY_IS_ALLOWED(enable));
 		if (!BT_FAILED(ret)) {
 			notify(enable == 0 ? "disallowed" : "allowed");
 			return true;
 		}
+#endif
 		return false;
 	}
 };
