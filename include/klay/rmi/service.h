@@ -187,6 +187,8 @@ public:
 		return processingContext.credentials.gid;
 	}
 
+	runtime::Mainloop mainloop;
+
 private:
 	struct ProcessingContext {
 		ProcessingContext() = default;
@@ -229,7 +231,6 @@ private:
 	NotificationRegistry notificationRegistry;
 	ConnectionRegistry connectionRegistry;
 
-	runtime::Mainloop mainloop;
 	std::string address;
 
 	runtime::ThreadPool workqueue;
