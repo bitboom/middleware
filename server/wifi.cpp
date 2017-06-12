@@ -112,19 +112,28 @@ struct WifiPolicy::Private : public PolicyHelper {
 WifiPolicy::Private::Private(PolicyControlContext& ctxt) :
 	PolicyHelper(ctxt), wifiHandle(nullptr)
 {
-	if (::wifi_manager_initialize(&wifiHandle) != WIFI_MANAGER_ERROR_NONE) {
+	int ret = 0;
+
+	ret = ::wifi_manager_initialize(&wifiHandle);
+	if (ret != WIFI_MANAGER_ERROR_NONE) {
+		if (ret == WIFI_MANAGER_ERROR_NOT_SUPPORTED) {
+			return;
+		}
 		throw runtime::Exception("WiFi Manager initialization failed");
 	}
 
-	if (::wifi_manager_set_connection_state_changed_cb(wifiHandle, &onConnectionStateChanged, this) != WIFI_MANAGER_ERROR_NONE) {
+	ret = ::wifi_manager_set_connection_state_changed_cb(wifiHandle, &onConnectionStateChanged, this);
+	if (ret != WIFI_MANAGER_ERROR_NONE) {
 		throw runtime::Exception("WiFi Manager set connection state changed callback failed");
 	}
 }
 
 WifiPolicy::Private::~Private()
 {
-	::wifi_manager_unset_connection_state_changed_cb(wifiHandle);
-	::wifi_manager_deinitialize(wifiHandle);
+	if (wifiHandle) {
+		::wifi_manager_unset_connection_state_changed_cb(wifiHandle);
+		::wifi_manager_deinitialize(wifiHandle);
+	}
 }
 
 void WifiPolicy::Private::onConnectionStateChanged(wifi_manager_connection_state_e state,
