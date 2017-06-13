@@ -44,7 +44,7 @@ BinaryQueue::~BinaryQueue()
 	Clear();
 }
 
-const BinaryQueue &BinaryQueue::operator=(const BinaryQueue &other)
+BinaryQueue &BinaryQueue::operator=(const BinaryQueue &other)
 {
 	if (this != &other) {
 		Clear();

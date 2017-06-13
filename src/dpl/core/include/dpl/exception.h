@@ -127,7 +127,7 @@ public:
 		AddRef(this);
 	}
 
-	const Exception &operator =(const Exception &other) {
+	Exception &operator =(const Exception &other) {
 		if (this == &other)
 			return *this;
 

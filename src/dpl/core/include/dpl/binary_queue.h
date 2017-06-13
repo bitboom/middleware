@@ -131,7 +131,7 @@ public:
 	 * @param[in] other Other binary queue to copy from
 	 * @warning One cannot assume that bucket structure is preserved during copy
 	 */
-	const BinaryQueue &operator=(const BinaryQueue &other);
+	BinaryQueue &operator=(const BinaryQueue &other);
 
 	/**
 	 * Append copy of @a bufferSize bytes from memory pointed by @a buffer
