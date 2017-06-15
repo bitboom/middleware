@@ -248,34 +248,3 @@ int auth_passwd_set_passwd(password_type passwd_type,
 		return retCode;
 	});
 }
-
-AUTH_PASSWD_API
-int auth_passwd_set_passwd_recovery(const char *cur_recovery_passwd,
-									const char *new_normal_passwd)
-{
-	using namespace AuthPasswd;
-	return try_catch([&] {
-		if (!new_normal_passwd || isPasswordIncorrect(new_normal_passwd) ||
-		!cur_recovery_passwd || isPasswordIncorrect(cur_recovery_passwd)) {
-			LogError("Wrong input param.");
-			return AUTH_PASSWD_API_ERROR_INPUT_PARAM;
-		}
-
-		MessageBuffer send, recv;
-
-		Serialization::Serialize(send, static_cast<int>(PasswordHdrs::HDR_SET_PASSWD_RECOVERY));
-		Serialization::Serialize(send, std::string(cur_recovery_passwd));
-		Serialization::Serialize(send, std::string(new_normal_passwd));
-
-		int retCode = sendToServer(SERVICE_SOCKET_PASSWD_SET, send.Pop(), recv);
-
-		if (AUTH_PASSWD_API_SUCCESS != retCode) {
-			LogError("Error in sendToServer. Error code: " << retCode);
-			return retCode;
-		}
-
-		Deserialization::Deserialize(recv, retCode);
-
-		return retCode;
-	});
-}

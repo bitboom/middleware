@@ -46,7 +46,6 @@ typedef enum {
 
 typedef enum {
 	AUTH_PWD_NORMAL,
-	AUTH_PWD_RECOVERY
 } password_type;
 
 typedef enum {

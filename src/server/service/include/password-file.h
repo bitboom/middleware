@@ -117,7 +117,6 @@ private:
 
 	//password file data
 	IPasswordPtr m_passwordCurrent;
-	IPasswordPtr m_passwordRecovery;
 	PasswordList m_passwordHistory;
 	unsigned int m_maxAttempt;
 	unsigned int m_maxHistorySize;

@@ -74,7 +74,7 @@ extern "C" {
  * \par Important notes:
  *
  *
- * \param[in] passwd_type Password type, such as normal(lock) password, recovery password and so on.
+ * \param[in] passwd_type Password type, such as normal(lock) password.
  * \param[in] uid Target user.
  * \param[in] new_passwd Null terminated new password string or NULL.
  *            If you want to remove password you must set:
@@ -97,7 +97,7 @@ extern "C" {
  *
  * \post None
  *
- * \see auth_passwd_check_passwd_state(), auth_passwd_check_passwd(), auth_passwd_set_passwd_recovery()
+ * \see auth_passwd_check_passwd_state(), auth_passwd_check_passwd()
  *
  * \remarks Only DPM and enterprise manager can call this API. The password file will be access controlled and securely hashed. Auth-fw will remain previous password file to recover unexpected password file corruption.
  *

@@ -185,18 +185,6 @@ int PasswordService::processSetFunctions(PasswordHdrs hdr, MessageBuffer &buffer
 		break;
 	}
 
-	case PasswordHdrs::HDR_SET_PASSWD_RECOVERY: {
-		std::string curRcvPasswd, newPasswd;
-		Deserialization::Deserialize(buffer, curRcvPasswd);
-		Deserialization::Deserialize(buffer, newPasswd);
-		result = m_policyManager.checkPolicy(AUTH_PWD_NORMAL, curRcvPasswd, newPasswd, cur_user);
-
-		if (result == AUTH_PASSWD_API_SUCCESS)
-			result = m_pwdManager.setPasswordRecovery(curRcvPasswd, newPasswd, cur_user);
-
-		break;
-	}
-
 	case PasswordHdrs::HDR_CHK_PASSWD_REUSED: {
 		unsigned int passwdType = 0;
 		std::string passwd;

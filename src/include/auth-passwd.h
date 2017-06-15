@@ -71,7 +71,7 @@ extern "C" {
  * \par Important notes:
  * There is retry timer on this API to limit replay attack. You will get error if you called this API too often.\n
  *
- * \param[in] passwd_type Password type, such as normal(lock) password, recovery password and so on.
+ * \param[in] passwd_type Password type, such as normal(lock) password.
  * \param[in] passwd Null terminated inputted password string.
  * \param[out] current_attempts Number of password check missed attempts.
  * \param[out] max_attempts Number of maximum attempts that the password locks. 0 means infinite.
@@ -103,7 +103,7 @@ extern "C" {
  *
  * \post None
  *
- * \see auth_passwd_check_passwd_state(), auth_passwd_set_passwd(), auth_passwd_set_passwd_recovery()
+ * \see auth_passwd_check_passwd_state(), auth_passwd_set_passwd()
  *
  * \remarks The password file will be acces controlled and securely hashed. auth-fw will remain previous password file to recover unexpected password file curruption.
  *
@@ -155,7 +155,7 @@ int auth_passwd_check_passwd(password_type passwd_type,
  * \par Important notes:
  * Password file should be stored safely. The password file will be stored by auth-fw and only allowed itself to read/write, and data is will be securely hashed\n
  *
- * \param[in] passwd_type Password type, such as normal(lock) password, recovery password and so on.
+ * \param[in] passwd_type Password type, such as normal(lock) password.
  * \param[out] current_attempts Number of password check missed attempts.
  * \param[out] max_attempts Number of maximum attempts that the password locks. 0 means infinite
  * \param[out] valid_secs Remaining time in second which represents this password will be expired. 0xFFFFFFFF means infinite
@@ -227,7 +227,7 @@ int auth_passwd_check_passwd_state(password_type passwd_type,
  * \par Important notes:
  *  You can't check password reusability.
  *
- * \param[in] passwd_type Password type, such as normal(lock) password, recovery password and so on.
+ * \param[in] passwd_type Password type, such as normal(lock) password.
  * \param[in] passwd Null terminated inputted password string.
  *
  * \return AUTH_PASSWD_API_SUCCESS
@@ -278,7 +278,7 @@ int auth_passwd_check_passwd_available(password_type passwd_type, const char *pa
  * \par Important notes:
  * Security-aware clients should check current password before calling this function.
  *
- * \param[in] passwd_type Password type, such as normal(lock) password, recovery password and so on.
+ * \param[in] passwd_type Password type, such as normal(lock) password.
  * \param[in] passwd A password to be checked
  * \param[out] is_reused Indicates if password was used before (non-zero value means, the password
  *                       was used before)
@@ -321,7 +321,7 @@ int auth_passwd_check_passwd_reused(password_type passwd_type,
  * There is retry timer on this API to limit replay attack. You will get error
  * if you called this API too often.\n
  *
- * \param[in] passwd_type Password type, such as normal(lock) password, recovery password and so on.
+ * \param[in] passwd_type Password type, such as normal(lock) password.
  * \param[in] cur_passwd Null terminated current password string or NULL
  *            pointer if there is no password set yet.
  * \param[in] new_passwd Null terminated new password string or NULL.
@@ -357,7 +357,7 @@ int auth_passwd_check_passwd_reused(password_type passwd_type,
  *
  * \post None
  *
- * \see auth_passwd_check_passwd_state(), auth_passwd_check_passwd(), auth_passwd_set_passwd_recovery()
+ * \see auth_passwd_check_passwd_state(), auth_passwd_check_passwd()
  *
  * \remarks Only setting application can call this API. The password file will be access controlled and securely hashed. Auth-fw will remain previous password file to recover unexpected password file corruption.
  *
@@ -401,101 +401,6 @@ int auth_passwd_check_passwd_reused(password_type passwd_type,
 int auth_passwd_set_passwd(password_type passwd_type,
 						   const char *cur_passwd,
 						   const char *new_passwd);
-
-/**
- * \par Description:
- * This API sets normal(lock) password only if inputted recovery password is correct.
- *
- * \par Purpose:
- * This API should be used by applications which has phone UI lock capability.
- *
- * \par Typical use case:
- * Lock screen calls this API if current attempts is a specific number of attempts or more.
- *
- * \par Method of function operation:
- * Sends current recovery password with new normal(lock) password to auth-fw, auth-fw
- * checks current recovery password and set new normal password only when current
- * recovery password is correct and new normal password meet password policies.
- *
- * \par Sync (or) Async:
- * This is a Synchronous API.
- *
- * \par Important notes:
- * There is retry timer on this API to limit replay attack. You will get error
- * if you called this API too often.\n
- *
- * \param[in] cur_recovery_passwd Null terminated current recovery password string. It must not a NULL pointer.
- * \param[in] new_normal_passwd Null terminated new password string. It must not a NULL pointer.
- *
- * \return AUTH_PASSWD_API_SUCCESS
- * \return AUTH_PASSWD_API_ERROR_ACCESS_DENIED
- * \return AUTH_PASSWD_API_ERROR_SOCKET
- * \return AUTH_PASSWD_API_ERROR_NO_PASSWORD
- *              Recovery password is not set
- * \return AUTH_PASSWD_API_ERROR_PASSWORD_MISMATCH
- *              cur_recovery_passwd does not match with recovery password
- * \return AUTH_PASSWD_API_ERROR_PASSWORD_INVALID
- *              new_normal_passwd dose not meet password policies in auth-fw.
- * \return AUTH_PASSWD_API_ERROR_PASSWORD_RETRY_TIMER
- *              To many access in short period of time. Wait at least 0.5 sec.
- * \return AUTH_PASSWD_API_ERROR_INPUT_PARAM
- *              cur_recovery_passwd or new_normal_passwd is a NULL pointer
- *              or new_normal_passwd length is longer than MAX_PASSWORD_LEN.
- * \return AUTH_PASSWD_API_ERROR_RECOVERY_PASSWORD_RESTRICTED
- *              Lock screen can call this API only if max attempts is not set.
- *
- * \par Prospective clients:
- * Applications which has phone UI lock feature.
- *
- * \par Known issues/bugs:
- * None
- *
- * \pre None
- *
- * \post None
- *
- * \see auth_passwd_check_passwd()
- *
- * \remarks A specific number of attempts to call this API is depends on lock screen.
- * \remarks Lock screen can call this API only if max attempts is not set.
- *
- * \par Sample code:
- * \code
- * #include <auth-passwd.h>
- * ...
- * #define RECOVERY_ATTEMPTS 10;
- * ...
- * int ret;
- * unsigned int attempt, max_attempt, expire_sec;
- *
- * ret = auth_passwd_check_passwd(AUTH_PWD_NORMAL, "is_this_password", &attmpt, &max_attempt, &expire_sec);
- * if(ret == AUTH_PASSWD_API_ERROR_PASSWORD_MISMATCH)
- * {
- *      printf("%s", "Oh you typed wrong password\n");
- *      if (max_attempt >= RECOVERY_ATTEMPTS)
- *      {
- *          ret = auth_passwd_set_passwd_recovery("is_this_recovery_passwd", "this_is_new_normal_passwd");
- *          if(ret != AUTH_PASSWD_API_SUCCESS)
- *          {
- *              printf("%s", "Something wrong\n");
- *              ...
- *          }
- *          ...
- *      }
- *      ...
- * }
- * else if(ret == AUTH_PASSWD_API_SUCCESS)
- * {
- *      printf("%s", "You remember your password.\n");
- *      ...
- * }
- * ...
- *
- * \endcode
- *
- */
-int auth_passwd_set_passwd_recovery(const char *cur_recovery_passwd,
-									const char *new_normal_passwd);
 
 #ifdef __cplusplus
 }

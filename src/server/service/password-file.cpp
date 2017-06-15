@@ -131,7 +131,6 @@ void Deserialization::Deserialize(IStream &stream, IPasswordPtr &ptr)
 PasswordFile::PasswordFile(unsigned int user) :
 	m_user(user),
 	m_passwordCurrent(new NoPassword()),
-	m_passwordRecovery(new NoPassword()),
 	m_maxAttempt(PASSWORD_INFINITE_ATTEMPT_COUNT),
 	m_maxHistorySize(0),
 	m_expireTime(PASSWORD_INFINITE_EXPIRATION_DAYS),
@@ -170,7 +169,6 @@ void PasswordFile::resetState()
 	m_expireTime = PASSWORD_INFINITE_EXPIRATION_DAYS;
 	m_expireTimeLeft = PASSWORD_INFINITE_EXPIRATION_TIME;
 	m_passwordRcvActive = false;
-	m_passwordRecovery.reset(new NoPassword());
 	m_passwordActive = false;
 	m_passwordCurrent.reset(new NoPassword());
 }
@@ -281,7 +279,6 @@ void PasswordFile::writeMemoryToFile() const
 	Serialization::Serialize(pwdBuffer, m_expireTime);
 	Serialization::Serialize(pwdBuffer, m_expireTimeLeft);
 	Serialization::Serialize(pwdBuffer, m_passwordRcvActive);
-	Serialization::Serialize(pwdBuffer, m_passwordRecovery);
 	Serialization::Serialize(pwdBuffer, m_passwordActive);
 	Serialization::Serialize(pwdBuffer, m_passwordCurrent);
 	Serialization::Serialize(pwdBuffer, m_passwordHistory);
@@ -311,7 +308,6 @@ void PasswordFile::loadMemoryFromFile()
 	Deserialization::Deserialize(pwdBuffer, m_expireTime);
 	Deserialization::Deserialize(pwdBuffer, m_expireTimeLeft);
 	Deserialization::Deserialize(pwdBuffer, m_passwordRcvActive);
-	Deserialization::Deserialize(pwdBuffer, m_passwordRecovery);
 	Deserialization::Deserialize(pwdBuffer, m_passwordActive);
 	Deserialization::Deserialize(pwdBuffer, m_passwordCurrent);
 	Deserialization::Deserialize(pwdBuffer, m_passwordHistory);
@@ -348,7 +344,6 @@ bool PasswordFile::tryLoadMemoryFromOldFormatFile()
 
 		m_expireTime = PASSWORD_INFINITE_EXPIRATION_DAYS;
 		m_passwordRcvActive = false;
-		m_passwordRecovery.reset(new NoPassword());
 		break;
 	default:
 		LogError("Invaild password version: " << fileVersion);
@@ -381,11 +376,10 @@ void PasswordFile::writeAttemptToFile() const
 
 bool PasswordFile::isPasswordActive(unsigned int passwdType) const
 {
-	switch (passwdType) {
-	case AUTH_PWD_NORMAL:   return m_passwordActive;
-	case AUTH_PWD_RECOVERY: return m_passwordRcvActive;
-	default:                return false;
-	}
+	if (passwdType != AUTH_PWD_NORMAL)
+		return false;
+
+	return m_passwordActive;
 }
 
 void PasswordFile::setMaxHistorySize(unsigned int history)
@@ -454,41 +448,34 @@ bool PasswordFile::isPasswordReused(const std::string &password) const
 
 void PasswordFile::setPassword(unsigned int passwdType, const std::string &password)
 {
-	if (passwdType == AUTH_PWD_NORMAL) {
-		//replace current password with new one
-		if (password.empty()) {
-			m_passwordCurrent.reset(new NoPassword());
-			m_passwordActive = false;
-		} else {
-			m_passwordCurrent.reset(new SHA256Password(password));
-			//put current password to history
-			m_passwordHistory.push_front(m_passwordCurrent);
+	if (passwdType != AUTH_PWD_NORMAL) {
+		LogError("Password type is wrong.");
+		return;
+	}
 
-			//erase last password if we exceed max history size
-			if (m_passwordHistory.size() > getMaxHistorySize())
-				m_passwordHistory.pop_back();
+	//replace current password with new one
+	if (password.empty()) {
+		m_passwordCurrent.reset(new NoPassword());
+		m_passwordActive = false;
+	} else {
+		m_passwordCurrent.reset(new SHA256Password(password));
+		//put current password to history
+		m_passwordHistory.push_front(m_passwordCurrent);
 
-			m_passwordActive = true;
-		}
-	} else if (passwdType == AUTH_PWD_RECOVERY) {
-		//replace current password with new one
-		if (password.empty()) {
-			m_passwordRecovery.reset(new NoPassword());
-			m_passwordRcvActive = false;
-		} else {
-			m_passwordRecovery.reset(new SHA256Password(password));
-			m_passwordRcvActive = true;
-		}
+		//erase last password if we exceed max history size
+		if (m_passwordHistory.size() > getMaxHistorySize())
+			m_passwordHistory.pop_back();
+
+		m_passwordActive = true;
 	}
 }
 
 bool PasswordFile::checkPassword(unsigned int passwdType, const std::string &password) const
 {
-	switch (passwdType) {
-	case AUTH_PWD_NORMAL:   return m_passwordCurrent->match(password);
-	case AUTH_PWD_RECOVERY: return m_passwordRecovery->match(password);
-	default:                return false;
-	}
+	if (passwdType != AUTH_PWD_NORMAL)
+		return false;
+
+	return m_passwordCurrent->match(password);
 }
 
 void PasswordFile::setExpireTime(unsigned int expireTime)

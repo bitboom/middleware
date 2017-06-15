@@ -54,9 +54,6 @@
 /*! \brief   indicating there is no password set */
 #define AUTH_PASSWD_API_ERROR_NO_PASSWORD -9
 
-/*! \brief   indicating there is no recovery password set */
-#define AUTH_PASSWD_API_ERROR_NO_RECOVERY_PASSWORD -10
-
 /*! \brief   indicating password exists in system */
 #define AUTH_PASSWD_API_ERROR_PASSWORD_EXIST -11
 
@@ -74,9 +71,6 @@
 
 /*! \brief   indicating password is reused */
 #define AUTH_PASSWD_API_ERROR_PASSWORD_REUSED -16
-
-/*! \brief   indicating password recovery is restricted because max attempts policy is set */
-#define AUTH_PASSWD_API_ERROR_RECOVERY_PASSWORD_RESTRICTED -17
 
 /*! \brief   indicating password does not meet password min length policy */
 #define AUTH_PASSWD_API_ERROR_INVALID_MIN_LENGTH -18

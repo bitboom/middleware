@@ -127,14 +127,6 @@ int PasswordManager::checkPassword(unsigned int passwdType,
 
 		break;
 
-	case AUTH_PWD_RECOVERY:
-		if (!itPwd->second.checkPassword(AUTH_PWD_RECOVERY, challenge)) {
-			LogError("Wrong password.");
-			return AUTH_PASSWD_API_ERROR_PASSWORD_MISMATCH;
-		}
-
-		break;
-
 	default:
 		LogError("Not supported password type.");
 		return AUTH_PASSWD_API_ERROR_INPUT_PARAM;
@@ -162,13 +154,6 @@ int PasswordManager::isPwdValid(unsigned int passwdType, unsigned int currentUse
 		expirationTime = itPwd->second.getExpireTimeLeft();
 		break;
 
-	case AUTH_PWD_RECOVERY:
-		// there are no maxAttempt and expirationTime for recovery password
-		currentAttempt = PASSWORD_INFINITE_ATTEMPT_COUNT;
-		maxAttempt = PASSWORD_INFINITE_ATTEMPT_COUNT;
-		expirationTime = PASSWORD_API_NO_EXPIRATION;
-		break;
-
 	default:
 		LogError("Not supported password type.");
 		return AUTH_PASSWD_API_ERROR_INPUT_PARAM;
@@ -191,9 +176,6 @@ int PasswordManager::isPwdReused(unsigned int passwdType, const std::string &pas
 		if (itPwd->second.isHistoryActive() && !passwd.empty())
 			isReused = itPwd->second.isPasswordReused(passwd);
 
-		break;
-
-	case AUTH_PWD_RECOVERY:
 		break;
 
 	default:
@@ -266,78 +248,11 @@ int PasswordManager::setPassword(unsigned int passwdType,
 		itPwd->second.writeMemoryToFile();
 		break;
 
-	case AUTH_PWD_RECOVERY:
-		if (!itPwd->second.checkPassword(AUTH_PWD_RECOVERY, currentPassword)) {
-			LogError("Wrong password.");
-			return AUTH_PASSWD_API_ERROR_PASSWORD_MISMATCH;
-		}
-
-		itPwd->second.setPassword(AUTH_PWD_RECOVERY, newPassword);
-		itPwd->second.writeMemoryToFile();
-		break;
-
 	default:
 		LogError("Not supported password type.");
 		return AUTH_PASSWD_API_ERROR_INPUT_PARAM;
 	}
 
-	return AUTH_PASSWD_API_SUCCESS;
-}
-
-int PasswordManager::setPasswordRecovery(const std::string &curRcvPassword,
-		const std::string &newPassword,
-		unsigned int currentUser)
-{
-	LogSecureDebug("curUser = " << currentUser << ", curPwd = " << curRcvPassword <<
-				   ", newPwd = " << newPassword);
-	unsigned int receivedDays = PASSWORD_INFINITE_EXPIRATION_DAYS;
-	time_t valid_secs = 0;
-	existPassword(currentUser);
-	PasswordFileMap::iterator itPwd = m_pwdFile.find(currentUser);
-
-	if (itPwd->second.isIgnorePeriod()) {
-		LogError("Retry timeout occured.");
-		return AUTH_PASSWD_API_ERROR_PASSWORD_RETRY_TIMER;
-	}
-
-	//check if passwords are correct
-	if (curRcvPassword.empty() || newPassword.empty()) {
-		LogError("Incorrect input param.");
-		return AUTH_PASSWD_API_ERROR_INPUT_PARAM;
-	}
-
-	// current recovery password should be existed.
-	if (!itPwd->second.isPasswordActive(AUTH_PWD_RECOVERY)) {
-		LogError("Password not active.");
-		return AUTH_PASSWD_API_ERROR_NO_PASSWORD;
-	}
-
-	receivedDays = itPwd->second.getExpireTime();
-
-	// don't recovery password if MaxAttempt value is not infinite.
-	if (receivedDays != PASSWORD_INFINITE_EXPIRATION_DAYS)
-		return AUTH_PASSWD_API_ERROR_RECOVERY_PASSWORD_RESTRICTED;
-
-	if (!itPwd->second.checkPassword(AUTH_PWD_RECOVERY, curRcvPassword)) {
-		LogError("Wrong password.");
-		return AUTH_PASSWD_API_ERROR_PASSWORD_MISMATCH;
-	}
-
-	// check history, however only if history is active and new password is not empty
-	if (itPwd->second.isHistoryActive()) {
-		if (itPwd->second.isPasswordReused(newPassword)) {
-			LogError("Password reused.");
-			return AUTH_PASSWD_API_ERROR_PASSWORD_REUSED;
-		}
-	}
-
-	calculateExpiredTime(receivedDays, valid_secs);
-	itPwd->second.resetAttempt();
-	itPwd->second.writeAttemptToFile();
-	//setting password
-	itPwd->second.setPassword(AUTH_PWD_NORMAL, newPassword);
-	itPwd->second.setExpireTimeLeft(valid_secs);
-	itPwd->second.writeMemoryToFile();
 	return AUTH_PASSWD_API_SUCCESS;
 }
 
@@ -360,11 +275,6 @@ int PasswordManager::resetPassword(unsigned int passwdType,
 		itPwd->second.writeAttemptToFile();
 		itPwd->second.setPassword(AUTH_PWD_NORMAL, newPassword);
 		itPwd->second.setExpireTimeLeft(valid_secs);
-		itPwd->second.writeMemoryToFile();
-		break;
-
-	case AUTH_PWD_RECOVERY:
-		itPwd->second.setPassword(AUTH_PWD_RECOVERY, newPassword);
 		itPwd->second.writeMemoryToFile();
 		break;
 

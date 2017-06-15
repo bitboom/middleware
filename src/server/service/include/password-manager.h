@@ -51,8 +51,6 @@ public:
 	//setting functions
 	int setPassword(unsigned int passwdType, const std::string &currentPassword,
 					const std::string &newPassword, unsigned int currentUser);
-	int setPasswordRecovery(const std::string &curRcvPassword, const std::string &newPassword,
-							unsigned int currentUser);
 
 	//resetting functions
 	int resetPassword(unsigned int passwdType, const std::string &newPassword,
