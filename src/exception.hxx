@@ -16,7 +16,7 @@
 /*
  * @file        exception.h
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
- * @version     0.1
+ * @version     1.0
  * @brief       Exception guard and custom exceptions
  */
 #pragma once

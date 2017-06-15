@@ -16,7 +16,7 @@
 /*
  * @file        api.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
- * @version     0.1
+ * @version     1.0
  * @brief       Implementation of trust anchor CAPI
  */
 #include "tanchor/trust-anchor.h"

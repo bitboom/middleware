@@ -16,7 +16,7 @@
 /*
  * @file        test-curl.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
- * @version     0.1
+ * @version     1.0
  * @brief       Unit test program of Curl
  */
 

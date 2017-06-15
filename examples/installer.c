@@ -16,7 +16,7 @@
 /*
  * @file        installer.c
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
- * @version     0.1
+ * @version     1.0
  * @brief       Installer API example
  */
 

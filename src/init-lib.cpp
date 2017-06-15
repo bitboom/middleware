@@ -16,7 +16,7 @@
 /*
  * @file        init-lib.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
- * @version     0.1
+ * @version     1.0
  * @brief       Init global configuration for library
  */
 

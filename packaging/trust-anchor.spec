@@ -1,5 +1,5 @@
 Name: trust-anchor
-Version: 0.0.2
+Version: 1.0.0
 Release: 0
 License: Apache-2.0
 Source0: file://%{name}-%{version}.tar.gz
@@ -36,7 +36,7 @@ SSL root certificates for its HTTPS communication.
 %files
 %manifest %{name}.manifest
 %license LICENSE
-%{_libdir}/lib%{lib_name}.so.0
+%{_libdir}/lib%{lib_name}.so.1
 %{_libdir}/lib%{lib_name}.so.%{version}
 %dir %attr(-, %{user_name}, %{group_name}) %{tanchor_base}
 %dir %attr(-, %{user_name}, %{group_name}) %{tanchor_usr}
