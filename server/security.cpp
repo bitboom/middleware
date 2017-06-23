@@ -47,6 +47,7 @@ struct SecurityPolicy::Private {
 		}
 
 		std::string state(value);
+		::free(value);
 		if (encrypt) {
 			if (state != "unencrypted") {
 				ERROR("Storage might be already encrypted or it has error");
@@ -71,9 +72,11 @@ struct SecurityPolicy::Private {
 
 		std::string expected("encrypted");
 		if (expected == state) {
+			::free(state);
 			return true;
 		}
 
+		::free(state);
 		return false;
 	}
 
