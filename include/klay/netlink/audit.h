@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2017 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 
 #include <klay/mainloop.h>
 #include <klay/netlink/netlink.h>
+#include <klay/netlink/audit-rule.h>
 
 namespace netlink {
 
@@ -33,15 +34,19 @@ public:
 	typedef std::function<void(Message&)> MessageHandler;
 
 	Audit();
-    Audit(Audit&&);
-    Audit(const Audit&) = delete;
-    ~Audit();
+	Audit(Audit&&);
+	Audit(const Audit&) = delete;
+	~Audit();
 
-    Audit& operator=(const Audit&) = delete;
+	Audit& operator=(const Audit&) = delete;
 
 	void setPID(pid_t pid);
 	void setEnabled(int enabled);
 	int isEnabled();
+
+	std::vector<AuditRule> getRules();
+	void addRule(const AuditRule& rule);
+	void removeRule(const AuditRule& rule);
 
 	void setMainloop(runtime::Mainloop *ml);
 	void setMessageHandler(MessageHandler&& handler);

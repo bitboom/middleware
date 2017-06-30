@@ -28,11 +28,11 @@ namespace netlink {
 class Netlink final {
 public:
 	Netlink(int);
-    Netlink(Netlink&&);
-    Netlink(const Netlink&) = delete;
-    ~Netlink();
+	Netlink(Netlink&&);
+	Netlink(const Netlink&) = delete;
+	~Netlink();
 
-    Netlink& operator=(const Netlink&) = delete;
+	Netlink& operator=(const Netlink&) = delete;
 
 	void send(const void *data, unsigned int size);
 	void recv(void *data, unsigned int size, int options = 0);

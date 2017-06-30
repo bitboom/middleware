@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2017 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-#include <iostream>
-
 #include <poll.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -95,6 +93,41 @@ int Audit::isEnabled()
 	return ret;
 }
 
+std::vector<AuditRule> Audit::getRules()
+{
+	std::vector<AuditRule> ret;
+
+	send(AUDIT_LIST_RULES, NULL, 0);
+
+	while (1) {
+		auto msg = recv();
+
+		switch (msg.first) {
+		case NLMSG_DONE:
+			break;
+		case NLMSG_ERROR:
+			throw runtime::Exception("Failed to get a list of audit rules");
+		case AUDIT_LIST_RULES:
+			ret.push_back(msg.second);
+		default:
+			continue;
+		}
+
+		break;
+	}
+	return ret;
+}
+
+void Audit::addRule(const AuditRule& rule)
+{
+	send(AUDIT_ADD_RULE, rule.data(), rule.size());
+}
+
+void Audit::removeRule(const AuditRule& rule)
+{
+	send(AUDIT_DEL_RULE, rule.data(), rule.size());
+}
+
 void Audit::setMainloop(runtime::Mainloop *ml)
 {
 	int fd = nl.getFd();
@@ -132,10 +165,11 @@ void Audit::send(int type, const void *data, unsigned int size)
 		::memcpy(NLMSG_DATA(buf), data, size);
 	}
 
-	nl.send(&buf, sizeof(buf));
+	nl.send(buf, sizeof(buf));
 
 	if (recv(MSG_PEEK).first == NLMSG_ERROR) {
-		auto err = (struct nlmsgerr*)recv().second.data();
+		auto reply = recv().second;
+		auto err = (struct nlmsgerr*)reply.data();
 		if (err->error) {
 			throw runtime::Exception("Audit netlink error: " +
 										std::to_string(err->error));

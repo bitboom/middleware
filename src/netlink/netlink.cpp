@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2017 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ void Netlink::send(const void *buf, unsigned int size)
 
 	do {
 		ret = ::sendto(fd, buf, size, 0,
-						(struct sockaddr*)&addr, size);
+						(struct sockaddr*)&addr, sizeof(addr));
 	} while (ret < 0 && errno == EINTR);
 
 	if (ret < 0) {
