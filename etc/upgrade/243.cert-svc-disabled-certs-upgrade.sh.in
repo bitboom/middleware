@@ -15,7 +15,7 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
-# @file        203.cert-svc-disabled-certs-upgrade.sh.in
+# @file        243.cert-svc-disabled-certs-upgrade.sh.in
 # @author      Sangwan Kwon (sangwan.kwon@samsung.com)
 # @brief       cert-svc disabled certs upgrade for platform upgrade 2.4 -> 3.0
 #

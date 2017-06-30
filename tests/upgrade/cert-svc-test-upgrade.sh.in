@@ -32,7 +32,7 @@ before_upgrade_certs_cnt=`ls -l @TZ_SYS_CA_CERTS@ | grep ^l | wc -l`
 before_upgrade_bundle_line=`cat @TZ_SYS_CA_BUNDLE@ | wc -l`
 
 # run db upgrade
-@UPGRADE_SCRIPT_PATH@/cert-svc-db-upgrade.sh
+@UPGRADE_SCRIPT_PATH@/242.cert-svc-db-upgrade.sh
 
 # testcase 1. disabled_certs table should have 2 column
 disabled_certs_cnt=`sqlite3 $NEW_DB "SELECT count(*) FROM disabled_certs;"`

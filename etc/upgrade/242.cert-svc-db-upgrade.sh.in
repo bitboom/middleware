@@ -15,7 +15,7 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
-# @file        202.cert-svc-db-upgrade.sh.in
+# @file        242.cert-svc-db-upgrade.sh.in
 # @author      Sangwan Kwon (sangwan.kwon@samsung.com)
 # @brief       cert-svc db migration scripts for platform upgrade 2.4 -> 3.0
 #
@@ -53,7 +53,7 @@ sqlite3 $NEW_DB "UPDATE schema_info SET version='1', description='Tizen 2.4' \
 disabled_certs_cnt=`sqlite3 $OLD_DB "SELECT count(*) FROM disabled_certs;"`
 if [ "$disabled_certs_cnt" != "0" ]
 then
-	@UPGRADE_SCRIPT_PATH@/cert-svc-disabled-certs-upgrade.sh $OLD_DB $NEW_DB
+	@UPGRADE_SCRIPT_PATH@/243.cert-svc-disabled-certs-upgrade.sh $OLD_DB $NEW_DB
 fi
 
 rm -rf $OLD_DB

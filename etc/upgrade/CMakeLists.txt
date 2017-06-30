@@ -17,14 +17,14 @@
 #
 
 CONFIGURE_FILE(
-	202.cert-svc-db-upgrade.sh.in
-	202.cert-svc-db-upgrade.sh @ONLY)
+	242.cert-svc-db-upgrade.sh.in
+	242.cert-svc-db-upgrade.sh @ONLY)
 CONFIGURE_FILE(
-	203.cert-svc-disabled-certs-upgrade.sh.in
-	203.cert-svc-disabled-certs-upgrade.sh @ONLY)
+	243.cert-svc-disabled-certs-upgrade.sh.in
+	243.cert-svc-disabled-certs-upgrade.sh @ONLY)
 
 INSTALL(FILES
-	202.cert-svc-db-upgrade.sh
-	203.cert-svc-disabled-certs-upgrade.sh
+	242.cert-svc-db-upgrade.sh
+	243.cert-svc-disabled-certs-upgrade.sh
 	DESTINATION ${UPGRADE_SCRIPT_PATH}
 )
