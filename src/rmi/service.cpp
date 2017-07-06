@@ -164,7 +164,7 @@ int Service::subscribeNotification(const std::string& name)
 		mainloop.addEventSource(slot.first, EPOLLHUP | EPOLLRDHUP, closeHandler);
 		return slot.second;
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(KSINK, e.what());
 		return -1;
 	}
 
@@ -213,7 +213,7 @@ void Service::onMessageProcess(const std::shared_ptr<Connection>& connection)
 				connection->send(request.createErrorMessage(e.what()));
 			} catch (std::exception& ex) {
 				// The connection is abnormally closed by the peer.
-				ERROR(ex.what());
+				ERROR(KSINK, ex.what());
 			}
 		}
 	};
@@ -221,7 +221,7 @@ void Service::onMessageProcess(const std::shared_ptr<Connection>& connection)
 	try {
 		workqueue.submit(std::bind(process, connection->dispatch()));
 	} catch (std::exception& e) {
-		ERROR(e.what());
+		ERROR(KSINK, e.what());
 	}
 }
 

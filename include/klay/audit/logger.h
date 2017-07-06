@@ -36,59 +36,67 @@ enum class LogLevel : int {
 	Trace
 };
 
-class Logger {
-public:
-	static void setLogLevel(const LogLevel level);
-	static LogLevel getLogLevel(void);
-	static void setTag(const std::string& tag);
-	static std::string getTag(void);
-	static void setBackend(LogSink *logSink);
-	static void log(LogLevel severity,
-					const std::string& file,
-					const unsigned int line,
-					const std::string& func,
-					const std::string& message);
-
-private:
-	static LogSink *getBackend(void);
-
-	static LogLevel logLevel;
-	static std::unique_ptr<std::string> tag;
-	static std::unique_ptr<LogSink> backend;
+struct LogRecord {
+	LogLevel severity;
+	std::string file;
+	unsigned int line;
+	std::string func;
+	std::string message;
 };
 
-#ifndef __FILENAME__
-#define __FILENAME__                                                   \
-(::strrchr(__FILE__, '/') ? ::strrchr(__FILE__, '/') + 1 : __FILE__)
-#endif
-
-#define FORMAT(ITEMS)                                                  \
-(static_cast<std::ostringstream &>(std::ostringstream() << ITEMS)).str()
-
-#define LOG(SEVERITY, MESSAGE)                                         \
-do {                                                                   \
-	if (audit::LogLevel::SEVERITY <= audit::Logger::getLogLevel()) {   \
-		audit::Logger::log(audit::LogLevel::SEVERITY,                  \
-						   __FILENAME__, __LINE__, __func__,           \
-						   FORMAT(MESSAGE));                           \
-	}                                                                  \
-} while (0)
-
-#define ERROR(MESSAGE)	LOG(Error, MESSAGE)
-#define WARN(MESSAGE)	LOG(Warning, MESSAGE)
-
-#if !defined(NDEBUG)
-#define INFO(MESSAGE)	LOG(Info, MESSAGE)
-#define DEBUG(MESSAGE)	LOG(Debug, MESSAGE)
-#define TRACE(MESSAGE)	LOG(Trace, MESSAGE)
-#else
-#define INFO(MESSAGE)  do {} while (0)
-#define DEBUG(MESSAGE) do {} while (0)
-#define TRACE(MESSAGE) do {} while (0)
-#endif //NDEBUG
+class Logger {
+public:
+	static void log(LogSink* logSink, const LogRecord record);
+};
 
 std::string LogLevelToString(const LogLevel level);
 LogLevel StringToLogLevel(const std::string& level);
+
+#ifndef __FILENAME__
+#define __FILENAME__                                                  \
+(::strrchr(__FILE__, '/') ? ::strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
+
+#define KSINK nullptr
+
+#define FORMAT(items)                                                  \
+(static_cast<std::ostringstream &>(std::ostringstream() << items)).str()
+
+#define LOG(logsink, message, level)                                   \
+do {                                                                   \
+	audit::LogRecord record = { audit::LogLevel::level,                \
+								__FILENAME__, __LINE__, __func__,      \
+								FORMAT(message) };                     \
+	audit::Logger::log(logsink, record);                               \
+} while (0)
+
+#define ERROR2(logsink, message) LOG(logsink, message, Error)
+#define ERROR1(message) LOG(nullptr, message, Error)
+#define WARN2(logsink, message) LOG(logsink, message, Warning)
+#define WARN1(message) LOG(nullptr, message, Warning)
+
+#if !defined(NDEBUG)
+#define INFO2(logsink, message) LOG(logsink, message, Info)
+#define INFO1(message) LOG(nullptr, message, Info)
+#define DEBUG2(logsink, message) LOG(logsink, message, Debug)
+#define DEBUG1(message) LOG(nullptr, message, Debug)
+#define TRACE2(logsink, message) LOG(logsink, message, Trace)
+#define TRACE1(message) LOG(nullptr, message, Trace)
+#else
+#define INFO2(logsink, message) do {} while (0)
+#define INFO1(message) do {} while (0)
+#define DEBUG2(logsink, message) do {} while (0)
+#define DEBUG1(message) do {} while (0)
+#define TRACE2(logsink, message) do {} while (0)
+#define TRACE1(message) do {} while (0)
+#endif //NDEBUG
+
+#define GET_MACRO(_1, _2, macro, ...) macro
+#define ERROR(args...) GET_MACRO(args, ERROR2, ERROR1)(args)
+#define WARN(args...)  GET_MACRO(args, WARN2, WARN1)(args)
+#define DEBUG(args...) GET_MACRO(args, DEBUG2, DEBUG1)(args)
+#define INFO(args...)  GET_MACRO(args, INFO2, INFO1)(args)
+#define TRACE(args...) GET_MACRO(args, TRACE2, TRACE1)(args)
 
 } // namespace audit
 #endif //__AUDIT_LOGGER_H__

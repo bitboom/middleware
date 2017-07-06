@@ -48,7 +48,7 @@ Connection::Connection(const std::string& address) :
 
 	connection = g_dbus_connection_new_for_address_sync(address.c_str(), flags, NULL, NULL, &error);
 	if (error) {
-		ERROR(error->message);
+		ERROR(KSINK, error->message);
 		throw runtime::Exception(error->message);
 	}
 }
@@ -128,7 +128,7 @@ const Variant Connection::methodcall(const std::string& busName,
 										 &error);
 
 	if (error) {
-		ERROR(error->message);
+		ERROR(KSINK, error->message);
 		throw runtime::Exception(error->message);
 	}
 
@@ -157,7 +157,7 @@ void Connection::emitSignal(const std::string& busName,
 								  paramType.empty() ? NULL : variant,
 								  &error);
 	if (error) {
-		ERROR(error->message);
+		ERROR(KSINK, error->message);
 		throw runtime::Exception(error->message);
 	}
 }
@@ -209,7 +209,7 @@ Connection::ObjectId Connection::registerObject(const std::string& object,
 												    &error);
 	g_dbus_node_info_unref(node);
     if (error) {
-        ERROR(error->message);
+        ERROR(KSINK, error->message);
         throw runtime::Exception(error->message);
     }
 
@@ -223,7 +223,7 @@ void Connection::unregisterObject(ObjectId id)
 
 void Connection::onClientVanish(GDBusConnection* connection, const gchar* name, gpointer userData)
 {
-	DEBUG("Client Vanished:" << name);
+	DEBUG(KSINK, "Client Vanished:" << name);
 	const VanishedCallback& callback = userDataCast<VanishedCallback>(userData);
 
 	guint id = callback.watchedClients[name];
@@ -238,7 +238,7 @@ void Connection::onClientVanish(GDBusConnection* connection, const gchar* name, 
 
 void Connection::onNameAcquired(GDBusConnection* connection, const gchar* name, gpointer userData)
 {
-	DEBUG("Name Acquired: " << name);
+	DEBUG(KSINK, "Name Acquired: " << name);
 	const NameCallback& callbacks = userDataCast<NameCallback>(userData);
 	if (callbacks.nameAcquired) {
 		callbacks.nameAcquired();
@@ -247,7 +247,7 @@ void Connection::onNameAcquired(GDBusConnection* connection, const gchar* name, 
 
 void Connection::onNameLost(GDBusConnection* connection, const gchar* name, gpointer userData)
 {
-	DEBUG("Name Lost" << name);
+	DEBUG(KSINK, "Name Lost" << name);
 	const NameCallback& callbacks = userDataCast<NameCallback>(userData);
 	if (callbacks.nameLost) {
 		callbacks.nameLost();
@@ -262,8 +262,8 @@ void Connection::onSignal(GDBusConnection* connection,
 						  GVariant *parameters,
 						  gpointer userData)
 {
-	DEBUG("Signal : " << sender << " : " << objectPath << " : "
-					  << interface << " : " << signal);
+	DEBUG(KSINK,"Signal : " << sender << " : " << objectPath << " : "
+				<< interface << " : " << signal);
 	const SignalCallback& callback = userDataCast<SignalCallback>(userData);
 	if (callback) {
 		callback(Variant(parameters));
@@ -279,8 +279,8 @@ void Connection::onMethodCall(GDBusConnection* connection,
 							  GDBusMethodInvocation* invocation,
 							  gpointer userData)
 {
-	DEBUG("MethodCall: " << sender << " : " << objectPath << " : "
-						 << interface << " : " << method);
+	DEBUG(KSINK, "MethodCall: " << sender << " : " << objectPath << " : "
+				 << interface << " : " << method);
 	const MethodCallback callbackSet = userDataCast<MethodCallback>(userData);
 
 	ClientMap &watchMap = callbackSet.connection->watchedClients;
@@ -300,7 +300,7 @@ void Connection::onMethodCall(GDBusConnection* connection,
 		Variant variant = callbackSet.methodcall(objectPath, interface, method, Variant(parameters));
 		g_dbus_method_invocation_return_value(invocation, &variant);
 	} catch (runtime::Exception& e) {
-		ERROR("Error on metod handling");
+		ERROR(KSINK, "Error on metod handling");
 		g_dbus_method_invocation_return_dbus_error(invocation, (interface + std::string(".Error")).c_str(), e.what());
 	}
 }

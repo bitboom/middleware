@@ -28,11 +28,11 @@
 
 TESTCASE(LogMacroTest)
 {
-    TRACE("Trace");
-    INFO("Info");
-    DEBUG("Debug");
-    WARN("Warning");
-    ERROR("Error");
+	TRACE("Trace");
+	INFO("Info");
+	DEBUG("Debug");
+	WARN("Warning");
+	ERROR("Error");
 }
 
 TESTCASE(LogSeverityTest)
@@ -43,24 +43,53 @@ TESTCASE(LogSeverityTest)
 	}
 }
 
-TESTCASE(BackendTest)
+TESTCASE(DefaultLogTest)
 {
-	audit::Logger::setBackend(new audit::DlogLogSink());
-	audit::Logger::setTag("KLAY");
-	INFO("Dlog Test : " << "Info");
-	DEBUG("Dlog Test : " << "Debug");
-	WARN("Dlog Test : " << "Warning");
-	ERROR("Dlog Test : " << "Error");
+	TRACE(KSINK, "Trace");
+	INFO(KSINK, "Info");
+	DEBUG(KSINK, "Debug");
+	WARN(KSINK, "Warn");
+	ERROR(KSINK, "Error");
+}
 
-	audit::Logger::setBackend(new audit::ConsoleLogSink());
-	INFO("Console Test : " << "Info");
-	DEBUG("Console Test : " << "Debug");
-	WARN("Console Test : " << "Warning");
-	ERROR("Console Test : " << "Error");
+TESTCASE(LogSinkTest)
+{
+	audit::DlogLogSink* dlog = new audit::DlogLogSink("KLAY");
+	INFO(dlog, "Dlog Test : " << "Info");
+	DEBUG(dlog, "Dlog Test : " << "Debug");
+	WARN(dlog, "Dlog Test : " << "Warning");
+	ERROR(dlog, "Dlog Test : " << "Error");
+	delete dlog;
 
-	audit::Logger::setBackend(new audit::NullLogSink());
-	INFO("Null Test : " << "Info");
-	DEBUG("Null Test : " << "Debug");
-	WARN("Null Test : " << "Warning");
-	ERROR("Null Test : " << "Error");
+	audit::ConsoleLogSink* console = new audit::ConsoleLogSink();
+	INFO(console, "Console Test : " << "Info");
+	DEBUG(console, "Console Test : " << "Debug");
+	WARN(console, "Console Test : " << "Warning");
+	ERROR(console, "Console Test : " << "Error");
+	delete console;
+
+	audit::NullLogSink* null = new audit::NullLogSink();
+	INFO(null, "Null Test : " << "Info");
+	DEBUG(null, "Null Test : " << "Debug");
+	WARN(null, "Null Test : " << "Warning");
+	ERROR(null, "Null Test : " << "Error");
+	delete null;
+}
+
+TESTCASE(MultiLogSinkTest)
+{
+	audit::DlogLogSink* dlog = new audit::DlogLogSink("KLAY");
+	audit::DlogLogSink* dlog2 = new audit::DlogLogSink("KLAY2");
+
+	INFO(dlog, "Dlog Test : " << "Info");
+	INFO(dlog2, "Dlog Test : " << "Info");
+	DEBUG(dlog, "Dlog Test : " << "Debug");
+	DEBUG(dlog2, "Dlog Test : " << "Debug");
+	WARN(dlog, "Dlog Test : " << "Warning");
+	WARN(dlog2, "Dlog Test : " << "Warning");
+	ERROR(dlog, "Dlog Test : " << "Error");
+	ERROR(dlog2, "Dlog Test : " << "Error");
+
+	delete dlog;
+	delete dlog2;
 }

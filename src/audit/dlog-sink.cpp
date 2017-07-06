@@ -23,30 +23,31 @@
 
 namespace audit {
 
+DlogLogSink::DlogLogSink(const std::string& tag) : tag(tag) {}
+
 void DlogLogSink::sink(const std::string &message)
 {
 	auto level = message.substr(0, message.find('<'));
 	auto subMsg = message.substr(message.find(':') + 1);
-	auto tag = Logger::getTag();
 
 	switch (StringToLogLevel(level)) {
 	case LogLevel::Error:
-		SLOG(LOG_ERROR, tag.c_str(), "%s", subMsg.c_str());
+		SLOG(LOG_ERROR, this->tag.c_str(), "%s", subMsg.c_str());
 		return;
 	case LogLevel::Warning:
-		SLOG(LOG_WARN, tag.c_str(), "%s", subMsg.c_str());
+		SLOG(LOG_WARN, this->tag.c_str(), "%s", subMsg.c_str());
 		return;
 	case LogLevel::Debug:
-		SLOG(LOG_DEBUG, tag.c_str(), "%s", subMsg.c_str());
+		SLOG(LOG_DEBUG, this->tag.c_str(), "%s", subMsg.c_str());
 		return;
 	case LogLevel::Info:
-		SLOG(LOG_INFO, tag.c_str(), "%s", subMsg.c_str());
+		SLOG(LOG_INFO, this->tag.c_str(), "%s", subMsg.c_str());
 		return;
 	case LogLevel::Trace:
-		SLOG(LOG_VERBOSE, tag.c_str(), "%s", subMsg.c_str());
+		SLOG(LOG_VERBOSE, this->tag.c_str(), "%s", subMsg.c_str());
 		return;
 	default:
-		SLOG(LOG_SILENT, tag.c_str(), "%s", subMsg.c_str());
+		SLOG(LOG_SILENT, this->tag.c_str(), "%s", subMsg.c_str());
 		return;
 	}
 }
