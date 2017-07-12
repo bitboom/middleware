@@ -22,7 +22,10 @@
 #include "certificate.hxx"
 
 #include <cstdio>
+#include <memory>
 #include <vector>
+
+#include "file-system.hxx"
 #include "exception.hxx"
 
 #include <openssl/pem.h>
@@ -42,20 +45,21 @@ const int HASH_LENGTH = 8;
 
 } // namespace anonymous
 
-Certificate::Certificate(const std::string &path) :
-	m_fp(FilePtr(::fopen(path.c_str(), "rb"), ::fclose))
+Certificate::Certificate(const std::string &path) : m_path(path)
 {
-	if (this->m_fp == nullptr)
-		throw std::invalid_argument("Failed to open [" + path + "].");
 }
 
 std::string Certificate::getSubjectNameHash() const
 {
-	X509Ptr x509(::PEM_read_X509(this->m_fp.get(), NULL, NULL, NULL),
+	FilePtr fp = FilePtr(::fopen(this->m_path.c_str(), "rb"), ::fclose);
+	if (fp == nullptr)
+		throw std::invalid_argument("Failed to open [" + this->m_path + "].");
+
+	X509Ptr x509(::PEM_read_X509(fp.get(), NULL, NULL, NULL),
 				 ::X509_free);
 	if (x509 == nullptr) {
-		::rewind(this->m_fp.get());
-		x509 = X509Ptr(::PEM_read_X509_AUX(this->m_fp.get(), NULL, NULL, NULL),
+		::rewind(fp.get());
+		x509 = X509Ptr(::PEM_read_X509_AUX(fp.get(), NULL, NULL, NULL),
 					   ::X509_free);
 	}
 
@@ -71,15 +75,7 @@ std::string Certificate::getSubjectNameHash() const
 
 std::string Certificate::getCertificateData() const
 {
-	std::fseek(this->m_fp.get(), 0L, SEEK_END);
-	unsigned int fsize = std::ftell(this->m_fp.get());
-	std::rewind(this->m_fp.get());
-
-	std::string content(fsize, 0);
-	if (fsize != std::fread(static_cast<void*>(&content[0]), 1, fsize,
-							this->m_fp.get()))
-		throw std::logic_error("Failed to read certificate from fp.");
-
+	std::string content = File::read(this->m_path);
 	return this->parseData(content);
 }
 

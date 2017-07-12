@@ -30,6 +30,7 @@ const std::string SYS_BUNDLE_PATH(TZ_SYS_CA_BUNDLE);
 
 const std::string TANCHOR_SYSCA_PATH = TANCHOR_SYSCA;
 const std::string TANCHOR_BUNDLE_PATH = TANCHOR_BUNDLE;
+const std::string TANCHOR_PKG_CERTS_PATH = TANCHOR_PKG_CERTS;
 
 const std::string MOUNT_POINT_CERTS(TZ_SYS_CA_CERTS);
 const std::string MOUNT_POINT_BUNDLE(TZ_SYS_CA_BUNDLE);

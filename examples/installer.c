@@ -35,7 +35,7 @@ int main()
 	bool with_sys = false;
 	uid_t uid = -1;
 
-	int ret = trust_anchor_install("pkgid", "/pkg_certs_path", uid, with_sys);
+	int ret = trust_anchor_install("pkgid", uid, "/pkg_certs_path", with_sys);
 	if (ret != TRUST_ANCHOR_ERROR_NONE) {
 		printf("Failed to install operation");
 		return -1;
@@ -44,7 +44,7 @@ int main()
 	/*
 	 * When app uninstalled trust_anchor_uninstall() should be called once.
 	 */
-	ret = trust_anchor_uninstall("pkgid", "/pkg_certs_path", uid);
+	ret = trust_anchor_uninstall("pkgid", uid);
 	if (ret != TRUST_ANCHOR_ERROR_NONE) {
 		printf("Failed to uninstall operation");
 		return -1;

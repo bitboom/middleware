@@ -35,13 +35,13 @@ TESTCASE(CAPI_TRUST_ANCHOR_LAUNCH)
 	auto beforeLs = test::util::ls(TZ_SYS_RO_CA_CERTS);
 	auto beforeCat = test::util::cat(TZ_SYS_RO_CA_BUNDLE);
 
-	int ret = trust_anchor_install(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID, true);
+	int ret = trust_anchor_install(DUMMY_PKG_ID, DUMMY_UID, PKG_CERTS_DIR, true);
 
 	// pre-condition
 	int pid = fork();
 
 	if (pid == 0) {
-		ret = trust_anchor_launch(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID);
+		ret = trust_anchor_launch(DUMMY_PKG_ID, DUMMY_UID);
 		TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 		auto afterLsChild = test::util::ls(TZ_SYS_RO_CA_CERTS);

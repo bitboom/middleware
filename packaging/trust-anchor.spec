@@ -16,17 +16,18 @@ BuildRequires: ca-certificates-devel
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 
-%global lib_name        tanchor
-%global user_name       security_fw
-%global group_name      security_fw
-%global smack_label     System
+%global lib_name         tanchor
+%global user_name        security_fw
+%global group_name       security_fw
+%global smack_label      System
 
-%global tanchor_base    %{TZ_SYS_DATA}/%{lib_name}
-%global tanchor_pkg     %{tanchor_base}/pkg
-%global tanchor_bundle  %{tanchor_base}/ca-bundle.pem
-%global tanchor_sysca   %{tanchor_base}/.sysca
-%global tanchor_test    %{tanchor_base}/test
-%global tanchor_example %{tanchor_base}/example
+%global tanchor_base     %{TZ_SYS_DATA}/%{lib_name}
+%global tanchor_pkg      %{tanchor_base}/pkg
+%global tanchor_bundle   %{tanchor_base}/ca-bundle.pem
+%global tanchor_sysca    %{tanchor_base}/.sysca
+%global tanchor_pkgcerts %{tanchor_base}/.pkgcerts
+%global tanchor_test     %{tanchor_base}/test
+%global tanchor_example  %{tanchor_base}/example
 
 %description
 The package provides trust-anchor which the application can assign
@@ -40,6 +41,7 @@ SSL root certificates for its HTTPS communication.
 %dir %attr(-, %{user_name}, %{group_name}) %{tanchor_base}
 %dir %attr(-, %{user_name}, %{group_name}) %{tanchor_pkg}
 %attr(-, %{user_name}, %{group_name}) %{tanchor_bundle}
+%attr(-, %{user_name}, %{group_name}) %{tanchor_pkgcerts}
 %attr(444 %{user_name}, %{group_name}) %{tanchor_sysca}
 
 %prep
@@ -63,6 +65,7 @@ SSL root certificates for its HTTPS communication.
 		 -DTANCHOR_PKG=%{tanchor_pkg} \
 		 -DTANCHOR_BUNDLE=%{tanchor_bundle} \
 		 -DTANCHOR_SYSCA=%{tanchor_sysca} \
+		 -DTANCHOR_PKG_CERTS=%{tanchor_pkgcerts} \
 		 -DTANCHOR_TEST=%{tanchor_test} \
 		 -DTANCHOR_EXAMPLE=%{tanchor_example} \
 		 -DTZ_SYS_CA_CERTS=%{TZ_SYS_CA_CERTS} \
@@ -79,6 +82,7 @@ mkdir -p %{buildroot}%{tanchor_pkg}
 
 touch %{buildroot}%{tanchor_bundle}
 touch %{buildroot}%{tanchor_sysca}
+touch %{buildroot}%{tanchor_pkgcerts}
 
 %post -p /sbin/ldconfig
 

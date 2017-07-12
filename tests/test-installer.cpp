@@ -34,36 +34,36 @@
 
 TESTCASE(TRUST_ANCHOR_INSTALL_POSITIVE)
 {
-	tanchor::TrustAnchor ta(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID);
-	int ret = ta.install(false);
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_UID);
+	int ret = ta.install(PKG_CERTS_DIR, false);
 	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(TRUST_ANCHOR_INSTALL_WITH_SYS_POSITIVE)
 {
-	tanchor::TrustAnchor ta(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID);
-	int ret = ta.install(true);
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_UID);
+	int ret = ta.install(PKG_CERTS_DIR, true);
 	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(TRUST_ANCHOR_INSTALL_NEGATIVE)
 {
-	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
-	int ret = ta.install(false);
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_UID);
+	int ret = ta.install(DUMMY_CERTS_DIR, false);
 	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(TRUST_ANCHOR_INSTALL_WITH_SYS_NEGATIVE)
 {
-	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
-	int ret = ta.install(true);
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_UID);
+	int ret = ta.install(DUMMY_CERTS_DIR, true);
 	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(TRUST_ANCHOR_UNINSTALL_POSITIVE)
 {
-	tanchor::TrustAnchor ta(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID);
-	int ret = ta.install(false);
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_UID);
+	int ret = ta.install(PKG_CERTS_DIR, false);
 	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 	ret = ta.uninstall();
@@ -72,7 +72,7 @@ TESTCASE(TRUST_ANCHOR_UNINSTALL_POSITIVE)
 
 TESTCASE(TRUST_ANCHOR_UNINSTALL_NEGATIVE)
 {
-	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_UID);
 	int ret = ta.uninstall();
 	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }

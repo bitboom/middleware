@@ -31,12 +31,10 @@ namespace tanchor {
 
 class TrustAnchor::Impl {
 public:
-	explicit Impl(const std::string &packageId,
-				  const std::string &certsDir,
-				  uid_t uid) noexcept;
+	explicit Impl(const std::string &packageId, uid_t uid) noexcept;
 	virtual ~Impl(void) = default;
 
-	int install(bool withSystemCerts) noexcept;
+	int install(const std::string &pkgCertsPath, bool withSystemCerts) noexcept;
 	int uninstall(void) const noexcept;
 	int launch(void) noexcept;
 	int rollback(void) const noexcept;
@@ -48,11 +46,8 @@ private:
 	Logic m_logic;
 };
 
-TrustAnchor::Impl::Impl(const std::string &packageId,
-						const std::string &certsDir,
-						uid_t uid) noexcept :
-	m_logic(certsDir,
-			path::BASE_PKG_PATH + "/" +
+TrustAnchor::Impl::Impl(const std::string &packageId, uid_t uid) noexcept :
+	m_logic(path::BASE_PKG_PATH + "/" +
 			std::to_string(static_cast<int>(uid)) + "/" +
 			packageId)
 {
@@ -62,18 +57,17 @@ TrustAnchor::Impl::Impl(const std::string &packageId,
 void TrustAnchor::Impl::preInstall(void)
 {
 	this->m_logic.init();
-
-	if (!this->m_logic.isPkgCertsValid())
-		throw std::invalid_argument("Pkg certs dir should be directory.");
 	DEBUG("Success to pre-install stage.");
 }
 
-int TrustAnchor::Impl::install(bool withSystemCerts) noexcept
+int TrustAnchor::Impl::install(const std::string &pkgCertsPath,
+							   bool withSystemCerts) noexcept
 {
 	EXCEPTION_GUARD_START
 
 	this->preInstall();
 
+	this->m_logic.setPkgCertsPath(pkgCertsPath);
 	if (withSystemCerts)
 		this->m_logic.setSystemCertsUsed();
 
@@ -118,7 +112,7 @@ void TrustAnchor::Impl::preLaunch(void)
 	DEBUG("This package use system certificates.");
 	if (this->m_logic.isSystemCertsModified()) {
 		WARN("System certificates be changed. Do re-install for refresh.");
-		this->install(true);
+		this->install(this->m_logic.getPkgCertsPath(), true);
 	}
 	DEBUG("Success to pre-launch stage.");
 }
@@ -139,19 +133,18 @@ int TrustAnchor::Impl::launch() noexcept
 	EXCEPTION_GUARD_END
 }
 
-TrustAnchor::TrustAnchor(const std::string &packageId,
-						 const std::string &certsDir,
-						 uid_t uid) noexcept :
-	m_pImpl(new Impl(packageId, certsDir, uid)) {}
+TrustAnchor::TrustAnchor(const std::string &packageId, uid_t uid) noexcept :
+	m_pImpl(new Impl(packageId, uid)) {}
 
 TrustAnchor::~TrustAnchor(void) = default;
 
-int TrustAnchor::install(bool withSystemCerts) noexcept
+int TrustAnchor::install(const std::string &pkgCertsPath,
+						 bool withSystemCerts) noexcept
 {
 	if (this->m_pImpl == nullptr)
 		return TRUST_ANCHOR_ERROR_OUT_OF_MEMORY;
 
-	int ret = this->m_pImpl->install(withSystemCerts);
+	int ret = this->m_pImpl->install(pkgCertsPath, withSystemCerts);
 
 	if (ret != TRUST_ANCHOR_ERROR_NONE) {
 		ERROR("Failed to intall ACTA. Remove custom directory for rollback.");

@@ -38,7 +38,7 @@ int main()
 	 */
 	uid_t uid = -1;
 
-	int ret = trust_anchor_launch("pkgid", "/pkg_certs_path", uid);
+	int ret = trust_anchor_launch("pkgid", uid);
 	if (ret != TRUST_ANCHOR_ERROR_NONE) {
 		printf("Failed to launch operation");
 		return -1;

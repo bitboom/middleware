@@ -42,8 +42,8 @@ extern "C" {
  * @details Package custom certificates would be installed on system.
  *          This function should be called before trust_anchor_launch().
  * @param[in] package_id Package id
- * @param[in] pkg_certs_path Package custom certificates path
  * @param[in] uid user id
+ * @param[in] pkg_certs_path Package custom certificates path
  * @param[in] with_system_certs Whether system certificates use or not
  * @return #TRUST_ANCHOR_ERROR_NONE on success,
  *         negative on error
@@ -57,8 +57,8 @@ extern "C" {
  * @see trust_anchor_uninstall()
  */
 int trust_anchor_install(const char *package_id,
-						 const char *pkg_certs_path,
 						 uid_t uid,
+						 const char *pkg_certs_path,
 						 bool with_system_certs);
 
 
@@ -66,7 +66,6 @@ int trust_anchor_install(const char *package_id,
  * @brief Launch trust anchor.
  * @details After lauching trust anchor, package can use custom certificates.
  * @param[in] package_id Package id
- * @param[in] pkg_certs_path Package custom certificates path
  * @param[in] uid user id
  * @return #TRUST_ANCHOR_ERROR_NONE on success,
  *         negative on error
@@ -78,15 +77,12 @@ int trust_anchor_install(const char *package_id,
  * @retval #TRUST_ANCHOR_ERROR_INTERNAL Internal error
  * @see trust_anchor_install()
  */
-int trust_anchor_launch(const char *package_id,
-						const char *pkg_certs_path,
-						uid_t uid);
+int trust_anchor_launch(const char *package_id, uid_t uid);
 
 
 /**
  * @brief Uninstall trust anchor.
  * @param[in] package_id Package id
- * @param[in] pkg_certs_path Package custom certificates path
  * @param[in] uid user id
  * @return #TRUST_ANCHOR_ERROR_NONE on success,
  *         negative on error
@@ -95,9 +91,7 @@ int trust_anchor_launch(const char *package_id,
  * @retval #TRUST_ANCHOR_ERROR_INTERNAL Internal error
  * @see trust_anchor_install()
  */
-int trust_anchor_uninstall(const char *package_id,
-						   const char *pkg_certs_path,
-						   uid_t uid);
+int trust_anchor_uninstall(const char *package_id, uid_t uid);
 
 
 #ifdef __cplusplus

@@ -28,28 +28,24 @@ using namespace tanchor;
 
 TANCHOR_API
 int trust_anchor_install(const char *package_id,
-						 const char *pkg_certs_path,
 						 uid_t uid,
+						 const char *pkg_certs_path,
 						 bool with_system_certs)
 {
-	TrustAnchor ta(package_id, pkg_certs_path, uid);
-	return ta.install(with_system_certs);
+	TrustAnchor ta(package_id, uid);
+	return ta.install(pkg_certs_path, with_system_certs);
 }
 
 TANCHOR_API
-int trust_anchor_launch(const char *package_id,
-						const char *pkg_certs_path,
-						uid_t uid)
+int trust_anchor_launch(const char *package_id, uid_t uid)
 {
-	TrustAnchor ta(package_id, pkg_certs_path, uid);
+	TrustAnchor ta(package_id, uid);
 	return ta.launch();
 }
 
 TANCHOR_API
-int trust_anchor_uninstall(const char *package_id,
-						   const char *pkg_certs_path,
-						   uid_t uid)
+int trust_anchor_uninstall(const char *package_id, uid_t uid)
 {
-	TrustAnchor ta(package_id, pkg_certs_path, uid);
+	TrustAnchor ta(package_id, uid);
 	return ta.uninstall();
 }

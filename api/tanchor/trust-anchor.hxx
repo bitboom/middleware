@@ -38,9 +38,7 @@ namespace tanchor {
 
 class TANCHOR_API TrustAnchor {
 public:
-	explicit TrustAnchor(const std::string &packageId,
-						 const std::string &certsDir,
-						 uid_t uid) noexcept;
+	explicit TrustAnchor(const std::string &packageId, uid_t uid) noexcept;
 	virtual ~TrustAnchor(void);
 
 	TrustAnchor(const TrustAnchor &) = delete;
@@ -48,7 +46,7 @@ public:
 	TrustAnchor &operator=(const TrustAnchor &) = delete;
 	TrustAnchor &operator=(TrustAnchor &&) = delete;
 
-	int install(bool withSystemCerts) noexcept;
+	int install(const std::string &pkgCertsPath, bool withSystemCerts) noexcept;
 	int uninstall(void) noexcept;
 	int launch(void) noexcept;
 

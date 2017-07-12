@@ -24,6 +24,7 @@
 #include <climits>
 #include <cerrno>
 #include <unistd.h>
+#include <cstdio>
 
 #include <vector>
 
@@ -35,6 +36,22 @@ void File::linkTo(const std::string &src, const std::string &dst)
 {
 	if (::symlink(src.c_str(), dst.c_str()))
 		ThrowErrno(errno, "Failed to link " + src + " -> " + dst);
+}
+
+std::string File::read(const std::string &path)
+{
+	FilePtr fp = FilePtr(::fopen(path.c_str(), "rb"), ::fclose);
+	if (fp == nullptr)
+		throw std::invalid_argument("Failed to open [" + path + "].");
+
+	std::fseek(fp.get(), 0L, SEEK_END);
+	unsigned int fsize = std::ftell(fp.get());
+	std::rewind(fp.get());
+
+	std::string buff(fsize, 0);
+	if (fsize != std::fread(static_cast<void*>(&buff[0]), 1, fsize, fp.get()))
+		throw std::logic_error("Failed to read [" + path + "]");
+	return buff;
 }
 
 std::string File::readLink(const std::string &path)

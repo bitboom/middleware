@@ -39,8 +39,7 @@
 
 namespace tanchor {
 
-Logic::Logic(const std::string &pkgCertsPath, const std::string &basePath) :
-	m_pkgCertsPath(pkgCertsPath),
+Logic::Logic(const std::string &basePath) :
 	m_customBasePath(basePath),
 	m_customCertsPath(m_customBasePath + "/certs"),
 	m_customBundlePath(m_customBasePath + "/bundle"),
@@ -91,7 +90,7 @@ void Logic::makeCustomCerts(void)
 	}
 
 	// link pkg certificates to the custom directory as subjectNameHash
-	runtime::DirectoryIterator iter(this->m_pkgCertsPath), end;
+	runtime::DirectoryIterator iter(this->getPkgCertsPath()), end;
 	while (iter != end) {
 		Certificate cert(iter->getPath());
 		std::string uName = this->getUniqueCertName(cert.getSubjectNameHash());
@@ -124,7 +123,7 @@ void Logic::makeCustomBundle(void)
 
 	if (this->m_customCertsData.empty()) {
 		DEBUG("System certificates is changed after TrustAnchor installation.");
-		runtime::DirectoryIterator iter(this->m_pkgCertsPath), end;
+		runtime::DirectoryIterator iter(this->getPkgCertsPath()), end;
 		while (iter != end) {
 			Certificate cert(iter->getPath());
 			this->m_customCertsData.emplace_back(cert.getCertificateData());
@@ -143,9 +142,9 @@ void Logic::makeCustomBundle(void)
 	INFO("Success to make pkg custom bundle.");
 }
 
-bool Logic::isPkgCertsValid(void) const
+bool Logic::isPkgCertsValid(const std::string &path) const
 {
-	runtime::File file(this->m_pkgCertsPath);
+	runtime::File file(path);
 
 	if (!file.exists())
 		ThrowExc(TRUST_ANCHOR_ERROR_NO_SUCH_FILE,
@@ -156,6 +155,33 @@ bool Logic::isPkgCertsValid(void) const
 				 "No permission to read [" << file.getPath() << "]");
 
 	return file.isDirectory();
+}
+
+void Logic::setPkgCertsPath(const std::string &path) const
+{
+	if (!this->isPkgCertsValid(path))
+		throw std::invalid_argument("Pkg certs dir should be directory.");
+
+
+	runtime::File tanchorPkgCerts(path::TANCHOR_PKG_CERTS_PATH);
+	tanchorPkgCerts.copyTo(this->m_customBasePath);
+
+	runtime::File pkgCertsPath(this->m_customBasePath + "/" +
+							   File::getName(path::TANCHOR_PKG_CERTS_PATH));
+	pkgCertsPath.open(O_RDWR | O_APPEND);
+	pkgCertsPath.lock();
+	pkgCertsPath.write(path.c_str(), path.length());
+	pkgCertsPath.unlock();
+
+	DEBUG("Success to set package certificates path : " << path);
+}
+
+std::string Logic::getPkgCertsPath(void) const
+{
+	std::string path = File::read(this->m_customBasePath + "/" +
+								  File::getName(path::TANCHOR_PKG_CERTS_PATH));
+	DEBUG("Package certificates path : " << path);
+	return path;
 }
 
 void Logic::setSystemCertsUsed(void) const

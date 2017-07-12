@@ -28,39 +28,39 @@
 
 TESTCASE(CAPI_TRUST_ANCHOR_INSTALL_POSITIVE)
 {
-	int ret = trust_anchor_install(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID, false);
+	int ret = trust_anchor_install(DUMMY_PKG_ID, DUMMY_UID, PKG_CERTS_DIR, false);
 	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_INSTALL_WITH_SYS_POSITIVE)
 {
-	int ret = trust_anchor_install(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID, true);
+	int ret = trust_anchor_install(DUMMY_PKG_ID, DUMMY_UID, PKG_CERTS_DIR, true);
 	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_INSTALL_NEGATIVE)
 {
-	int ret = trust_anchor_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID, false);
+	int ret = trust_anchor_install(DUMMY_PKG_ID, DUMMY_UID, DUMMY_CERTS_DIR, false);
 	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_INSTALL_WITH_SYS_NEGATIVE)
 {
-	int ret = trust_anchor_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID, true);
+	int ret = trust_anchor_install(DUMMY_PKG_ID, DUMMY_UID, DUMMY_CERTS_DIR, true);
 	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_UNINSTALL_POSITIVE)
 {
-	int ret = trust_anchor_install(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID, false);
+	int ret = trust_anchor_install(DUMMY_PKG_ID, DUMMY_UID, PKG_CERTS_DIR, false);
 	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
-	ret = trust_anchor_uninstall(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID);
+	ret = trust_anchor_uninstall(DUMMY_PKG_ID, DUMMY_UID);
 	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_UNINSTALL_NEGATIVE)
 {
-	int ret = trust_anchor_uninstall(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
+	int ret = trust_anchor_uninstall(DUMMY_PKG_ID, DUMMY_UID);
 	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }

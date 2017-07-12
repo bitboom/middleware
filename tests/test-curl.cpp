@@ -42,8 +42,8 @@ TESTCASE(CONNECT_SSL)
 
 TESTCASE(TRUST_ANCHOR_LAUNCH)
 {
-	tanchor::TrustAnchor ta(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID);
-	int ret = ta.install(false);
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_UID);
+	int ret = ta.install(PKG_CERTS_DIR, false);
 	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 	std::cout << "##########################################" << std::endl;
@@ -79,8 +79,8 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 
 TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
 {
-	tanchor::TrustAnchor ta(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID);
-	int ret = ta.install(true);
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_UID);
+	int ret = ta.install(PKG_CERTS_DIR, true);
 	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 	std::cout << "##########################################" << std::endl;

@@ -22,12 +22,8 @@
 #pragma once
 
 #include <string>
-#include <memory>
-#include <cstdio>
 
 namespace tanchor {
-
-using FilePtr = std::unique_ptr<FILE, decltype(&::fclose)>;
 
 class Certificate {
 public:
@@ -45,7 +41,7 @@ public:
 private:
 	std::string parseData(const std::string &data) const;
 
-	FilePtr m_fp;
+	std::string m_path;
 };
 
 } // namespace tanchor
