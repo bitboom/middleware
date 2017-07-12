@@ -29,7 +29,7 @@ namespace tanchor {
 
 class Logic {
 public:
-	explicit Logic(const std::string &appCertsPath, const std::string &basePath);
+	explicit Logic(const std::string &pkgCertsPath, const std::string &basePath);
 	virtual ~Logic(void) = default;
 
 	Logic(const Logic &) = delete;
@@ -43,7 +43,7 @@ public:
 	void makeCustomCerts(void);
 	void makeCustomBundle(void);
 
-	bool isAppCertsValid(void) const;
+	bool isPkgCertsValid(void) const;
 
 	bool isSystemCertsUsed(void) const;
 	bool isSystemCertsModified(void) const;
@@ -56,7 +56,7 @@ public:
 private:
 	std::string getUniqueCertName(const std::string &name) const;
 
-	std::string m_appCertsPath;
+	std::string m_pkgCertsPath;
 	std::string m_customBasePath;
 	std::string m_customCertsPath;
 	std::string m_customBundlePath;

@@ -37,7 +37,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 	auto beforeLs = test::util::ls(TZ_SYS_RO_CA_CERTS);
 	auto beforeCat = test::util::cat(TZ_SYS_RO_CA_BUNDLE);
 
-	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID);
 	int ret = ta.install(false);
 	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
@@ -73,7 +73,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
 	auto beforeLs = test::util::ls(TZ_SYS_RO_CA_CERTS);
 	auto beforeCat = test::util::cat(TZ_SYS_RO_CA_BUNDLE);
 
-	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID);
 	int ret = ta.install(true);
 	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 

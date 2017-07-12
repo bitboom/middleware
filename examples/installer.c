@@ -27,25 +27,24 @@
 int main()
 {
 	/*
-	 * When app installed trust_anchor_global_install() should be called once.
-	 * If app is user-app, call trust_anchor_usr_install() with uid.
+	 * When package installed trust_anchor_install() should be called once.
 	 *
 	 * [pre-condition]
-	 * 1. Get with_sys_certs information from App configuration.
+	 * 1. Get with_sys_certs information from package configuration.
 	 */
 	bool with_sys = false;
+	uid_t uid = -1;
 
-	int ret = trust_anchor_global_install("pkgid", "/app_certs_path", with_sys);
+	int ret = trust_anchor_install("pkgid", "/pkg_certs_path", uid, with_sys);
 	if (ret != TRUST_ANCHOR_ERROR_NONE) {
 		printf("Failed to install operation");
 		return -1;
 	}
 
 	/*
-	 * When app uninstalled trust_anchor_global_uninstall() should be called once.
-	 * If app is user-app, call trust_anchor_usr_uninstall() with uid.
+	 * When app uninstalled trust_anchor_uninstall() should be called once.
 	 */
-	ret = trust_anchor_global_uninstall("pkgid", "/app_certs_path");
+	ret = trust_anchor_uninstall("pkgid", "/pkg_certs_path", uid);
 	if (ret != TRUST_ANCHOR_ERROR_NONE) {
 		printf("Failed to uninstall operation");
 		return -1;

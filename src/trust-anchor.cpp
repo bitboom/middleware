@@ -34,8 +34,6 @@ public:
 	explicit Impl(const std::string &packageId,
 				  const std::string &certsDir,
 				  uid_t uid) noexcept;
-	explicit Impl(const std::string &packageId,
-				  const std::string &certsDir) noexcept;
 	virtual ~Impl(void) = default;
 
 	int install(bool withSystemCerts) noexcept;
@@ -54,26 +52,19 @@ TrustAnchor::Impl::Impl(const std::string &packageId,
 						const std::string &certsDir,
 						uid_t uid) noexcept :
 	m_logic(certsDir,
-			path::BASE_USR_PATH + "/" +
+			path::BASE_PKG_PATH + "/" +
 			std::to_string(static_cast<int>(uid)) + "/" +
 			packageId)
 {
-	INFO("Start tanchor about usr[" << uid << "], app[" << packageId << "]");
-}
-
-TrustAnchor::Impl::Impl(const std::string &packageId,
-						const std::string &certsDir) noexcept :
-	m_logic(certsDir, path::BASE_GLOBAL_PATH + "/" + packageId)
-{
-	INFO("Start tanchor about global app[" << packageId << "]");
+	INFO("Start tanchor about uid[" << uid << "], pkg[" << packageId << "]");
 }
 
 void TrustAnchor::Impl::preInstall(void)
 {
 	this->m_logic.init();
 
-	if (!this->m_logic.isAppCertsValid())
-		throw std::invalid_argument("App certs dir should be directory.");
+	if (!this->m_logic.isPkgCertsValid())
+		throw std::invalid_argument("Pkg certs dir should be directory.");
 	DEBUG("Success to pre-install stage.");
 }
 
@@ -152,10 +143,6 @@ TrustAnchor::TrustAnchor(const std::string &packageId,
 						 const std::string &certsDir,
 						 uid_t uid) noexcept :
 	m_pImpl(new Impl(packageId, certsDir, uid)) {}
-
-TrustAnchor::TrustAnchor(const std::string &packageId,
-						 const std::string &certsDir) noexcept :
-	m_pImpl(new Impl(packageId, certsDir)) {}
 
 TrustAnchor::~TrustAnchor(void) = default;
 

@@ -27,54 +27,29 @@
 using namespace tanchor;
 
 TANCHOR_API
-int trust_anchor_global_install(const char *package_id,
-								const char *app_certificates_path,
-								bool with_system_certificates)
+int trust_anchor_install(const char *package_id,
+						 const char *pkg_certs_path,
+						 uid_t uid,
+						 bool with_system_certs)
 {
-	TrustAnchor ta(package_id, app_certificates_path);
-	return ta.install(with_system_certificates);
+	TrustAnchor ta(package_id, pkg_certs_path, uid);
+	return ta.install(with_system_certs);
 }
 
 TANCHOR_API
-int trust_anchor_usr_install(const char *package_id,
-							 const char *app_certificates_path,
-							 uid_t uid,
-							 bool with_system_certificates)
+int trust_anchor_launch(const char *package_id,
+						const char *pkg_certs_path,
+						uid_t uid)
 {
-	TrustAnchor ta(package_id, app_certificates_path, uid);
-	return ta.install(with_system_certificates);
-}
-
-TANCHOR_API
-int trust_anchor_global_launch(const char *package_id,
-							   const char *app_certificates_path)
-{
-	TrustAnchor ta(package_id, app_certificates_path);
+	TrustAnchor ta(package_id, pkg_certs_path, uid);
 	return ta.launch();
 }
 
 TANCHOR_API
-int trust_anchor_usr_launch(const char *package_id,
-							const char *app_certificates_path,
-							uid_t uid)
+int trust_anchor_uninstall(const char *package_id,
+						   const char *pkg_certs_path,
+						   uid_t uid)
 {
-	TrustAnchor ta(package_id, app_certificates_path, uid);
-	return ta.launch();
-}
-
-TANCHOR_API
-int trust_anchor_global_uninstall(const char *package_id,
-								  const char *app_certificates_path)
-{
-	TrustAnchor ta(package_id, app_certificates_path);
-	return ta.uninstall();
-}
-
-TANCHOR_API
-int trust_anchor_usr_uninstall(const char *package_id,
-							   const char *app_certificates_path,
-							   uid_t uid)
-{
-	TrustAnchor ta(package_id, app_certificates_path, uid);
+	TrustAnchor ta(package_id, pkg_certs_path, uid);
 	return ta.uninstall();
 }

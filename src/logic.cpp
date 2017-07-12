@@ -39,8 +39,8 @@
 
 namespace tanchor {
 
-Logic::Logic(const std::string &appCertsPath, const std::string &basePath) :
-	m_appCertsPath(appCertsPath),
+Logic::Logic(const std::string &pkgCertsPath, const std::string &basePath) :
+	m_pkgCertsPath(pkgCertsPath),
 	m_customBasePath(basePath),
 	m_customCertsPath(m_customBasePath + "/certs"),
 	m_customBundlePath(m_customBasePath + "/bundle"),
@@ -51,7 +51,7 @@ void Logic::init(void) const
 {
 	runtime::File customBaseDir(this->m_customBasePath);
 	if (customBaseDir.exists()) {
-		WARN("App custom directory is already exist. remove it!");
+		WARN("Pkg custom directory is already exist. remove it!");
 		customBaseDir.remove(true);
 	}
 	customBaseDir.makeDirectory(true);
@@ -90,8 +90,8 @@ void Logic::makeCustomCerts(void)
 		DEBUG("Success to migrate system certificates.");
 	}
 
-	// link app certificates to the custom directory as subjectNameHash
-	runtime::DirectoryIterator iter(this->m_appCertsPath), end;
+	// link pkg certificates to the custom directory as subjectNameHash
+	runtime::DirectoryIterator iter(this->m_pkgCertsPath), end;
 	while (iter != end) {
 		Certificate cert(iter->getPath());
 		std::string uName = this->getUniqueCertName(cert.getSubjectNameHash());
@@ -108,7 +108,7 @@ void Logic::makeCustomBundle(void)
 	runtime::File customBundle(this->m_customBundlePath + "/" +
 							   File::getName(path::SYS_BUNDLE_PATH));
 	if (customBundle.exists()) {
-		WARN("App custom bundle is already exist. remove it!");
+		WARN("Pkg custom bundle is already exist. remove it!");
 		customBundle.remove();
 	}
 
@@ -124,7 +124,7 @@ void Logic::makeCustomBundle(void)
 
 	if (this->m_customCertsData.empty()) {
 		DEBUG("System certificates is changed after TrustAnchor installation.");
-		runtime::DirectoryIterator iter(this->m_appCertsPath), end;
+		runtime::DirectoryIterator iter(this->m_pkgCertsPath), end;
 		while (iter != end) {
 			Certificate cert(iter->getPath());
 			this->m_customCertsData.emplace_back(cert.getCertificateData());
@@ -132,7 +132,7 @@ void Logic::makeCustomBundle(void)
 		}
 	}
 
-	DEBUG("Start to add app's certificate to bundle.");
+	DEBUG("Start to add pkg's certificate to bundle.");
 	customBundle.open(O_RDWR | O_APPEND);
 	for (const auto &cert : this->m_customCertsData) {
 		customBundle.write(cert.c_str(), cert.length());
@@ -140,12 +140,12 @@ void Logic::makeCustomBundle(void)
 		customBundle.write(newLine.c_str(), newLine.length());
 	}
 
-	INFO("Success to make app custom bundle.");
+	INFO("Success to make pkg custom bundle.");
 }
 
-bool Logic::isAppCertsValid(void) const
+bool Logic::isPkgCertsValid(void) const
 {
-	runtime::File file(this->m_appCertsPath);
+	runtime::File file(this->m_pkgCertsPath);
 
 	if (!file.exists())
 		ThrowExc(TRUST_ANCHOR_ERROR_NO_SUCH_FILE,

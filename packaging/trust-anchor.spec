@@ -22,8 +22,7 @@ Requires(postun): /sbin/ldconfig
 %global smack_label     System
 
 %global tanchor_base    %{TZ_SYS_DATA}/%{lib_name}
-%global tanchor_usr     %{tanchor_base}/usr
-%global tanchor_global  %{tanchor_base}/global
+%global tanchor_pkg     %{tanchor_base}/pkg
 %global tanchor_bundle  %{tanchor_base}/ca-bundle.pem
 %global tanchor_sysca   %{tanchor_base}/.sysca
 %global tanchor_test    %{tanchor_base}/test
@@ -39,8 +38,7 @@ SSL root certificates for its HTTPS communication.
 %{_libdir}/lib%{lib_name}.so.1
 %{_libdir}/lib%{lib_name}.so.%{version}
 %dir %attr(-, %{user_name}, %{group_name}) %{tanchor_base}
-%dir %attr(-, %{user_name}, %{group_name}) %{tanchor_usr}
-%dir %attr(-, %{user_name}, %{group_name}) %{tanchor_global}
+%dir %attr(-, %{user_name}, %{group_name}) %{tanchor_pkg}
 %attr(-, %{user_name}, %{group_name}) %{tanchor_bundle}
 %attr(444 %{user_name}, %{group_name}) %{tanchor_sysca}
 
@@ -62,8 +60,7 @@ SSL root certificates for its HTTPS communication.
 		 -DGROUP_NAME=%{group_name} \
 		 -DSMACK_LABEL=%{smack_label} \
 		 -DTANCHOR_BASE=%{tanchor_base} \
-		 -DTANCHOR_USR=%{tanchor_usr} \
-		 -DTANCHOR_GLOBAL=%{tanchor_global} \
+		 -DTANCHOR_PKG=%{tanchor_pkg} \
 		 -DTANCHOR_BUNDLE=%{tanchor_bundle} \
 		 -DTANCHOR_SYSCA=%{tanchor_sysca} \
 		 -DTANCHOR_TEST=%{tanchor_test} \
@@ -78,8 +75,7 @@ make %{?_smp_mflags}
 %install
 %make_install
 
-mkdir -p %{buildroot}%{tanchor_usr}
-mkdir -p %{buildroot}%{tanchor_global}
+mkdir -p %{buildroot}%{tanchor_pkg}
 
 touch %{buildroot}%{tanchor_bundle}
 touch %{buildroot}%{tanchor_sysca}

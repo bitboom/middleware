@@ -27,17 +27,18 @@
 int main()
 {
 	/*
-	 * When app launched trust_anchor_global_launch() should be called once.
-	 * If app is user-app, call trust_anchor_usr_launch() with uid.
+	 * When package launched trust_anchor_launch() should be called once.
 	 *
 	 * [caution]
 	 * Since trust anchor launch operation disassocaite namespace,
-	 * other mount tasks should be done before trust_anchor_usr_launch() called.
+	 * other mount tasks should be done before trust_anchor_launch() called.
 	 *
 	 * [pre-condition]
 	 * 1. Launcher should have CAP_SYS_ADMIN.
 	 */
-	int ret = trust_anchor_global_launch("pkgid", "/app_certs_path");
+	uid_t uid = -1;
+
+	int ret = trust_anchor_launch("pkgid", "/pkg_certs_path", uid);
 	if (ret != TRUST_ANCHOR_ERROR_NONE) {
 		printf("Failed to launch operation");
 		return -1;

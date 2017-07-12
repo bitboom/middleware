@@ -24,8 +24,7 @@
 namespace tanchor {
 namespace path {
 
-const std::string BASE_USR_PATH(TANCHOR_USR_DIR);
-const std::string BASE_GLOBAL_PATH(TANCHOR_GLOBAL_DIR);
+const std::string BASE_PKG_PATH(TANCHOR_PKG_DIR);
 const std::string SYS_CERTS_PATH(TZ_SYS_CA_CERTS);
 const std::string SYS_BUNDLE_PATH(TZ_SYS_CA_BUNDLE);
 

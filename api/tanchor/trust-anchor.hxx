@@ -41,8 +41,6 @@ public:
 	explicit TrustAnchor(const std::string &packageId,
 						 const std::string &certsDir,
 						 uid_t uid) noexcept;
-	explicit TrustAnchor(const std::string &packageId,
-						 const std::string &certsDir) noexcept;
 	virtual ~TrustAnchor(void);
 
 	TrustAnchor(const TrustAnchor &) = delete;

@@ -25,9 +25,9 @@
 #define DUMMY_UID 5001
 #define DUMMY_CERTS_DIR "/home/dummy"
 
-#define APP_CERTS_DIR TANCHOR_TEST_DIR "/certs"
+#define PKG_CERTS_DIR TANCHOR_TEST_DIR "/certs"
 
-#define TEST_PEM_PATH APP_CERTS_DIR "/02265526.0"
+#define TEST_PEM_PATH PKG_CERTS_DIR "/02265526.0"
 #define TEST_PEM_HASH "02265526"
 
 #define TEST_PEM_DATA \

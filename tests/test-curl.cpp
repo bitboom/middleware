@@ -42,7 +42,7 @@ TESTCASE(CONNECT_SSL)
 
 TESTCASE(TRUST_ANCHOR_LAUNCH)
 {
-	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID);
 	int ret = ta.install(false);
 	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
@@ -79,7 +79,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 
 TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
 {
-	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, PKG_CERTS_DIR, DUMMY_UID);
 	int ret = ta.install(true);
 	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
@@ -99,7 +99,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
 
 		// check SSL communication
 		std::cout << "###########################################" << std::endl;
-		std::cout << "## After trust-anchor launch(APP) with SYS#" << std::endl;
+		std::cout << "## After trust-anchor launch(PKG) with SYS#" << std::endl;
 		std::cout << "###########################################" << std::endl;
 		ret = test::util::connectSSL("https://google.com");
 		TEST_EXPECT(true, ret == 0);
