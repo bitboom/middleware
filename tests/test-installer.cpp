@@ -37,7 +37,7 @@ TESTCASE(TRUST_ANCHOR_INSTALL_GLOBAL_APP_POSITIVE)
 	TIME_MEASURE_START
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
 	int ret = ta.install(false);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 	TIME_MEASURE_END
 }
 
@@ -46,7 +46,7 @@ TESTCASE(TRUST_ANCHOR_INSTALL_GLOBAL_APP_WITH_SYS_POSITIVE)
 	TIME_MEASURE_START
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
 	int ret = ta.install(true);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 	TIME_MEASURE_END
 }
 
@@ -54,74 +54,74 @@ TESTCASE(TRUST_ANCHOR_INSTALL_USER_APP_POSITIVE)
 {
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID);
 	int ret = ta.install(false);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(TRUST_ANCHOR_INSTALL_USER_APP_WITH_SYS_POSITIVE)
 {
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID);
 	int ret = ta.install(true);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(TRUST_ANCHOR_INSTALL_GLOBAL_APP_NEGATIVE)
 {
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_CERTS_DIR);
 	int ret = ta.install(false);
-	TEST_EXPECT(false, ret == 0);
+	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(TRUST_ANCHOR_INSTALL_GLOBAL_APP_WITH_SYS_NEGATIVE)
 {
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_CERTS_DIR);
 	int ret = ta.install(true);
-	TEST_EXPECT(false, ret == 0);
+	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(TRUST_ANCHOR_INSTALL_USER_APP_NEGATIVE)
 {
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
 	int ret = ta.install(false);
-	TEST_EXPECT(false, ret == 0);
+	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(TRUST_ANCHOR_INSTALL_USER_APP_WITH_SYS_NEGATIVE)
 {
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
 	int ret = ta.install(true);
-	TEST_EXPECT(false, ret == 0);
+	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(TRUST_ANCHOR_UNINSTALL_GLOBAL_APP_POSITIVE)
 {
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
 	int ret = ta.install(false);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 	ret = ta.uninstall();
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(TRUST_ANCHOR_UNINSTALL_USER_APP_POSITIVE)
 {
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID);
 	int ret = ta.install(false);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 	ret = ta.uninstall();
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(TRUST_ANCHOR_UNINSTALL_GLOBAL_APP_NEGATIVE)
 {
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_CERTS_DIR);
 	int ret = ta.uninstall();
-	TEST_EXPECT(false, ret == 0);
+	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(TRUST_ANCHOR_UNINSTALL_USER_APP_NEGATIVE)
 {
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
 	int ret = ta.uninstall();
-	TEST_EXPECT(false, ret == 0);
+	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }

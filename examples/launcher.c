@@ -21,7 +21,6 @@
  */
 
 #include <tanchor/trust-anchor.h>
-#include <tanchor/error.h>
 
 #include <stdio.h>
 

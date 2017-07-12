@@ -29,77 +29,77 @@
 TESTCASE(CAPI_TRUST_ANCHOR_INSTALL_GLOBAL_APP_POSITIVE)
 {
 	int ret = trust_anchor_global_install(DUMMY_PKG_ID, APP_CERTS_DIR, false);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_INSTALL_GLOBAL_APP_WITH_SYS_POSITIVE)
 {
 	int ret = trust_anchor_global_install(DUMMY_PKG_ID, APP_CERTS_DIR, true);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_INSTALL_USER_APP_POSITIVE)
 {
 	int ret = trust_anchor_usr_install(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID, false);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_INSTALL_USER_APP_WITH_SYS_POSITIVE)
 {
 	int ret = trust_anchor_usr_install(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID, true);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_INSTALL_GLOBAL_APP_NEGATIVE)
 {
 	int ret = trust_anchor_global_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, false);
-	TEST_EXPECT(false, ret == 0);
+	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_INSTALL_GLOBAL_APP_WITH_SYS_NEGATIVE)
 {
 	int ret = trust_anchor_global_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, true);
-	TEST_EXPECT(false, ret == 0);
+	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_INSTALL_USER_APP_NEGATIVE)
 {
 	int ret = trust_anchor_usr_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID, false);
-	TEST_EXPECT(false, ret == 0);
+	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_INSTALL_USER_APP_WITH_SYS_NEGATIVE)
 {
 	int ret = trust_anchor_usr_install(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID, true);
-	TEST_EXPECT(false, ret == 0);
+	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_UNINSTALL_GLOBAL_APP_POSITIVE)
 {
 	int ret = trust_anchor_global_install(DUMMY_PKG_ID, APP_CERTS_DIR, false);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 	ret = trust_anchor_global_uninstall(DUMMY_PKG_ID, APP_CERTS_DIR);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_UNINSTALL_USER_APP_POSITIVE)
 {
 	int ret = trust_anchor_usr_install(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID, false);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 	ret = trust_anchor_usr_uninstall(DUMMY_PKG_ID, APP_CERTS_DIR, DUMMY_UID);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_UNINSTALL_GLOBAL_APP_NEGATIVE)
 {
 	int ret = trust_anchor_global_uninstall(DUMMY_PKG_ID, DUMMY_CERTS_DIR);
-	TEST_EXPECT(false, ret == 0);
+	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }
 
 TESTCASE(CAPI_TRUST_ANCHOR_UNINSTALL_USER_APP_NEGATIVE)
 {
 	int ret = trust_anchor_usr_uninstall(DUMMY_PKG_ID, DUMMY_CERTS_DIR, DUMMY_UID);
-	TEST_EXPECT(false, ret == 0);
+	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
 }

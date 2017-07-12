@@ -42,7 +42,7 @@ TESTCASE(CAPI_TRUST_ANCHOR_LAUNCH)
 
 	if (pid == 0) {
 		ret = trust_anchor_global_launch(DUMMY_PKG_ID, APP_CERTS_DIR);
-		TEST_EXPECT(true, ret == 0);
+		TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 		auto afterLsChild = test::util::ls(TZ_SYS_RO_CA_CERTS);
 		TEST_EXPECT(true, beforeLs != afterLsChild);

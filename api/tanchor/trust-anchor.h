@@ -29,6 +29,8 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
+#include <tanchor/error.h>
+
 
 #ifdef __cplusplus
 extern "C" {

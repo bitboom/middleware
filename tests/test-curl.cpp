@@ -44,7 +44,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 {
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
 	int ret = ta.install(false);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 	std::cout << "##########################################" << std::endl;
 	std::cout << "## Before trust-anchor launch#############" << std::endl;
@@ -58,7 +58,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 
 	if (pid == 0) {
 		ret = ta.launch();
-		TEST_EXPECT(true, ret == 0);
+		TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 		// check SSL communication
 		std::cout << "##########################################" << std::endl;
@@ -81,7 +81,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
 {
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
 	int ret = ta.install(true);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 	std::cout << "##########################################" << std::endl;
 	std::cout << "## Before trust-anchor launch#############" << std::endl;
@@ -95,7 +95,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
 
 	if (pid == 0) {
 		ret = ta.launch();
-		TEST_EXPECT(true, ret == 0);
+		TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 		// check SSL communication
 		std::cout << "###########################################" << std::endl;

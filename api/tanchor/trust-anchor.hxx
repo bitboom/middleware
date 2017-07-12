@@ -28,6 +28,8 @@
 #include <string>
 #include <memory>
 
+#include <tanchor/error.h>
+
 
 #define TANCHOR_API __attribute__((visibility("default")))
 

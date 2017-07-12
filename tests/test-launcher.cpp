@@ -39,7 +39,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
 	int ret = ta.install(false);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 	// pre-condition
 	int pid = fork();
@@ -49,7 +49,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 		TIME_MEASURE_START
 		ret = ta.launch();
 		TIME_MEASURE_END
-		TEST_EXPECT(true, ret == 0);
+		TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 		// check file-system
 		auto afterLsChild = test::util::ls(TZ_SYS_RO_CA_CERTS);
@@ -75,7 +75,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
 
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, APP_CERTS_DIR);
 	int ret = ta.install(true);
-	TEST_EXPECT(true, ret == 0);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 	// pre-condition
 	int pid = fork();
@@ -85,7 +85,7 @@ TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
 		TIME_MEASURE_START
 		ret = ta.launch();
 		TIME_MEASURE_END
-		TEST_EXPECT(true, ret == 0);
+		TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 		// check file-system
 		auto afterLsChild = test::util::ls(TZ_SYS_RO_CA_CERTS);
