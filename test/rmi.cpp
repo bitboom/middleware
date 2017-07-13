@@ -205,12 +205,12 @@ int WaitForFile(const std::string& path, const unsigned int timeout)
 
 	while (stat(path.c_str(), &st) == -1) {
 		if (errno != ENOENT) {
-			ERROR("Error on waitting for: " + path);
+			ERROR(KSINK, "Error on waitting for: " << path);
 			return -1;
 		}
 
 		if (((++loop) * 100) > timeout) {
-			ERROR("Error on waitting for: " + path);
+			ERROR(KSINK, "Error on waitting for: " << path);
 			return -1;
 		}
 
@@ -229,7 +229,8 @@ int WaitForPid(pid_t pid)
 		ret = waitpid(pid, &status, 0);
 		if (ret == -1) {
 			if (errno != EINTR) {
-				ERROR("Wait Pid failed: " + std::to_string(pid) + "(" + strerror_r(errno, errmsg, sizeof(errmsg)) + ")");
+				ERROR(KSINK, "Wait Pid failed: " << std::to_string(pid) << "(" <<
+							 strerror_r(errno, errmsg, sizeof(errmsg)) << ")");
 				return -1;
 			}
 		}
@@ -253,7 +254,7 @@ pid_t PrepareTestServer(void)
 			TestServer server;
 			server.run();
 		} catch (std::exception& e) {
-			ERROR(e.what());
+			ERROR(KSINK, e.what());
 			return -1;
 		}
 
@@ -277,7 +278,7 @@ public:
 	{
 		pid = PrepareTestServer();
 		if (pid == -1) {
-			ERROR("Preparing test server failed");
+			ERROR(KSINK, "Preparing test server failed");
 			return;
 		}
 
@@ -303,7 +304,7 @@ public:
 			client.connect();
 			client.disconnect();
 		} catch (runtime::Exception& e) {
-			ERROR(e.what());
+			ERROR(KSINK, e.what());
 		}
 	}
 
@@ -318,7 +319,7 @@ public:
 
 			client.disconnect();
 		} catch (runtime::Exception& e) {
-			ERROR(e.what());
+			ERROR(KSINK, e.what());
 		}
 	}
 
@@ -343,7 +344,7 @@ public:
 
 			client.disconnect();
 		} catch (runtime::Exception& e) {
-			ERROR(e.what());
+			ERROR(KSINK, e.what());
 		}
 	}
 

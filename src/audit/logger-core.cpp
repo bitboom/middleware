@@ -13,13 +13,30 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-#include <klay/audit/logger.h>
 
-#include <klay/testbench.h>
+#include <klay/audit/logger-core.h>
 
-int main(int /*argc*/, char** /*argv*/)
+namespace audit {
+
+std::unique_ptr<LoggerCore> LoggerCore::instance = nullptr;
+std::once_flag LoggerCore::flag;
+
+LoggerCore::LoggerCore() : defaultSink() {}
+
+LoggerCore& LoggerCore::GetInstance(void)
 {
-	testbench::Testbench::runAllTestSuites();
-
-	return 0;
+	std::call_once(flag, []() { instance.reset(new LoggerCore); });
+	return *instance;
 }
+
+void LoggerCore::dispatch(LogSink* logSink, const std::string& message)
+{
+	if (logSink == nullptr) {
+		this->defaultSink.sink(message);
+		return;
+	}
+
+	logSink->sink(message);
+}
+
+} // namespace audit

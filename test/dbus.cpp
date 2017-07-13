@@ -166,6 +166,6 @@ TESTCASE(DbusRegisterObjectTest)
 						  "()",
 						  "(i)", 7);
 	} catch (std::exception& e) {
-		ERROR(e.what());
+		ERROR(KSINK, e.what());
 	}
 }

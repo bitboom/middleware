@@ -44,6 +44,7 @@ SET (KLAY_SOURCES		${KLAY_SRC}/error.cpp
 						${KLAY_SRC}/dbus/variant.cpp
 						${KLAY_SRC}/dbus/connection.cpp
 						${KLAY_SRC}/audit/logger.cpp
+						${KLAY_SRC}/audit/logger-core.cpp
 						${KLAY_SRC}/audit/null-sink.cpp
 						${KLAY_SRC}/audit/console-sink.cpp
 						${KLAY_SRC}/audit/dlog-sink.cpp

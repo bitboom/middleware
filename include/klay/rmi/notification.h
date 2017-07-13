@@ -64,7 +64,7 @@ void Notification::notify(Args&&... args)
 		try {
 			msg.encode(*subscriber);
 		} catch (runtime::Exception& e) {
-			ERROR(e.what());
+			ERROR(KSINK, e.what());
 		}
 	}
 }

@@ -21,20 +21,10 @@
 
 #include <klay/exception.h>
 #include <klay/audit/logger.h>
+#include <klay/audit/logger-core.h>
 #include <klay/audit/console-sink.h>
 
 namespace audit {
-
-LogLevel Logger::logLevel = LogLevel::Trace;
-std::unique_ptr<std::string> Logger::tag([]() {
-	auto tag = Logger::getTag();
-	return tag.empty() ? new std::string("KLAY") : new std::string(tag);
-}());
-
-std::unique_ptr<LogSink> Logger::backend([]() {
-	auto *backend = Logger::getBackend();
-	return backend != nullptr ? std::move(backend) : new ConsoleLogSink();
-}());
 
 std::string LogLevelToString(const LogLevel level)
 {
@@ -70,56 +60,17 @@ LogLevel StringToLogLevel(const std::string& level)
 		return LogLevel::Trace;
 }
 
-void Logger::setLogLevel(const LogLevel level)
-{
-	Logger::logLevel = level;
-}
-
-LogLevel Logger::getLogLevel(void)
-{
-	return Logger::logLevel;
-}
-
-void Logger::setTag(const std::string& tag)
-{
-	Logger::tag.reset(new std::string(tag));
-}
-
-std::string Logger::getTag(void)
-{
-	auto *pTag = Logger::tag.get();
-	return (pTag != nullptr) ? *pTag : std::string();
-}
-
-void Logger::setBackend(LogSink *logSink)
-{
-	if (logSink == nullptr)
-		return;
-
-	Logger::backend.reset(logSink);
-}
-
-LogSink *Logger::getBackend(void)
-{
-	auto *pBackend = Logger::backend.get();
-	return (pBackend != nullptr) ? pBackend : nullptr;
-}
-
-void Logger::log(LogLevel severity,
-				 const std::string& file,
-				 const unsigned int line,
-				 const std::string& func,
-				 const std::string& message)
+void Logger::log(LogSink* logSink, const LogRecord record)
 {
 	std::ostringstream buffer;
 
-	buffer << LogLevelToString(severity)
+	buffer << LogLevelToString(record.severity)
 		   << "<" << ::getpid() << ">:"
-		   << file << ":" << line
-		   << ", " << func << "() > " << message
+		   << record.file << ":" << record.line
+		   << ", " << record.func << "() > " << record.message
 		   << std::endl;
 
-	Logger::backend->sink(buffer.str());
+	LoggerCore::GetInstance().dispatch(logSink, buffer.str());
 }
 
 } // namespace audit
