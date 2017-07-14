@@ -48,7 +48,7 @@ File::~File()
 bool File::exists() const
 {
 	struct stat st;
-	return (::stat(path.c_str(), &st) == 0);
+	return (::lstat(path.c_str(), &st) == 0);
 }
 
 bool File::canRead() const
@@ -91,7 +91,7 @@ bool File::isLink() const
 bool File::isFile() const
 {
 	struct stat st;
-	if (::stat(path.c_str(), &st) != 0) {
+	if (::lstat(path.c_str(), &st) != 0) {
 		throw runtime::Exception(runtime::GetSystemErrorMessage());
 	}
 
@@ -101,7 +101,7 @@ bool File::isFile() const
 bool File::isDirectory() const
 {
 	struct stat st;
-	if (::stat(path.c_str(), &st) != 0) {
+	if (::lstat(path.c_str(), &st) != 0) {
 		throw runtime::Exception(runtime::GetSystemErrorMessage());
 	}
 
@@ -111,7 +111,7 @@ bool File::isDirectory() const
 bool File::isDevice() const
 {
 	struct stat st;
-	if (::stat(path.c_str(), &st) != 0) {
+	if (::lstat(path.c_str(), &st) != 0) {
 		throw runtime::Exception(runtime::GetSystemErrorMessage());
 	}
 
@@ -121,7 +121,7 @@ bool File::isDevice() const
 mode_t File::getMode() const
 {
 	struct stat st;
-	if (::stat(path.c_str(), &st) != 0) {
+	if (::lstat(path.c_str(), &st) != 0) {
 		throw runtime::Exception(runtime::GetSystemErrorMessage());
 	}
 
@@ -131,7 +131,7 @@ mode_t File::getMode() const
 uid_t File::getUid() const
 {
 	struct stat st;
-	if (::stat(path.c_str(), &st) != 0) {
+	if (::lstat(path.c_str(), &st) != 0) {
 		throw runtime::Exception(runtime::GetSystemErrorMessage());
 	}
 
@@ -141,7 +141,7 @@ uid_t File::getUid() const
 gid_t File::getGid() const
 {
 	struct stat st;
-	if (::stat(path.c_str(), &st) != 0) {
+	if (::lstat(path.c_str(), &st) != 0) {
 		throw runtime::Exception(runtime::GetSystemErrorMessage());
 	}
 
@@ -151,7 +151,7 @@ gid_t File::getGid() const
 ino_t File::getInode() const
 {
 	struct stat st;
-	if (::stat(path.c_str(), &st) != 0) {
+	if (::lstat(path.c_str(), &st) != 0) {
 		throw runtime::Exception(runtime::GetSystemErrorMessage());
 	}
 
@@ -161,7 +161,7 @@ ino_t File::getInode() const
 dev_t File::getDevice() const
 {
 	struct stat st;
-	if (::stat(path.c_str(), &st) != 0) {
+	if (::lstat(path.c_str(), &st) != 0) {
 		throw runtime::Exception(runtime::GetSystemErrorMessage());
 	}
 
@@ -171,7 +171,7 @@ dev_t File::getDevice() const
 off_t File::size() const
 {
 	struct stat st;
-	if (::stat(path.c_str(), &st) != 0) {
+	if (::lstat(path.c_str(), &st) != 0) {
 		throw runtime::Exception(runtime::GetSystemErrorMessage());
 	}
 
