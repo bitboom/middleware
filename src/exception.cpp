@@ -23,6 +23,8 @@
 
 #include <klay/exception.h>
 
+#include "logger.hxx"
+
 namespace tanchor {
 
 int exceptionGuard(const std::function<int()> &func)
@@ -46,22 +48,22 @@ int exceptionGuard(const std::function<int()> &func)
 			errStr = "Internal error.";
 			break;
 		}
-		ERROR(errStr + e.what());
+		ERROR(SINK, errStr + e.what());
 		return e.error();
 	} catch (const runtime::Exception &e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return TRUST_ANCHOR_ERROR_INTERNAL;
 	} catch (const std::invalid_argument &e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return TRUST_ANCHOR_ERROR_INVALID_PARAMETER;
 	} catch (const std::logic_error &e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return TRUST_ANCHOR_ERROR_INTERNAL;
 	} catch (const std::exception &e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return TRUST_ANCHOR_ERROR_INTERNAL;
 	} catch (...) {
-		ERROR("Unknown exception occurred.");
+		ERROR(SINK, "Unknown exception occurred.");
 		return TRUST_ANCHOR_ERROR_INTERNAL;
 	}
 }
@@ -72,7 +74,7 @@ Exception::Exception(int ec, const char *file, const char *function,
 	m_message(FORMAT("[" << file << ":" << line << " " <<
 					 function << "()]" << message))
 {
-	ERROR(this->m_message);
+	ERROR(SINK, this->m_message);
 }
 
 const char *Exception::what() const noexcept

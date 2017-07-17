@@ -19,11 +19,11 @@
  * @version     1.0
  * @brief       Init global configuration for library
  */
-
-#include <klay/audit/logger.h>
 #include <klay/audit/dlog-sink.h>
 
 #include <memory>
+
+#include "logger.hxx"
 
 namespace tanchor {
 namespace {
@@ -32,13 +32,17 @@ class InitLib {
 public:
 	InitLib()
 	{
-		audit::Logger::setBackend(new audit::DlogLogSink());
-		audit::Logger::setTag("TRUST_ANCHOR");
+		this->m_sink.reset(new audit::DlogLogSink("TRUST_ANCHOR"));
 	};
 	~InitLib() = default;
+
+	std::unique_ptr<audit::DlogLogSink> m_sink = nullptr;
 };
 
 static std::unique_ptr<InitLib> init(new(std::nothrow)(InitLib));
 
 } // namespace anonymous
+
+audit::LogSink *SINK = dynamic_cast<audit::LogSink*>((init->m_sink).get());
+
 } // namespace tanchor

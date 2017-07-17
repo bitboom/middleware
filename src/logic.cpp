@@ -30,8 +30,8 @@
 #include <sys/stat.h>
 
 #include <klay/filesystem.h>
-#include <klay/audit/logger.h>
 
+#include "logger.hxx"
 #include "certificate.hxx"
 #include "file-system.hxx"
 #include "exception.hxx"
@@ -50,7 +50,7 @@ void Logic::init(void) const
 {
 	runtime::File customBaseDir(this->m_customBasePath);
 	if (customBaseDir.exists()) {
-		WARN("Pkg custom directory is already exist. remove it!");
+		WARN(SINK, "Pkg custom directory is already exist. remove it!");
 		customBaseDir.remove(true);
 	}
 	customBaseDir.makeDirectory(true);
@@ -60,7 +60,7 @@ void Logic::init(void) const
 
 	runtime::File customBundleDir(this->m_customBundlePath);
 	customBundleDir.makeDirectory();
-	DEBUG("Success to init[" << this->m_customBasePath << "]");
+	DEBUG(SINK, "Success to init[" << this->m_customBasePath << "]");
 }
 
 void Logic::deinit(bool isRollback) const
@@ -71,7 +71,7 @@ void Logic::deinit(bool isRollback) const
 	else if (!isRollback)
 		throw std::invalid_argument("tanchor is never installed before.");
 
-	DEBUG("Success to deinit[" << this->m_customBasePath << "]");
+	DEBUG(SINK, "Success to deinit[" << this->m_customBasePath << "]");
 }
 
 void Logic::makeCustomCerts(void)
@@ -86,7 +86,7 @@ void Logic::makeCustomCerts(void)
 			this->m_customCertNameSet.emplace(File::getName(iter->getPath()));
 			++iter;
 		}
-		DEBUG("Success to migrate system certificates.");
+		DEBUG(SINK, "Success to migrate system certificates.");
 	}
 
 	// link pkg certificates to the custom directory as subjectNameHash
@@ -100,6 +100,8 @@ void Logic::makeCustomCerts(void)
 		this->m_customCertsData.emplace_back(cert.getCertificateData());
 		++iter;
 	}
+
+	INFO(SINK, "Success to make pkg custom certs.");
 }
 
 void Logic::makeCustomBundle(void)
@@ -107,11 +109,11 @@ void Logic::makeCustomBundle(void)
 	runtime::File customBundle(this->m_customBundlePath + "/" +
 							   File::getName(path::SYS_BUNDLE_PATH));
 	if (customBundle.exists()) {
-		WARN("Pkg custom bundle is already exist. remove it!");
+		WARN(SINK, "Pkg custom bundle is already exist. remove it!");
 		customBundle.remove();
 	}
 
-	DEBUG("Start to migrate previous bundle.");
+	DEBUG(SINK, "Start to migrate previous bundle.");
 	if (this->isSystemCertsUsed()) {
 		runtime::File sysBundle(path::SYS_BUNDLE_PATH);
 		sysBundle.copyTo(this->m_customBundlePath);
@@ -119,10 +121,10 @@ void Logic::makeCustomBundle(void)
 		runtime::File tanchorBundle(path::TANCHOR_BUNDLE_PATH);
 		tanchorBundle.copyTo(this->m_customBundlePath);
 	}
-	DEBUG("Finish migrating previous bundle.");
+	DEBUG(SINK, "Finish migrating previous bundle.");
 
 	if (this->m_customCertsData.empty()) {
-		DEBUG("System certificates is changed after TrustAnchor installation.");
+		DEBUG(SINK, "System certificates is changed after TrustAnchor installation.");
 		runtime::DirectoryIterator iter(this->getPkgCertsPath()), end;
 		while (iter != end) {
 			Certificate cert(iter->getPath());
@@ -131,7 +133,7 @@ void Logic::makeCustomBundle(void)
 		}
 	}
 
-	DEBUG("Start to add pkg's certificate to bundle.");
+	DEBUG(SINK, "Start to add pkg's certificate to bundle.");
 	customBundle.open(O_RDWR | O_APPEND);
 	for (const auto &cert : this->m_customCertsData) {
 		customBundle.write(cert.c_str(), cert.length());
@@ -139,7 +141,7 @@ void Logic::makeCustomBundle(void)
 		customBundle.write(newLine.c_str(), newLine.length());
 	}
 
-	INFO("Success to make pkg custom bundle.");
+	INFO(SINK, "Success to make pkg custom bundle.");
 }
 
 bool Logic::isPkgCertsValid(const std::string &path) const
@@ -173,14 +175,14 @@ void Logic::setPkgCertsPath(const std::string &path) const
 	pkgCertsPath.write(path.c_str(), path.length());
 	pkgCertsPath.unlock();
 
-	DEBUG("Success to set package certificates path : " << path);
+	DEBUG(SINK, "Success to set package certificates path : " << path);
 }
 
 std::string Logic::getPkgCertsPath(void) const
 {
 	std::string path = File::read(this->m_customBasePath + "/" +
 								  File::getName(path::TANCHOR_PKG_CERTS_PATH));
-	DEBUG("Package certificates path : " << path);
+	DEBUG(SINK, "Package certificates path : " << path);
 	return path;
 }
 
@@ -188,7 +190,7 @@ void Logic::setSystemCertsUsed(void) const
 {
 	runtime::File tanchorSysCA(path::TANCHOR_SYSCA_PATH);
 	tanchorSysCA.copyTo(this->m_customBasePath);
-	DEBUG("Success to set SYSCA flag.");
+	DEBUG(SINK, "Success to set SYSCA flag.");
 }
 
 bool Logic::isSystemCertsUsed(void) const
@@ -196,7 +198,7 @@ bool Logic::isSystemCertsUsed(void) const
 	runtime::File customSysCA(this->m_customBasePath + "/" +
 							  File::getName(path::TANCHOR_SYSCA_PATH));
 
-	DEBUG("Wheter system certificates use or not : " << customSysCA.exists());
+	DEBUG(SINK, "Wheter system certificates use or not : " << customSysCA.exists());
 	return customSysCA.exists();
 }
 
@@ -212,7 +214,7 @@ bool Logic::isSystemCertsModified(void) const
 	if (::stat(customBundle.c_str(), &customAttr))
 		ThrowErrno(errno, customBundle);
 
-	DEBUG("System bundle mtime : " << ::ctime(&systemAttr.st_mtime) << ", " <<
+	DEBUG(SINK, "System bundle mtime : " << ::ctime(&systemAttr.st_mtime) << ", " <<
 		  "Custom bundle mtime : " << ::ctime(&customAttr.st_mtime));
 
 	return systemAttr.st_mtime > customAttr.st_mtime;
@@ -227,7 +229,7 @@ void Logic::disassociateNS(void) const
 	if (::mount(NULL, "/", NULL, MS_SLAVE | MS_REC, NULL))
 		ThrowErrno(errno, "Failed to mount.");
 
-	DEBUG("Success to disassociate namespace.");
+	DEBUG(SINK, "Success to disassociate namespace.");
 }
 
 void Logic::mountCustomCerts(void) const

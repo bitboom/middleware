@@ -14,23 +14,17 @@
  *  limitations under the License
  */
 /*
- * @file        main.cpp
+ * @file        logic.hxx
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     1.0
- * @brief       Implemetation of testbench driver
+ * @brief
  */
+#pragma once
 
-#include <klay/testbench.h>
+#include <klay/audit/logger.h>
 
-#include <curl/curl.h>
+namespace tanchor {
 
-int main(int /*argc*/, char** /*argv*/)
-{
-	curl_global_init(CURL_GLOBAL_DEFAULT);
+extern audit::LogSink *SINK;
 
-	testbench::Testbench::runAllTestSuites();
-
-	curl_global_cleanup();
-
-	return 0;
-}
+} // namespace tanchor

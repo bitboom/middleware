@@ -27,7 +27,7 @@
 #include <string>
 #include <exception>
 
-#include <klay/audit/logger.h>
+#include "logger.hxx"
 
 #define EXCEPTION_GUARD_START return tanchor::exceptionGuard([&]() {
 #define EXCEPTION_GUARD_END   });

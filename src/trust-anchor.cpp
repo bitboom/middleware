@@ -21,9 +21,8 @@
  */
 #include "tanchor/trust-anchor.hxx"
 
-#include <klay/audit/logger.h>
-
 #include "logic.hxx"
+#include "logger.hxx"
 #include "exception.hxx"
 #include "environment.hxx"
 
@@ -51,13 +50,14 @@ TrustAnchor::Impl::Impl(const std::string &packageId, uid_t uid) noexcept :
 			std::to_string(static_cast<int>(uid)) + "/" +
 			packageId)
 {
-	INFO("Start tanchor about uid[" << uid << "], pkg[" << packageId << "]");
+	INFO(SINK, "Start tanchor about uid[" << uid <<
+			   "], pkg[" << packageId << "]");
 }
 
 void TrustAnchor::Impl::preInstall(void)
 {
 	this->m_logic.init();
-	DEBUG("Success to pre-install stage.");
+	DEBUG(SINK, "Success to pre-install stage.");
 }
 
 int TrustAnchor::Impl::install(const std::string &pkgCertsPath,
@@ -74,7 +74,7 @@ int TrustAnchor::Impl::install(const std::string &pkgCertsPath,
 	this->m_logic.makeCustomCerts();
 	this->m_logic.makeCustomBundle();
 
-	INFO("Success to install.");
+	INFO(SINK, "Success to install.");
 	return TRUST_ANCHOR_ERROR_NONE;
 
 	EXCEPTION_GUARD_END
@@ -86,7 +86,7 @@ int TrustAnchor::Impl::rollback(void) const noexcept
 
 	this->m_logic.deinit(true);
 
-	INFO("Success to rollback.");
+	INFO(SINK, "Success to rollback.");
 	return TRUST_ANCHOR_ERROR_NONE;
 
 	EXCEPTION_GUARD_END
@@ -98,7 +98,7 @@ int TrustAnchor::Impl::uninstall(void) const noexcept
 
 	this->m_logic.deinit(false);
 
-	INFO("Success to uninstall.");
+	INFO(SINK, "Success to uninstall.");
 	return TRUST_ANCHOR_ERROR_NONE;
 
 	EXCEPTION_GUARD_END
@@ -109,12 +109,12 @@ void TrustAnchor::Impl::preLaunch(void)
 	if (!this->m_logic.isSystemCertsUsed())
 		return;
 
-	DEBUG("This package use system certificates.");
+	DEBUG(SINK, "This package use system certificates.");
 	if (this->m_logic.isSystemCertsModified()) {
-		WARN("System certificates be changed. Do re-install for refresh.");
+		WARN(SINK, "System certificates be changed. Do re-install for refresh.");
 		this->install(this->m_logic.getPkgCertsPath(), true);
 	}
-	DEBUG("Success to pre-launch stage.");
+	DEBUG(SINK, "Success to pre-launch stage.");
 }
 
 int TrustAnchor::Impl::launch() noexcept
@@ -127,7 +127,7 @@ int TrustAnchor::Impl::launch() noexcept
 	this->m_logic.mountCustomCerts();
 	this->m_logic.mountCustomBundle();
 
-	INFO("Success to launch.");
+	INFO(SINK, "Success to launch.");
 	return TRUST_ANCHOR_ERROR_NONE;
 
 	EXCEPTION_GUARD_END
@@ -147,9 +147,9 @@ int TrustAnchor::install(const std::string &pkgCertsPath,
 	int ret = this->m_pImpl->install(pkgCertsPath, withSystemCerts);
 
 	if (ret != TRUST_ANCHOR_ERROR_NONE) {
-		ERROR("Failed to intall ACTA. Remove custom directory for rollback.");
+		ERROR(SINK, "Failed to intall ACTA. Remove custom directory for rollback.");
 		if (this->m_pImpl->rollback() != TRUST_ANCHOR_ERROR_NONE)
-			ERROR("Failed to rollback ACTA.");
+			ERROR(SINK, "Failed to rollback ACTA.");
 	}
 
 	return ret;

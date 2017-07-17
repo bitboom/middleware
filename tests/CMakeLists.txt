@@ -58,6 +58,7 @@ SET(INTERNAL_SRCS main.cpp
 				  test-util.cpp
 				  test-certificate.cpp
 				  ${TANCHOR_SRC}/exception.cpp
+				  ${TANCHOR_SRC}/init-lib.cpp
 				  ${TANCHOR_SRC}/file-system.cpp
 				  ${TANCHOR_SRC}/certificate.cpp)
 SET(SSL_SRCS main.cpp
