@@ -19,9 +19,9 @@
 #include <bluetooth_internal.h>
 
 #include <klay/exception.h>
-#include <klay/audit/logger.h>
 #include <klay/dbus/connection.h>
 
+#include "logger.h"
 #include "privilege.h"
 #include "policy-builder.h"
 #include "policy-model.h"
@@ -184,12 +184,12 @@ BluetoothPolicy::Private::Private(PolicyControlContext& ctxt) :
 	PolicyHelper(ctxt)
 {
 	if (::bt_initialize() != BT_ERROR_NONE) {
-		ERROR("Bluetooth framework was not initilaized");
+		ERROR(SINK, "Bluetooth framework was not initilaized");
 		return;
 	}
 
 	if (::bt_adapter_set_state_changed_cb(onStateChanged, this) != BT_ERROR_NONE) {
-		ERROR("Failed to register Bluetooth callback");
+		ERROR(SINK, "Failed to register Bluetooth callback");
 		return;
 	}
 }
@@ -263,7 +263,7 @@ int BluetoothPolicy::setModeChangeState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->modeChange, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -280,7 +280,7 @@ int BluetoothPolicy::setDesktopConnectivityState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->desktopConnectivity, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -297,7 +297,7 @@ int BluetoothPolicy::setPairingState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->pairing, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -319,7 +319,7 @@ int BluetoothPolicy::setTetheringState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->tethering, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -342,7 +342,7 @@ int BluetoothPolicy::setDeviceRestriction(bool enable)
 		enable = canonicalize(enable);
 		pimpl->setPolicy(pimpl->deviceRestriction, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -371,7 +371,7 @@ int BluetoothPolicy::setUuidRestriction(bool enable)
 		enable = canonicalize(enable);
 		pimpl->setPolicy(pimpl->uuidRestriction, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 

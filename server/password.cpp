@@ -18,8 +18,7 @@
 
 #include <unordered_map>
 
-#include <klay/audit/logger.h>
-
+#include "logger.h"
 #include "privilege.h"
 #include "policy-builder.h"
 #include "policy-model.h"
@@ -115,7 +114,7 @@ public:
 			passwordManager.setQuality(type);
 			passwordManager.enforce();
 		} catch (runtime::Exception &e) {
-			ERROR(e.what());
+			ERROR(SINK, e.what());
 			return false;
 		}
 
@@ -138,7 +137,7 @@ public:
 			passwordManager.setMaximumNumericSequenceLength(value);
 			passwordManager.enforce();
 		} catch (runtime::Exception &e) {
-			ERROR(e.what());
+			ERROR(SINK, e.what());
 			return false;
 		}
 
@@ -161,7 +160,7 @@ public:
 			passwordManager.setMaximumCharacterOccurrences(value);
 			passwordManager.enforce();
 		} catch (runtime::Exception &e) {
-			ERROR(e.what());
+			ERROR(SINK, e.what());
 			return false;
 		}
 
@@ -187,7 +186,7 @@ public:
 			}
 			passwordManager.enforce();
 		} catch (runtime::Exception &e) {
-			ERROR(e.what());
+			ERROR(SINK, e.what());
 			return false;
 		}
 
@@ -209,7 +208,7 @@ public:
 			passwordManager.setHistory(canonicalize(value));
 			passwordManager.enforce();
 		} catch (runtime::Exception &e) {
-			ERROR(e.what());
+			ERROR(SINK, e.what());
 			return false;
 		}
 
@@ -231,7 +230,7 @@ public:
 			passwordManager.setExpires(value);
 			passwordManager.enforce();
 		} catch (runtime::Exception &e) {
-			ERROR(e.what());
+			ERROR(SINK, e.what());
 			return false;
 		}
 
@@ -253,7 +252,7 @@ public:
 			passwordManager.setMaximumFailedForWipe(value);
 			passwordManager.enforce();
 		} catch (runtime::Exception &e) {
-			ERROR(e.what());
+			ERROR(SINK, e.what());
 			return false;
 		}
 
@@ -275,7 +274,7 @@ public:
 			passwordManager.setMinimumComplexCharacters(canonicalize(value));
 			passwordManager.enforce();
 		} catch (runtime::Exception &e) {
-			ERROR(e.what());
+			ERROR(SINK, e.what());
 			return false;
 		}
 
@@ -297,7 +296,7 @@ public:
 			passwordManager.setMinimumLength(canonicalize(value));
 			passwordManager.enforce();
 		} catch (runtime::Exception &e) {
-			ERROR(e.what());
+			ERROR(SINK, e.what());
 			return false;
 		}
 
@@ -433,7 +432,7 @@ int PasswordPolicy::setQuality(int quality)
 			pimpl->setPolicy(pimpl->length, canonicalize(simplePasswordLength));
 		}
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -452,7 +451,7 @@ int PasswordPolicy::setMinimumLength(int value)
 		value = canonicalize(value);
 		pimpl->setPolicy(pimpl->length, value);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -471,7 +470,7 @@ int PasswordPolicy::setMinComplexChars(int value)
 		value = canonicalize(value);
 		pimpl->setPolicy(pimpl->complexity, value);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -490,7 +489,7 @@ int PasswordPolicy::setMaximumFailedForWipe(int value)
 		value = value == 0 ? infinite : value;
 		pimpl->setPolicy(pimpl->failureCount, value);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -509,7 +508,7 @@ int PasswordPolicy::setExpires(int value)
 		value = value == 0 ? infinite : value;
 		pimpl->setPolicy(pimpl->expire, value);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -528,7 +527,7 @@ int PasswordPolicy::setHistory(int value)
 		value = canonicalize(value);
 		pimpl->setPolicy(pimpl->history, value);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -546,7 +545,7 @@ int PasswordPolicy::setPattern(const std::string &pattern)
 	try {
 		pimpl->setPolicy(pimpl->pattern, pattern);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -560,7 +559,7 @@ int PasswordPolicy::reset(const std::string &passwd)
 		PasswordManager passwordManager(ctx.getPeerUid());
 		passwordManager.resetPassword(passwd);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -579,7 +578,7 @@ int PasswordPolicy::enforceChange()
 		launchpad.launch("org.tizen.dpm-syspopup", bundle);
 		passwordStatus[ctx.getPeerUid()] = DPM_PASSWORD_STATUS_CHANGE_REQUIRED;
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -592,7 +591,7 @@ int PasswordPolicy::setMaxInactivityTimeDeviceLock(int value)
 		value = value == 0 ? infinite : value;
 		pimpl->setPolicy(pimpl->timeout, value);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -608,7 +607,7 @@ int PasswordPolicy::getMaxInactivityTimeDeviceLock()
 int PasswordPolicy::setStatus(int status)
 {
 	if (status >= DPM_PASSWORD_STATUS_MAX) {
-		ERROR("Invalid password status");
+		ERROR(SINK, "Invalid password status");
 		return -1;
 	}
 
@@ -630,7 +629,7 @@ int PasswordPolicy::deletePattern()
 	try {
 		pimpl->setPolicy(pimpl->pattern, "");
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -648,7 +647,7 @@ int PasswordPolicy::setMaximumCharacterOccurrences(int value)
 		value = value == 0 ? infinite : value;
 		pimpl->setPolicy(pimpl->occurrences, value);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -667,7 +666,7 @@ int PasswordPolicy::setMaximumNumericSequenceLength(int value)
 		value = value == 0 ? infinite : value;
 		pimpl->setPolicy(pimpl->sequences, value);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -696,7 +695,7 @@ int PasswordPolicy::setRecovery(int enable)
 		enable = canonicalize(enable);
 		pimpl->setPolicy(pimpl->recovery, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 

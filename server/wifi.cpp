@@ -22,9 +22,9 @@
 
 #include <wifi-manager.h>
 
-#include <klay/audit/logger.h>
 #include <klay/dbus/connection.h>
 
+#include "logger.h"
 #include "privilege.h"
 #include "app-bundle.h"
 #include "policy-builder.h"
@@ -57,7 +57,7 @@ public:
 								  "(i)",
 								  enable);
 		} catch (runtime::Exception& e) {
-			ERROR("Failed to chaneg Wi-Fi state");
+			ERROR(SINK, "Failed to chaneg Wi-Fi state");
 			return false;
 		}
 
@@ -84,7 +84,7 @@ public:
 								  "(i)",
 								  enable);
 		} catch (runtime::Exception& e) {
-			ERROR("Failed to set Wi-Fi profile change restriction");
+			ERROR(SINK, "Failed to set Wi-Fi profile change restriction");
 			return false;
 		}
 		notify(enable == 0 ? "disallowed" : "allowed");
@@ -192,7 +192,7 @@ int WifiPolicy::setState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->wifiState, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -209,7 +209,7 @@ int WifiPolicy::setHotspotState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->wifiHotspot, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -226,7 +226,7 @@ int WifiPolicy::setProfileChangeRestriction(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->wifiProfileChange, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 

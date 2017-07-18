@@ -16,8 +16,8 @@
 
 #include <klay/exception.h>
 #include <klay/dbus/connection.h>
-#include <klay/audit/logger.h>
 
+#include "logger.h"
 #include "privilege.h"
 #include "policy-builder.h"
 #include "policy-model.h"
@@ -57,7 +57,7 @@ public:
 								  "block_recording_media",
 								  !value).get("(s)", &result);
 		} catch (runtime::Exception& e) {
-			ERROR("Failed to enforce microphone policy");
+			ERROR(SINK, "Failed to enforce microphone policy");
 			return false;
 		}
 
@@ -88,7 +88,7 @@ public:
 								  -1, "(i)", "(sisss)",
 								  "control", 3, pid.c_str(), "2", state.c_str()).get("(i)", &ret);
 		} catch(runtime::Exception& e) {
-			ERROR("Failed to enforce external storage policy");
+			ERROR(SINK, "Failed to enforce external storage policy");
 			return false;
 		}
 
@@ -193,7 +193,7 @@ int RestrictionPolicy::setCameraState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->camera, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -210,7 +210,7 @@ int RestrictionPolicy::setMicrophoneState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->microphone, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -227,7 +227,7 @@ int RestrictionPolicy::setClipboardState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->clipboard, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -244,7 +244,7 @@ int RestrictionPolicy::setUsbDebuggingState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->usbDebugging, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -261,7 +261,7 @@ int RestrictionPolicy::setUsbTetheringState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->usbTethering, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -278,7 +278,7 @@ int RestrictionPolicy::setExternalStorageState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->storage, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -295,7 +295,7 @@ int RestrictionPolicy::setPopImapEmailState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->email, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -312,7 +312,7 @@ int RestrictionPolicy::setMessagingState(const std::string& sim_id, bool enable)
 	try {
 		pimpl->setPolicy(pimpl->messaging, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -329,7 +329,7 @@ int RestrictionPolicy::setBrowserState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->browser, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 

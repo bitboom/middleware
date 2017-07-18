@@ -28,7 +28,7 @@
 
 #include "exception.h"
 #include "filesystem.h"
-#include "audit/logger.h"
+#include "logger.h"
 
 using namespace std::placeholders;
 
@@ -89,7 +89,7 @@ bool Server::checkPeerPrivilege(const rmi::Credentials& cred, const std::string&
 	}
 
 	if (::cynara_initialize(&p_cynara, NULL) != CYNARA_API_SUCCESS) {
-		ERROR("Failure in cynara API");
+		ERROR(SINK, "Failure in cynara API");
 		return false;
 	}
 
@@ -97,7 +97,7 @@ bool Server::checkPeerPrivilege(const rmi::Credentials& cred, const std::string&
 					   std::to_string(cred.uid).c_str(),
 					   privilege.c_str()) != CYNARA_API_ACCESS_ALLOWED) {
 		::cynara_finish(p_cynara);
-		ERROR("Access denied: " + cred.security + " : " + privilege);
+		ERROR(SINK, "Access denied: " + cred.security + " : " + privilege);
 		return false;
 	}
 

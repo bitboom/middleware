@@ -23,11 +23,11 @@
 
 #include <tzplatform_config.h>
 #include <klay/auth/user.h>
-#include <klay/audit/logger.h>
 #include <krate/krate.h>
 
 #include "krate.hxx"
 
+#include "logger.h"
 #include "launchpad.h"
 #include "privilege.h"
 #include "policy-builder.h"
@@ -125,7 +125,7 @@ int KratePolicy::createKrate(const std::string& name, const std::string& setupWi
 		Launchpad launchpad(context.getPeerUid());
 		launchpad.launch("org.tizen.dpm-syspopup", bundle);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 
@@ -148,7 +148,7 @@ int KratePolicy::removeKrate(const std::string& name)
 		Launchpad launchpad(context.getPeerUid());
 		launchpad.launch("org.tizen.dpm-syspopup", bundle);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 

@@ -18,10 +18,10 @@
 #include <dd-control.h>
 #include <klay/process.h>
 #include <klay/filesystem.h>
-#include <klay/audit/logger.h>
 
 #include "privilege.h"
 #include "policy-builder.h"
+#include "logger.h"
 #include "launchpad.h"
 
 #include "security.hxx"
@@ -42,7 +42,7 @@ struct SecurityPolicy::Private {
 	{
 		char *value = ::vconf_get_str(key);
 		if (value == NULL) {
-			ERROR("Failed to read internal storage encryption state");
+			ERROR(SINK, "Failed to read internal storage encryption state");
 			return false;
 		}
 
@@ -50,12 +50,12 @@ struct SecurityPolicy::Private {
 		::free(value);
 		if (encrypt) {
 			if (state != "unencrypted") {
-				ERROR("Storage might be already encrypted or it has error");
+				ERROR(SINK, "Storage might be already encrypted or it has error");
 				return false;
 			}
 		} else {
 			if (state != "encrypted") {
-				ERROR("Storage might be already decrypted or it has error");
+				ERROR(SINK, "Storage might be already decrypted or it has error");
 				return false;
 			}
 		}
@@ -91,7 +91,7 @@ struct SecurityPolicy::Private {
 
 			launchpad.launch(name, bundle);
 		} catch (runtime::Exception& e) {
-			ERROR("Failed to start application: " << name);
+			ERROR(SINK, "Failed to start application: " << name);
 			return -1;
 		}
 

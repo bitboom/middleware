@@ -16,6 +16,7 @@
 
 #include <location_batch.h>
 
+#include "logger.h"
 #include "privilege.h"
 #include "policy-builder.h"
 #include "policy-model.h"
@@ -86,7 +87,7 @@ int LocationPolicy::setLocationState(bool enable)
 	try {
 		pimpl->setPolicy(pimpl->location, enable);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(SINK, e.what());
 		return -1;
 	}
 

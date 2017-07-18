@@ -14,10 +14,10 @@
  *  limitations under the License
  */
 #include <klay/exception.h>
-#include <klay/audit/logger.h>
 
 #include "policy-builder.h"
 #include "client-manager.h"
+#include "logger.h"
 
 #include "administration.hxx"
 
@@ -65,7 +65,7 @@ int AdministrationPolicy::registerPolicyClient(const std::string& name, uid_t ui
 	try {
 		ClientManager::registerAdministrator(name, uid);
 	} catch (runtime::Exception& e) {
-		ERROR("Failed to register admin client");
+		ERROR(SINK, "Failed to register admin client");
 		return -1;
 	}
 
@@ -77,7 +77,7 @@ int AdministrationPolicy::deregisterPolicyClient(const std::string& name, uid_t 
 	try {
 		ClientManager::deregisterAdministrator(name, uid);
 	} catch (runtime::Exception& e) {
-		ERROR("Failed to deregister policy client");
+		ERROR(SINK, "Failed to deregister policy client");
 		return -1;
 	}
 

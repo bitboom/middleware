@@ -23,8 +23,8 @@
 #include <klay/filesystem.h>
 #include <klay/dbus/variant.h>
 #include <klay/dbus/connection.h>
-#include <klay/audit/logger.h>
 
+#include "logger.h"
 #include "privilege.h"
 #include "policy-builder.h"
 
@@ -162,7 +162,7 @@ int StoragePolicy::wipeData(int id)
 					std::cout << "Erase device: " << devnode << " completed" << std::endl;
 				}
 			} catch(runtime::Exception& e) {
-				ERROR("Failed to enforce external storage policy");
+				ERROR(SINK, "Failed to enforce external storage policy");
 				return -1;
 			}
 		}
@@ -170,7 +170,7 @@ int StoragePolicy::wipeData(int id)
 		if (id & WIPE_INTERNAL_STORAGE) {
 			runtime::Process proc(PROG_FACTORY_RESET, wipeCommand);
 			if (proc.execute() == -1) {
-				ERROR("Failed to launch factory-reset");
+				ERROR(SINK, "Failed to launch factory-reset");
 				return -1;
 			}
 		}

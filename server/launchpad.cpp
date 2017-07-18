@@ -19,8 +19,8 @@
 
 #include <aul.h>
 #include <klay/exception.h>
-#include <klay/audit/logger.h>
 
+#include "logger.h"
 #include "launchpad.h"
 
 Launchpad::Launchpad(const uid_t uid) :
@@ -60,7 +60,7 @@ void Launchpad::terminate(const std::string& appid)
 	int pid = ::aul_app_get_pid_for_uid(appid.c_str(), user);
 	if (pid > 0) {
 		if (::aul_terminate_pid_for_uid(pid, user) < 0) {
-			WARN("Failed to terminate app PID=" + std::to_string(pid));
+			WARN(SINK, "Failed to terminate app PID=" + std::to_string(pid));
 			::kill(pid, SIGKILL);
 		}
 	}

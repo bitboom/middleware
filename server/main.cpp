@@ -23,13 +23,22 @@
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
+#include <memory>
 
-#include <klay/audit/logger.h>
 #include <klay/audit/dlog-sink.h>
 
+#include "logger.h"
 #include "preference.h"
 #include "syspopup.h"
 #include "server.h"
+
+namespace {
+
+std::unique_ptr<audit::DlogLogSink> _sink = nullptr;
+
+} // namespace
+
+audit::LogSink *SINK = nullptr;
 
 void signalHandler(int signum)
 {
@@ -43,8 +52,8 @@ int main(int argc, char *argv[])
 	::umask(022);
 
 	try {
-		audit::Logger::setBackend(new audit::DlogLogSink());
-		audit::Logger::setTag("DPM");
+		_sink.reset(new audit::DlogLogSink("DPM"));
+		SINK = dynamic_cast<audit::LogSink*>((_sink).get());
 
 		PreferencesStore& instance = PreferencesStore::getInstance();
 		instance.load("/etc/device-policy-manager.ini");

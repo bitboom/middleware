@@ -22,9 +22,9 @@
 #include <privilege_manager.h>
 #include <privilege_info.h>
 #include <klay/exception.h>
-#include <klay/audit/logger.h>
 
 #include "packman.h"
+#include "logger.h"
 #include "launchpad.h"
 #include "policy-builder.h"
 
@@ -85,7 +85,7 @@ int ApplicationPolicy::installPackage(const std::string& pkgpath)
 		PackageManager& packman = PackageManager::instance();
 		packman.installPackage(pkgpath, context.getPeerUid());
 	} catch (runtime::Exception& e) {
-		ERROR("Exception on package installation: " + pkgpath);
+		ERROR(SINK, "Exception on package installation: " + pkgpath);
 		return -1;
 	}
 
@@ -100,7 +100,7 @@ int ApplicationPolicy::uninstallPackage(const std::string& pkgid)
 		PackageManager& packman = PackageManager::instance();
 		packman.uninstallPackage(pkgid, context.getPeerUid());
 	} catch (runtime::Exception& e) {
-		ERROR("Exception on package uninstallation: " + pkgid);
+		ERROR(SINK, "Exception on package uninstallation: " + pkgid);
 		return -1;
 	}
 
@@ -115,7 +115,7 @@ int ApplicationPolicy::setModeRestriction(int mode)
 		PackageManager& packman = PackageManager::instance();
 		packman.setModeRestriction(mode, context.getPeerUid());
 	} catch (runtime::Exception& e) {
-		ERROR("Failed to set mode restriction");
+		ERROR(SINK, "Failed to set mode restriction");
 		return -1;
 	}
 
@@ -130,7 +130,7 @@ int ApplicationPolicy::unsetModeRestriction(int mode)
 		PackageManager& packman = PackageManager::instance();
 		packman.unsetModeRestriction(mode, context.getPeerUid());
 	} catch (runtime::Exception& e) {
-		ERROR("Failed to unset mode restriction");
+		ERROR(SINK, "Failed to unset mode restriction");
 		return -1;
 	}
 
@@ -145,7 +145,7 @@ int ApplicationPolicy::getModeRestriction()
 		PackageManager& packman = PackageManager::instance();
 		return packman.getModeRestriction(context.getPeerUid());
 	} catch (runtime::Exception& e) {
-		ERROR("Failed to get mode restriction");
+		ERROR(SINK, "Failed to get mode restriction");
 		return -1;
 	}
 }
