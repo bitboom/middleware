@@ -22,6 +22,7 @@
 
 #include <tanchor/trust-anchor.hxx>
 
+#include <klay/filesystem.h>
 #include <klay/testbench.h>
 
 #include <sched.h>
@@ -75,4 +76,38 @@ TESTCASE(TRUST_ANCHOR_UNINSTALL_NEGATIVE)
 	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_UID);
 	int ret = ta.uninstall();
 	TEST_EXPECT(false, ret == TRUST_ANCHOR_ERROR_NONE);
+}
+
+TESTCASE(TRUST_ANCHOR_UNINSTALL_NO_ORIGINAL_CERTS)
+{
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_UID);
+	int ret = ta.install(PKG_CERTS_DIR, false);
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
+
+	// back-up original package's certs and remove it.
+	runtime::File backupDir(BACKUP_DIR);
+	if (backupDir.exists())
+		backupDir.remove(true);
+	backupDir.makeDirectory(true);
+
+	runtime::DirectoryIterator iter(PKG_CERTS_DIR), end;
+	while (iter != end) {
+		iter->copyTo(BACKUP_DIR);
+		++iter;
+	}
+
+	runtime::File pkgCertsDir(PKG_CERTS_DIR);
+	pkgCertsDir.remove(true);
+
+	ret = ta.uninstall();
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
+
+	// restore package's certs for next TC
+	pkgCertsDir.makeDirectory(true);
+	runtime::DirectoryIterator iter2(BACKUP_DIR), end2;
+	while (iter2 != end2) {
+		iter2->copyTo(PKG_CERTS_DIR);
+		++iter2;
+	}
+	backupDir.remove(true);
 }

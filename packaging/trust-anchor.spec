@@ -120,8 +120,8 @@ Testcases for trust anchor library
 %{_bindir}/%{lib_name}-test-internal
 %{_bindir}/%{lib_name}-test-ssl
 %{_bindir}/%{lib_name}-test-init.sh
-%{tanchor_test}
-%{tanchor_test}/certs
+%attr(-, %{user_name}, %{group_name}) %{tanchor_test}
+%attr(-, %{user_name}, %{group_name}) %{tanchor_test}/certs
 
 ## Example Package ############################################################
 %package -n trust-anchor-example

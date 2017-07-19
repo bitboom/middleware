@@ -26,6 +26,7 @@
 #define DUMMY_CERTS_DIR "/home/dummy"
 
 #define PKG_CERTS_DIR TANCHOR_TEST_DIR "/certs"
+#define BACKUP_DIR TANCHOR_TEST_DIR "/backup"
 
 #define TEST_PEM_PATH PKG_CERTS_DIR "/02265526.0"
 #define TEST_PEM_HASH "02265526"
