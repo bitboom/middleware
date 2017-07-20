@@ -172,17 +172,17 @@ public:
 	template <typename... Args>
 	void notify(const std::string& name, Args&&... args);
 
-	pid_t getPeerPid() const
+	static pid_t getPeerPid()
 	{
 		return processingContext.credentials.pid;
 	}
 
-	uid_t getPeerUid() const
+	static uid_t getPeerUid()
 	{
 		return processingContext.credentials.uid;
 	}
 
-	gid_t getPeerGid() const
+	static gid_t getPeerGid()
 	{
 		return processingContext.credentials.gid;
 	}
