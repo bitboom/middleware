@@ -14,4 +14,11 @@
  *  limitations under the License
  */
 
-#include "policy-model.h"
+#ifndef __DEVICE_POLICY_CONTEXT__
+#define __DEVICE_POLICY_CONTEXT__
+
+#include <klay/rmi/service.h>
+
+using PolicyControlContext = rmi::Service;
+
+#endif //!__DEVICE_POLICY_CONTEXT__

@@ -21,110 +21,83 @@
 #include <getopt.h>
 
 #include <memory>
+#include <string>
 
-#include <dpm/administration.h>
+#include "status.h"
+#include "policy-client.h"
 
-static void printUsage()
+static void usage()
 {
-	printf("Usage: dpm-admin-cli [option] [app id] -u [user name]\n");
-	printf("Options:\n");
-	printf("  -r --register appid   : Register device admin client package\n");
-	printf("  -d --deregister appid : Deregister device admin client package\n");
-	printf("  -u --user username    : Specify user name that the device admin package is associted\n");
-	printf("  -h --help             : print usage\n");
-	printf("\n");
-	printf("Note:\n");
-	printf("  To register/deregister device admin client, you should specify user name that the device admin client is associated.\n");
-	printf("  Ex.: dpm-admin-cli -r org.tizen.dpm -u owner\n");
-	printf("\n");
+	std::cout << "Usage: dpm-admin-cli [option] [app id] -u [user name]\n"
+			  << "Options:\n"
+			  << "  -d --deregister pkgid : Deregister device administrator\n"
+			  << "  -u --user username    : Specify user name that the device administrator is associted\n"
+			  << "  -h --help             : print usage\n"
+			  << "\n"
+			  << "Note:\n"
+			  << "  To register/deregister device administrator, "
+			  << "you should specify user name that the device admin client is associated.\n"
+			  << "  Ex.: dpm-admin-cli -r org.tizen.dpm -u owner\n"
+			  << std::endl;
 }
 
-static int registAdminClient(const char* pkgName, uid_t uid)
+static int registerAdministrator(const std::string& pkgname, uid_t uid)
 {
-	if (pkgName == NULL)
-		return -1;
+	try {
 
-	int ret;
-	device_policy_manager_h handle;
+		DevicePolicyClient client;
 
-	handle = dpm_manager_create();
-	if (handle == NULL) {
-		printf("Failed to create client handle\n");
+		client.connect();
+		Status<int> status { -1 };
+		status = client.methodCall<int>("DevicePolicyManager::enroll", pkgname, uid);
+		return status.get();
+	} catch (...) {
+		std::cerr << "Failed to enroll device" << std::endl;
 		return -1;
 	}
-
-	ret = 0;
-	if (dpm_admin_register_client(handle, pkgName, uid) != DPM_ERROR_NONE) {
-		printf("Failed to register admin client. (name:%s, uid:%d)\n", pkgName, uid);
-		ret = -1;
-	}
-
-	dpm_manager_destroy(handle);
-
-	return ret;
 }
 
-static int deregistAdminClient(const char* pkgName, uid_t uid)
+static int deregisterAdministrator(const std::string& pkgname, uid_t uid)
 {
-	if (pkgName == NULL)
-		return -1;
-
-	int ret;
-	device_policy_manager_h handle;
-
-	handle = dpm_manager_create();
-	if (handle == NULL) {
-		printf("Failed to create client handle\n");
+	try {
+		DevicePolicyClient client;
+		Status<int> status { -1 };
+		status = client.methodCall<int>("DevicePolicyManager::disenroll", pkgname, uid);
+		return status.get();
+	} catch (...) {
+		std::cerr << "Failed to disenroll device" << std::endl;
 		return -1;
 	}
-
-	ret = 0;
-	if (dpm_admin_deregister_client(handle, pkgName, uid) != DPM_ERROR_NONE) {
-		printf("Failed to deregister admin client. (name:%s, uid:%d)\n", pkgName, uid);
-		ret = -1;
-	}
-
-	dpm_manager_destroy(handle);
-
-	return ret;
 }
 
-static int getUID(const char* userName)
+static int getUID(const std::string& username)
 {
 	struct passwd pwd, *result;
-	int bufsize;
 
-	if (userName == NULL)
-		return -1;
-
-	bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+	int bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
 	if (bufsize == -1)
 		bufsize = 16384;
 
 	std::unique_ptr<char[]> buf(new char[bufsize]);
-	::getpwnam_r(userName, &pwd, buf.get(), bufsize, &result);
+	::getpwnam_r(username.c_str(), &pwd, buf.get(), bufsize, &result);
 	if (result == NULL) {
-		printf("User %s doesn't exist\n", userName);
+		std::cout << "User " << username << " isn't exist" << std::endl;
 		return -1;
 	}
 
 	return (int)result->pw_uid;
 }
 
-enum OptVal {
-	DPM_ADMIN_CLI_REGISTER,
-	DPM_ADMIN_CLI_DEREGISTER,
-	DPM_ADMIN_CLI_NULL,
+enum Command {
+	NotSpecified,
+	RegisterAdministrator,
+	DeregisterAdministrator
 };
 
 int main(int argc, char *argv[])
 {
-	int uid = 0;
-	char* userName = NULL;
-	char* pkgName = NULL;
+	Command command = NotSpecified;
 
-	int opt = 0;
-	OptVal optVal = DPM_ADMIN_CLI_NULL;
 	struct option options[] = {
 		{"register",   required_argument, 0, 'r'},
 		{"deregister", required_argument, 0, 'd'},
@@ -133,44 +106,46 @@ int main(int argc, char *argv[])
 		{0,            0,                 0,  0 }
 	};
 
-	int index = 0;
+	char* username = NULL;
+	char* pkgname = NULL;
+
+	int index, opt;
 	while ((opt = getopt_long(argc, argv, "r:d:u:h", options, &index)) != -1) {
 		switch(opt) {
 		case 'r':
-			optVal = DPM_ADMIN_CLI_REGISTER;
-			pkgName = optarg;
+			command = RegisterAdministrator;
+			pkgname = optarg;
 			break;
 		case 'd':
-			optVal = DPM_ADMIN_CLI_DEREGISTER;
-			pkgName = optarg;
+			command = DeregisterAdministrator;
+			pkgname = optarg;
 			break;
 		case 'u':
-			userName = optarg;
+			username = optarg;
 			break;
 		case 'h':
-			printUsage();
+			usage();
 			return 0;
 		default:
-			printUsage();
+			usage();
 			exit(EXIT_FAILURE);
 		}
 	}
 
-	uid = getUID(userName);
+	int uid = getUID(username);
 	if (uid == -1) {
-		printUsage();
-		exit(EXIT_FAILURE);
+		usage();
+		return EXIT_FAILURE;
 	}
 
-	switch(optVal) {
-	case DPM_ADMIN_CLI_REGISTER:
-		return registAdminClient(pkgName, static_cast<uid_t>(uid));
-	case DPM_ADMIN_CLI_DEREGISTER:
-		return deregistAdminClient(pkgName, static_cast<uid_t>(uid));
+	switch (command) {
+	case RegisterAdministrator:
+		return registerAdministrator(pkgname, static_cast<uid_t>(uid));
+	case DeregisterAdministrator:
+		return deregisterAdministrator(pkgname, static_cast<uid_t>(uid));
 	default:
-		printUsage();
-		exit(EXIT_FAILURE);
+		usage();
 	}
 
-	return 0;
+	return EXIT_FAILURE;
 }

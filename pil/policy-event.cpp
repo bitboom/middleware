@@ -14,22 +14,23 @@
  *  limitations under the License
  */
 
-#include "policy-storage.h"
+#include <iostream>
 
-std::shared_ptr<database::Connection> PolicyStorage::database;
+#include "policy-event.h"
 
-void PolicyStorage::open(const std::string& path)
+rmi::Service *PolicyEventNotifier::signalBackend = nullptr;
+
+void PolicyEventNotifier::setSignalBackend(rmi::Service* backend)
 {
-	database.reset(new database::Connection(path, database::Connection::ReadWrite |
-												  database::Connection::Create));
+	signalBackend = backend;
 }
 
-void PolicyStorage::close()
+void PolicyEventNotifier::create(const std::string& name)
 {
-	database.reset();
+	signalBackend->createNotification(name);
 }
 
-DataSet PolicyStorage::prepare(const std::string& query)
+void PolicyEventNotifier::emit(const std::string& name, const std::string& signal)
 {
-	return DataSet(*database, query);
+	signalBackend->notify(name, signal);
 }

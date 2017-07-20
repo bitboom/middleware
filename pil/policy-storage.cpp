@@ -14,6 +14,7 @@
  *  limitations under the License
  */
 
-#include "policy-builder.h"
+#include "policy-storage.h"
 
-std::vector<std::function<void(PolicyControlContext& context)>> policyBuilder;
+Observerable PolicyStorage::observers;
+PolicyStorageBackend *PolicyStorage::backend = nullptr;

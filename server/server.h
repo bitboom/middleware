@@ -14,78 +14,42 @@
  *  limitations under the License
  */
 
-#ifndef __DPM_SERVER_H__
-#define __DPM_SERVER_H__
+#ifndef __DEVICE_POLICY_MANAGER_H__
+#define __DEVICE_POLICY_MANAGER_H__
 
 #include <string>
 #include <memory>
+#include <vector>
 
 #include <klay/filesystem.h>
 #include <klay/file-descriptor.h>
 #include <klay/rmi/service.h>
 
-class Server {
+#include "plugin.h"
+#include "sql-backend.h"
+
+class DevicePolicyManager : public rmi::Service {
 public:
-	Server();
-	~Server();
+	DevicePolicyManager();
+	~DevicePolicyManager();
 
-	void run();
-	void terminate();
-
-	template<typename Type, typename... Args>
-	void setMethodHandler(const std::string& privilege, const std::string& method,
-						  const typename rmi::MethodHandler<Type, Args...>::type& handler)
-	{
-		service->setMethodHandler<Type, Args...>(privilege, method, handler);
-	}
-
-	template <typename... Args>
-	void notify(const std::string& name, Args&&... args)
-	{
-		service->notify<Args...>(name, std::forward<Args>(args)...);
-	}
-
-	uid_t getPeerUid() const
-	{
-		return service->getPeerUid();
-	}
-
-	gid_t getPeerGid() const
-	{
-		return service->getPeerGid();
-	}
-
-	pid_t getPeerPid() const
-	{
-		return service->getPeerPid();
-	}
-
-	void createNotification(const std::string& name)
-	{
-		try {
-			service->createNotification(name);
-		} catch (runtime::Exception& e) {
-			ERROR(e.what() << " : " << name);
-		}
-	}
-
-	void createNotification(const std::vector<std::string>& notification)
-	{
-		for (const std::string& name : notification) {
-			service->createNotification(name);
-		}
-	}
+	int loadManagedClients();
+	void loadPolicyPlugins();
+	void run(bool activate = false);
 
 private:
-	runtime::FileDescriptor registerNotificationSubscriber(const std::string& name);
-	int unregisterNotificationSubscriber(const std::string& name, int id);
+	void initPolicyStorage();
+
+	runtime::FileDescriptor subscribeSignal(const std::string& name);
+
+	int enroll(const std::string& name, uid_t uid);
+	int disenroll(const std::string& name, uid_t uid);
 
 	bool checkPeerPrivilege(const rmi::Credentials& cred, const std::string& privilege);
 
 private:
-	std::string location;
-
-	std::unique_ptr<rmi::Service> service;
+	std::vector<AbstractPolicyProvider *> policyList;
+	std::unique_ptr<PolicyLoader> policyLoader;
 };
 
-#endif //__DPM_SERVER_H__
+#endif //__DEVICE_POLICY_MANAGER_H__

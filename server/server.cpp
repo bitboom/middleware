@@ -21,10 +21,10 @@
 #include <cynara-client.h>
 #include <cynara-session.h>
 
+#include "policy-event.h"
+
 #include "server.h"
-#include "policy-builder.h"
-#include "policy-storage.h"
-#include "client-manager.h"
+#include "sql-backend.h"
 
 #include "exception.h"
 #include "filesystem.h"
@@ -34,74 +34,105 @@ using namespace std::placeholders;
 
 namespace {
 
-const std::string POLICY_MANAGER_ADDRESS = "/tmp/.device-policy-manager.sock";
-const std::string POLICY_STORAGE_PATH = "/opt/dbspace/.dpm.db";
+const std::string PolicyStoragePath = "/opt/dbspace/.dpm.db";
+const std::string PolicyManagerSocket = "/tmp/.device-policy-manager.sock";
+const std::string PolicyPluginBase = "/opt/data/dpm/plugins";
 
 } // namespace
 
-Server::Server()
+DevicePolicyManager::DevicePolicyManager() :
+	rmi::Service(PolicyManagerSocket)
 {
-	service.reset(new rmi::Service(POLICY_MANAGER_ADDRESS));
+	initPolicyStorage();
 
-	service->setPrivilegeChecker(std::bind(&Server::checkPeerPrivilege, this, _1, _2));
+	PolicyEventNotifier::setSignalBackend(this);
 
-	service->expose(this, "", (runtime::FileDescriptor)(Server::registerNotificationSubscriber)(std::string));
-	service->expose(this, "", (int)(Server::unregisterNotificationSubscriber)(std::string, int));
+	setPrivilegeChecker(std::bind(&DevicePolicyManager::checkPeerPrivilege, this, _1, _2));
+
+	expose(this, "", (runtime::FileDescriptor)(DevicePolicyManager::subscribeSignal)(std::string));
+
+	expose(this, "", (int)(DevicePolicyManager::enroll)(std::string, uid_t));
+	expose(this, "", (int)(DevicePolicyManager::disenroll)(std::string, uid_t));
 }
 
-Server::~Server()
+DevicePolicyManager::~DevicePolicyManager()
 {
 }
 
-void Server::run()
+void DevicePolicyManager::loadPolicyPlugins()
 {
-	PolicyStorage::open(POLICY_STORAGE_PATH);
+	policyLoader.reset(new PolicyLoader(PolicyPluginBase));
 
-	PolicyBuild(*this);
+	runtime::DirectoryIterator iter(PolicyPluginBase), end;
+	while (iter != end) {
+		if (iter->isFile()) {
+			AbstractPolicyProvider* instance = policyLoader->instantiate(iter->getName(), *this);
+			if (instance == nullptr) {
+				ERROR("Failed to instantiate");
+			}
+			policyList.push_back(instance);
+		}
+		++iter;
+	}
+}
 
-	ClientManager::loadAdministrators();
+void DevicePolicyManager::initPolicyStorage()
+{
+	SQLBackend *backend = new SQLBackend();
 
+	if (backend->open(PolicyStoragePath)) {
+		throw runtime::Exception("Policy storage I/O error");
+	}
+
+	PolicyStorage::setBackend(backend);
+}
+
+void DevicePolicyManager::run(bool activate)
+{
 	::umask(0);
-	service->start(true);
+	start();
 }
 
-void Server::terminate()
+runtime::FileDescriptor DevicePolicyManager::subscribeSignal(const std::string& name)
 {
-	service->stop();
+	return runtime::FileDescriptor(subscribeNotification(name), true);
 }
 
-runtime::FileDescriptor Server::registerNotificationSubscriber(const std::string& name)
+int DevicePolicyManager::enroll(const std::string& name, uid_t uid)
 {
-	return runtime::FileDescriptor(service->subscribeNotification(name), true);
+	return PolicyStorage::enroll(name, uid);
 }
 
-int Server::unregisterNotificationSubscriber(const std::string& name, int id)
+int DevicePolicyManager::disenroll(const std::string& name, uid_t uid)
 {
-	return service->unsubscribeNotification(name, id);
+	return PolicyStorage::unenroll(name, uid);
 }
 
-bool Server::checkPeerPrivilege(const rmi::Credentials& cred, const std::string& privilege)
+int DevicePolicyManager::loadManagedClients()
 {
-	cynara *p_cynara;
+	return PolicyStorage::fetchDomains().size();
+}
 
-	if (privilege.empty()) {
-		return true;
-	}
+bool DevicePolicyManager::checkPeerPrivilege(const rmi::Credentials& cred, const std::string& privilege)
+{
+	if (!privilege.empty()) {
+		cynara *p_cynara;
 
-	if (::cynara_initialize(&p_cynara, NULL) != CYNARA_API_SUCCESS) {
-		ERROR(SINK, "Failure in cynara API");
-		return false;
-	}
+		if (::cynara_initialize(&p_cynara, NULL) != CYNARA_API_SUCCESS) {
+			ERROR("Failure in cynara API");
+			return false;
+		}
 
-	if (::cynara_check(p_cynara, cred.security.c_str(), "",
-					   std::to_string(cred.uid).c_str(),
-					   privilege.c_str()) != CYNARA_API_ACCESS_ALLOWED) {
+		if (::cynara_check(p_cynara, cred.security.c_str(), "",
+						   std::to_string(cred.uid).c_str(),
+						   privilege.c_str()) != CYNARA_API_ACCESS_ALLOWED) {
+			::cynara_finish(p_cynara);
+			ERROR("Access denied: " + cred.security + " : " + privilege);
+			return false;
+		}
+
 		::cynara_finish(p_cynara);
-		ERROR(SINK, "Access denied: " + cred.security + " : " + privilege);
-		return false;
 	}
-
-	::cynara_finish(p_cynara);
 
 	return true;
 }

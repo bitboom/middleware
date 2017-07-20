@@ -25,23 +25,11 @@
 #include <stdexcept>
 #include <memory>
 
-#include <klay/audit/dlog-sink.h>
-
-#include "logger.h"
-#include "preference.h"
-#include "syspopup.h"
 #include "server.h"
-
-namespace {
-
-std::unique_ptr<audit::DlogLogSink> _sink = nullptr;
-
-} // namespace
-
-audit::LogSink *SINK = nullptr;
 
 void signalHandler(int signum)
 {
+	std::cout << "Interrupted" << std::endl;
 	exit(0);
 }
 
@@ -49,23 +37,17 @@ int main(int argc, char *argv[])
 {
 	::signal(SIGINT, signalHandler);
 
-	::umask(022);
-
 	try {
-		_sink.reset(new audit::DlogLogSink("DPM"));
-		SINK = dynamic_cast<audit::LogSink*>((_sink).get());
+		DevicePolicyManager manager;
 
-		PreferencesStore& instance = PreferencesStore::getInstance();
-		instance.load("/etc/device-policy-manager.ini");
+		manager.loadManagedClients();
+		manager.loadPolicyPlugins();
 
-		SyspopupService syspopup;
-
-		Server server;
-		server.run();
+		manager.run();
 	} catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;
-		return 1;
+		return EXIT_FAILURE;
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }

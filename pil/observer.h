@@ -14,11 +14,36 @@
  *  limitations under the License
  */
 
-#ifndef __DEVICE_POLICY_CONTEXT__
-#define __DEVICE_POLICY_CONTEXT__
+#ifndef __DPM_OBSERVER_H__
+#define __DPM_OBSERVER_H__
+#include <sys/types.h>
 
-#include "server.h"
+#include <iostream>
+#include <vector>
+#include <functional>
 
-using PolicyControlContext = Server;
+class Observer {
+public:
+	virtual ~Observer() {}
+	virtual void onEvent(uid_t domain) = 0;
+};
 
-#endif //!__DEVICE_POLICY_CONTEXT__
+class Observerable {
+public:
+	void attach(Observer* observer)
+	{
+		observers.push_back(observer);
+	}
+
+	void notify(uid_t domain)
+	{
+		for (auto observer: observers) {
+			observer->onEvent(domain);
+		}
+	}
+
+private:
+	std::vector<Observer *> observers;
+};
+
+#endif //__DPM_OBSERVER_H__

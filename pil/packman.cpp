@@ -17,8 +17,6 @@
 
 #include "packman.h"
 
-#include "logger.h"
-
 namespace {
 
 int PackageEventCallback(uid_t uid, int id, const char* type, const char* name,
@@ -70,7 +68,7 @@ std::vector<ApplicationInfo> PackageInfo::getAppList() const
 	std::vector<ApplicationInfo> appList;
 
 	if (::pkgmgrinfo_appinfo_get_usr_list(handle, PMINFO_ALL_APP, AppListCallback, &appList, user) != PMINFO_R_OK) {
-		ERROR(SINK, "Error in pkgmgrinfo_appinfo_get_usr_list");
+		throw runtime::Exception("Error in pkgmgrinfo_appinfo_get_usr_list");
 	}
 
 	return appList;
@@ -370,7 +368,6 @@ void PackageManager::uninstallPackage(const std::string& pkgid, const uid_t user
 
 	int ret = ::pkgmgr_client_usr_uninstall(nativeRequestHandle, pkgtype.c_str(), pkgid.c_str(), PM_QUIET, PackageEventCallback, nullptr, user);
 	if (ret < PKGMGR_R_OK) {
-		ERROR(SINK, "Error in pkgmgr_client_uninstall");
 		throw runtime::Exception("Package manager exception");
 	}
 }
@@ -380,7 +377,7 @@ std::vector<std::string> PackageManager::getPackageList(const uid_t user)
 	std::vector<std::string> packageList;
 
 	if (::pkgmgrinfo_pkginfo_get_usr_list(PackageListCallback, &packageList, user) != PMINFO_R_OK) {
-		ERROR(SINK, "Error in pkgmgrinfo_pkginfo_get_list");
+		throw runtime::Exception("Error in pkgmgrinfo_pkginfo_get_list");
 	}
 
 	return packageList;
@@ -391,7 +388,7 @@ std::vector<ApplicationInfo> PackageManager::getAppList(const uid_t user)
 	std::vector<ApplicationInfo> appList;
 
 	if (::pkgmgrinfo_appinfo_get_usr_installed_list(AppListCallback, user, &appList) != PMINFO_R_OK) {
-		ERROR(SINK, "Error in pkgmgrinfo_appinfo_get_installed_list");
+		throw runtime::Exception("Error in pkgmgrinfo_appinfo_get_installed_list");
 	}
 
 	return appList;

@@ -16,37 +16,16 @@
 
 SET(TARGET ${PROJECT_NAME})
 
-SET(FOUNDATION		main.cpp
+SET(DAEMON			main.cpp
 					server.cpp
-					app-bundle.cpp
-					launchpad.cpp
-					packman.cpp
-					client-manager.cpp
-					policy-builder.cpp
-					policy-storage.cpp
-					policy-model.cpp
 					syspopup.cpp
-					preference.cpp
-)
-
-SET(POLICY			${SECURITY_MONITOR}
-					administration.cpp
-					application.cpp
-					restriction.cpp
-					security.cpp
-					storage.cpp
-					wifi.cpp
-					bluetooth.cpp
-					location.cpp
-					password.cpp
-					password-manager.cpp
-					krate.cpp
+					sql-backend.cpp
+					plugin.cpp
 )
 
 SET(DEPENDENCY		klay
 					glib-2.0
 					gio-2.0
-					libxml-2.0
 					sqlite3
 					bundle
 					aul
@@ -57,30 +36,16 @@ SET(DEPENDENCY		klay
 					syspopup-caller
 					deviced
 					libtzplatform-config
-					security-privilege-manager
-					bluetooth-api
-					capi-network-wifi-manager
-					capi-system-info
-					capi-system-system-settings
-					capi-network-connection
-					capi-network-bluetooth
-					notification
 					cynara-client
 					cynara-session
-					jsoncpp
-					capi-location-manager
-					capi-network-bluetooth
-					auth-fw-admin
-					bluetooth-api
-					krate
 )
 
 PKG_CHECK_MODULES(SERVER_DEPS REQUIRED ${DEPENDENCY})
 
-INCLUDE_DIRECTORIES(SYSTEM ${SERVER_DEPS_INCLUDE_DIRS} ${DPM_POLICY} ${DPM_SERVER})
+INCLUDE_DIRECTORIES(SYSTEM ${SERVER_DEPS_INCLUDE_DIRS} ${DPM_POLICY} ${DPM_SERVER} ${DPM_PIL})
 
-ADD_EXECUTABLE(${TARGET} ${FOUNDATION} ${POLICY})
-TARGET_LINK_LIBRARIES(${TARGET} ${SERVER_DEPS_LIBRARIES} pthread sqlite3)
+ADD_EXECUTABLE(${TARGET} ${DAEMON} ${POLICY})
+TARGET_LINK_LIBRARIES(${TARGET} ${SERVER_DEPS_LIBRARIES} dl pthread sqlite3 dpm-pil)
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES COMPILE_FLAGS "-fPIE")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LINK_FLAGS "-pie")
 TARGET_COMPILE_DEFINITIONS(${TARGET} PRIVATE
@@ -88,6 +53,7 @@ TARGET_COMPILE_DEFINITIONS(${TARGET} PRIVATE
 	RUN_PATH="${RUN_INSTALL_DIR}"
 	DB_PATH="${DB_INSTALL_DIR}"
 )
+
 INSTALL(TARGETS ${TARGET} DESTINATION bin)
 
 CONFIGURE_FILE(systemd/device-policy-manager.service.in systemd/device-policy-manager.service)

@@ -14,28 +14,36 @@
  *  limitations under the License
  */
 
-#ifndef __DPM_POLICY_STORAGE_H__
-#define __DPM_POLICY_STORAGE_H__
-#include <memory>
-#include <vector>
-#include <unordered_map>
+#ifndef __STATUS_H__
+#define __STATUS_H__
 
-#include <klay/exception.h>
-#include <klay/db/connection.h>
-#include <klay/db/statement.h>
-#include <klay/db/column.h>
-#include <klay/audit/logger.h>
+#include <cerrno>
+#include <utility>
 
-typedef database::Statement DataSet;
+#include "error.h"
 
-class PolicyStorage {
+template<typename Type>
+class Status {
 public:
-	static void open(const std::string& location);
-	static DataSet prepare(const std::string& query);
-	static void close();
+	Status() = delete;
+	Status(Type&& defaultValue) : value(std::forward<Type>(defaultValue))
+	{
+		errno = 0;
+	}
+
+	void operator=(Type&& newValue)
+	{
+		if (errno == 0)
+			value = newValue;
+	}
+
+	Type get() const
+	{
+		return value;
+	}
 
 private:
-	static std::shared_ptr<database::Connection> database;
+	Type value;
 };
 
-#endif //__DPM_POLICY_STORAGE_H__
+#endif //!__STATUS_H__

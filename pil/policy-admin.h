@@ -14,8 +14,8 @@
  *  limitations under the License
  */
 
-#ifndef __DPM_CLIENT_MANAGER_H__
-#define __DPM_CLIENT_MANAGER_H__
+#ifndef __DPM_POLICY_ADMIN_H__
+#define __DPM_POLICY_ADMIN_H__
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -29,21 +29,17 @@
 
 #include <klay/exception.h>
 
-#include "observer.h"
-#include "policy-context.hxx"
-
-class PolicyClient {
+class PolicyAdmin {
 public:
-	PolicyClient(PolicyControlContext& context);
-	PolicyClient(pid_t pid, uid_t user);
+	PolicyAdmin(pid_t pid, uid_t user);
 
-	PolicyClient(const PolicyClient&) = delete;
-	PolicyClient(PolicyClient&&) = default;
+	PolicyAdmin(const PolicyAdmin&) = delete;
+	PolicyAdmin(PolicyAdmin&&) = default;
 
-	~PolicyClient();
+	~PolicyAdmin();
 
-	PolicyClient& operator=(PolicyClient&&) = default;
-	PolicyClient& operator=(const PolicyClient&) = delete;
+	PolicyAdmin& operator=(PolicyAdmin&&) = default;
+	PolicyAdmin& operator=(const PolicyAdmin&) = delete;
 
 	inline std::string getName() const
 	{
@@ -66,21 +62,4 @@ private:
 	std::string key;
 };
 
-class ClientManager {
-public:
-	static void loadAdministrators();
-
-	static void registerAdministrator(const std::string& name, uid_t domain);
-	static void deregisterAdministrator(const std::string& name, uid_t domain);
-
-	static void addEventListener(Observer* observer);
-	static void removeEventListener(Observer* observer);
-
-private:
-	static std::vector<uid_t> getManagedDomainList();
-
-private:
-	static Observerable observers;
-};
-
-#endif //__DPM_CLIENT_MANAGER_H__
+#endif //__DPM_POLICY_ADMIN_H__

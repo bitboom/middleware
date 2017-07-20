@@ -14,36 +14,19 @@
  *  limitations under the License
  */
 
-#ifndef __DPM_OBSERVER_H__
-#define __DPM_OBSERVER_H__
-#include <sys/types.h>
+#ifndef __DPM_POLICY_EVENT_H__
+#define __DPM_POLICY_EVENT_H__
 
-#include <iostream>
-#include <vector>
-#include <functional>
+#include <klay/rmi/service.h>
 
-class Observer {
+class PolicyEventNotifier {
 public:
-	virtual ~Observer() {}
-	virtual void onEvent(const std::vector<uid_t>& domains) = 0;
-};
-
-class Observerable {
-public:
-	void attach(Observer* observer)
-	{
-		observers.push_back(observer);
-	}
-
-	void notify(const std::vector<uid_t>& domains)
-	{
-		for (auto observer: observers) {
-			observer->onEvent(domains);
-		}
-	}
+	static void setSignalBackend(rmi::Service* backend);
+	static void create(const std::string& name);
+	static void emit(const std::string& name, const std::string& signal);
 
 private:
-	std::vector<Observer *> observers;
+	static rmi::Service *signalBackend;
 };
 
-#endif //__DPM_OBSERVER_H__
+#endif //__DPM_POLICY_EVENT_H__

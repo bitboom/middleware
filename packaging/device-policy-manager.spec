@@ -1,5 +1,5 @@
 Name:    device-policy-manager
-Version: 0.0.1
+Version: 1.0.1
 Release: 0
 License: Apache-2.0
 Source0: %{name}-%{version}.tar.gz
@@ -7,12 +7,9 @@ Summary: Tizen Device Policy Manager
 Group:   Security/Other
 BuildRequires: gcc
 BuildRequires: cmake
-BuildRequires: pam-devel
 BuildRequires: gettext-tools
-BuildRequires: pkgconfig(dpm)
 BuildRequires: pkgconfig(klay)
 BuildRequires: pkgconfig(glib-2.0)
-BuildRequires: pkgconfig(libxml-2.0)
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(bundle)
 BuildRequires: pkgconfig(pkgmgr)
@@ -23,24 +20,12 @@ BuildRequires: pkgconfig(syspopup-caller)
 BuildRequires: pkgconfig(deviced)
 BuildRequires: pkgconfig(vconf)
 BuildRequires: pkgconfig(vconf-internal-keys)
-BuildRequires: pkgconfig(bluetooth-api)
-BuildRequires: pkgconfig(capi-network-bluetooth)
-BuildRequires: pkgconfig(libtzplatform-config)
-BuildRequires: pkgconfig(security-privilege-manager)
-BuildRequires: pkgconfig(capi-base-common)
-BuildRequires: pkgconfig(capi-system-info)
-BuildRequires: pkgconfig(capi-network-wifi-manager)
-BuildRequires: pkgconfig(capi-network-connection)
-BuildRequires: pkgconfig(capi-network-bluetooth)
-BuildRequires: pkgconfig(capi-system-system-settings)
 BuildRequires: pkgconfig(notification)
-BuildRequires: pkgconfig(key-manager)
 BuildRequires: pkgconfig(cynara-client)
 BuildRequires: pkgconfig(cynara-session)
-BuildRequires: pkgconfig(jsoncpp)
-BuildRequires: pkgconfig(capi-location-manager)
-BuildRequires: pkgconfig(auth-fw-admin)
-BuildRequires: pkgconfig(krate)
+BuildRequires: pkgconfig(libtzplatform-config)
+BuildRequires: pkgconfig(security-privilege-manager)
+BuildRequires: pkgconfig(capi-system-system-settings)
 
 %description
 The device-policy-manager package provides a daemon which is responsible for
@@ -53,6 +38,8 @@ managing device policies.
 %attr(755,root,root) %{_bindir}/dpm-syspopup
 %attr(755,root,root) %{_bindir}/dpm-storage-builder
 %attr(755,root,root) %{_bindir}/device-policy-manager
+%attr(755,root,root) %{_libdir}/libdpm-pil.so.%{version}
+%{_libdir}/libdpm-pil.so.0
 %{_unitdir}/device-policy-manager.service
 %{_unitdir}/multi-user.target.wants/device-policy-manager.service
 
@@ -96,18 +83,28 @@ rm -rf %{buildroot}
 
 %postun
 
-## Test Package ##############################################################
-%package -n dpm-testcases
-Summary: Device Policy Manager test cases
+## Devel Package ##############################################################
+%package -n device-policy-manager-devel
+Summary: Libraries and header files for device policy client development
 Group: Development/Libraries
-Requires: libdpm = %{version}-%{release}
+Requires: device-policy-manager = %{version}-%{release}
+BuildRequires: pkgconfig(bundle)
+BuildRequires: pkgconfig(pkgmgr)
+BuildRequires: pkgconfig(pkgmgr-info)
+BuildRequires: pkgconfig(aul)
+BuildRequires: pkgconfig(appsvc)
+BuildRequires: pkgconfig(syspopup-caller)
 
-%description -n dpm-testcases
-Testcases for device policy manager and device policy client
+%description -n device-policy-manager-devel
+The libdpm-pil-devel package includes the libraries and header files necessary for
+developing the device policy module.
 
-%files -n dpm-testcases
+%files -n device-policy-manager-devel
+#%manifest device-policy-client.manifest
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_bindir}/dpm-api-tests
+%{_libdir}/libdpm-pil.so
+%{_includedir}/dpm/pil
+%{_libdir}/pkgconfig/dpm-pil.pc
 
 ## DPM Syspopup Package ######################################################
 %package -n org.tizen.dpm-syspopup
@@ -118,7 +115,6 @@ BuildRequires: pkgconfig(capi-appfw-application)
 BuildRequires: pkgconfig(capi-system-system-settings)
 BuildRequires: pkgconfig(capi-ui-efl-util)
 BuildRequires: pkgconfig(capi-system-info)
-
 %description -n org.tizen.dpm-syspopup
 Tizen DPM system popup interface package
 
