@@ -24,6 +24,8 @@
 #include <klay/file-user.h>
 #include <klay/filesystem.h>
 
+#include <iostream>
+
 namespace runtime {
 
 bool FileUser::isUsedAsFD(const std::string &filePath, const pid_t pid, bool isMount)
@@ -34,12 +36,14 @@ bool FileUser::isUsedAsFD(const std::string &filePath, const pid_t pid, bool isM
 		File file(filePath);
 
 		for (runtime::DirectoryIterator iter(path), end; iter != end;) {
-			File cur(path + "/" + iter->getName());
-			if ((cur.getInode() == file.getInode() || isMount) &&
-					cur.getDevice() == file.getDevice()) {
-				return true;
-			}
-			++iter;
+			File cur(File((++iter)->getPath()).readlink());
+			std::cout << cur.getPath() << std::endl;
+			try {
+				if ((cur.getInode() == file.getInode() || isMount) &&
+						cur.getDevice() == file.getDevice()) {
+					return true;
+				}
+			} catch (runtime::Exception &e) {}
 		}
 	} catch (runtime::Exception &e) {}
 
@@ -81,7 +85,7 @@ bool FileUser::isUsedAsCwd(const std::string &filePath, const pid_t pid, bool is
 	std::string path = "/proc/" + std::to_string(pid) + "/cwd";
 
 	try {
-		File file(filePath), cwd(path);
+		File file(filePath), cwd(File(path).readlink());
 
 		if ((cwd.getInode() == file.getInode() || isMount) &&
 				cwd.getDevice() == file.getDevice()) {
@@ -97,7 +101,7 @@ bool FileUser::isUsedAsRoot(const std::string &filePath, const pid_t pid, bool i
 	std::string path = "/proc/" + std::to_string(pid) + "/root";
 
 	try {
-		File file(filePath), root(path);
+		File file(filePath), root(File(path).readlink());
 
 		if ((root.getInode() == file.getInode() || isMount) &&
 				root.getDevice() == file.getDevice()) {
