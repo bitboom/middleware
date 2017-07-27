@@ -383,10 +383,13 @@ void File::chmod(mode_t mode, bool recursive)
 
 const std::string File::readlink() const
 {
-	char buf[PATH_MAX];
-	if (::readlink(path.c_str(), buf, PATH_MAX) == -1) {
+	char buf[PATH_MAX + 1];
+	ssize_t ret = ::readlink(path.c_str(), buf, PATH_MAX);
+	if (ret == -1) {
 		throw runtime::Exception(runtime::GetSystemErrorMessage());
 	}
+
+	buf[ret] = '\0';
 	return buf;
 }
 
