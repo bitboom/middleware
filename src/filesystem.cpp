@@ -381,6 +381,15 @@ void File::chmod(mode_t mode, bool recursive)
 	}
 }
 
+const std::string File::readlink() const
+{
+	char buf[PATH_MAX];
+	if (::readlink(path.c_str(), buf, PATH_MAX) == -1) {
+		throw runtime::Exception(runtime::GetSystemErrorMessage());
+	}
+	return buf;
+}
+
 void File::lock() const
 {
 	if (::flock(descriptor, LOCK_EX) == -1) {

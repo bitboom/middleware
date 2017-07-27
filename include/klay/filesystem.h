@@ -112,6 +112,8 @@ public:
 	void chown(uid_t uid, gid_t gid, bool recursive = false);
 	void chmod(mode_t mode, bool recursive = false);
 
+	const std::string readlink() const;
+
 	const std::string& getPath() const
 	{
 		return path;
