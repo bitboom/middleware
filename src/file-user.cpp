@@ -24,8 +24,6 @@
 #include <klay/file-user.h>
 #include <klay/filesystem.h>
 
-#include <iostream>
-
 namespace runtime {
 
 bool FileUser::isUsedAsFD(const std::string &filePath, const pid_t pid, bool isMount)
@@ -37,7 +35,6 @@ bool FileUser::isUsedAsFD(const std::string &filePath, const pid_t pid, bool isM
 
 		for (runtime::DirectoryIterator iter(path), end; iter != end;) {
 			File cur(File((++iter)->getPath()).readlink());
-			std::cout << cur.getPath() << std::endl;
 			try {
 				if ((cur.getInode() == file.getInode() || isMount) &&
 						cur.getDevice() == file.getDevice()) {
