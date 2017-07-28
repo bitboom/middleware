@@ -69,7 +69,7 @@ void Logic::deinit(bool isRollback) const
 	if (customBaseDir.exists())
 		customBaseDir.remove(true);
 	else if (!isRollback)
-		throw std::invalid_argument("tanchor is never installed before.");
+		WARN(SINK, "tanchor is never installed before.");
 
 	DEBUG(SINK, "Success to deinit[" << this->m_customBasePath << "]");
 }
