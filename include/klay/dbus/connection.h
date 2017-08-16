@@ -66,14 +66,14 @@ public:
 
 	void unsubscribeSignal(SubscriptionId id);
 
-	const Variant methodcall(const std::string& busName,
-							 const std::string& object,
-							 const std::string& interface,
-							 const std::string& method,
-							 int timeout,
-							 const std::string& replyType,
-							 const std::string& paramType,
-							 ...);
+	Variant methodcall(const std::string& busName,
+					   const std::string& object,
+					   const std::string& interface,
+					   const std::string& method,
+					   int timeout,
+					   const std::string& replyType,
+					   const std::string& paramType,
+					   ...);
 
 	void emitSignal(const std::string& busName,
 					const std::string& object,
