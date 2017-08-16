@@ -32,7 +32,7 @@ namespace rmi {
 class Client {
 public:
 	Client(const std::string& address);
-	~Client();
+	virtual ~Client();
 
 	Client(const Client&) = delete;
 	Client& operator=(const Client&) = delete;

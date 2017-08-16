@@ -148,7 +148,7 @@ typedef std::function<void(const Credentials& cred, const std::string& method, i
 class Service {
 public:
 	Service(const std::string& address);
-	~Service();
+	virtual ~Service();
 
 	Service(const Service&) = delete;
 	Service& operator=(const Service&) = delete;

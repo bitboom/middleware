@@ -24,6 +24,7 @@
 #include <klay/latch.h>
 
 #include <klay/testbench.h>
+#include <klay/gmainloop.h>
 
 const std::string TESTSVC_BUS_NAME       = "org.tizen.klay";
 const std::string TESTSVC_OBJECT_PATH    = "/org/tizen/klay";
@@ -58,29 +59,6 @@ TESTCASE(DbusNegativeTest)
 	} catch (std::exception& e) {
 	}
 }
-
-class ScopedGMainLoop {
-public:
-	ScopedGMainLoop() :
-		mainloop(g_main_loop_new(NULL, FALSE), g_main_loop_unref)
-	{
-		handle = std::thread(g_main_loop_run, mainloop.get());
-	}
-
-	~ScopedGMainLoop()
-	{
-		while (!g_main_loop_is_running(mainloop.get())) {
-			std::this_thread::yield();
-		}
-
-		g_main_loop_quit(mainloop.get());
-		handle.join();
-	}
-
-private:
-	std::unique_ptr<GMainLoop, void(*)(GMainLoop*)> mainloop;
-	std::thread handle;
-};
 
 void signalCallback(dbus::Variant variant)
 {
