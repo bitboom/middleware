@@ -61,6 +61,11 @@ DevicePolicyManager::~DevicePolicyManager()
 
 void DevicePolicyManager::loadPolicyPlugins()
 {
+    runtime::File folder(PolicyPluginBase);
+
+	if (!folder.exists() || !folder.isDirectory())
+		return;
+
 	policyLoader.reset(new PolicyLoader(PolicyPluginBase));
 
 	runtime::DirectoryIterator iter(PolicyPluginBase), end;
