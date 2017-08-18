@@ -81,6 +81,9 @@ int PolicyManager::checkPolicy(unsigned int passwdType,
 	if (!itPolicy->second.isPolicyActive() || (passwdType != AUTH_PWD_NORMAL))
 		return AUTH_PASSWD_API_SUCCESS;
 
+	if (itPolicy->second.getQualityType() == AUTH_PWD_QUALITY_UNSPECIFIED && newPassword.empty())
+		return AUTH_PASSWD_API_SUCCESS;
+
 	if (!itPolicy->second.checkMinLength(newPassword)) {
 		LogError("new passwd's minLength is invalid");
 		return AUTH_PASSWD_API_ERROR_INVALID_MIN_LENGTH;

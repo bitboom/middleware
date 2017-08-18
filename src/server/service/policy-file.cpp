@@ -392,6 +392,11 @@ void PolicyFile::setQualityType(unsigned int qualityType)
 	m_policy.qualityType = qualityType;
 }
 
+unsigned int PolicyFile::getQualityType() const
+{
+	return m_policy.qualityType;
+}
+
 // policy pattern
 bool PolicyFile::isValidPattern(const std::string &pattern) const
 {

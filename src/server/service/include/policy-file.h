@@ -55,6 +55,7 @@ public:
 
 	bool checkQualityType(const std::string &password) const;
 	void setQualityType(unsigned int qualityType);
+	unsigned int getQualityType() const;
 
 	bool isValidPattern(const std::string &pattern) const;
 	bool checkPattern(const std::string &password) const;
