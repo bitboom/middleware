@@ -1,5 +1,5 @@
 [D-BUS Service]
-Name=org.tizen.dpm.syspopup
+Name=org.tizen.DevicePolicyManager
 Exec=/bin/false
 User=security_fw
-SystemdService=org.tizen.dpm.syspopup.service
+SystemdService=device-policy-syspopup.service

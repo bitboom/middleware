@@ -14,31 +14,32 @@
  *  limitations under the License
  */
 
-#ifndef __DPM_SYSPOPUP_SERVICE_H__
-#define __DPM_SYSPOPUP_SERVICE_H__
+#include "syspopup.h"
+#include <klay/gmainloop.h>
+#include <klay/audit/dlog-sink.h>
+#include <glib.h>
+#include <unistd.h>
+#include <thread>
 
-#include <string>
+namespace {
 
-#include <klay/dbus/connection.h>
+std::unique_ptr<audit::DlogLogSink> _sink = nullptr;
 
-class SyspopupService {
-public:
-	SyspopupService();
-	~SyspopupService();
+} // namespace
 
-	void run();
+audit::LogSink *SINK = nullptr;
 
-private:
-	dbus::Variant onMethodCall(const std::string& objectPath,
-							   const std::string& interface,
-							   const std::string& methodName,
-							   dbus::Variant parameters);
+int main()
+{
+	_sink.reset(new audit::DlogLogSink("DPM"));
+	SINK = dynamic_cast<audit::LogSink*>((_sink).get());
 
-	void onNameAcquired();
-	void onNameLost();
+	ScopedGMainLoop mainloop;
+	SyspopupService syspopup;
 
-private:
-	uid_t activeUser;
-};
+	syspopup.run();
 
-#endif //__DPM_SYSPOPUP_SERVICE_H__
+	::sleep(3);
+
+	return 0;
+}

@@ -38,10 +38,14 @@ managing device policies.
 %attr(755,root,root) %{_bindir}/dpm-syspopup
 %attr(755,root,root) %{_bindir}/dpm-storage-builder
 %attr(755,root,root) %{_bindir}/device-policy-manager
+%attr(755,root,root) %{_bindir}/device-policy-syspopup
 %attr(755,root,root) %{_libdir}/libdpm-pil.so.%{version}
 %{_libdir}/libdpm-pil.so.0
 %{_unitdir}/device-policy-manager.service
 %{_unitdir}/multi-user.target.wants/device-policy-manager.service
+%{_unitdir}/device-policy-syspopup.service
+/etc/dbus-1/system.d/org.tizen.dpm.syspopup.conf
+/usr/share/dbus-1/system-services/org.tizen.dpm.syspopup.service
 
 %prep
 %setup -q
@@ -63,7 +67,9 @@ managing device policies.
          -DRUN_INSTALL_DIR=%{TZ_SYS_RUN} \
          -DAPP_INSTALL_PREFIX="%{TZ_SYS_RO_APP}" \
          -DAPP_SHARE_PACKAGES_DIR="%{TZ_SYS_RO_PACKAGES}" \
-         -DPAMD_INSTALL_DIR=/etc/pam.d
+         -DPAMD_INSTALL_DIR=/etc/pam.d \
+         -DDUBS_CONFIGURE_DIR=/etc/dbus-1/system.d \
+         -DDUBS_SERVICE_DIR=/usr/share/dbus-1/system-services
 
 make %{?jobs:-j%jobs}
 

@@ -79,10 +79,6 @@ dbus::Variant SyspopupService::onMethodCall(const std::string& objectPath,
 
 void SyspopupService::onNameAcquired()
 {
-	dbus::Connection& connection = dbus::Connection::getSystem();
-	connection.registerObject(SYSPOPUP_OBJECT_PATH, manifest,
-							  std::bind(&SyspopupService::onMethodCall, this, _1, _2, _3, _4),
-							  nullptr);
 }
 
 void SyspopupService::onNameLost()
@@ -97,10 +93,16 @@ SyspopupService::SyspopupService()
 {
 	runtime::User defaultUser(::tzplatform_getenv(TZ_SYS_DEFAULT_USER));
 	activeUser = defaultUser.getUid();
+}
 
+void SyspopupService::run()
+{
 	dbus::Connection& connection = dbus::Connection::getSystem();
 	connection.setName(SYSPOPUP_BUS_NAME,
 					   std::bind(&SyspopupService::onNameAcquired, this),
 					   std::bind(&SyspopupService::onNameLost, this));
 
+	connection.registerObject(SYSPOPUP_OBJECT_PATH, manifest,
+							  std::bind(&SyspopupService::onMethodCall, this, _1, _2, _3, _4),
+							  nullptr);
 }

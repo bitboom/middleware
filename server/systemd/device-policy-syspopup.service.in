@@ -1,13 +1,15 @@
 [Unit]
 Description=Device Policy Manager Syspopup
+After=dbus.socket
+Requires=dbus.socket
 
 [Service]
 Type=dbus
-BusName=org.tizen.dpm.syspopup
+BusName=org.tizen.DevicePolicyManager
 User=security_fw
 Group=security_fw
 SmackProcessLabel=System
-ExecStart=${CMAKE_INSTALL_PREFIX}/bin/device-policy-manager-syspopup
+ExecStart=${CMAKE_INSTALL_PREFIX}/bin/device-policy-syspopup
 Restart=on-failure
 ExecReload=/bin/kill -HUP $MAINPID
 CapabilityBoundingSet=~CAP_MAC_ADMIN
