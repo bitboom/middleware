@@ -1,6 +1,6 @@
 Name:       auth-fw
 Summary:    Authentication framework
-Version:    0.0.1
+Version:    0.1.0
 Release:    1
 Group:      Security/Service
 License:    Apache-2.0
