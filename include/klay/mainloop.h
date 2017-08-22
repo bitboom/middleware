@@ -41,7 +41,7 @@ public:
 	void addEventSource(const int fd, const Event events, Callback&& callback);
 	void removeEventSource(const int fd);
 	bool dispatch(const int timeout);
-	void run(bool useGMainloop = false);
+	void run();
 	void stop();
 
 private:

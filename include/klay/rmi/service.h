@@ -153,7 +153,7 @@ public:
 	Service(const Service&) = delete;
 	Service& operator=(const Service&) = delete;
 
-	void start(bool useGMainloop = false);
+	void start();
 	void stop();
 
 	void setAuditTrail(const AuditTrail& trail);

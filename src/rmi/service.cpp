@@ -46,7 +46,7 @@ Service::~Service()
 {
 }
 
-void Service::start(bool useGMainloop)
+void Service::start()
 {
 	Socket socket(Socket::create(address));
 
@@ -58,7 +58,7 @@ void Service::start(bool useGMainloop)
 							EPOLLIN | EPOLLHUP | EPOLLRDHUP,
 							accept);
 
-	mainloop.run(useGMainloop);
+	mainloop.run();
 }
 
 void Service::stop()

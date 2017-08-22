@@ -31,17 +31,6 @@
 
 namespace runtime {
 
-namespace {
-
-gboolean GIOCallback(GIOChannel* channel, GIOCondition condition, void *data)
-{
-	Mainloop* mainloop = reinterpret_cast<Mainloop*>(data);
-	mainloop->dispatch(-1);
-	return TRUE;
-}
-
-} // namespace
-
 Mainloop::Mainloop() :
 	pollFd(::epoll_create1(EPOLL_CLOEXEC)),
 	stopped(false)
@@ -147,27 +136,12 @@ void Mainloop::prepare()
 	addEventSource(wakeupSignal.getFd(), EPOLLIN, wakeupMainloop);
 }
 
-void Mainloop::run(bool useGMainloop)
+void Mainloop::run()
 {
 	prepare();
 
-	if (useGMainloop) {
-		GIOChannel* channel;
-		channel = g_io_channel_unix_new(pollFd);
-		if (channel == NULL) {
-			std::cout << "GMAINLOOP CHANNEL ALLOC FAILED" << std::endl;
-			return;
-		}
-		g_io_add_watch(channel, (GIOCondition)(G_IO_IN|G_IO_HUP), GIOCallback, this);
-		g_io_channel_unref(channel);
-
-		while (!stopped) {
-			g_main_iteration(TRUE);
-		}
-	} else {
-		while (!stopped) {
-			dispatch(-1);
-		}
+	while (!stopped) {
+		dispatch(-1);
 	}
 }
 
