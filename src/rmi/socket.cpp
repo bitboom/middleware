@@ -22,6 +22,7 @@
 #include <sys/un.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
+#include <systemd/sd-daemon.h>
 
 #include <iostream>
 
@@ -218,7 +219,6 @@ void Socket::receiveFileDescriptors(int* fds, const size_t nr) const
 	}
 }
 
-#ifdef USE_SYSTEMD_SOCKET_ACTIVATION
 int Socket::createSystemdSocket(const std::string& path)
 {
 	int n = ::sd_listen_fds(-1);
@@ -235,7 +235,6 @@ int Socket::createSystemdSocket(const std::string& path)
 
 	return -1;
 }
-#endif
 
 int Socket::createRegularSocket(const std::string& path)
 {
@@ -279,18 +278,15 @@ int Socket::createRegularSocket(const std::string& path)
 	return sockfd;
 }
 
-Socket Socket::create(const std::string& path)
+Socket Socket::create(const std::string& path, bool activation)
 {
-	int fd;
+	int fd = -1;
 
-#ifdef USE_SYSTEMD_SOCKET_ACTIVATION
-	fd = createSystemdSocket(path);
-	if (fd == -1) {
+	if (activation)
+		fd = createSystemdSocket(path);
+
+	if (fd == -1)
 		fd = createRegularSocket(path);
-	}
-#else
-	fd = createRegularSocket(path);
-#endif
 
 	return Socket(fd);
 }

@@ -84,7 +84,7 @@ void Mainloop::removeEventSource(const int fd)
 	::epoll_ctl(pollFd, EPOLL_CTL_DEL, fd, NULL);
 }
 
-bool Mainloop::dispatch(const int timeout)
+bool Mainloop::dispatch(int timeout)
 {
 	int nfds;
 	epoll_event event[MAX_EPOLL_EVENTS];
@@ -93,8 +93,8 @@ bool Mainloop::dispatch(const int timeout)
 		nfds = ::epoll_wait(pollFd, event, MAX_EPOLL_EVENTS, timeout);
 	} while ((nfds == -1) && (errno == EINTR));
 
-	if (nfds < 0) {
-		throw Exception(GetSystemErrorMessage());
+	if (nfds <= 0) {
+		return false;
 	}
 
 	for (int i = 0; i < nfds; i++) {
@@ -136,12 +136,14 @@ void Mainloop::prepare()
 	addEventSource(wakeupSignal.getFd(), EPOLLIN, wakeupMainloop);
 }
 
-void Mainloop::run()
+void Mainloop::run(int timeout)
 {
+	bool done = false;
+
 	prepare();
 
-	while (!stopped) {
-		dispatch(-1);
+	while (!stopped && !done) {
+		done = !dispatch(timeout);
 	}
 }
 

@@ -153,7 +153,7 @@ public:
 	Service(const Service&) = delete;
 	Service& operator=(const Service&) = delete;
 
-	void start();
+	void start(bool activation = false, int timeout = -1);
 	void stop();
 
 	void setAuditTrail(const AuditTrail& trail);

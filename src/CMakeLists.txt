@@ -67,6 +67,7 @@ PKG_CHECK_MODULES(KLAY_DEPS REQUIRED	gio-2.0
 										libxml-2.0
 										sqlite3
 										dlog
+										libsystemd-daemon
 )
 
 INCLUDE_DIRECTORIES(SYSTEM	${KLAY_INCLUDE}

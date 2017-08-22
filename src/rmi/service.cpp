@@ -46,9 +46,9 @@ Service::~Service()
 {
 }
 
-void Service::start()
+void Service::start(bool activation, int timeout)
 {
-	Socket socket(Socket::create(address));
+	Socket socket(Socket::create(address, activation));
 
 	auto accept = [&](int fd, runtime::Mainloop::Event event) {
 		onNewConnection(std::make_shared<Connection>(socket.accept()));
@@ -58,7 +58,7 @@ void Service::start()
 							EPOLLIN | EPOLLHUP | EPOLLRDHUP,
 							accept);
 
-	mainloop.run();
+	mainloop.run(timeout);
 }
 
 void Service::stop()
