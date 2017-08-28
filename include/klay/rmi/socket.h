@@ -53,15 +53,13 @@ public:
 	void sendFileDescriptors(const int* fds, const size_t nr) const;
 	void receiveFileDescriptors(int* fds, const size_t nr) const;
 
-	static Socket create(const std::string& path);
+	static Socket create(const std::string& path, bool activation = false);
 	static Socket connect(const std::string& path);
 
 private:
 	static int createRegularSocket(const std::string& path);
 
-#ifdef USE_SYSTEMD_SOCKET_ACTIVATION
 	static int createSystemdSocket(const std::string& path);
-#endif
 
 private:
 	int socketFd;

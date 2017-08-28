@@ -31,17 +31,6 @@
 
 namespace runtime {
 
-namespace {
-
-gboolean GIOCallback(GIOChannel* channel, GIOCondition condition, void *data)
-{
-	Mainloop* mainloop = reinterpret_cast<Mainloop*>(data);
-	mainloop->dispatch(-1);
-	return TRUE;
-}
-
-} // namespace
-
 Mainloop::Mainloop() :
 	pollFd(::epoll_create1(EPOLL_CLOEXEC)),
 	stopped(false)
@@ -95,7 +84,7 @@ void Mainloop::removeEventSource(const int fd)
 	::epoll_ctl(pollFd, EPOLL_CTL_DEL, fd, NULL);
 }
 
-bool Mainloop::dispatch(const int timeout)
+bool Mainloop::dispatch(int timeout)
 {
 	int nfds;
 	epoll_event event[MAX_EPOLL_EVENTS];
@@ -104,8 +93,8 @@ bool Mainloop::dispatch(const int timeout)
 		nfds = ::epoll_wait(pollFd, event, MAX_EPOLL_EVENTS, timeout);
 	} while ((nfds == -1) && (errno == EINTR));
 
-	if (nfds < 0) {
-		throw Exception(GetSystemErrorMessage());
+	if (nfds <= 0) {
+		return false;
 	}
 
 	for (int i = 0; i < nfds; i++) {
@@ -147,27 +136,14 @@ void Mainloop::prepare()
 	addEventSource(wakeupSignal.getFd(), EPOLLIN, wakeupMainloop);
 }
 
-void Mainloop::run(bool useGMainloop)
+void Mainloop::run(int timeout)
 {
+	bool done = false;
+
 	prepare();
 
-	if (useGMainloop) {
-		GIOChannel* channel;
-		channel = g_io_channel_unix_new(pollFd);
-		if (channel == NULL) {
-			std::cout << "GMAINLOOP CHANNEL ALLOC FAILED" << std::endl;
-			return;
-		}
-		g_io_add_watch(channel, (GIOCondition)(G_IO_IN|G_IO_HUP), GIOCallback, this);
-		g_io_channel_unref(channel);
-
-		while (!stopped) {
-			g_main_iteration(TRUE);
-		}
-	} else {
-		while (!stopped) {
-			dispatch(-1);
-		}
+	while (!stopped && !done) {
+		done = !dispatch(timeout);
 	}
 }
 

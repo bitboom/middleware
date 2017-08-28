@@ -1,10 +1,9 @@
-%define keepstatic 1
 Name:    klay
 Version: 0.0.1
 Release: 0
 License: Apache-2.0
 Source0: file://%{name}-%{version}.tar.gz
-Summary: Tizen Klay static library and header files
+Summary: Tizen Klay library
 Group:   Development/Libraries
 BuildRequires: gcc
 BuildRequires: cmake
@@ -12,17 +11,19 @@ BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(libxml-2.0)
+BuildRequires: pkgconfig(libsystemd-daemon)
 BuildRequires: pkgconfig(libtzplatform-config)
+Requires(post): /sbin/ldconfig
+Requires(postun): /sbin/ldconfig
 
 %description
-The klay package provides a static library and header files
-which can be used for many servers and clients
+The klay package provides a library which can be used for many servers
+and clients.
 
 %files
 %defattr(644,root,root,755)
-%{_libdir}/*.a
-%{_libdir}/pkgconfig/*.pc
-%{_includedir}/klay
+%attr(755,root,root) %{_libdir}/libklay.so.%{version}
+%{_libdir}/libklay.so.0
 
 %prep
 %setup -q
@@ -47,21 +48,37 @@ make %{?jobs:-j%jobs}
 %clean
 rm -rf %{buildroot}
 
-%preun
+%post -p /sbin/ldconfig
 
-%postun
+%postun -p /sbin/ldconfig
+
+## Devel Package ##############################################################
+%package devel
+Summary: Tizen Klay development package
+Group: Development/Libraries
+Requires: %{name} = %{version}-%{release}
+
+%description devel
+The klay-devel package provides libraries and header files necessary for
+developing with the Klay library.
+
+%files devel
+%defattr(644,root,root,755)
+%{_libdir}/libklay.so
+%{_libdir}/pkgconfig/*.pc
+%{_includedir}/klay
 
 ## Test Package ##############################################################
-%package -n klay-test
+%package test
 Summary: Klay test
 Group: Development/Libraries
+Requires: %{name} = %{version}-%{release}
 
-%description -n klay-test
-Testcases for klay library
+%description test
+Testcases for klay library.
 
-%files -n klay-test
-%defattr(755,root,root,755)
-%{_bindir}/klay-test
-%{TZ_SYS_DATA}/klay-test/test-proc.sh
-%defattr(-,root,root,-)
+%files test
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_bindir}/klay-test
+%attr(755,root,root) %{TZ_SYS_DATA}/klay-test/test-proc.sh
 %{TZ_SYS_DATA}/klay-test/sample-policy.xml
