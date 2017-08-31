@@ -7,7 +7,7 @@ includedir=@INCLUDE_INSTALL_DIR@
 
 Name: dpm platform interface
 Description: Platform Interface Library for Device Policy Plugin
-Requires : dlog glib-2.0 sqlite3 libxml-2.0 libtzplatform-config aul pkgmgr pkgmgr-info
+Requires : dlog glib-2.0 sqlite3 libtzplatform-config aul pkgmgr pkgmgr-info
 Version: @VERSION@
 Libs: -L${libdir} -ldpm-pil
 Cflags: -I${includedir}/dpm/pil
