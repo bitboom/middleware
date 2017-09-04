@@ -21,6 +21,7 @@
 #include <klay/audit/logger.h>
 #include <klay/dbus/variant.h>
 #include <klay/dbus/connection.h>
+#include <klay/dbus/introspection.h>
 #include <klay/latch.h>
 
 #include <klay/testbench.h>
@@ -33,6 +34,27 @@ const std::string TESTSVC_METHOD_NOOP    = "Noop";
 const std::string TESTSVC_METHOD_PROCESS = "Process";
 const std::string TESTSVC_METHOD_THROW   = "Throw";
 const std::string TESTSVC_SIGNAL_NOTIFY  = "Notify";
+const std::string TESTSVC_NOT_EXIST      = "None";
+
+const std::string TESTSVC_INTERFACE_NEW_NAME = "NewInterface";
+const std::string TESTSVC_METHOD_NEW_NAME    = "NewMethod";
+const std::string TESTSVC_SIGNAL_NEW_NAME    = "NewSignal";
+const std::string TESTSVC_PROPERTY_NEW_NAME  = "NewProperty";
+
+const std::string TESTSVC_METHOD_NEW_DATA =
+	"<method name='" + TESTSVC_METHOD_NEW_NAME + "'>"
+	"  <arg type='s' name='argument' direction='in'/>"
+	"  <arg type='s' name='response' direction='out'/>"
+	"</method>";
+const std::string TESTSVC_SIGNAL_NEW_DATA =
+	"<signal name='" + TESTSVC_SIGNAL_NEW_NAME + "'>"
+	"  <arg type='s' name='argument'/>"
+	"</signal>";
+const std::string TESTSVC_PROPERTY_NEW_DATA =
+	"<property name='" + TESTSVC_PROPERTY_NEW_NAME + "' type='y' access='readwrite'/>";
+
+const std::string TESTSVC_WRONG_DATA_TYPE1 = "signal'/>";
+const std::string TESTSVC_WRONG_DATA_TYPE2 = "<signal>";
 
 const std::string manifest =
 	"<node>"
@@ -46,7 +68,7 @@ const std::string manifest =
 	"			<arg type='i' name='argument' direction='in'/>"
 	"		</method>"
 	"		<signal name='" + TESTSVC_SIGNAL_NOTIFY + "'>"
-	"			<arg type='s' name='arument'/>"
+	"			<arg type='s' name='argument'/>"
 	"		</signal>"
 	"	</interface>"
 	"</node>";
@@ -145,5 +167,161 @@ TESTCASE(DbusRegisterObjectTest)
 						  "(i)", 7);
 	} catch (std::exception& e) {
 		ERROR(KSINK, e.what());
+	}
+}
+
+TESTCASE(DBusIntrospectionGetterTest)
+{
+	try {
+		dbus::Introspection is(manifest);
+
+		dbus::Interface interface = is.getInterface(TESTSVC_NOT_EXIST);
+		TEST_EXPECT(true, interface == nullptr);
+
+		interface = is.getInterface(TESTSVC_INTERFACE);
+		TEST_EXPECT(true, interface != nullptr);
+
+		dbus::Method method = is.getMethod(TESTSVC_INTERFACE, TESTSVC_NOT_EXIST);
+		TEST_EXPECT(true, method == nullptr);
+
+		method = is.getMethod(TESTSVC_INTERFACE, TESTSVC_METHOD_THROW);
+		TEST_EXPECT(true, method != nullptr);
+
+		dbus::Signal signal = is.getSignal(TESTSVC_INTERFACE, TESTSVC_NOT_EXIST);
+		TEST_EXPECT(true, signal == nullptr);
+
+		signal = is.getSignal(TESTSVC_INTERFACE, TESTSVC_SIGNAL_NOTIFY);
+		TEST_EXPECT(true, signal != nullptr);
+
+		signal = is.getSignal(TESTSVC_INTERFACE, TESTSVC_SIGNAL_NEW_NAME);
+		TEST_EXPECT(true, signal == nullptr);
+
+	} catch (std::exception& e) {
+		ERROR(KSINK, e.what());
+		TEST_EXPECT(true, false);
+	}
+}
+
+TESTCASE(DBusIntrospectionDuplicatedInterface)
+{
+	try {
+		dbus::Introspection is(manifest);
+		is.addInterface(TESTSVC_INTERFACE);
+		TEST_EXPECT(true, false);
+	} catch (std::exception& e) {
+		TEST_EXPECT(true, true);
+	}
+}
+
+TESTCASE(DBusIntrospectionAddInterfaceAndMethod)
+{
+	try {
+		dbus::Introspection is(manifest);
+		dbus::Interface interface = is.getInterface(TESTSVC_INTERFACE_NEW_NAME);
+		TEST_EXPECT(true, interface == nullptr);
+
+		is.addInterface(TESTSVC_INTERFACE_NEW_NAME);
+
+		interface = is.getInterface(TESTSVC_INTERFACE_NEW_NAME);
+		TEST_EXPECT(true, interface != nullptr);
+
+		dbus::Method method = is.getMethod(TESTSVC_INTERFACE_NEW_NAME, TESTSVC_METHOD_NEW_NAME);
+		TEST_EXPECT(true, method == nullptr);
+
+		is.addMethod(TESTSVC_INTERFACE_NEW_NAME, TESTSVC_METHOD_NEW_DATA);
+
+		method = is.getMethod(TESTSVC_INTERFACE_NEW_NAME, TESTSVC_METHOD_NEW_NAME);
+		TEST_EXPECT(true, method != nullptr);
+
+	} catch (std::exception& e) {
+		ERROR(KSINK, e.what());
+		TEST_EXPECT(true, false);
+	}
+}
+
+TESTCASE(DBusIntrospectionAddMethod)
+{
+	try {
+		dbus::Introspection is(manifest);
+		dbus::Method method = is.getMethod(TESTSVC_INTERFACE, TESTSVC_METHOD_NEW_NAME);
+		TEST_EXPECT(true, method == nullptr);
+
+		is.addMethod(TESTSVC_INTERFACE, TESTSVC_METHOD_NEW_DATA);
+
+		method = is.getMethod(TESTSVC_INTERFACE, TESTSVC_METHOD_NEW_NAME);
+		TEST_EXPECT(true, method != nullptr);
+	} catch (std::exception& e) {
+		ERROR(KSINK, e.what());
+		TEST_EXPECT(true, false);
+	}
+}
+
+TESTCASE(DBusIntrospectionAddSignal)
+{
+	try {
+		dbus::Introspection is(manifest);
+		dbus::Signal signal = is.getSignal(TESTSVC_INTERFACE, TESTSVC_SIGNAL_NEW_NAME);
+		TEST_EXPECT(true, signal == nullptr);
+
+		is.addSignal(TESTSVC_INTERFACE, TESTSVC_SIGNAL_NEW_DATA);
+
+		signal = is.getSignal(TESTSVC_INTERFACE, TESTSVC_SIGNAL_NEW_NAME);
+		TEST_EXPECT(true, signal != nullptr);
+	} catch (std::exception& e) {
+		ERROR(KSINK, e.what());
+		TEST_EXPECT(true, false);
+	}
+}
+
+TESTCASE(DBusIntrospectionAddProperty)
+{
+	try {
+		dbus::Introspection is(manifest);
+		dbus::Property property = is.getProperty(TESTSVC_INTERFACE, TESTSVC_PROPERTY_NEW_NAME);
+		TEST_EXPECT(true, property == nullptr);
+
+		is.addProperty(TESTSVC_INTERFACE, TESTSVC_PROPERTY_NEW_DATA);
+
+		property = is.getProperty(TESTSVC_INTERFACE, TESTSVC_PROPERTY_NEW_NAME);
+		TEST_EXPECT(true, property != nullptr);
+	} catch (std::exception& e) {
+		ERROR(KSINK, e.what());
+		TEST_EXPECT(true, false);
+	}
+}
+
+TESTCASE(DBusIntrospectionAddTotal)
+{
+	try {
+		dbus::Introspection is(manifest);
+		is.addMethod(TESTSVC_INTERFACE, TESTSVC_METHOD_NEW_DATA);
+		is.addSignal(TESTSVC_INTERFACE, TESTSVC_SIGNAL_NEW_DATA);
+		is.addProperty(TESTSVC_INTERFACE, TESTSVC_PROPERTY_NEW_DATA);
+
+		is.addInterface(TESTSVC_INTERFACE_NEW_NAME);
+		is.addMethod(TESTSVC_INTERFACE_NEW_NAME, TESTSVC_METHOD_NEW_DATA);
+		is.addSignal(TESTSVC_INTERFACE_NEW_NAME, TESTSVC_SIGNAL_NEW_DATA);
+		is.addProperty(TESTSVC_INTERFACE_NEW_NAME, TESTSVC_PROPERTY_NEW_DATA);
+	} catch (std::exception& e) {
+		ERROR(KSINK, e.what());
+		TEST_EXPECT(true, false);
+	}
+}
+
+TESTCASE(DBusIntrospectionCheckDataFormat)
+{
+	try {
+		dbus::Introspection is(manifest);
+		is.addMethod(TESTSVC_INTERFACE, TESTSVC_WRONG_DATA_TYPE1);
+		TEST_EXPECT(true, false);
+	} catch (std::exception& e) {
+		TEST_EXPECT(true, true);
+	}
+	try {
+		dbus::Introspection is(manifest);
+		is.addMethod(TESTSVC_INTERFACE, TESTSVC_WRONG_DATA_TYPE2);
+		TEST_EXPECT(true, false);
+	} catch (std::exception& e) {
+		TEST_EXPECT(true, true);
 	}
 }
