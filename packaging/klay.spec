@@ -3,6 +3,7 @@ Version: 0.0.1
 Release: 0
 License: Apache-2.0
 Source0: file://%{name}-%{version}.tar.gz
+Source1: %name.manifest
 Summary: Tizen Klay library
 Group:   Development/Libraries
 BuildRequires: gcc
@@ -21,12 +22,14 @@ The klay package provides a library which can be used for many servers
 and clients.
 
 %files
+%manifest %name.manifest
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libklay.so.%{version}
 %{_libdir}/libklay.so.0
 
 %prep
 %setup -q
+cp %SOURCE1 .
 
 %build
 %{!?build_type:%define build_type "RELEASE"}
@@ -63,6 +66,7 @@ The klay-devel package provides libraries and header files necessary for
 developing with the Klay library.
 
 %files devel
+%manifest %name.manifest
 %defattr(644,root,root,755)
 %{_libdir}/libklay.so
 %{_libdir}/pkgconfig/*.pc
@@ -78,6 +82,7 @@ Requires: %{name} = %{version}-%{release}
 Testcases for klay library.
 
 %files test
+%manifest %name.manifest
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/klay-test
 %attr(755,root,root) %{TZ_SYS_DATA}/klay-test/test-proc.sh
