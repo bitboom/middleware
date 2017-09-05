@@ -244,13 +244,13 @@ int installChainCert(CertStoreType storeType,
 }
 int installCert(CertStoreType storeType,
 				const std::string &cert,
-				const std::string &gname)
+				const std::string &gname,
+				const std::string &alias)
 {
-	std::string commonName = getCommonName(PEM_CRT, cert);
 	return vcore_client_install_certificate_to_store(
 			   storeType,
 			   gname.c_str(),
-			   commonName.c_str(),
+			   alias.c_str(),
 			   NULL,
 			   NULL,
 			   cert.c_str(),
@@ -653,7 +653,8 @@ int insertToStore(CertStoreType storeTypes,
 	return CERTSVC_SUCCESS;
 }
 
-int insertToStorePEM(CertStoreType storeTypes, const std::string &path, const std::string &gname)
+int insertToStorePEM(CertStoreType storeTypes, const std::string &path, const std::string &gname,
+					 const std::string &alias)
 {
 	std::string content = readFromFile(path);
 
@@ -674,7 +675,7 @@ int insertToStorePEM(CertStoreType storeTypes, const std::string &path, const st
 		if (!hasStore(storeTypes, storeType))
 			continue;
 
-		int result = installCert(storeType, parsed, gname);
+		int result = installCert(storeType, parsed, gname, alias);
 
 		if (result != CERTSVC_SUCCESS) {
 			LogError("Failed to install PEM/CRT to db store : " << storeType << " result : " << result);
@@ -730,7 +731,7 @@ int pkcs12_import_from_file_to_store(CertStoreType storeTypes,
 
 	if (strcasecmp(suffix.c_str(), ".pem") == 0 || strcasecmp(suffix.c_str(), ".crt") == 0) {
 		std::string gnamePEM = generateGname();
-		result = insertToStorePEM(storeTypes, path, gnamePEM);
+		result = insertToStorePEM(storeTypes, path, gnamePEM, alias);
 
 		if (result != CERTSVC_SUCCESS)
 			LogError("Failed to install PEM/CRT file to store. gname : " << gnamePEM << " result : " << result);

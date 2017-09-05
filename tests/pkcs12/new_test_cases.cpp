@@ -951,3 +951,4 @@ RUNNER_TEST(CERTSVC_PKCS12_1028_certsvc_set_cert_to_disabled_and_get_status_for_
 
 	FREE_INSTANCE
 }
+
