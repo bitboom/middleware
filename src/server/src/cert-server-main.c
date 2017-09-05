@@ -64,6 +64,25 @@ int CertSvcGetSocketFromSystemd(int *pSockfd)
 	return CERTSVC_FAIL;
 }
 
+static int sendBuffer(int socket, const char *buffer, size_t length)
+{
+	char *data = (char *)buffer;
+	size_t remaining_length = length;
+
+	do {
+		ssize_t res = send(socket, data, remaining_length, MSG_NOSIGNAL);
+		if (res == -1) {
+			SLOGE("Error during sending data via %d socket errno[%d]", socket, errno);
+			return -1;
+		}
+
+		data += res;
+		remaining_length -= res;
+	} while (remaining_length > 0);
+
+	return length;
+}
+
 void CertSvcServerComm(void)
 {
 	int server_sockfd = 0;
@@ -190,8 +209,8 @@ void CertSvcServerComm(void)
 								   recv_data.gname,
 								   send_data.dataBlock);
 			send_data.dataBlockLen = strlen(send_data.dataBlock);
-			result = send(client_sockfd, (char *)&send_data,
-						  sizeof(send_data), MSG_NOSIGNAL);
+
+			result = sendBuffer(client_sockfd, (char *)&send_data, sizeof(send_data));
 			break;
 		}
 
@@ -200,8 +219,8 @@ void CertSvcServerComm(void)
 								   recv_data.gname,
 								   send_data.dataBlock);
 			send_data.dataBlockLen = strlen(send_data.dataBlock);
-			result = send(client_sockfd, (char *)&send_data,
-						  sizeof(send_data), MSG_NOSIGNAL);
+
+			result = sendBuffer(client_sockfd, (char *)&send_data, sizeof(send_data));
 			break;
 		}
 
@@ -213,8 +232,7 @@ void CertSvcServerComm(void)
 			if (send_data.result == CERTSVC_SUCCESS)
 				send_data.result = update_ca_certificate_file(NULL);
 
-			result = send(client_sockfd, (char *)&send_data,
-						  sizeof(send_data), MSG_NOSIGNAL);
+			result = sendBuffer(client_sockfd, (char *)&send_data, sizeof(send_data));
 			break;
 		}
 
@@ -223,8 +241,7 @@ void CertSvcServerComm(void)
 								   recv_data.storeType,
 								   recv_data.gname,
 								   &send_data.certStatus);
-			result = send(client_sockfd, (char *)&send_data,
-						  sizeof(send_data), MSG_NOSIGNAL);
+			result = sendBuffer(client_sockfd, (char *)&send_data, sizeof(send_data));
 			break;
 		}
 
@@ -238,8 +255,7 @@ void CertSvcServerComm(void)
 			if (send_data.result == CERTSVC_SUCCESS)
 				send_data.result = update_ca_certificate_file(NULL);
 
-			result = send(client_sockfd, (char *)&send_data,
-						  sizeof(send_data), MSG_NOSIGNAL);
+			result = sendBuffer(client_sockfd, (char *)&send_data, sizeof(send_data));
 			break;
 		}
 
@@ -248,8 +264,7 @@ void CertSvcServerComm(void)
 								   recv_data.storeType,
 								   recv_data.gname,
 								   &send_data.isAliasUnique);
-			result = send(client_sockfd, (char *)&send_data,
-						  sizeof(send_data), MSG_NOSIGNAL);
+			result = sendBuffer(client_sockfd, (char *)&send_data, sizeof(send_data));
 			break;
 		}
 
@@ -267,8 +282,7 @@ void CertSvcServerComm(void)
 				if (recv_data.certType == PEM_CRT || recv_data.certType == P12_TRUSTED)
 					send_data.result = update_ca_certificate_file(recv_data.dataBlock);
 
-			result = send(client_sockfd, (char *)&send_data,
-						  sizeof(send_data), MSG_NOSIGNAL);
+			result = sendBuffer(client_sockfd, (char *)&send_data, sizeof(send_data));
 			break;
 		}
 
@@ -282,12 +296,14 @@ void CertSvcServerComm(void)
 								   &certListBuffer,
 								   &bufferLen,
 								   &send_data.certCount);
-			result = send(client_sockfd, (char *)&send_data,
-						  sizeof(send_data), MSG_NOSIGNAL);
+			result = sendBuffer(client_sockfd, (char *)&send_data, sizeof(send_data));
 
-			if (bufferLen > 0)
-				result = send(client_sockfd, certListBuffer,
-							  bufferLen, MSG_NOSIGNAL);
+			if ((result > 0) && (bufferLen > 0)) {
+				result = sendBuffer(client_sockfd, certListBuffer, bufferLen);
+			}
+
+			free(certListBuffer);
+			certListBuffer = NULL;
 
 			break;
 		}
@@ -298,8 +314,8 @@ void CertSvcServerComm(void)
 								   recv_data.gname,
 								   send_data.common_name,
 								   sizeof(send_data.common_name));
-			result = send(client_sockfd, (char *)&send_data,
-						  sizeof(send_data), MSG_NOSIGNAL);
+
+			result = sendBuffer(client_sockfd, (char *)&send_data, sizeof(send_data));
 			break;
 		}
 
@@ -310,12 +326,16 @@ void CertSvcServerComm(void)
 								   &certBlockBuffer,
 								   &blockBufferLen,
 								   &send_data.certBlockCount);
-			result = send(client_sockfd, (char *)&send_data,
-						  sizeof(send_data), MSG_NOSIGNAL);
 
-			if (blockBufferLen > 0)
-				result = send(client_sockfd, certBlockBuffer,
-							  blockBufferLen, MSG_NOSIGNAL);
+			result = sendBuffer(client_sockfd, (char *)&send_data, sizeof(send_data));
+
+			if ((result > 0) && (blockBufferLen > 0)) {
+				result = sendBuffer(client_sockfd, certBlockBuffer, blockBufferLen);
+			}
+
+			free(certBlockBuffer);
+			certBlockBuffer = NULL;
+
 			break;
 		}
 
