@@ -51,10 +51,6 @@ Requires: openssl
 %global cert_svc_examples       %cert_svc_ro_path/examples
 %global cert_svc_tests          %rw_app_dir/cert-svc-tests
 
-%global cert_svc_old_db_path    /opt/share/cert-svc/dbspace
-%global upgrade_script_path     %ro_data_dir/upgrade/scripts
-%global upgrade_data_path       %ro_data_dir/upgrade/data
-
 %description
 Certification service
 
@@ -119,9 +115,6 @@ export FFLAGS="$FFLAGS -DTIZEN_EMULATOR_MODE"
          -DCERT_SVC_RO_PATH=%cert_svc_ro_path \
          -DCERT_SVC_PKCS12=%cert_svc_pkcs12 \
          -DCERT_SVC_DB_PATH=%cert_svc_db_path \
-         -DCERT_SVC_OLD_DB_PATH=%cert_svc_old_db_path \
-         -DUPGRADE_SCRIPT_PATH=%upgrade_script_path \
-         -DUPGRADE_DATA_PATH=%upgrade_data_path \
 %if 0%{?certsvc_test_build}
          -DCERTSVC_TEST_BUILD=1 \
          -DCERT_SVC_TESTS=%cert_svc_tests \
@@ -155,7 +148,7 @@ systemctl daemon-reload
 if [ $1 = 1 ]; then
     systemctl start cert-server.socket
 fi
-# upgrade / reinstall
+# reinstall
 if [ $1 = 2 ]; then
     systemctl restart cert-server.socket
 fi
@@ -179,10 +172,6 @@ fi
 %attr(-, %{user_name}, %{group_name}) %cert_svc_db_path/certs-meta.db-journal
 %attr(-, %{user_name}, %{group_name}) %cert_svc_ro_path
 
-%attr(755, root, root) %upgrade_script_path/242.cert-svc-db-upgrade.sh
-%attr(755, root, root) %upgrade_script_path/243.cert-svc-disabled-certs-upgrade.sh
-%upgrade_data_path/certs-meta.db
-
 %files devel
 %_includedir/*
 %_libdir/pkgconfig/*
@@ -193,9 +182,6 @@ fi
 %bin_dir/cert-svc-test*
 %cert_svc_tests
 %_libdir/libcert-svc-validator-plugin.so
-
-%attr(755, root, root) %upgrade_script_path/cert-svc-test-upgrade.sh
-%upgrade_data_path/certs-meta-old.db
 
 %bin_dir/cert-svc-example*
 %cert_svc_examples

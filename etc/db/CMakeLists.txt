@@ -36,12 +36,6 @@ IF (${CURRENT_DIGEST} STREQUAL ${CA_BUNDLE_DIGEST})
 		RENAME certs-meta.db
 		)
 
-	INSTALL(FILES
-		resource/certs-meta-0.0.4.db
-		DESTINATION ${UPGRADE_DATA_PATH}
-		RENAME certs-meta.db
-		)
-
 ELSE (${CURRENT_DIGEST} STREQUAL ${CA_BUNDLE_DIGEST})
 	MESSAGE("${CURRENT_DIGEST} digest is not match with static db.")
 	MESSAGE("Add ssl table to certs-meta.db")
@@ -73,11 +67,6 @@ ELSE (${CURRENT_DIGEST} STREQUAL ${CA_BUNDLE_DIGEST})
 	INSTALL(FILES
 		${PWD}/certs-meta.db
 		DESTINATION ${CERT_SVC_DB_PATH}
-		)
-
-	INSTALL(FILES
-		${PWD}/certs-meta.db
-		DESTINATION ${UPGRADE_DATA_PATH}
 		)
 
 ENDIF (${CURRENT_DIGEST} STREQUAL ${CA_BUNDLE_DIGEST})
