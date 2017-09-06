@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2017 Samsung Electronics Co., Ltd All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,19 @@
  *
  */
 
-#ifndef __DPM_SYSPOPUP_WIDGET_H__
-#define __DPM_SYSPOPUP_WIDGET_H__
+#ifndef __DPM_SCREEN_CAPTURE_SYSPOPUP_H__
+#define __DPM_SCREEN_CAPTURE_SYSPOPUP_H__
 
-#include <app.h>
-#include <app_common.h>
-#include <Elementary.h>
+#include "../interface.h"
 
-Evas_Object *create_window(const char *pkg_name);
-Evas_Object *create_popup(Evas_Object *parent, const char *style);
-Evas_Object *create_button(Evas_Object *parent, const char *style, const char *text, Evas_Smart_Cb callback, void *data);
-Evas_Object *create_image(Evas_Object *parent, const char *path);
+class ScreenCapturePopup : public SyspopupInterface {
+public:
+	ScreenCapturePopup();
+	virtual ~ScreenCapturePopup();
 
-#endif /* __DPM_SYSPOPUP_WIDGET_H__ */
+	void initialize();
+	void contribute(const std::string &userData);
+	void dispose();
+};
+
+#endif /* __DPM_SCREEN_CAPTURE_SYSPOPUP_H__ */

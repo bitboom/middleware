@@ -1,7 +1,6 @@
 /*
- * Tizen DPM Syspopup
  *
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2017 Samsung Electronics Co., Ltd All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +16,17 @@
  *
  */
 
-#ifndef __DPM_PROFILE_DECISION_H__
-#define __DPM_PROFILE_DECISION_H__
+#ifndef __DPM_SYSPOPUP_IMAGE_H__
+#define __DPM_SYSPOPUP_IMAGE_H__
 
-extern int _tizen_whether_wearable;
-extern int _get_tizen_profile();
-#define _TIZEN_PROFILE_WEARABLE ((__builtin_expect(_tizen_whether_wearable != -1, 1)) ? \
-                               _tizen_whether_wearable : _get_tizen_profile())
+#include "widget.h"
 
-#endif /* __DPM_PROFILE_DECISION_H__ */
+class Image : public Widget {
+public:
+	Image(Widget *parent);
+	~Image();
+
+	void setFile(const std::string &path);
+};
+
+#endif

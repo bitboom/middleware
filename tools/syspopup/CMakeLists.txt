@@ -1,8 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(org.tizen.dpm-syspopup C)
 
-INCLUDE_DIRECTORIES(./include)
-
 FIND_PACKAGE(PkgConfig REQUIRED)
 PKG_CHECK_MODULES(dpm_syspopup_pkgs REQUIRED
 	dlog
@@ -21,21 +19,45 @@ INCLUDE_DIRECTORIES(${dpm_syspopup_pkgs_INCLUDE_DIRS} ${DPM_LIBS})
 LINK_DIRECTORIES(${dpm_syspopup_pkgs_LIBRARY_DIRS})
 
 SET(PKG_NAME "${PROJECT_NAME}")
-SET(PKG_SRC	src/main.c
-		src/ui.c
-		src/widget.c
-		src/popup-list.c
-		src/appcontrol.c
-		src/notification.c
-		src/default.c
-		src/toast.c
-		src/password-enforce-change.c
-)
+SET(PKG_SRC	src/main.cpp
+		src/application.cpp
+		src/interface.cpp)
 
+SET(PKG_POPUP_SRC
+		src/popup/bluetooth.cpp
+		src/popup/browser.cpp
+		src/popup/camera.cpp
+		src/popup/clipboard.cpp
+		src/popup/krate-create.cpp
+		src/popup/krate-remove.cpp
+		src/popup/location.cpp
+		src/popup/message-retrieving.cpp
+		src/popup/message-sending.cpp
+		src/popup/microphone.cpp
+		src/popup/nfc.cpp
+		src/popup/package-installation.cpp
+		src/popup/package-uninstallation.cpp
+		src/popup/password.cpp
+		src/popup/popimap-email.cpp
+		src/popup/screen-capture.cpp
+		src/popup/settings-changes.cpp
+		src/popup/wifi.cpp
+		src/popup/wifi-hotspot.cpp
+		)
+
+SET(PKG_UI_SRC
+		src/ui/widget.cpp
+		src/ui/popup.cpp
+		src/ui/window.cpp
+		src/ui/button.cpp
+		src/ui/layout.cpp
+		src/ui/image.cpp
+		src/ui/notification.cpp
+		src/ui/appcontrol.cpp)
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIE")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie")
 
-ADD_EXECUTABLE(${PKG_NAME} ${PKG_SRC})
+ADD_EXECUTABLE(${PKG_NAME} ${PKG_SRC} ${PKG_POPUP_SRC} ${PKG_UI_SRC})
 INSTALL(TARGETS ${PKG_NAME} DESTINATION ${APP_INSTALL_PREFIX}/${PKG_NAME}/bin)
 
 TARGET_LINK_LIBRARIES(${PKG_NAME} ${dpm_syspopup_pkgs_LIBRARIES})
