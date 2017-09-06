@@ -96,6 +96,8 @@ void destroyStoreList(CertSvcStoreCertList *list)
 {
 	while (list) {
 		CertSvcStoreCertList *next = list->next;
+		free(list->gname);
+		free(list->title);
 		free(list);
 		list = next;
 	}
