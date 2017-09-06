@@ -1115,6 +1115,8 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 	if (sqlite3_column_text(stmt, 0) != NULL)
 		private_key_name = strdup((const char *)sqlite3_column_text(stmt, 0));
 
+	sqlite3_free(query);
+
 	query = sqlite3_mprintf("delete from disabled_certs where gname=%Q", gname);
 	result = execute_insert_update_query(query);
 
