@@ -98,6 +98,73 @@ inline CertStoreType nextStore(CertStoreType type)
 	}
 }
 
+CertSvcStoreCertList *createStoreListNode(const std::string &gname, const std::string &title,
+										  CertStoreType storeType)
+{
+	CertSvcStoreCertList *node = (CertSvcStoreCertList *)malloc(sizeof(CertSvcStoreCertList));
+
+	if (node == NULL)
+		return NULL;
+
+	node->gname = strdup(gname.c_str());
+	node->title = strdup(title.c_str());
+	node->status = ENABLED;
+	node->storeType = storeType;
+	node->next = NULL;
+
+	if (node->gname == NULL || node->title == NULL) {
+		free(node->gname);
+		free(node->title);
+		free(node);
+		return NULL;
+	}
+
+	return node;
+}
+
+void destroyStoreList(CertSvcStoreCertList **certList, size_t *length)
+{
+	if (certList == NULL || length == NULL) {
+		return;
+	}
+
+	CertSvcStoreCertList *list = *certList;
+
+	while (list) {
+		CertSvcStoreCertList *next = list->next;
+		free(list->gname);
+		free(list->title);
+		free(list);
+		list = next;
+	}
+
+	*length = 0;
+}
+
+void addStoreListNode(CertSvcStoreCertList **list, CertSvcStoreCertList *node)
+{
+	node->next = *list;
+	*list = node;
+}
+
+int appendStoreListNode(CertSvcStoreCertList **certList, size_t *length,
+						 const std::string &gname, const std::string &alias,
+						 CertStoreType storeType)
+{
+	if (certList == NULL || length == NULL)
+		return CERTSVC_SUCCESS;
+
+	CertSvcStoreCertList *node = createStoreListNode(gname, alias, storeType);
+	if (node == NULL) {
+		return CERTSVC_BAD_ALLOC;
+	}
+
+	addStoreListNode(certList, node);
+	(*length)++;
+
+	return CERTSVC_SUCCESS;
+}
+
 std::string generateGname(void)
 {
 	int generator;
@@ -610,7 +677,9 @@ int insertToStore(CertStoreType storeTypes,
 				  const std::string &endCertName,
 				  const std::string &endCertBuffer,
 				  const std::vector<std::string> &certChainName,
-				  const std::vector<std::string> &certChainBuffer)
+				  const std::vector<std::string> &certChainBuffer,
+				  CertSvcStoreCertList **certList,
+				  size_t *length)
 {
 	size_t ncerts = certChainName.size();
 
@@ -634,6 +703,12 @@ int insertToStore(CertStoreType storeTypes,
 			return result;
 		}
 
+		int res = appendStoreListNode(certList, length, endCertName, alias, storeType);
+		if (res != CERTSVC_SUCCESS) {
+			LogError("Failed to append store list node.");
+			return result;
+		}
+
 		for (size_t i = 0; i < ncerts; i++) {
 			if (i == ncerts - 1)
 				result = installChainCert(storeType, certChainBuffer[i], certChainName[i], endCertName,
@@ -646,6 +721,12 @@ int insertToStore(CertStoreType storeTypes,
 				LogError("Failed to install the ca certificates. result : " << result);
 				return result;
 			}
+
+			int res = appendStoreListNode(certList, length, certChainName[i], alias, storeType);
+			if (res != CERTSVC_SUCCESS) {
+				LogError("Failed to append store list node.");
+				return result;
+			}
 		}
 	}
 
@@ -654,7 +735,7 @@ int insertToStore(CertStoreType storeTypes,
 }
 
 int insertToStorePEM(CertStoreType storeTypes, const std::string &path, const std::string &gname,
-					 const std::string &alias)
+					 const std::string &alias, CertSvcStoreCertList **certList, size_t *length)
 {
 	std::string content = readFromFile(path);
 
@@ -683,6 +764,13 @@ int insertToStorePEM(CertStoreType storeTypes, const std::string &path, const st
 			return result;
 		}
 
+		int res = appendStoreListNode(certList, length, gname, alias, storeType);
+		if (res != CERTSVC_SUCCESS) {
+			rollbackStore(storeTypes, gname);
+			LogError("Failed to append store list node.");
+			return result;
+		}
+
 		LogDebug("Success to install PEM/CRT to db store : " << storeType);
 	}
 
@@ -696,7 +784,9 @@ int insertToStorePEM(CertStoreType storeTypes, const std::string &path, const st
 int pkcs12_import_from_file_to_store(CertStoreType storeTypes,
 									 const char *_path,
 									 const char *_password,
-									 const char *_alias)
+									 const char *_alias,
+									 CertSvcStoreCertList **certList,
+									 size_t *length)
 {
 	int result = 0;
 
@@ -731,10 +821,12 @@ int pkcs12_import_from_file_to_store(CertStoreType storeTypes,
 
 	if (strcasecmp(suffix.c_str(), ".pem") == 0 || strcasecmp(suffix.c_str(), ".crt") == 0) {
 		std::string gnamePEM = generateGname();
-		result = insertToStorePEM(storeTypes, path, gnamePEM, alias);
+		result = insertToStorePEM(storeTypes, path, gnamePEM, alias, certList, length);
 
-		if (result != CERTSVC_SUCCESS)
+		if (result != CERTSVC_SUCCESS) {
+			destroyStoreList(certList, length);
 			LogError("Failed to install PEM/CRT file to store. gname : " << gnamePEM << " result : " << result);
+		}
 
 		return result;;
 	}
@@ -806,10 +898,14 @@ int pkcs12_import_from_file_to_store(CertStoreType storeTypes,
 						   endCertName,
 						   endCertBuffer,
 						   certChainName,
-						   certChainBuffer);
+						   certChainBuffer,
+						   certList,
+						   length);
 
-	if (result != CERTSVC_SUCCESS)
+	if (result != CERTSVC_SUCCESS) {
+		destroyStoreList(certList, length);
 		rollbackStore(storeTypes, endCertName);
+	}
 
 	LogDebug("Success to import pkcs12 to store");
 	return result;

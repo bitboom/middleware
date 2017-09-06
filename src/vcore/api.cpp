@@ -891,10 +891,12 @@ err:
 		CertStoreType storeType,
 		CertSvcString path,
 		CertSvcString pass,
-		CertSvcString pfxIdString)
+		CertSvcString pfxIdString,
+		CertSvcStoreCertList **certList,
+		size_t *length)
 	{
 		return pkcs12_import_from_file_to_store(storeType, path.privateHandler, pass.privateHandler,
-												pfxIdString.privateHandler);
+												pfxIdString.privateHandler, certList, length);
 	}
 
 	inline int pkcsGetAliasNameForCertInStore(CertStoreType storeType,
@@ -1726,7 +1728,35 @@ int certsvc_pkcs12_import_from_file_to_store(CertSvcInstance instance,
 			return CERTSVC_INVALID_STORE_TYPE;
 		}
 
-		return impl(instance)->pkcsImportToStore(storeType, path, password, pfxIdString);
+		return impl(instance)->pkcsImportToStore(storeType, path, password, pfxIdString,
+												 NULL, NULL);
+	} catch (...) {
+		LogError("Exception occured from pkcsImportToStore");
+		return CERTSVC_FAIL;
+	}
+}
+
+int certsvc_pkcs12_import_from_file_to_store_ret_list(CertSvcInstance instance,
+		CertStoreType storeType,
+		CertSvcString path,
+		CertSvcString password,
+		CertSvcString pfxIdString,
+		CertSvcStoreCertList **certList,
+		size_t *length)
+{
+	try {
+		if (certList == NULL || length == NULL) {
+			LogError("Wrong argument.");
+			return CERTSVC_WRONG_ARGUMENT;
+		}
+
+		if (path.privateHandler == NULL || !impl(instance)->checkValidStoreType(storeType)) {
+			LogError("Invalid input parameter.");
+			return CERTSVC_INVALID_STORE_TYPE;
+		}
+
+		return impl(instance)->pkcsImportToStore(storeType, path, password, pfxIdString,
+												 certList, length);
 	} catch (...) {
 		LogError("Exception occured from pkcsImportToStore");
 		return CERTSVC_FAIL;

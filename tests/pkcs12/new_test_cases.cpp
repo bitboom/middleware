@@ -952,3 +952,105 @@ RUNNER_TEST(CERTSVC_PKCS12_1028_certsvc_set_cert_to_disabled_and_get_status_for_
 	FREE_INSTANCE
 }
 
+static void remove_certificates_from_store(CertSvcInstance &instance, CertStoreType storeType)
+{
+	int result;
+	size_t length = 0;
+	CertSvcStoreCertList *certList = NULL;
+	CertSvcStoreCertList *certListIter = NULL;
+
+	result = certsvc_pkcs12_get_certificate_list_from_store(instance, storeType, DISABLED, &certList,
+															&length);
+	RUNNER_ASSERT_MSG(result == CERTSVC_SUCCESS, "Getting certificate list from system store failed");
+
+	certListIter = certList;
+
+	while (certListIter) {
+		CertSvcString Gname = wrapper_certsvc_string_new(certListIter->gname);
+
+		result = certsvc_pkcs12_delete_certificate_from_store(instance, storeType, Gname);
+
+		certsvc_string_free(Gname);
+		certListIter = certListIter->next;
+	}
+}
+
+size_t count_certificates_on_list(CertSvcStoreCertList *certList)
+{
+	size_t counter = 0;
+
+	while (certList) {
+		counter++;
+		certList = certList->next;
+	}
+
+	return counter;
+}
+
+RUNNER_TEST(CERTSVC_PKCS12_1029_install_certs_from_p12_file_using_wifi_store_ret_list)
+{
+	int result;
+	CertSvcStoreCertList *certList = NULL;
+	size_t length = 0;
+
+	CREATE_INSTANCE
+
+	remove_certificates_from_store(instance, WIFI_STORE);
+
+	CertSvcString Alias = wrapper_certsvc_string_new("P12-WifiUser-wifi-store");
+	CertSvcString Path = wrapper_certsvc_string_new(TestData::UserP12WithPassPath.c_str());
+	CertSvcString Pass = wrapper_certsvc_string_new(TestData::UserP12Pass.c_str());
+
+	result = certsvc_pkcs12_import_from_file_to_store_ret_list(instance, WIFI_STORE, Path, Pass, Alias,
+															   &certList, &length);
+	RUNNER_ASSERT_MSG(result == CERTSVC_SUCCESS, "Importing P12 file to WIFI store failed.");
+	RUNNER_ASSERT_MSG(length == 3, "There should be 3 imported certificates");
+	size_t count = count_certificates_on_list(certList);
+	RUNNER_ASSERT_MSG(length == count, "The length is different than number of elements on the list");
+
+	result = certsvc_pkcs12_free_certificate_list_loaded_from_store(instance, &certList);
+	RUNNER_ASSERT_MSG(result == CERTSVC_SUCCESS, "Freeing certificate list from system store failed");
+
+	remove_certificates_from_store(instance, WIFI_STORE);
+
+	certsvc_string_free(Alias);
+	certsvc_string_free(Path);
+	certsvc_string_free(Pass);
+
+	FREE_INSTANCE
+}
+
+RUNNER_TEST(CERTSVC_PKCS12_1030_install_certs_from_pem_file_using_wifi_store_ret_list)
+{
+	int result;
+	CertSvcStoreCertList *certList = NULL;
+	size_t length = 0;
+
+	CREATE_INSTANCE
+
+	remove_certificates_from_store(instance, WIFI_STORE);
+
+	CertSvcString PEMPath = wrapper_certsvc_string_new(TestData::ServerCertPemPath.c_str());
+	CertSvcString PEMPass = wrapper_certsvc_string_new(NULL);
+	// alias has been taken from PEM file
+	CertSvcString PEMAlias = wrapper_certsvc_string_new("PEM-WifiUser-wifi-store");
+
+	result = certsvc_pkcs12_import_from_file_to_store_ret_list(instance, WIFI_STORE, PEMPath, PEMPass, PEMAlias,
+															   &certList, &length);
+	RUNNER_ASSERT_MSG(result == CERTSVC_SUCCESS, "Importing PEM file to WIFI store failed.");
+	RUNNER_ASSERT_MSG(length == 1, "There should be 3 imported certificates");
+	size_t count = count_certificates_on_list(certList);
+	RUNNER_ASSERT_MSG(length == count, "The length is different than number of elements on the list");
+
+	result = certsvc_pkcs12_free_certificate_list_loaded_from_store(instance, &certList);
+	RUNNER_ASSERT_MSG(result == CERTSVC_SUCCESS, "Freeing certificate list from system store failed");
+
+	remove_certificates_from_store(instance, WIFI_STORE);
+
+	certsvc_string_free(PEMAlias);
+	certsvc_string_free(PEMPath);
+	certsvc_string_free(PEMPass);
+
+	FREE_INSTANCE
+}
+

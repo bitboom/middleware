@@ -282,6 +282,39 @@ int certsvc_pkcs12_import_from_file_to_store(CertSvcInstance instance,
 		CertSvcString password,
 		CertSvcString alias);
 
+
+/**
+ * Import PKCS#12 bundle(with .pfx or .p12) or certificate(base64 form with .crt
+ * or .pem suffix) from file to specified store and return imported list of certificates.
+ * If password isn't needed, create CertSvcString @a password with null input on
+ * certsvc_string_new(). Refer certsvc_string_new() API description
+ *
+ * @param[in] instance   CertSvcInstance object
+ * @param[in] storeType  cert-svc store type to query
+ * @param[in] path       Path of the certificate which needs to be imported
+ * @param[in] password   Password if the file to import is password-protected which can be
+ *                       empty CertSvcString in case of not-password-protected
+ * @param[in] alias      Primary key for certificate bundle identification (can't be empty)
+ * @param[out] certList   cert list in store returned in linked list. Free by
+ *                        certsvc_pkcs12_free_certificate_list_loaded_from_store() after use
+ * @param[out] length     length of output @a certList
+ *
+ * @return #CERTSVC_SUCCESS on success, otherwise a zero or negative error value
+ *
+ * @see certsvc_instance_new()
+ * @see certsvc_instance_free()
+ * @see certsvc_string_new()
+ * @see certsvc_string_free()
+ * @see #CertStoreType
+ */
+int certsvc_pkcs12_import_from_file_to_store_ret_list(CertSvcInstance instance,
+		CertStoreType storeType,
+		CertSvcString path,
+		CertSvcString password,
+		CertSvcString alias,
+		CertSvcStoreCertList **certList,
+		size_t *length);
+
 /**
  * Delete the certificate with gname provided from cert-svc store.
  *

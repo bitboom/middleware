@@ -30,10 +30,16 @@
  * @param[in] path Path to file.
  * @param[in] password Password for opening the file.
  * @param[in] alias Logical name for certificate bundle identification (can't be empty).
+ * @param[out] certList     cert list in store returned in linked list. Free by
+ *                          certsvc_pkcs12_free_certificate_list_loaded_from_store()
+ *                          after use. Pass NULL if you don't want to return a list.
+ * @param[out] length       length of output @a certList. Pass NULL if you don't
+ *							 want to return a list.
  * @return CERTSVC_SUCCESS, CERTSVC_FAIL, CERTSVC_DUPLICATED_ALIAS, CERTSVC_IO_ERROR, CERTSVC_WRONG_ARGUMENT, CERTSVC_BAD_ALLOC.
  */
 int pkcs12_import_from_file_to_store(CertStoreType storeType, const char *path,
-									 const char *password, const char *alias);
+									 const char *password, const char *alias, CertSvcStoreCertList **certList,
+									 size_t *length);
 
 /**
  * TO check if the p12/pfx file is protected by password or not.
