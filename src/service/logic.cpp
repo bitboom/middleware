@@ -52,7 +52,7 @@ struct PkgmgrEvent {
 	{
 		if (uid < rhs.uid)
 			return true;
-		else if (uid < rhs.uid)
+		else if (uid > rhs.uid)
 			return false;
 		else
 			return pkgid.compare(rhs.pkgid) < 0;
