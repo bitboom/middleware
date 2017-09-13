@@ -58,7 +58,10 @@ std::string Certificate::getSubjectNameHash() const
 	X509Ptr x509(::PEM_read_X509(fp.get(), NULL, NULL, NULL),
 				 ::X509_free);
 	if (x509 == nullptr) {
-		::rewind(fp.get());
+		std::fseek(fp.get(), 0L, SEEK_SET);
+		if (std::ferror(fp.get()))
+			throw std::logic_error("Failed to set the position as beginning.");
+
 		x509 = X509Ptr(::PEM_read_X509_AUX(fp.get(), NULL, NULL, NULL),
 					   ::X509_free);
 	}

@@ -45,12 +45,18 @@ std::string File::read(const std::string &path)
 		throw std::invalid_argument("Failed to open [" + path + "].");
 
 	std::fseek(fp.get(), 0L, SEEK_END);
+	if (std::ferror(fp.get()))
+		throw std::logic_error("Failed to set the position as end [" + path + "].");
+
 	unsigned int fsize = std::ftell(fp.get());
-	std::rewind(fp.get());
+	std::fseek(fp.get(), 0L, SEEK_SET);
+	if (std::ferror(fp.get()))
+		throw std::logic_error("Failed to set the position as beginning [" + path + "].");
 
 	std::string buff(fsize, 0);
 	if (fsize != std::fread(static_cast<void*>(&buff[0]), 1, fsize, fp.get()))
 		throw std::logic_error("Failed to read [" + path + "]");
+
 	return buff;
 }
 
