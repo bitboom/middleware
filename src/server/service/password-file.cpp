@@ -370,7 +370,8 @@ void PasswordFile::writeAttemptToFile() const
 	}
 
 	AttemptFile.flush();
-	fsync(DPL::FstreamAccessors<std::ofstream>::GetFd(AttemptFile)); // flush kernel space buffer
+	if (::fsync(DPL::FstreamAccessors<std::ofstream>::GetFd(AttemptFile) != 0)) // flush kernel space buffer
+		LogError("Failed to synchronize a file's state.");
 	AttemptFile.close();
 }
 

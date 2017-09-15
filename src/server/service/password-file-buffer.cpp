@@ -85,7 +85,8 @@ void PasswordFileBuffer::Save(const std::string &path)
 	}
 
 	file.flush();
-	fsync(DPL::FstreamAccessors<std::ofstream>::GetFd(file)); // flush kernel space buffer
+	if (::fsync(DPL::FstreamAccessors<std::ofstream>::GetFd(file) != 0)) // flush kernel space buffer
+		LogError("Failed to synchronize a file's state.");
 	file.close();
 }
 

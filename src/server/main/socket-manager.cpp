@@ -109,7 +109,9 @@ struct SignalService : public GenericSocketService {
 
 		if (siginfo->ssi_signo == SIGTERM) {
 			LogInfo("Got signal: SIGTERM");
-			static_cast<SocketManager *>(m_serviceManager)->MainLoopStop();
+			auto socketManager = dynamic_cast<SocketManager *>(m_serviceManager);
+			if (socketManager != nullptr)
+				socketManager->MainLoopStop();
 			return;
 		}
 
@@ -532,8 +534,9 @@ int SocketManager::CreateDomainSocketHelp(
 			LogError("Error in smack_set_label_for_file");
 			ThrowMsg(Exception::InitFailed, "Error in smack_set_label_for_file");
 		}
-	} else
+	} else {
 		LogInfo("No smack on platform. Socket won't be securied with smack label!");
+	}
 
 	int flags;
 
