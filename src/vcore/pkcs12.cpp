@@ -296,9 +296,9 @@ int installChainCert(CertStoreType storeType,
 					 const std::string &cert,
 					 const std::string &gname,
 					 const std::string &endCertGname,
+					 const std::string &commonName,
 					 CertType type)
 {
-	std::string commonName = getCommonName(type, cert);
 	return vcore_client_install_certificate_to_store(
 			   storeType,
 			   gname.c_str(),
@@ -710,19 +710,19 @@ int insertToStore(CertStoreType storeTypes,
 		}
 
 		for (size_t i = 0; i < ncerts; i++) {
-			if (i == ncerts - 1)
-				result = installChainCert(storeType, certChainBuffer[i], certChainName[i], endCertName,
-										  P12_TRUSTED);
-			else
-				result = installChainCert(storeType, certChainBuffer[i], certChainName[i], endCertName,
-										  P12_INTERMEDIATE);
+			CertType type = (i == ncerts - 1) ? P12_TRUSTED : P12_INTERMEDIATE;
+
+			std::string commonName = getCommonName(type, certChainBuffer[i]);
+
+			result = installChainCert(storeType, certChainBuffer[i], certChainName[i], endCertName,
+										  commonName, type);
 
 			if (result != CERTSVC_SUCCESS) {
 				LogError("Failed to install the ca certificates. result : " << result);
 				return result;
 			}
 
-			int res = appendStoreListNode(certList, length, certChainName[i], alias, storeType);
+			int res = appendStoreListNode(certList, length, certChainName[i], commonName, storeType);
 			if (res != CERTSVC_SUCCESS) {
 				LogError("Failed to append store list node.");
 				return result;
