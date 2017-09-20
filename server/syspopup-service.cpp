@@ -16,6 +16,7 @@
 
 #include "syspopup.h"
 #include <klay/gmainloop.h>
+#include <klay/audit/logger.h>
 #include <klay/audit/dlog-sink.h>
 #include <glib.h>
 #include <unistd.h>
@@ -37,9 +38,14 @@ int main()
 	ScopedGMainLoop mainloop;
 	SyspopupService syspopup;
 
-	syspopup.run();
+	try {
+		syspopup.run();
+	} catch (std::exception &e) {
+		ERROR(SINK, e.what());
+		return EXIT_FAILURE;
+	}
 
 	::sleep(3);
 
-	return 0;
+	return EXIT_SUCCESS;
 }
