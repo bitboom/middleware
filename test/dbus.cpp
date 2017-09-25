@@ -20,6 +20,7 @@
 #include <klay/exception.h>
 #include <klay/audit/logger.h>
 #include <klay/dbus/variant.h>
+#include <klay/dbus/signal.h>
 #include <klay/dbus/connection.h>
 #include <klay/dbus/introspection.h>
 #include <klay/latch.h>
@@ -36,10 +37,11 @@ const std::string TESTSVC_METHOD_THROW   = "Throw";
 const std::string TESTSVC_SIGNAL_NOTIFY  = "Notify";
 const std::string TESTSVC_NOT_EXIST      = "None";
 
-const std::string TESTSVC_INTERFACE_NEW_NAME = "NewInterface";
-const std::string TESTSVC_METHOD_NEW_NAME    = "NewMethod";
-const std::string TESTSVC_SIGNAL_NEW_NAME    = "NewSignal";
-const std::string TESTSVC_PROPERTY_NEW_NAME  = "NewProperty";
+const std::string TESTSVC_RUNTIME_OBJECT_PATH = "/org/tizen/klay/runtime";
+const std::string TESTSVC_INTERFACE_NEW_NAME  = "interface.api";
+const std::string TESTSVC_METHOD_NEW_NAME     = "NewMethod";
+const std::string TESTSVC_SIGNAL_NEW_NAME     = "NewSignal";
+const std::string TESTSVC_PROPERTY_NEW_NAME   = "NewProperty";
 
 const std::string TESTSVC_METHOD_NEW_DATA =
 	"<method name='" + TESTSVC_METHOD_NEW_NAME + "'>"
@@ -55,6 +57,8 @@ const std::string TESTSVC_PROPERTY_NEW_DATA =
 
 const std::string TESTSVC_WRONG_DATA_TYPE1 = "signal'/>";
 const std::string TESTSVC_WRONG_DATA_TYPE2 = "<signal>";
+
+const std::string TESTSVC_MANIFEST_PATH = TEST_DATA_DIR "/manifest";
 
 const std::string manifest =
 	"<node>"
@@ -323,5 +327,63 @@ TESTCASE(DBusIntrospectionCheckDataFormat)
 		TEST_EXPECT(true, false);
 	} catch (std::exception& e) {
 		TEST_EXPECT(true, true);
+	}
+}
+
+TESTCASE(DBusSignalAddToNotExistManifest)
+{
+	try {
+		dbus::signal::Sender sender(TESTSVC_OBJECT_PATH, TESTSVC_INTERFACE_NEW_NAME);
+		sender.addSignal(TESTSVC_MANIFEST_PATH, TESTSVC_SIGNAL_NEW_NAME, "(ss)");
+		TEST_EXPECT(true, true);
+	} catch (std::exception& e) {
+		ERROR(KSINK, e.what());
+		TEST_EXPECT(true, false);
+	}
+}
+
+TESTCASE(DBusSignalAddToExistManifest)
+{
+	try {
+		dbus::signal::Sender sender(TESTSVC_OBJECT_PATH, TESTSVC_INTERFACE_NEW_NAME);
+		sender.addSignal(TESTSVC_MANIFEST_PATH, TESTSVC_SIGNAL_NEW_NAME, "(ss)");
+		TEST_EXPECT(true, true);
+	} catch (std::exception& e) {
+		ERROR(KSINK, e.what());
+		TEST_EXPECT(true, false);
+	}
+}
+
+TESTCASE(DBusSignalEmitTest)
+{
+	ScopedGMainLoop mainloop;
+
+	try {
+		std::string manifest = dbus::Introspection::createXmlDataFromFile(TESTSVC_MANIFEST_PATH);
+		dbus::Connection& svc = dbus::Connection::getSystem();
+		svc.registerObject(TESTSVC_RUNTIME_OBJECT_PATH, manifest, nullptr, nullptr);
+
+		std::string arg1 = "arg1";
+		std::string arg2 = "arg2";
+		auto onSignal = [&](dbus::Variant variant)
+			{
+				char *ret1 = NULL;
+				char *ret2 = NULL;
+				variant.get("(ss)", &ret1, &ret2);
+
+				TEST_EXPECT(true, arg1.compare(ret1) == 0);
+				TEST_EXPECT(true, arg2.compare(ret2) == 0);
+			};
+
+		dbus::signal::Receiver receiver(TESTSVC_RUNTIME_OBJECT_PATH, TESTSVC_INTERFACE_NEW_NAME);
+		receiver.subscribe(TESTSVC_SIGNAL_NEW_NAME, onSignal);
+
+		dbus::signal::Sender sender(TESTSVC_RUNTIME_OBJECT_PATH, TESTSVC_INTERFACE_NEW_NAME);
+		sender.emit(TESTSVC_SIGNAL_NEW_NAME, "(ss)", arg1.c_str(), arg2.c_str());
+
+		TEST_EXPECT(true, true);
+	} catch (std::exception& e) {
+		ERROR(KSINK, e.what());
+		TEST_EXPECT(true, false);
 	}
 }

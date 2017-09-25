@@ -16,12 +16,26 @@
 
 #include <klay/dbus/introspection.h>
 #include <klay/dbus/error.h>
+#include <klay/filesystem.h>
 #include <klay/exception.h>
+
+#include <unistd.h>
+#include <fcntl.h>
 
 #include <memory>
 #include <functional>
 
 namespace dbus {
+
+namespace {
+
+const std::string MANIFEST_TEMPLATE = "<node></node>";
+
+const std::string INTERFACE_NODE = "interface";
+const std::string SIGNAL_NODE = "signal";
+const std::string ARGUMENT_NODE = "arg";
+
+}
 
 Introspection::Introspection(const std::string &xmlData) :
 	busNode(getBusNode(xmlData)), xmlData(getXmlData())
@@ -99,6 +113,32 @@ std::string Introspection::getXmlData(unsigned int indent)
 	return std::string(buf->str);
 }
 
+std::string Introspection::createXmlDataFromFile(const std::string &path)
+{
+	runtime::File manifest(path);
+	if (!manifest.exists()) {
+		manifest.create(644);
+		manifest.lock();
+		manifest.write(MANIFEST_TEMPLATE.c_str(), MANIFEST_TEMPLATE.length());
+		manifest.unlock();
+	}
+
+	manifest.open(O_RDONLY);
+	std::vector<char> buf(manifest.size() + 1);
+	manifest.read(buf.data(), manifest.size());
+	return std::string(buf.data());
+}
+
+void Introspection::writeXmlDataToFile(const std::string &path,
+									   const std::string &xmlData)
+{
+	runtime::File manifest(path);
+	manifest.open(O_WRONLY | O_TRUNC);
+	manifest.lock();
+	manifest.write(xmlData.c_str(), xmlData.length());
+	manifest.unlock();
+}
+
 void Introspection::addInterface(const std::string &name)
 {
 	if (getInterface(name) != nullptr)
@@ -108,23 +148,40 @@ void Introspection::addInterface(const std::string &name)
 	if (offset == std::string::npos)
 		throw runtime::Exception("Failed to find </node>.");
 
-	xmlData.insert(offset, getInterfaceBeginTag(name) + getInterfaceEndTag());
+	XmlProperties properties;
+	properties.emplace_back(std::make_pair("name", name));
+
+	xmlData.insert(offset, getXmlBeginTag(INTERFACE_NODE, properties) +
+						   getXmlEndTag(INTERFACE_NODE));
 	update();
 }
 
-std::string Introspection::getInterfaceBeginTag(const std::string &name) const
+std::string Introspection::parseXmlProperties(const XmlProperties &properties) const
 {
-	const std::string token = "@NAME@";
-	std::string iTemplate = "<interface name=\"@NAME@\">";
+	std::string parsed = "";
+	for (const auto &property : properties)
+		parsed.append(property.first + "=\"" + property.second + "\" ");
 
-	iTemplate.replace(iTemplate.find(token), token.length(), name);
+	return parsed.substr(0, parsed.length() - 1);
+};
 
-	return iTemplate;
+std::string Introspection::getXmlBeginTag(const std::string &node,
+										  const XmlProperties &properties) const
+{
+	const std::string nameToken = "@NODE@";
+	const std::string propertyToken = "@PROPERTIES@";
+	std::string tagTemplate = "<@NODE@ @PROPERTIES@>";
+
+	std::string parsed = parseXmlProperties(properties);
+	tagTemplate.replace(tagTemplate.find(nameToken), nameToken.length(), node);
+	tagTemplate.replace(tagTemplate.find(propertyToken), propertyToken.length(), parsed);
+
+	return tagTemplate;
 }
 
-std::string Introspection::getInterfaceEndTag(void) const
+std::string Introspection::getXmlEndTag(const std::string &node) const
 {
-	return "</interface>";
+	return std::string("</" + node + ">");
 }
 
 // TODO: Check more strict.
@@ -150,6 +207,33 @@ void Introspection::addMethod(const std::string &interfaceName,
 }
 
 void Introspection::addSignal(const std::string &interfaceName,
+							  const std::string &signalName,
+							  const std::string &argumentType)
+{
+	XmlProperties properties;
+	properties.emplace_back(std::make_pair("name", signalName));
+	std::string xmlData = getXmlBeginTag(SIGNAL_NODE, properties);
+
+	int index = 1;
+	for (const auto &type : argumentType) {
+		if (type == '(' || type == ')')
+			continue;
+
+		properties.clear();
+		properties.emplace_back(std::make_pair("type", std::string(1, type)));
+		properties.emplace_back(std::make_pair("name",
+											   "argument" + std::to_string(index++)));
+
+		xmlData.append(getXmlBeginTag(ARGUMENT_NODE, properties));
+		xmlData.append(getXmlEndTag(ARGUMENT_NODE));
+	}
+
+	xmlData.append(getXmlEndTag(SIGNAL_NODE));
+
+	addInternalData(interfaceName, xmlData);
+}
+
+void Introspection::addSignal(const std::string &interfaceName,
 							  const std::string &signalData)
 {
 	addInternalData(interfaceName, signalData);
@@ -166,7 +250,10 @@ void Introspection::addInternalData(const std::string &interfaceName,
 {
 	checkDataFormat(data);
 
-	std::string iTemplate = getInterfaceBeginTag(interfaceName);
+	XmlProperties properties;
+	properties.emplace_back(std::make_pair("name", interfaceName));
+
+	std::string iTemplate = getXmlBeginTag(INTERFACE_NODE, properties);
 	std::size_t offset = xmlData.find(iTemplate);
 	if (offset == std::string::npos)
 		throw runtime::Exception("Failed to find interface xml node: " + interfaceName);

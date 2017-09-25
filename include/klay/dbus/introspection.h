@@ -20,6 +20,8 @@
 #include <gio/gio.h>
 
 #include <string>
+#include <vector>
+#include <utility>
 
 namespace dbus {
 
@@ -28,6 +30,8 @@ using Interface = GDBusInterfaceInfo*;
 using Method = GDBusMethodInfo*;
 using Signal = GDBusSignalInfo*;
 using Property = GDBusPropertyInfo*;
+
+using XmlProperties = std::vector<std::pair<std::string, std::string>>;
 
 class Introspection {
 public:
@@ -48,18 +52,27 @@ public:
 						 const std::string &propertyName) const;
 
 	std::string getXmlData(unsigned int indent = 0);
+	static std::string createXmlDataFromFile(const std::string &path);
+	static void writeXmlDataToFile(const std::string &path, const std::string &xmlData);
 
 	void addInterface(const std::string &name);
 	void addMethod(const std::string &interfaceName, const std::string &methodData);
 	void addSignal(const std::string &interfaceName, const std::string &signalData);
 	void addProperty(const std::string &interfaceName, const std::string &propertyData);
 
+	void addSignal(const std::string &interfaceName,
+				   const std::string &signalName,
+				   const std::string &argumentType);
+
 private:
 	BusNode getBusNode(const std::string &xmlData);
 	void update(void);
 
-	std::string getInterfaceBeginTag(const std::string &name) const;
-	std::string getInterfaceEndTag(void) const;
+	std::string getXmlBeginTag(const std::string &node,
+							   const XmlProperties &properties) const;
+	std::string getXmlEndTag(const std::string &node) const;
+
+	std::string parseXmlProperties(const XmlProperties &properties) const;
 
 	void addInternalData(const std::string &interfaceName, const std::string &data);
 
