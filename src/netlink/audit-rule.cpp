@@ -31,12 +31,10 @@ AuditRule::AuditRule() :
 AuditRule::AuditRule(std::vector<char> &buf) :
 	buf(buf)
 {
-
 }
 
 AuditRule::~AuditRule()
 {
-
 }
 
 void AuditRule::setSystemCall(unsigned int syscall)

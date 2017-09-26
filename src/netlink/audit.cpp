@@ -32,18 +32,15 @@ namespace netlink {
 Audit::Audit() :
 	nl(NETLINK_AUDIT), sequence(0), mainloop(nullptr)
 {
-
 }
 
 Audit::Audit(Audit&& audit) :
 	nl(std::move(audit.nl)), sequence(audit.sequence), mainloop(audit.mainloop)
 {
-
 }
 
 Audit::~Audit()
 {
-
 }
 
 void Audit::setPID(pid_t pid)

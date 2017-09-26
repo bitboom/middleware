@@ -262,7 +262,7 @@ void Connection::onSignal(GDBusConnection* connection,
 						  GVariant *parameters,
 						  gpointer userData)
 {
-	DEBUG(KSINK,"Signal : " << sender << " : " << objectPath << " : "
+	DEBUG(KSINK, "Signal : " << sender << " : " << objectPath << " : "
 				<< interface << " : " << signal);
 	const SignalCallback& callback = userDataCast<SignalCallback>(userData);
 	if (callback) {
