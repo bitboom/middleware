@@ -25,14 +25,6 @@ int PackageEventCallback(uid_t uid, int id, const char* type, const char* name,
 	return 0;
 }
 
-int AppListCallback(pkgmgrinfo_appinfo_h handle, void *data)
-{
-	std::vector<ApplicationInfo>* appList = static_cast<std::vector<ApplicationInfo>*>(data);
-	appList->push_back(ApplicationInfo(handle));
-
-	return 0;
-}
-
 int PackageListCallback(pkgmgrinfo_pkginfo_h handle, void *data)
 {
 	char* pkgid = nullptr;
@@ -61,17 +53,6 @@ PackageInfo::PackageInfo(const std::string& pkgid, uid_t uid) :
 PackageInfo::~PackageInfo()
 {
 	::pkgmgrinfo_pkginfo_destroy_pkginfo(handle);
-}
-
-std::vector<ApplicationInfo> PackageInfo::getAppList() const
-{
-	std::vector<ApplicationInfo> appList;
-
-	if (::pkgmgrinfo_appinfo_get_usr_list(handle, PMINFO_ALL_APP, AppListCallback, &appList, user) != PMINFO_R_OK) {
-		throw runtime::Exception("Error in pkgmgrinfo_appinfo_get_usr_list");
-	}
-
-	return appList;
 }
 
 std::string PackageInfo::getType() const
@@ -204,108 +185,6 @@ bool PackageInfo::isPreload() const
 	return ret;
 }
 
-ApplicationInfo::ApplicationInfo(const std::string& aid, uid_t uid)
-{
-	pkgmgrinfo_appinfo_h handle;
-
-	if (::pkgmgrinfo_appinfo_get_usr_appinfo(aid.c_str(), uid, &handle) != PMINFO_R_OK) {
-		throw runtime::Exception("Invalid App Id");
-	}
-
-	load(handle);
-
-	::pkgmgrinfo_appinfo_destroy_appinfo(handle);
-}
-
-ApplicationInfo::ApplicationInfo(pkgmgrinfo_appinfo_h handle)
-{
-	load(handle);
-}
-
-
-ApplicationInfo::~ApplicationInfo()
-{
-}
-
-void ApplicationInfo::load(pkgmgrinfo_appinfo_h handle) {
-	pkgmgrinfo_app_component comp;
-	char* str;
-	int ret;
-
-	ret = ::pkgmgrinfo_appinfo_get_appid(handle, &str);
-	if (ret == PMINFO_R_OK) {
-		id = str;
-	}
-
-	ret = ::pkgmgrinfo_appinfo_get_pkgid(handle, &str);
-	if (ret == PMINFO_R_OK) {
-		package = str;
-	}
-
-	ret = ::pkgmgrinfo_appinfo_get_apptype(handle, &str);
-	if (ret == PMINFO_R_OK) {
-		type = str;
-	}
-
-	ret = ::pkgmgrinfo_appinfo_get_icon(handle, &str);
-	if (ret == PMINFO_R_OK) {
-		icon = str;
-	}
-
-	ret = ::pkgmgrinfo_appinfo_get_label(handle, &str);
-	if (ret == PMINFO_R_OK) {
-		label = str;
-	}
-
-	ret = ::pkgmgrinfo_appinfo_get_component(handle, &comp);
-	if (ret == PMINFO_R_OK) {
-		componentType = static_cast<int>(comp);
-	}
-
-	::pkgmgrinfo_appinfo_is_nodisplay(handle, &noDisplayed);
-	::pkgmgrinfo_appinfo_is_taskmanage(handle, &taskManaged);
-}
-
-const std::string& ApplicationInfo::getId() const
-{
-	return id;
-}
-
-const std::string& ApplicationInfo::getPackage() const
-{
-	return package;
-}
-
-const std::string& ApplicationInfo::getType() const
-{
-	return type;
-}
-
-const std::string& ApplicationInfo::getIcon() const
-{
-	return icon;
-}
-
-const std::string& ApplicationInfo::getLabel() const
-{
-	return label;
-}
-
-int ApplicationInfo::getComponentType() const
-{
-	return componentType;
-}
-
-bool ApplicationInfo::isNoDisplayed() const
-{
-	return noDisplayed;
-}
-
-bool ApplicationInfo::isTaskManaged() const
-{
-	return taskManaged;
-}
-
 PackageManager::PackageManager() :
 	nativeRequestHandle(nullptr), nativeListenHandle(nullptr)
 {
@@ -381,17 +260,6 @@ std::vector<std::string> PackageManager::getPackageList(const uid_t user)
 	}
 
 	return packageList;
-}
-
-std::vector<ApplicationInfo> PackageManager::getAppList(const uid_t user)
-{
-	std::vector<ApplicationInfo> appList;
-
-	if (::pkgmgrinfo_appinfo_get_usr_installed_list(AppListCallback, user, &appList) != PMINFO_R_OK) {
-		throw runtime::Exception("Error in pkgmgrinfo_appinfo_get_installed_list");
-	}
-
-	return appList;
 }
 
 void PackageManager::setModeRestriction(int mode, uid_t user)

@@ -26,40 +26,10 @@
 #include <package-manager.h>
 #include <pkgmgr-info.h>
 
-class ApplicationInfo {
-public:
-	ApplicationInfo(const std::string& aid, uid_t uid = 0);
-	ApplicationInfo(pkgmgrinfo_appinfo_h handle);
-	~ApplicationInfo();
-
-	const std::string& getId() const;
-	const std::string& getPackage() const;
-	const std::string& getType() const;
-	const std::string& getIcon() const;
-	const std::string& getLabel() const;
-	int getComponentType() const;
-	bool isNoDisplayed() const;
-	bool isTaskManaged() const;
-
-private:
-	void load(pkgmgrinfo_appinfo_h handle);
-
-	std::string id;
-	std::string package;
-	std::string type;
-	std::string icon;
-	std::string label;
-	int componentType;
-	bool noDisplayed;
-	bool taskManaged;
-};
-
 class PackageInfo {
 public:
 	PackageInfo(const std::string& pkgid, uid_t uid = 0);
 	~PackageInfo();
-
-	std::vector<ApplicationInfo> getAppList() const;
 
 	std::string getType() const;
 	std::string getIcon() const;
@@ -89,7 +59,6 @@ public:
 	void uninstallPackage(const std::string& pkgid, const uid_t user);
 
 	std::vector<std::string> getPackageList(const uid_t user);
-	std::vector<ApplicationInfo> getAppList(const uid_t user);
 
 	void setEventCallback(pkgmgr_handler callback, void* user_data);
 	void unsetEventCallback();
