@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "Գաղտնաբառ"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "Թեժ կետ"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Անվտանգության քաղաքականությունը կանխում է աշխատասեղանի համաժամացման օգտագործումը:"
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Խցիկ"
@@ -78,4 +81,13 @@ msgstr "Անվտանգության քաղաքականությունը թույլ
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Անվտանգության քաղաքականությունը թույլ չի տալիս փոխել դրվածքները:"
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Անվտանգության քաղաքականությունը սահմանափակում է POP/IMAP էլփոստի օգտագործումը:"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Անվտանգության քաղաքականությունը կանխում է POP/IMAP էլփոստի օգտագործումը:"
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Անվտանգության քաղաքականությունը սահմանափակում է ԱՀ կապի օգտագործումը:"
 

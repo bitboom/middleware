@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "Пароль"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "Точка доступу"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Політика безпеки попереджає використання синхронізації з комп’ютером."
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Камера"
@@ -78,4 +81,13 @@ msgstr "Політика безпеки попереджає використа�
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Політика безпеки попереджає змінення установок."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Використання протоколів POP/IMAP електронної пошти обмежено політикою безпеки."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Політика безпеки попереджає використання протоколів POP/IMAP електронної пошти."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Використання підключення до ПК заборонено політикою безпеки."
 

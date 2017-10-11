@@ -19,6 +19,9 @@ msgstr "Hotspot"
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
 
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Security policy prevents use of desktop sync."
+
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Camera"
 
@@ -78,4 +81,13 @@ msgstr "Security policy prevents use of Wi-Fi."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Security policy prevents changing settings."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Security policy restricts use of POP/IMAP email."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Security policy prevents use of POP/IMAP email."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Security policy restricts use of the PC connection."
 

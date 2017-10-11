@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "Hasło"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "Router"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Zasady zabezpieczeń uniemożliwiają korzystanie z synchronizacji z komputerem."
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Aparat"
@@ -78,4 +81,13 @@ msgstr "Zasady zabezpieczeń zapobiegają korzystaniu z sieci Wi-Fi."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Zasady zabezpieczeń zapobiegają zmianie ustawień."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Zasady zabezpieczeń ograniczają użycie poczty POP/IMAP."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Zasady zabezpieczeń uniemożliwiają korzystanie z poczty POP/IMAP."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Zasady zabezpieczeń ograniczają użycie połączenia z komputerem."
 

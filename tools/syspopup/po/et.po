@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "Parool"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "Kuumkoht"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Turvalisuse poliis takistab toolaua sunkroonimise kasutamist."
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Kaam."
@@ -78,4 +81,13 @@ msgstr "Turvalisuse poliis takistab Wi-Fi kasutamist."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Turvalisuse poliis takistab seadete muutmist."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Turvalisuse poliis piirab POP/IMAP e-posti kasutuse."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Turvalisuse poliis takistab POP/IMAP e-posti kasutamist."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Turvalisuse poliis piirab arvutiuhenduse kasutuse."
 

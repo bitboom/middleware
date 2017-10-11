@@ -19,6 +19,9 @@ msgstr "Router"
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
 
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "I criteri di protezione non consentono la sincronizzazione desktop."
+
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Camera"
 
@@ -78,4 +81,13 @@ msgstr "I criteri di protezione impediscono l'uso del Wi-Fi."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "I criteri di protezione impediscono la modifica delle impostazioni."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "I criteri di sicurezza limitano l'uso delle e-mail POP/IMAP."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "I criteri di protezione non consentono l'utilizzo di e-mail POP/IMAP."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "I criteri di protezione limitano l'utilizzo della connessione del PC."
 

@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "პაროლი"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "ცხელი წერტილი"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "უსაფრთხოების პოლიტიკა კრძალავს სამუშაო დაფის სინქრონიზაციის გამოყენებას."
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "კამერა"
@@ -78,4 +81,13 @@ msgstr "უსაფრთხოების პოლიტიკა კრძ�
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "უსაფრთხოების პოლიტიკა კრძალავს პარამეტრების შეცვლას."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "უსაფრთხოების პოლიტიკა ზღუდავს POP/IMAP ელ.ფოსტის გამოყენებას."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "უსაფრთხოების პოლიტიკა კრძალავს POP/IMAP ელფოსტის გამოყენებას."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "უსაფრთხოების პოლიტიკა ზღუდავს კომპიუტერთან კავშირის გამოყენებას."
 

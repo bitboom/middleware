@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "पासवर्ड"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "हॉटस्पॉट"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "सुरक्षा नीति डेस्कटॉप सिंक के उपयोग को रोकती है"
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "कैमरा"
@@ -78,4 +81,13 @@ msgstr "सुरक्षा नीति Wi-Fi का उपयोग कर�
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "सुरक्षा नीति सेटिंग्स बदलने से रोकती है।"
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "सुरक्षा नीति POP/IMAP ईमेल के उपयोग को प्रतिबंधित करती है।"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "सुरक्षा नीति POP/IMAP ईमेल के उपयोग को रोकती है"
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "सुरक्षा नीति PC कनेक्शन का उपयोग प्रतिबंधित करती है।"
 

@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "Кілтсөз"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "Жедел нүкте"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Қауіпсіздік саясаты жұмыс үстелін синхрондауға жол бермейді."
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Камера"
@@ -78,4 +81,13 @@ msgstr "Қауіпсіздік саясаты Wi-Fi пайдалануға жо�
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Қауіпсіздік саясаты параметрлерді өзгертуді болдырмайды."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Қауіпсіздік саясаты POP/IMAP электрондық поштасының пайдаланылуын шектейді."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Қауіпсіздік саясаты POP/IMAP электрондық поштасын пайдалануға жол бермейді."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Қауіпсіздік саясаты компьютерге қосылымды пайдалануды шектейді."
 

@@ -43,6 +43,7 @@ SET(PKG_POPUP_SRC
 		src/popup/settings-changes.cpp
 		src/popup/wifi.cpp
 		src/popup/wifi-hotspot.cpp
+		src/popup/usb-client.cpp
 		)
 
 SET(PKG_UI_SRC

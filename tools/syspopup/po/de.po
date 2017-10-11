@@ -19,6 +19,9 @@ msgstr "Hotspot"
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
 
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Sicherheitsrichtlinie verhindert die Verwendung der Desktop-Synchronisierung."
+
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Kamera"
 
@@ -78,4 +81,13 @@ msgstr "Die Sicherheitsrichtlinie verhindert die Verwendung von WLAN."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Die Sicherheitsrichtlinie verhindert das Ändern der Einstellungen."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Sicherheitsrichtlinie schränkt die Verwendung von POP-/IMAP-E-Mail ein."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Sicherheitsrichtlinie verhindert die Verwendung von POP/IMAP-E-Mail."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Eine Sicherheitsrichtlinie schränkt die Verwendung der PC-Verbindung ein."
 

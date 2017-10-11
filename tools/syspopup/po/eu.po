@@ -19,6 +19,9 @@ msgstr "Hotspot"
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
 
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Segurtasun politikak idazmahai sinkronizazioaren erabilera galarazten du"
+
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Kamera"
 
@@ -78,4 +81,13 @@ msgstr "Segurtasun jarraibideak Wi-Fi erabiltzea galarazten du."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Segurtasun jarraibideak ezarpenak aldatzea galarazten du."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Segurtasun politikak POP/IMAP postaren erabilera mugatzen du"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Segurtasun politikak POP/IMAP mezularitza elektronikoaren erabilera galarazten du"
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Segurtasun politikak ordenagailu konexioaren erabilera mugatzen du"
 

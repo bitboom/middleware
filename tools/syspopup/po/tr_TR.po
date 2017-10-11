@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "Şifre"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "Erişim Noktası"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Güvenlik ilkesi masaüstü eşitleme kullanımını engelliyor."
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Kamera"
@@ -78,4 +81,13 @@ msgstr "Güvenlik ilkesi Wi-Fi kullanımını engelliyor."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Güvenlik ilkesi ayarların değiştirilmesini engelliyor."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Güvenlik ilkesi POP/IMAP eposta kullanımını kısıtlıyor."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Güvenlik ilkesi POP/IMAP e-posta kullanımını engelliyor."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Güvenlik ilkesi PC bağlantısı kullanımını kısıtlıyor."
 

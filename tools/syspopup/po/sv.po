@@ -19,6 +19,9 @@ msgstr "Hotspot"
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
 
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Säkerhetspolicyn förhindrar att skrivbordssynkronisering används."
+
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Kamera"
 
@@ -35,16 +38,16 @@ msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
 msgstr "Säkerhetspolicy gäller"
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
-msgstr "Säkerhetspolicyn förhindrar att program installeras."
+msgstr "Säkerhetspolicyn förhindrar att appar installeras."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
-msgstr "Säkerhetspolicyn förhindrar att programmet installeras."
+msgstr "Säkerhetspolicyn förhindrar att appen installeras."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
-msgstr "Säkerhetspolicyn förhindrar att program avinstalleras."
+msgstr "Säkerhetspolicyn förhindrar att appar avinstalleras."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
-msgstr "Säkerhetspolicyn förhindrar att programmet avinstalleras."
+msgstr "Säkerhetspolicyn förhindrar att appen avinstalleras."
 
 msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
 msgstr "Säkerhetspolicyn kräver att du ändrar lösenordet."
@@ -78,4 +81,13 @@ msgstr "Säkerhetspolicyn förhindrar att Wi-Fi används."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Säkerhetspolicyn förhindrar ändring av inställningarna."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Säkerhetspolicy begränsar användningen av POP/IMAP-e-post."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Säkerhetspolicyn förhindrar att POP-/IMAP-e-post används."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Säkerhetspolicyn begränsar användningen av datoranslutningen."
 

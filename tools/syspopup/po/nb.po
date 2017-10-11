@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "Passord"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "Trådløssone"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Sikkerhetspolicyen hindrer bruk av skrivebordssynkronisering."
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Kamera"
@@ -78,4 +81,13 @@ msgstr "Sikkerhetspolicy hindrer bruk av Wi-Fi."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Sikkerhetspolicy hindrer endring av innstillinger."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Sikkerhetspolicy begrenser bruk av POP/IMAP-e-post."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Sikkerhetspolicyen hindrer bruk av e-post via POP/IMAP."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Sikkerhetspolicy begrenser bruk av datamaskin-tilkoblingen."
 

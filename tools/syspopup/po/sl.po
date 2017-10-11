@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "Geslo"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "Dostopna točka"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Varnostni pravilnik preprečuje uporabo sinhronizacije namizja."
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Fot."
@@ -78,4 +81,13 @@ msgstr "Varnostni pravilnik preprečuje uporabo vmesnika Wi-Fi."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Varnostni pravilnik preprečuje spreminjanje nastavitev."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Varnostni pravilnik omejuje uporabo e-pošte POP/IMAP."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Varnostni pravilnik preprečuje uporabo e-pošte POP/IMAP."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Varnostni pravilnik omejuje uporabo računalniške povezave."
 

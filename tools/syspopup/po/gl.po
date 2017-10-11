@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "Contrasinal"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "Zona interactiva"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "A política de seguridade impide o uso da sincronización do escritorio"
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Cámara"
@@ -78,4 +81,13 @@ msgstr "A política de seguridade impide o uso da Wi-Fi."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "A política de seguridade impide o cambio dos axustes."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "A política de seguridade limita o uso do correo electrónico POP/IMAP"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "A política de seguridade impide o uso do correo electrónico POP/IMAP"
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "A política de seguridade limita o uso da conexión co ordenador"
 

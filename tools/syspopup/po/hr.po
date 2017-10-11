@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "Lozinka"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "Pristupna točka"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Sigurnosne odredbe sprečavaju upotrebu sinkronizacije radne površine."
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Kamera"
@@ -78,4 +81,13 @@ msgstr "Sigurnosna pravila sprečavaju upotrebu Wi-Fi-a."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Sigurnosna pravila sprečavaju promjenu postavki."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Sigurnosne odredbe ograničavaju korištenje usluge POP/IMAP email."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Sigurnosne odredbe sprečavaju upotrebu POP/IMAP emaila."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Sigurnosna pravila ograničavaju upotrebu računalne veze."
 

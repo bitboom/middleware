@@ -19,6 +19,9 @@ msgstr "핫스팟"
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
 
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "보안정책에 따라 PC를 동기화할 수 없습니다."
+
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "카메라"
 
@@ -29,7 +32,7 @@ msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
 msgstr "보안정책에 따라 %s 기능을 사용할 수 없습니다."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
-msgstr "보안정책을 적용하였습니다."
+msgstr "보안정책을 적용했습니다."
 
 msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
 msgstr "보안정책 적용 중"
@@ -79,27 +82,12 @@ msgstr "보안정책에 따라 Wi-Fi를 사용할 수 없습니다."
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "보안정책에 따라 설정을 변경할 수 없습니다."
 
-msgid "IDS_DPM_NOTI_BODY_KRATE_REMOVE"
-msgstr "여기를 누르면 Separated Krate을 제거합니다."
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "보안정책에 따라 [POP/IMAP 이메일]을 사용할 수 없습니다."
 
-msgid "IDS_DPM_NOTI_KRATE_REMOVE"
-msgstr "Separate Krate 제거"
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "보안정책에 따라 [POP/IMAP 이메일]을 사용할 수 없습니다."
 
-msgid "IDS_DPM_BODY_KRATE_REMOVE"
-msgstr "보안정책에 따라 Separated Krate 사용을 제한합니다. OK 버튼을 누르면 Separated Krate을 제거합니다."
-
-msgid "IDS_DPM_KRATE_REMOVE"
-msgstr "Separate Krate 제거"
-
-msgid "IDS_DPM_NOTI_BODY_KRATE_CREATE"
-msgstr "여기를 누르면 Separated Krate을 생성합니다."
-
-msgid "IDS_DPM_NOTI_KRATE_CREATE"
-msgstr "Separate Krate 생성"
-
-msgid "IDS_DPM_BODY_KRATE_CREATE"
-msgstr "보안정책에 따라 Separated Krate을 사용합니다. OK 버튼을 누르면 Separated Krate을 생성합니다."
-
-msgid "IDS_DPM_KRATE_CREATE"
-msgstr "Separated Krate 생성"
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "보안정책에 따라 PC에 연결할 수 없습니다."
 

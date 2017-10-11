@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "Pasfhocal"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "Ball te"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Cuireann an beartas slándála bac ar úsáid shioncronú deisce"
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Ceam."
@@ -78,4 +81,13 @@ msgstr "Cuireann an beartas slándála cosc ar Wi-Fi a úsáid."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Cuireann an beartas slándála cosc ar shocruithe a athrú."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Cuireann an beartas slándála srian ar úsáid r-phost POP/IMAP"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Cuireann an beartas slándála bac ar úsáid r-phost POP/IMAP"
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Cuireann an beartas slándála srian ar nasc PC a úsáid"
 

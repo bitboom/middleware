@@ -19,6 +19,9 @@ msgstr "熱點"
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
 
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "安全性政策可防止桌上電腦同步的使用。"
+
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "相機"
 
@@ -78,4 +81,13 @@ msgstr "安全性政策防止 Wi-Fi 的使用。"
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "安全性政策防止變更設定。"
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "安全政策限制使用 POP/IMAP 電子郵件。"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "安全性政策可防止 POP/IMAP 電子郵件的使用。"
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "安全性政策限制使用電腦連線。"
 

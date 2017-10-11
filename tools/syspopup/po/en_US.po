@@ -19,6 +19,9 @@ msgstr "Hotspot"
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
 
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Security policy prevents use of computer sync."
+
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Camera"
 
@@ -79,26 +82,12 @@ msgstr "Security policy prevents use of Wi-Fi."
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "Security policy prevents changing settings."
 
-msgid "IDS_DPM_NOTI_BODY_KRATE_REMOVE"
-msgstr "Tap here to delete Separated Krate."
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Security policy restricts use of POP/IMAP email."
 
-msgid "IDS_DPM_NOTI_KRATE_REMOVE"
-msgstr "Separated Krate deletion"
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Security policy prevents use of POP/IMAP email."
 
-msgid "IDS_DPM_BODY_KRATE_REMOVE"
-msgstr "Security policy prevent the use of the Separated Krate. Tap OK to remove Separated krate."
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Security policy restricts use of the computer connection."
 
-msgid "IDS_DPM_KRATE_REMOVE"
-msgstr "Remove Separated Krate"
-
-msgid "IDS_DPM_NOTI_BODY_KRATE_CREATE"
-msgstr "Tap here to create Separated Krate."
-
-msgid "IDS_DPM_NOTI_KRATE_CREATE"
-msgstr "Separated krate creation"
-
-msgid "IDS_DPM_BODY_KRATE_CREATE"
-msgstr "Security policy force to use of the Separated Krate. Tap OK to create Separated krate."
-
-msgid "IDS_DPM_KRATE_CREATE"
-msgstr "Create Separated Krate"

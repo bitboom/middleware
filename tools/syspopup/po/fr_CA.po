@@ -19,6 +19,9 @@ msgstr "Point d'accès"
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
 
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "La politique de sécurité empêche l'utilisation de la synchronisation avec le bureau."
+
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Photo"
 
@@ -78,4 +81,13 @@ msgstr "La politique de sécurité empêche l'utilisation du Wifi."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "La politique de sécurité empêche la modification des paramètres."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "La politique de sécurité limite l'utilisation de la messagerie POP/IMAP."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "La politique de sécurité empêche l'utilisation de la messagerie POP/IMAP."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "La politique de sécurité limite l'utilisation de la connexion PC."
 

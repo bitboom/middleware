@@ -19,6 +19,9 @@ msgstr "Zona portátil"
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
 
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "La política de seguridad impide el uso de sincronización de escritorio."
+
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Cámara"
 
@@ -78,4 +81,13 @@ msgstr "La política de seguridad impide el uso de Wi-Fi."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "La política de seguridad impide que se cambie la configuración."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "La política de seguridad restringe el uso de correo POP/IMAP."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "La política de seguridad impide el uso de correo POP/IMAP."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "La política de seguridad restringe el uso de la conexión a la PC."
 

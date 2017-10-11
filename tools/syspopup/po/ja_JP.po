@@ -19,6 +19,9 @@ msgstr "ホットスポット"
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
 
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "デスクトップ同期の使用は、セキュリティポリシーによって制限されています。"
+
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "カメラ"
 
@@ -78,4 +81,13 @@ msgstr "Wi-Fiの使用は、セキュリティポリシーによって制限さ�
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "設定の変更は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Eメール（POP/IMAP）の使用は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Eメール(POP/IMAP)の使用は、セキュリティポリシーによって制限されています。"
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "セキュリティポリシーにより、PC接続の利用を制限します。"
 

@@ -14,10 +14,13 @@ msgid "IDS_ST_BODY_PASSWORD"
 msgstr "Contrasenya"
 
 msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
-msgstr "Hotspot"
+msgstr "Connexió compartida"
 
 msgid "IDS_ST_BODY_NFC"
 msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "La política de seguretat evita l'ús de la sincronització d'escriptori"
 
 msgid "IDS_IDLE_TAB4_CAMERA"
 msgstr "Càmera"
@@ -78,4 +81,13 @@ msgstr "La política de seguretat evita l'ús de Wi-Fi."
 
 msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
 msgstr "La política de seguretat evita els canvis d'ajustaments."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "La política de seguretat restringeix l'ús de correu electrònic POP/IMAP"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "La política de seguretat evita l'ús de correu electrònic POP/IMAP"
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "La política de seguretat restringeix l'ús de connexió del PC"
 
