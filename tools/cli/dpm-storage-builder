@@ -70,6 +70,7 @@ INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'microphone', 1); 
 INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'popimap-email', 1); \
 INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'usb-debugging', 1); \
 INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'usb-tethering', 1); \
+INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'usb-client', 1); \
 INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'wifi', 1); \
 INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'wifi-hotspot', 1); \
 INSERT INTO policy_definition(scope, name, ivalue) VALUES (0, 'wifi-profile-change', 1); \
