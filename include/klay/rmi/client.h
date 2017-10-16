@@ -29,13 +29,14 @@
 
 namespace rmi {
 
-class Client {
+template <typename ExceptionModel>
+class RemoteAccessClient {
 public:
-	Client(const std::string& address);
-	virtual ~Client();
+	RemoteAccessClient(const std::string& address);
+	virtual ~RemoteAccessClient();
 
-	Client(const Client&) = delete;
-	Client& operator=(const Client&) = delete;
+	RemoteAccessClient(const RemoteAccessClient&) = delete;
+	RemoteAccessClient& operator=(const RemoteAccessClient&) = delete;
 
 	void connect();
 	void disconnect();
@@ -58,8 +59,70 @@ private:
 	std::thread dispatcher;
 };
 
-template<typename... Args>
-int Client::subscribe(const std::string& provider, const std::string& name,
+template <typename ExceptionModel>
+RemoteAccessClient<ExceptionModel>::RemoteAccessClient(const std::string& path) :
+	address(path)
+{
+}
+
+template <typename ExceptionModel>
+RemoteAccessClient<ExceptionModel>::~RemoteAccessClient()
+{
+	try {
+		disconnect();
+	} catch (runtime::Exception& e) {}
+}
+
+template <typename ExceptionModel>
+void RemoteAccessClient<ExceptionModel>::connect()
+{
+	connection = std::make_shared<Connection>(Socket::connect(address));
+
+	dispatcher = std::thread([this] { mainloop.run(); });
+}
+
+template <typename ExceptionModel>
+int RemoteAccessClient<ExceptionModel>::unsubscribe(const std::string& provider, int id)
+{
+	// file descriptor(id) is automatically closed when mainloop callback is destroyed.
+	mainloop.removeEventSource(id);
+	return 0;
+}
+
+template <typename ExceptionModel>
+int RemoteAccessClient<ExceptionModel>::subscribe(const std::string& provider, const std::string& name)
+{
+	Message request = connection->createMessage(Message::MethodCall, provider);
+	request.packParameters(name);
+	connection->send(request);
+
+	runtime::FileDescriptor response;
+	Message reply = connection->dispatch();
+	if (reply.isError()) {
+		std::string klass;
+		reply.disclose(klass);
+
+		ExceptionModel exception;
+		exception.raise(reply.target(), klass);
+	}
+
+	reply.disclose(response);
+
+	return response.fileDescriptor;
+}
+
+template <typename ExceptionModel>
+void RemoteAccessClient<ExceptionModel>::disconnect()
+{
+	mainloop.stop();
+	if (dispatcher.joinable()) {
+		dispatcher.join();
+	}
+}
+
+template <typename ExceptionModel>
+template <typename... Args>
+int RemoteAccessClient<ExceptionModel>::subscribe(const std::string& provider, const std::string& name,
 					  const typename MethodHandler<void, Args...>::type& handler)
 {
 	int id = subscribe(provider, name);
@@ -91,8 +154,9 @@ int Client::subscribe(const std::string& provider, const std::string& name,
 	return id;
 }
 
-template<typename Type, typename... Args>
-Type Client::methodCall(const std::string& method, Args&&... args)
+template <typename ExceptionModel>
+template <typename Type, typename... Args>
+Type RemoteAccessClient<ExceptionModel>::methodCall(const std::string& method, Args&&... args)
 {
 	Message request = connection->createMessage(Message::MethodCall, method);
 	request.packParameters(std::forward<Args>(args)...);
@@ -100,10 +164,24 @@ Type Client::methodCall(const std::string& method, Args&&... args)
 
 	Type response;
 	Message reply = connection->dispatch();
+	if (reply.isError()) {
+		std::string klass;
+		reply.disclose(klass);
+		ExceptionModel exception;
+		exception.raise(reply.target(), klass);
+	}
+
 	reply.disclose<Type>(response);
 
 	return response;
 }
+
+class DefaultExceptionModel {
+public:
+	void raise(const std::string& target, const std::string& except);
+};
+
+using Client = RemoteAccessClient<DefaultExceptionModel>;
 
 } // namespace rmi
 #endif //__RMI_CLIENT_H__

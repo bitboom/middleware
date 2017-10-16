@@ -46,12 +46,6 @@ Message Connection::dispatch() const
 	std::lock_guard<std::mutex> lock(receiveMutex);
 
 	message.decode(socket);
-	if (message.isError()) {
-		std::string exception;
-		message.disclose(exception);
-
-		throw runtime::Exception(exception);
-	}
 
 	return message;
 }

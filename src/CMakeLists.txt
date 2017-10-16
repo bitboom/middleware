@@ -17,6 +17,7 @@ SET(LIB_VERSION "${VERSION}")
 SET(LIB_SOVERSION "0")
 
 SET (KLAY_SOURCES		${KLAY_SRC}/error.cpp
+						${KLAY_SRC}/exception.cpp
 						${KLAY_SRC}/cgroup.cpp
 						${KLAY_SRC}/process.cpp
 						${KLAY_SRC}/eventfd.cpp

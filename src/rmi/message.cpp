@@ -81,9 +81,9 @@ Message Message::createReplyMessage() const
 	return Message(id(), Reply, target());
 }
 
-Message Message::createErrorMessage(const std::string& message) const
+Message Message::createErrorMessage(const std::string& target, const std::string& message) const
 {
-	Message error(id(), Error, target());
+	Message error(id(), Error, target);
 	error.enclose(message);
 
 	return error;

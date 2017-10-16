@@ -13,55 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <klay/exception.h>
 #include <klay/rmi/client.h>
 
 namespace rmi {
 
-Client::Client(const std::string& path) :
-	address(path)
+void DefaultExceptionModel::raise(const std::string& target, const std::string& msg)
 {
-}
-
-Client::~Client()
-{
-	try {
-		disconnect();
-	} catch (runtime::Exception& e) {}
-}
-
-void Client::connect()
-{
-	connection = std::make_shared<Connection>(Socket::connect(address));
-
-	dispatcher = std::thread([this] { mainloop.run(); });
-}
-
-int Client::unsubscribe(const std::string& provider, int id)
-{
-	// file descriptor(id) is automatically closed when mainloop callback is destroyed.
-	mainloop.removeEventSource(id);
-	return 0;
-}
-
-int Client::subscribe(const std::string& provider, const std::string& name)
-{
-	Message request = connection->createMessage(Message::MethodCall, provider);
-	request.packParameters(name);
-	connection->send(request);
-
-	runtime::FileDescriptor response;
-	Message reply = connection->dispatch();
-	reply.disclose(response);
-
-	return response.fileDescriptor;
-}
-
-void Client::disconnect()
-{
-	mainloop.stop();
-	if (dispatcher.joinable()) {
-		dispatcher.join();
-	}
+	if (target == "InvalidArgumentException")
+		throw runtime::InvalidArgumentException(msg);
+	else if (target == "NotImplementedException")
+		throw runtime::InvalidArgumentException(msg);
+	else if (target == "RangeException")
+		throw runtime::RangeException(msg);
+	else if (target == "NotFoundException")
+		throw runtime::NotFoundException(msg);
+	else if (target == "UnsupportedException")
+		throw runtime::UnsupportedException(msg);
+	else if (target == "NoPermissionException")
+		throw runtime::NoPermissionException(msg);
+	else if (target == "IOException")
+		throw runtime::IOException(msg);
+	else if (target == "OutOfMemoryException")
+		throw runtime::OutOfMemoryException(msg);
+	else
+		throw runtime::Exception(msg);
 }
 
 } // namespace rmi

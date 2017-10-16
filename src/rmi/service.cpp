@@ -197,20 +197,25 @@ void Service::onMessageProcess(const std::shared_ptr<Connection>& connection)
 	// we should increase the reference count of the shared_ptr by capturing it as value
 	auto process = [&, connection](Message& request) {
 		try {
+			if (!methodRegistry.count(request.target()))
+				throw runtime::NotFoundException("Method not found");
+
 			std::shared_ptr<MethodContext> methodContext = methodRegistry.at(request.target());
 
 			processingContext = ProcessingContext(connection);
 			bool allowed = onPrivilegeCheck(processingContext.credentials, methodContext->privilege);
 			onAuditTrail(processingContext.credentials, request.target(), allowed);
 			if (!allowed) {
-				throw runtime::Exception("Permission denied");
+				throw runtime::NoPermissionException("Permission denied");
 			}
 
 			connection->send(methodContext->dispatcher(request));
+		} catch (runtime::Exception& e) {
+			connection->send(request.createErrorMessage(e.className(), e.what()));
 		} catch (std::exception& e) {
 			try {
 				// Forward the exception to the peer
-				connection->send(request.createErrorMessage(e.what()));
+				connection->send(request.createErrorMessage("Exception", e.what()));
 			} catch (std::exception& ex) {
 				// The connection is abnormally closed by the peer.
 				ERROR(KSINK, ex.what());

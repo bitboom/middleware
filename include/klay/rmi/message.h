@@ -51,7 +51,7 @@ public:
 
 	// [TBD] Take arguments
 	Message createReplyMessage() const;
-	Message createErrorMessage(const std::string& message) const;
+	Message createErrorMessage(const std::string& target, const std::string& message) const;
 
 	unsigned int id() const
 	{

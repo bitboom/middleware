@@ -28,6 +28,46 @@ public:
 		std::runtime_error(error)
 	{
 	}
+
+	virtual ~Exception() {}
+	virtual const char *name() const;
+	virtual const char *className() const;
 };
+
+#define EXCEPTION_DEFINE(CLS)             \
+	class CLS : public Exception {        \
+	public:                               \
+		CLS(const std::string& error);    \
+		~CLS() {}                         \
+		const char *className() const;    \
+		const char *name() const;         \
+	};
+
+
+#define EXCEPTION_IMPLEMENT(CLS, NAME)    \
+	CLS::CLS(const std::string& error) :  \
+		Exception(error)                  \
+	{                                     \
+	}                                     \
+	const char *CLS::className() const    \
+	{                                     \
+		return STRINGIFY(CLS);            \
+	}                                     \
+	const char *CLS::name() const         \
+	{                                     \
+		return NAME;                      \
+	}
+
+EXCEPTION_DEFINE(AssertionViolationException)
+EXCEPTION_DEFINE(NullPointerException)
+EXCEPTION_DEFINE(InvalidArgumentException)
+EXCEPTION_DEFINE(NotImplementedException)
+EXCEPTION_DEFINE(RangeException)
+EXCEPTION_DEFINE(NotFoundException)
+EXCEPTION_DEFINE(UnsupportedException)
+EXCEPTION_DEFINE(TimeoutException)
+EXCEPTION_DEFINE(NoPermissionException)
+EXCEPTION_DEFINE(OutOfMemoryException)
+EXCEPTION_DEFINE(IOException)
 } // namespace runtime
 #endif //__RUNTIME_EXCEPTION_H__
