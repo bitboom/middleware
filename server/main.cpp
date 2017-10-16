@@ -25,6 +25,8 @@
 #include <stdexcept>
 #include <memory>
 
+#include <klay/gmainloop.h>
+
 #include "server.h"
 
 void signalHandler(int signum)
@@ -38,6 +40,7 @@ int main(int argc, char *argv[])
 	::signal(SIGINT, signalHandler);
 
 	try {
+		ScopedGMainLoop gmainloop;
 		DevicePolicyManager manager;
 
 		manager.loadManagedClients();
