@@ -40,8 +40,6 @@ public:
 private:
 	void initPolicyStorage();
 
-	runtime::FileDescriptor subscribeSignal(const std::string& name);
-
 	int enroll(const std::string& name, uid_t uid);
 	int disenroll(const std::string& name, uid_t uid);
 

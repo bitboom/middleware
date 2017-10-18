@@ -14,23 +14,48 @@
  *  limitations under the License
  */
 
-#include <iostream>
-
 #include "policy-event.h"
+#include "policy-event-env.h"
 
-rmi::Service *PolicyEventNotifier::signalBackend = nullptr;
+#include <klay/dbus/signal.h>
+#include <klay/dbus/introspection.h>
+#include <klay/exception.h>
+#include <klay/audit/logger.h>
 
-void PolicyEventNotifier::setSignalBackend(rmi::Service* backend)
+
+void PolicyEventNotifier::init(void) noexcept
 {
-	signalBackend = backend;
+	try {
+		auto manifest = dbus::Introspection::createXmlDataFromFile(PIL_MANIFEST_PATH);
+		dbus::Introspection is(manifest);
+		is.addInterface(PIL_EVENT_INTERFACE);
+
+		manifest = is.getXmlData();
+		dbus::Introspection::writeXmlDataToFile(PIL_MANIFEST_PATH, manifest);
+
+		dbus::Connection& conn = dbus::Connection::getSystem();
+		conn.registerObject(PIL_OBJECT_PATH, manifest, nullptr, nullptr);
+	} catch(runtime::Exception& e) {
+		ERROR(e.what());
+	}
 }
 
-void PolicyEventNotifier::create(const std::string& name)
+void PolicyEventNotifier::create(const std::string& name) noexcept
 {
-	signalBackend->createNotification(name);
+	try {
+		dbus::signal::Sender sender(PIL_OBJECT_PATH, PIL_EVENT_INTERFACE);
+		sender.addSignal(PIL_MANIFEST_PATH, name, "(s)");
+	} catch(runtime::Exception& e) {
+		ERROR(e.what() << ", name: " << name);
+	}
 }
 
-void PolicyEventNotifier::emit(const std::string& name, const std::string& signal)
+void PolicyEventNotifier::emit(const std::string& name, const std::string& state) noexcept
 {
-	signalBackend->notify(name, signal);
+	try {
+		dbus::signal::Sender sender(PIL_OBJECT_PATH, PIL_EVENT_INTERFACE);
+		sender.emit(name, "(s)", state.c_str());
+	} catch(runtime::Exception& e) {
+		ERROR(e.what() << ", name: " << name << ", state: " << state);
+	}
 }

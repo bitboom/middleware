@@ -21,7 +21,6 @@
 #include <memory>
 #include <functional>
 #include <cerrno>
-#include <iostream>
 
 #include <klay/rmi/client.h>
 
@@ -38,8 +37,10 @@ public:
 	int connect(const std::string& address) noexcept;
 	void disconnect() noexcept;
 
-	int subscribeSignal(const std::string& name, const SignalHandler& handler, void* data);
-	int unsubscribeSignal(int subscriberId);
+	int subscribeSignal(const std::string& name,
+						const SignalHandler& handler,
+						void* data) noexcept;
+	int unsubscribeSignal(int subscriberId) noexcept;
 
 	template<typename Type, typename... Args>
 	Type methodCall(const std::string& method, Args&&... args)

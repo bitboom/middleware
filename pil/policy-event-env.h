@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2017 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,16 +14,13 @@
  *  limitations under the License
  */
 
-#ifndef __DPM_POLICY_EVENT_H__
-#define __DPM_POLICY_EVENT_H__
+#ifndef __DPM_POLICY_EVENT_ENV_H__
+#define __DPM_POLICY_EVENT_ENV_H__
 
 #include <string>
 
-class PolicyEventNotifier {
-public:
-	static void init(void) noexcept;
-	static void create(const std::string& name) noexcept;
-	static void emit(const std::string& name, const std::string& state) noexcept;
-};
+const std::string PIL_MANIFEST_PATH = DATA_PATH "/manifest";
+const std::string PIL_OBJECT_PATH = "/org/tizen/DevicePolicyManger/PIL";
+const std::string PIL_EVENT_INTERFACE = "org.tizen.DevicePolicyManager.PIL.Event";
 
-#endif //__DPM_POLICY_EVENT_H__
+#endif //__DPM_POLICY_EVENT_ENV_H__

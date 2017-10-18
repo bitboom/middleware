@@ -45,11 +45,9 @@ DevicePolicyManager::DevicePolicyManager() :
 {
 	initPolicyStorage();
 
-	PolicyEventNotifier::setSignalBackend(this);
+	PolicyEventNotifier::init();
 
 	setPrivilegeChecker(std::bind(&DevicePolicyManager::checkPeerPrivilege, this, _1, _2));
-
-	expose(this, "", (runtime::FileDescriptor)(DevicePolicyManager::subscribeSignal)(std::string));
 
 	expose(this, "", (int)(DevicePolicyManager::enroll)(std::string, uid_t));
 	expose(this, "", (int)(DevicePolicyManager::disenroll)(std::string, uid_t));
@@ -96,11 +94,6 @@ void DevicePolicyManager::run(bool activate)
 {
 	::umask(0);
 	start();
-}
-
-runtime::FileDescriptor DevicePolicyManager::subscribeSignal(const std::string& name)
-{
-	return runtime::FileDescriptor(subscribeNotification(name), true);
 }
 
 int DevicePolicyManager::enroll(const std::string& name, uid_t uid)

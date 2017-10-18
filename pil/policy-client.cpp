@@ -17,11 +17,13 @@
 #include <system_info.h>
 #include <klay/filesystem.h>
 
+#include <klay/dbus/signal.h>
+#include <klay/audit/logger.h>
+
 #include "policy-client.h"
+#include "policy-event-env.h"
 
 namespace {
-
-const std::string SIGNAL_INTERFACE = "DevicePolicyManager::subscribeSignal";
 
 const std::string POLICY_MANAGER_ADDRESS = "/tmp/.device-policy-manager.sock";
 
@@ -75,31 +77,40 @@ void DevicePolicyClient::disconnect() noexcept
 
 int DevicePolicyClient::subscribeSignal(const std::string& name,
 										const SignalHandler& handler,
-										void* data)
+										void* data) noexcept
 {
-	auto dispatch = [handler, data](const std::string& name, const std::string &object) {
-		handler(name.c_str(), object.c_str(), data);
-	};
-
-	if (!maintenanceMode) {
+	if (!maintenanceMode)
 		return 0;
-	}
 
 	try {
-		return client->subscribe<std::string, std::string>(SIGNAL_INTERFACE, name, dispatch);
+		auto dispatch = [name, handler, data](dbus::Variant variant) {
+			char *state = NULL;
+			variant.get("(s)", &state);
+
+			handler(name.c_str(), state, data);
+		};
+
+		dbus::signal::Receiver receiver(PIL_OBJECT_PATH, PIL_EVENT_INTERFACE);
+		return receiver.subscribe(name, dispatch);
 	} catch (runtime::Exception& e) {
-		std::cout << e.what() << std::endl;
+		ERROR(e.what());
 		return -1;
 	}
 }
 
-int DevicePolicyClient::unsubscribeSignal(int id)
+int DevicePolicyClient::unsubscribeSignal(int id) noexcept
 {
-	if (!maintenanceMode) {
+	if (!maintenanceMode)
 		return 0;
-	}
 
-	return client->unsubscribe(SIGNAL_INTERFACE, id);
+	try {
+		dbus::signal::Receiver receiver(PIL_OBJECT_PATH, PIL_EVENT_INTERFACE);
+		receiver.unsubscribe(id);
+		return 0;
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
 }
 
 DevicePolicyClient& GetDevicePolicyClient(void* handle)
