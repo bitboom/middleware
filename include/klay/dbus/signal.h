@@ -25,6 +25,8 @@
 namespace dbus {
 namespace signal {
 
+using SignalCallback = dbus::Connection::SignalCallback;
+
 class Sender {
 public:
 	explicit Sender(const std::string &objectPath, const std::string &interfaceName);

@@ -27,8 +27,6 @@
 
 namespace dbus {
 
-typedef std::function<void(Variant parameters)> SignalCallback;
-
 class Connection {
 public:
 	typedef unsigned int NameId;
@@ -36,8 +34,7 @@ public:
 	typedef unsigned int SubscriptionId;
 
 	typedef std::function<void()> VoidCallback;
-
-
+	typedef std::function<void(Variant parameters)> SignalCallback;
 	typedef std::function<void(const std::string& name)> ClientVanishedCallback;
 
 	typedef std::function<Variant(const std::string& objectPath,
