@@ -131,3 +131,16 @@ Tizen DPM system popup interface package
 %{TZ_SYS_RO_PACKAGES}/org.tizen.dpm-syspopup.xml
 /usr/share/icons/default/small/org.tizen.dpm-syspopup.png
 %{TZ_SYS_RO_APP}/org.tizen.dpm-syspopup/res/images/*
+
+## Test Package ###############################################################
+%package -n device-policy-manager-test
+Summary: Tizen DPM internal test
+Group: Security/Development
+Requires: device-policy-manager = %{version}-%{release}
+BuildRequires: pkgconfig(klay)
+
+%description -n device-policy-manager-test
+Testcases for device policy manager
+
+%files -n device-policy-manager-test
+%{_bindir}/dpm-test
