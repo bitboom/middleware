@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 #include <iostream>
+#include <thread>
 
 #include "test-util.hxx"
 #include "test-resource.hxx"
@@ -103,3 +104,23 @@ TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
 		TEST_EXPECT(true, beforeCat == afterCatParent);
 	}
 }
+
+TESTCASE(TRUST_ANCHOR_LAUNCH_NOT_INSTALLED)
+{
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+	tanchor::TrustAnchor ta(DUMMY_PKG_ID, DUMMY_UID);
+	int ret = ta.uninstall();
+	TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
+
+	// pre-condition
+	int pid = fork();
+	TEST_EXPECT(true, pid >= 0);
+
+	if (pid == 0) {
+		ret = ta.launch();
+		TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NOT_INSTALLED);
+
+		exit(0);
+	}
+}
+

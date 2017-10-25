@@ -40,6 +40,9 @@ int main()
 
 	int ret = trust_anchor_launch("pkgid", uid);
 	if (ret != TRUST_ANCHOR_ERROR_NONE) {
+		if (ret == TRUST_ANCHOR_ERROR_NOT_INSTALLED)
+			printf("This package is not installed with trsut-anchor.");
+
 		printf("Failed to launch operation");
 		return -1;
 	}

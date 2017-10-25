@@ -75,6 +75,7 @@ int trust_anchor_install(const char *package_id,
  * @retval #TRUST_ANCHOR_ERROR_PERMISSION_DENIED Permission denied error
  * @retval #TRUST_ANCHOR_ERROR_NO_SUCH_FILE No such file or directory error
  * @retval #TRUST_ANCHOR_ERROR_INTERNAL Internal error
+ * @retval #TRUST_ANCHOR_ERROR_NOT_INSTALLED Not installed error
  * @see trust_anchor_install()
  */
 int trust_anchor_launch(const char *package_id, uid_t uid);

@@ -144,6 +144,12 @@ void Logic::makeCustomBundle(void)
 	INFO(SINK, "Success to make pkg custom bundle.");
 }
 
+bool Logic::isCustomBaseValid(void) const
+{
+	runtime::File customBaseDir(this->m_customBasePath);
+	return customBaseDir.exists();
+}
+
 bool Logic::isPkgCertsValid(const std::string &path) const
 {
 	runtime::File file(path);

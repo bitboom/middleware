@@ -42,6 +42,7 @@ public:
 
 	void makeCustomCerts(void);
 	void makeCustomBundle(void);
+	bool isCustomBaseValid(void) const;
 
 	void setPkgCertsPath(const std::string &path) const;
 	std::string getPkgCertsPath(void) const;

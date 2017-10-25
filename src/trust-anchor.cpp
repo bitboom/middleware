@@ -106,10 +106,13 @@ int TrustAnchor::Impl::uninstall(void) const noexcept
 
 void TrustAnchor::Impl::preLaunch(void)
 {
+	if (!this->m_logic.isCustomBaseValid())
+		ThrowExc(TRUST_ANCHOR_ERROR_NOT_INSTALLED, "Base directory does not exist.");
+
 	if (!this->m_logic.isSystemCertsUsed())
 		return;
 
-	DEBUG(SINK, "This package use system certificates.");
+	DEBUG(SINK, "This package uses system certificates.");
 	if (this->m_logic.isSystemCertsModified()) {
 		WARN(SINK, "System certificates be changed. Do re-install for refresh.");
 		this->install(this->m_logic.getPkgCertsPath(), true);
