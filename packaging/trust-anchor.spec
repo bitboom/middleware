@@ -20,6 +20,7 @@ Requires(postun): /sbin/ldconfig
 %global user_name        security_fw
 %global group_name       security_fw
 %global smack_label      System
+%global pkg_smack_label  System::Shared
 
 %global tanchor_base     %{TZ_SYS_DATA}/%{lib_name}
 %global tanchor_pkg      %{tanchor_base}/pkg
@@ -61,6 +62,7 @@ SSL root certificates for its HTTPS communication.
 		 -DUSER_NAME=%{user_name} \
 		 -DGROUP_NAME=%{group_name} \
 		 -DSMACK_LABEL=%{smack_label} \
+		 -DPKG_SMACK_LABEL=%{pkg_smack_label} \
 		 -DTANCHOR_BASE=%{tanchor_base} \
 		 -DTANCHOR_PKG=%{tanchor_pkg} \
 		 -DTANCHOR_BUNDLE=%{tanchor_bundle} \
