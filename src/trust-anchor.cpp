@@ -107,7 +107,7 @@ int TrustAnchor::Impl::uninstall(void) const noexcept
 void TrustAnchor::Impl::preLaunch(void)
 {
 	if (!this->m_logic.isCustomBaseValid())
-		ThrowExc(TRUST_ANCHOR_ERROR_NOT_INSTALLED, "Base directory does not exist.");
+		ThrowExc(TRUST_ANCHOR_ERROR_NOT_INSTALLED, "Tanchor is not installed before.");
 
 	if (!this->m_logic.isSystemCertsUsed())
 		return;

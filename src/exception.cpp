@@ -48,7 +48,12 @@ int exceptionGuard(const std::function<int()> &func)
 			errStr = "Internal error.";
 			break;
 		}
-		ERROR(SINK, errStr + e.what());
+
+		if (e.error() == TRUST_ANCHOR_ERROR_NOT_INSTALLED)
+			INFO(SINK, e.what());
+		else
+			ERROR(SINK, errStr + e.what());
+
 		return e.error();
 	} catch (const runtime::Exception &e) {
 		ERROR(SINK, e.what());
@@ -74,7 +79,6 @@ Exception::Exception(int ec, const char *file, const char *function,
 	m_message(FORMAT("[" << file << ":" << line << " " <<
 					 function << "()]" << message))
 {
-	ERROR(SINK, this->m_message);
 }
 
 const char *Exception::what() const noexcept
