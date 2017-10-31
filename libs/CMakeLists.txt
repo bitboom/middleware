@@ -15,33 +15,34 @@
 #
 
 SET(PIL_TARGET "dpm-pil")
-SET(PC_FILE "${PIL_TARGET}.pc")
+SET(PC_FILE "pil/${PIL_TARGET}.pc")
 
 SET(LIB_VERSION "${VERSION}")
 SET(LIB_SOVERSION "0")
 
-SET(PIL				app-bundle.cpp
-					launchpad.cpp
-					packman.cpp
-					policy-event.cpp
-					policy-client.cpp
-					policy-admin.cpp
-					policy-storage.cpp
+SET(PIL				pil/app-bundle.cpp
+					pil/launchpad.cpp
+					pil/packman.cpp
+					pil/policy-event.cpp
+					pil/policy-client.cpp
+					pil/policy-admin.cpp
+					pil/policy-storage.cpp
 )
 
-SET(HEADERS			app-bundle.h
-					launchpad.h
-					packman.h
-					policy-event.h
-					policy-context.h
-					policy-admin.h
-					policy-client.h
-					policy-model.h
-					policy-storage.h
-					status.h
-					observer.h
-					error.h
+SET(PAPIS			pil/app-bundle.h
+					pil/launchpad.h
+					pil/packman.h
+					pil/policy-event.h
+					pil/policy-context.h
+					pil/policy-admin.h
+					pil/policy-client.h
+					pil/policy-model.h
+					pil/policy-storage.h
+					pil/status.h
+					pil/observer.h
 )
+
+SET(CAPIS			device-policy-manager.h)
 
 SET(DEPENDENCY		klay
 					glib-2.0
@@ -58,6 +59,7 @@ SET(DEPENDENCY		klay
 					libtzplatform-config
 					security-privilege-manager
 					capi-system-info
+					capi-base-common
 					capi-system-system-settings
 					notification
 					cynara-client
@@ -84,5 +86,6 @@ CONFIGURE_FILE(${PC_FILE}.in ${CMAKE_BINARY_DIR}/${PC_FILE} @ONLY)
 
 TARGET_LINK_LIBRARIES(${PIL_TARGET} ${PIL_DEPS_LIBRARIES} pthread sqlite3)
 INSTALL(FILES ${CMAKE_BINARY_DIR}/${PC_FILE} DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
-INSTALL(FILES ${HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/dpm/pil)
+INSTALL(FILES ${CAPIS} DESTINATION ${INCLUDE_INSTALL_DIR}/dpm)
+INSTALL(FILES ${PAPIS} DESTINATION ${INCLUDE_INSTALL_DIR}/dpm/pil)
 INSTALL(TARGETS ${PIL_TARGET} DESTINATION ${LIB_INSTALL_DIR} COMPONENT RuntimeLibraries)

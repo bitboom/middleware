@@ -20,8 +20,6 @@
 #include <cerrno>
 #include <utility>
 
-#include "error.h"
-
 template<typename Type>
 class Status {
 public:

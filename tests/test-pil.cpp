@@ -14,8 +14,8 @@
  *  limitations under the License
  */
 
-#include "policy-event.h"
-#include "policy-client.h"
+#include "pil/policy-event.h"
+#include "pil/policy-client.h"
 
 #include <klay/testbench.h>
 

@@ -26,6 +26,7 @@ BuildRequires: pkgconfig(cynara-session)
 BuildRequires: pkgconfig(libtzplatform-config)
 BuildRequires: pkgconfig(security-privilege-manager)
 BuildRequires: pkgconfig(capi-system-system-settings)
+BuildRequires: pkgconfig(capi-base-common)
 
 %description
 The device-policy-manager package provides a daemon which is responsible for
@@ -109,6 +110,7 @@ developing the device policy module.
 #%manifest device-policy-client.manifest
 %defattr(644,root,root,755)
 %{_libdir}/libdpm-pil.so
+%{_includedir}/dpm
 %{_includedir}/dpm/pil
 %{_libdir}/pkgconfig/dpm-pil.pc
 

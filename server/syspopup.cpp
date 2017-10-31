@@ -21,6 +21,7 @@
 #include <string>
 #include <stdexcept>
 
+#include <bundle.h>
 #include <tzplatform_config.h>
 
 #include <klay/exception.h>
@@ -28,9 +29,9 @@
 #include <klay/dbus/connection.h>
 #include <klay/audit/logger.h>
 
+#include "pil/launchpad.h"
+
 #include "syspopup.h"
-#include "bundle.h"
-#include "launchpad.h"
 
 using namespace std::placeholders;
 

@@ -24,7 +24,7 @@
 #include <klay/db/statement.h>
 #include <klay/db/column.h>
 
-#include "policy-storage.h"
+#include "pil/policy-storage.h"
 
 class SQLBackend : public PolicyStorageBackend {
 public:

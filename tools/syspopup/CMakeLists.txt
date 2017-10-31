@@ -3,6 +3,7 @@ PROJECT(org.tizen.dpm-syspopup C)
 
 FIND_PACKAGE(PkgConfig REQUIRED)
 PKG_CHECK_MODULES(dpm_syspopup_pkgs REQUIRED
+	klay
 	dlog
 	glib-2.0
 	bundle

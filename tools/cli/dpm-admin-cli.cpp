@@ -23,8 +23,8 @@
 #include <memory>
 #include <string>
 
-#include "status.h"
-#include "policy-client.h"
+#include "pil/status.h"
+#include "pil/policy-client.h"
 
 static void usage()
 {

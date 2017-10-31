@@ -20,8 +20,8 @@
 #include <exception>
 #include <unordered_map>
 
-#include "policy-context.h"
-#include "policy-model.h"
+#include "pil/policy-context.h"
+#include "pil/policy-model.h"
 
 class Plugin {
 public:

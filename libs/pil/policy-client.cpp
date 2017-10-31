@@ -23,6 +23,14 @@
 #include "policy-client.h"
 #include "policy-event-env.h"
 
+#include "../device-policy-manager.h"
+
+#define RET_ON_FAILURE(cond, ret) \
+{                                 \
+	if (!(cond))                  \
+		return (ret);             \
+}
+
 namespace {
 
 const std::string POLICY_MANAGER_ADDRESS = "/tmp/.device-policy-manager.sock";
@@ -116,4 +124,85 @@ int DevicePolicyClient::unsubscribeSignal(int id) noexcept
 DevicePolicyClient& GetDevicePolicyClient(void* handle)
 {
 	return *reinterpret_cast<DevicePolicyClient*>(handle);
+}
+
+EXPORT_API device_policy_manager_h dpm_manager_create(void)
+{
+	DevicePolicyClient* client = new(std::nothrow) DevicePolicyClient();
+	if (client == nullptr) {
+		return NULL;
+	}
+
+	if (client->connect() < 0) {
+		delete client;
+	return NULL;
+}
+
+return reinterpret_cast<device_policy_manager_h>(client);
+}
+
+EXPORT_API int dpm_manager_destroy(device_policy_manager_h handle)
+{
+	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
+
+	delete &GetDevicePolicyClient(handle);
+
+	return 0;
+}
+
+EXPORT_API int dpm_add_policy_changed_cb(device_policy_manager_h handle,
+										 const char* name,
+										 dpm_policy_changed_cb callback,
+										 void* user_data,
+										 int* id)
+{
+	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(name, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(callback, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(id, DPM_ERROR_INVALID_PARAMETER);
+
+	DevicePolicyClient& client = GetDevicePolicyClient(handle);
+	int ret = client.subscribeSignal(name, callback, user_data);
+	if (ret < 0) {
+		return -1;
+	}
+
+	*id = ret;
+	return 0;
+}
+
+EXPORT_API int dpm_remove_policy_changed_cb(device_policy_manager_h handle, int id)
+{
+	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(id >= 0, DPM_ERROR_INVALID_PARAMETER);
+
+	DevicePolicyClient& client = GetDevicePolicyClient(handle);
+	return client.unsubscribeSignal(id);
+}
+
+EXPORT_API int dpm_add_signal_cb(device_policy_manager_h handle, const char* signal,
+								 dpm_signal_cb callback, void* user_data, int* id)
+{
+	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(signal, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(callback, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(id, DPM_ERROR_INVALID_PARAMETER);
+
+	DevicePolicyClient& context = GetDevicePolicyClient(handle);
+	int ret = context.subscribeSignal(signal, callback, user_data);
+	if (ret < 0) {
+		return -1;
+	}
+
+	*id = ret;
+	return 0;
+}
+
+EXPORT_API int dpm_remove_signal_cb(device_policy_manager_h handle, int id)
+{
+	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(id >= 0, DPM_ERROR_INVALID_PARAMETER);
+
+	DevicePolicyClient& context = GetDevicePolicyClient(handle);
+	return context.unsubscribeSignal(id);
 }
