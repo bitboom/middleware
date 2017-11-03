@@ -117,7 +117,7 @@ std::string Introspection::createXmlDataFromFile(const std::string &path)
 {
 	runtime::File manifest(path);
 	if (!manifest.exists()) {
-		manifest.create(644);
+		manifest.create(0644);
 		manifest.lock();
 		manifest.write(MANIFEST_TEMPLATE.c_str(), MANIFEST_TEMPLATE.length());
 		manifest.unlock();

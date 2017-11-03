@@ -47,7 +47,7 @@ TESTCASE(FileIO)
 	char testbuf[100] = "Test Data";
 	runtime::File tmp("/tmp/test-file");
 	try {
-		tmp.create(755);
+		tmp.create(0755);
 		tmp.lock();
 		tmp.write(testbuf, ::strlen(testbuf));
 		tmp.lseek(10, SEEK_SET);
