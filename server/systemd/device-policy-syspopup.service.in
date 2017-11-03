@@ -6,9 +6,9 @@ Requires=dbus.socket
 [Service]
 Type=dbus
 BusName=org.tizen.DevicePolicyManager
-User=security_fw
-Group=security_fw
-SmackProcessLabel=System
+User=${USER_NAME}
+Group=${GROUP_NAME}
+SmackProcessLabel=${SMACK_LABEL}
 ExecStart=${CMAKE_INSTALL_PREFIX}/bin/device-policy-syspopup
 Restart=on-failure
 ExecReload=/bin/kill -HUP $MAINPID

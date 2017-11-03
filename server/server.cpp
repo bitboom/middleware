@@ -36,7 +36,7 @@ namespace {
 
 const std::string PolicyStoragePath = "/opt/dbspace/.dpm.db";
 const std::string PolicyManagerSocket = "/tmp/.device-policy-manager.sock";
-const std::string PolicyPluginBase = "/opt/data/dpm/plugins";
+const std::string PolicyPluginBase = PLUGIN_INSTALL_DIR;
 
 } // namespace
 

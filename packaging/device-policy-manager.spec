@@ -28,6 +28,14 @@ BuildRequires: pkgconfig(security-privilege-manager)
 BuildRequires: pkgconfig(capi-system-system-settings)
 BuildRequires: pkgconfig(capi-base-common)
 
+%global user_name        security_fw
+%global group_name       security_fw
+%global smack_label      System
+
+%global dpm_base         %{TZ_SYS_DATA}/dpm
+%global dpm_event        %{dpm_base}/event
+%global dpm_plugins      %{dpm_base}/plugins
+
 %description
 The device-policy-manager package provides a daemon which is responsible for
 managing device policies.
@@ -41,6 +49,9 @@ managing device policies.
 %attr(755,root,root) %{_bindir}/device-policy-manager
 %attr(755,root,root) %{_bindir}/device-policy-syspopup
 %attr(755,root,root) %{_libdir}/libdpm-pil.so.%{version}
+%attr(-,%{user_name},%{group_name}) %{dpm_base}
+%attr(-,%{user_name},%{group_name}) %{dpm_event}
+%attr(-,%{user_name},%{group_name}) %{dpm_plugins}
 %{_libdir}/libdpm-pil.so.0
 %{_unitdir}/device-policy-manager.service
 %{_unitdir}/multi-user.target.wants/device-policy-manager.service
@@ -61,9 +72,14 @@ managing device policies.
 
 %cmake . -DVERSION=%{version} \
          -DCMAKE_BUILD_TYPE=%{build_type} \
+         -DUSER_NAME=%{user_name} \
+         -DGROUP_NAME=%{group_name} \
+         -DSMACK_LABEL=%{smack_label} \
          -DSCRIPT_INSTALL_DIR=%{_scriptdir} \
          -DSYSTEMD_UNIT_INSTALL_DIR=%{_unitdir} \
-         -DDATA_INSTALL_DIR=%{TZ_SYS_DATA}/dpm \
+         -DDATA_INSTALL_DIR=%{dpm_base} \
+         -DEVENT_CONFIGURE_DIR=%{dpm_event} \
+         -DPLUGIN_INSTALL_DIR=%{dpm_plugins} \
          -DDB_INSTALL_DIR=%{TZ_SYS_DB} \
          -DRUN_INSTALL_DIR=%{TZ_SYS_RUN} \
          -DAPP_INSTALL_PREFIX="%{TZ_SYS_RO_APP}" \
@@ -76,6 +92,8 @@ make %{?jobs:-j%jobs}
 
 %install
 %make_install
+mkdir -p %{buildroot}%{dpm_event}
+mkdir -p %{buildroot}%{dpm_plugins}
 mkdir -p %{buildroot}/%{_unitdir}/multi-user.target.wants
 ln -s ../device-policy-manager.service %{buildroot}/%{_unitdir}/multi-user.target.wants/device-policy-manager.service
 

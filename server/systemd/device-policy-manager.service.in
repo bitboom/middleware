@@ -5,9 +5,9 @@ After=lbs-server.service net-config.service pulseaudio.service
 
 [Service]
 Type=simple
-User=security_fw
-Group=security_fw
-SmackProcessLabel=System
+User=${USER_NAME}
+Group=${GROUP_NAME}
+SmackProcessLabel=${SMACK_LABEL}
 ExecStartPre=${CMAKE_INSTALL_PREFIX}/bin/dpm-storage-builder
 ExecStart=${CMAKE_INSTALL_PREFIX}/bin/device-policy-manager
 Restart=on-failure

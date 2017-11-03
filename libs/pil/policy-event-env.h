@@ -19,7 +19,7 @@
 
 #include <string>
 
-const std::string PIL_MANIFEST_PATH = DATA_PATH "/manifest";
+const std::string PIL_MANIFEST_PATH = EVENT_CONFIGURE_DIR "/manifest";
 const std::string PIL_OBJECT_PATH = "/org/tizen/DevicePolicyManger/PIL";
 const std::string PIL_EVENT_INTERFACE = "org.tizen.DevicePolicyManager.PIL.Event";
 
