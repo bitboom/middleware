@@ -54,6 +54,8 @@ managing device policies.
 %attr(-,%{user_name},%{group_name}) %{dpm_plugins}
 %{_libdir}/libdpm-pil.so.0
 %{_unitdir}/device-policy-manager.service
+%{_unitdir}/device-policy-manager.socket
+%{_unitdir}/sockets.target.wants/device-policy-manager.socket
 %{_unitdir}/multi-user.target.wants/device-policy-manager.service
 %{_unitdir}/device-policy-syspopup.service
 /etc/dbus-1/system.d/org.tizen.dpm.syspopup.conf
@@ -95,7 +97,9 @@ make %{?jobs:-j%jobs}
 mkdir -p %{buildroot}%{dpm_event}
 mkdir -p %{buildroot}%{dpm_plugins}
 mkdir -p %{buildroot}/%{_unitdir}/multi-user.target.wants
+mkdir -p %{buildroot}/%{_unitdir}/sockets.target.wants
 ln -s ../device-policy-manager.service %{buildroot}/%{_unitdir}/multi-user.target.wants/device-policy-manager.service
+ln -s ../device-policy-manager.socket %{buildroot}/%{_unitdir}/sockets.target.wants/device-policy-manager.socket
 
 %find_lang dpm-syspopup
 

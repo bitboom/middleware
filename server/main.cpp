@@ -31,15 +31,52 @@
 
 #include "server.h"
 
+namespace {
+
+void usage(const std::string& prog)
+{
+	std::cout << "Usage: " << prog << "\n"
+			  << "Options: \n"
+			  << "  -o --on-demand timeout : Start as on-demand service\n"
+			  << "                           Service will be unloaded after timeout\n"
+			  << std::endl;
+}
+
 void signalHandler(int signum)
 {
 	ERROR(DPM, "Interrupted");
 	exit(0);
 }
 
+} // namespace
 int main(int argc, char *argv[])
 {
+	struct option options[] = {
+		{"on-demand", required_argument, 0, 'o'},
+		{"help",      no_argument,       0, 'h'},
+		{0,           0,                 0,  0 }
+	};
+
 	::signal(SIGINT, signalHandler);
+
+	bool ondemand = false;
+	int index, opt, timeout = -1;
+	while ((opt = getopt_long(argc, argv, "o:h", options, &index)) != -1) {
+		switch (opt) {
+		case 'o':
+			ondemand = true;
+			timeout = ::atoi(optarg);
+			break;
+		case 'h':
+			usage(argv[0]);
+			return EXIT_SUCCESS;
+		default:
+			usage(argv[0]);
+			return EXIT_FAILURE;
+		}
+	}
+
+	::umask(0);
 
 	try {
 		ScopedGMainLoop gmainloop;
@@ -48,7 +85,7 @@ int main(int argc, char *argv[])
 		manager.loadManagedClients();
 		manager.loadPolicyPlugins();
 
-		manager.run();
+		manager.start(ondemand, timeout);
 	} catch (std::exception &e) {
 		ERROR(DPM, e.what());
 		return EXIT_FAILURE;

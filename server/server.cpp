@@ -33,7 +33,6 @@
 using namespace std::placeholders;
 
 namespace {
-
 const std::string PolicyStoragePath = "/opt/dbspace/.dpm.db";
 const std::string PolicyManagerSocket = "/tmp/.device-policy-manager.sock";
 const std::string PolicyPluginBase = PLUGIN_INSTALL_DIR;
@@ -90,13 +89,6 @@ void DevicePolicyManager::initPolicyStorage()
 
 	PolicyStorage::setBackend(backend);
 	DEBUG(DPM, "Success to init policy-storage.");
-}
-
-void DevicePolicyManager::run(bool activate)
-{
-	::umask(0);
-	INFO(DPM, "Start device-police-manager.");
-	start();
 }
 
 int DevicePolicyManager::enroll(const std::string& name, uid_t uid)

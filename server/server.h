@@ -35,7 +35,6 @@ public:
 
 	int loadManagedClients();
 	void loadPolicyPlugins();
-	void run(bool activate = false);
 
 private:
 	void initPolicyStorage();

@@ -1,0 +1,12 @@
+[Socket]
+ListenStream=/tmp/.device-policy-manager.sock
+SocketUser=security_fw
+SocketGroup=security_fw
+SocketMode=0777
+SmackLabelIPIn=*
+SmackLabelIPOut=@
+Service=device-policy-manager.service
+
+[Install]
+WantedBy=sockets.target
+

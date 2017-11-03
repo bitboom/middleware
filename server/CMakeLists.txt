@@ -72,6 +72,7 @@ CONFIGURE_FILE(systemd/device-policy-manager.service.in systemd/device-policy-ma
 CONFIGURE_FILE(systemd/${SYSPOPUPEXE}.service.in systemd/${SYSPOPUPEXE}.service)
 
 INSTALL(FILES systemd/device-policy-manager.service DESTINATION ${SYSTEMD_UNIT_INSTALL_DIR})
+INSTALL(FILES systemd/device-policy-manager.socket DESTINATION ${SYSTEMD_UNIT_INSTALL_DIR})
 INSTALL(FILES systemd/${SYSPOPUPEXE}.service DESTINATION ${SYSTEMD_UNIT_INSTALL_DIR})
 
 INSTALL(FILES dbus/org.tizen.dpm.syspopup.conf DESTINATION ${DUBS_CONFIGURE_DIR})
