@@ -8,6 +8,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include "pil/logger.h"
+
 #include "plugin.h"
 
 Plugin::Plugin() :
@@ -57,18 +59,17 @@ AbstractPolicyProvider* PolicyLoader::instantiate(const std::string& name, Polic
 	if (iter == pluginMap.end()) {
 		Plugin plguin;
 		if (plguin.load(basename + name, RTLD_LAZY | RTLD_LOCAL) != 0) {
-			std::cout << "Failed to load \"" << name << "\"" << std::endl;
+			ERROR(DPM, "Failed to load \"" << name << "\"");
 			return nullptr;
 		}
 
-		std::cout << "Loading plugin: " << name << " ... ";
+		DEBUG(DPM, "Loading plugin: " << name << " ... ");
 		PolicyFactory factory = (PolicyFactory)(plguin.lookupSymbol("PolicyFactory"));
 		if (factory == nullptr) {
-			std::cout << dlerror() << std::endl;
+			ERROR(DPM, dlerror());
 			return NULL;
 		}
 
-		std::cout << "OK" << std::endl;
 		pluginMap[name] = std::move(plguin);
 
 		return (*factory)(context);

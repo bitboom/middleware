@@ -25,9 +25,9 @@
 #include <klay/filesystem.h>
 
 #include "pil/policy-event.h"
+#include "pil/logger.h"
 
 #include "server.h"
-#include "logger.h"
 #include "sql-backend.h"
 
 using namespace std::placeholders;
@@ -71,12 +71,13 @@ void DevicePolicyManager::loadPolicyPlugins()
 		if (iter->isFile()) {
 			AbstractPolicyProvider* instance = policyLoader->instantiate(iter->getName(), *this);
 			if (instance == nullptr) {
-				ERROR("Failed to instantiate");
+				ERROR(DPM, "Failed to instantiate");
 			}
 			policyList.push_back(instance);
 		}
 		++iter;
 	}
+	DEBUG(DPM, "Success to load policy-plugins.");
 }
 
 void DevicePolicyManager::initPolicyStorage()
@@ -88,11 +89,13 @@ void DevicePolicyManager::initPolicyStorage()
 	}
 
 	PolicyStorage::setBackend(backend);
+	DEBUG(DPM, "Success to init policy-storage.");
 }
 
 void DevicePolicyManager::run(bool activate)
 {
 	::umask(0);
+	INFO(DPM, "Start device-police-manager.");
 	start();
 }
 
@@ -117,7 +120,7 @@ bool DevicePolicyManager::checkPeerPrivilege(const rmi::Credentials& cred, const
 		cynara *p_cynara;
 
 		if (::cynara_initialize(&p_cynara, NULL) != CYNARA_API_SUCCESS) {
-			ERROR("Failure in cynara API");
+			ERROR(DPM, "Failure in cynara API");
 			return false;
 		}
 
@@ -125,7 +128,7 @@ bool DevicePolicyManager::checkPeerPrivilege(const rmi::Credentials& cred, const
 						   std::to_string(cred.uid).c_str(),
 						   privilege.c_str()) != CYNARA_API_ACCESS_ALLOWED) {
 			::cynara_finish(p_cynara);
-			ERROR("Access denied: " + cred.security + " : " + privilege);
+			ERROR(DPM, "Access denied: " + cred.security + " : " + privilege);
 			return false;
 		}
 

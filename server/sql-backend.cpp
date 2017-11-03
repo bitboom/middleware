@@ -16,6 +16,8 @@
 
 #include <klay/exception.h>
 
+#include "pil/logger.h"
+
 #include "sql-backend.h"
 
 int SQLBackend::open(const std::string& path)
@@ -25,7 +27,7 @@ int SQLBackend::open(const std::string& path)
 													  database::Connection::Create));
 		return 0;
 	} catch (runtime::Exception& e) {
-		std::cerr << e.what() << std::endl;
+		ERROR(DPM, e.what());
 	}
 
 	return -1;
@@ -70,7 +72,6 @@ bool SQLBackend::strictize(int id, DataSetInt& value, uid_t domain)
 	}
 
 	while (stmt.step()) {
-		std::cout << "Update strict value" << std::endl;
 		updated = value.strictize(DataSetInt(stmt.getColumn(0)));
 	}
 

@@ -27,11 +27,13 @@
 
 #include <klay/gmainloop.h>
 
+#include "pil/logger.h"
+
 #include "server.h"
 
 void signalHandler(int signum)
 {
-	std::cout << "Interrupted" << std::endl;
+	ERROR(DPM, "Interrupted");
 	exit(0);
 }
 
@@ -48,7 +50,7 @@ int main(int argc, char *argv[])
 
 		manager.run();
 	} catch (std::exception &e) {
-		std::cerr << e.what() << std::endl;
+		ERROR(DPM, e.what());
 		return EXIT_FAILURE;
 	}
 

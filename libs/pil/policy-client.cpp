@@ -23,6 +23,8 @@
 #include "policy-client.h"
 #include "policy-event-env.h"
 
+#include "logger.h"
+
 #include "../device-policy-manager.h"
 
 #define RET_ON_FAILURE(cond, ret) \
@@ -101,7 +103,7 @@ int DevicePolicyClient::subscribeSignal(const std::string& name,
 		dbus::signal::Receiver receiver(PIL_OBJECT_PATH, PIL_EVENT_INTERFACE);
 		return receiver.subscribe(name, dispatch);
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(DPM, e.what());
 		return -1;
 	}
 }
@@ -116,7 +118,7 @@ int DevicePolicyClient::unsubscribeSignal(int id) noexcept
 		receiver.unsubscribe(id);
 		return 0;
 	} catch (runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(DPM, e.what());
 		return -1;
 	}
 }

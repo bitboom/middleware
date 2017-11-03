@@ -22,6 +22,7 @@ SET(LIB_SOVERSION "0")
 
 SET(PIL				pil/app-bundle.cpp
 					pil/launchpad.cpp
+					pil/logger.cpp
 					pil/packman.cpp
 					pil/policy-event.cpp
 					pil/policy-client.cpp
@@ -31,6 +32,7 @@ SET(PIL				pil/app-bundle.cpp
 
 SET(PAPIS			pil/app-bundle.h
 					pil/launchpad.h
+					pil/logger.h
 					pil/packman.h
 					pil/policy-event.h
 					pil/policy-context.h

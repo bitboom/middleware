@@ -16,11 +16,11 @@
 
 #include "policy-event.h"
 #include "policy-event-env.h"
+#include "logger.h"
 
 #include <klay/dbus/signal.h>
 #include <klay/dbus/introspection.h>
 #include <klay/exception.h>
-#include <klay/audit/logger.h>
 
 
 void PolicyEventNotifier::init(void) noexcept
@@ -35,8 +35,9 @@ void PolicyEventNotifier::init(void) noexcept
 
 		dbus::Connection& conn = dbus::Connection::getSystem();
 		conn.registerObject(PIL_OBJECT_PATH, manifest, nullptr, nullptr);
+		DEBUG(DPM, "Success to init event-notifier.");
 	} catch(runtime::Exception& e) {
-		ERROR(e.what());
+		ERROR(DPM, e.what());
 	}
 }
 
@@ -45,8 +46,9 @@ void PolicyEventNotifier::create(const std::string& name) noexcept
 	try {
 		dbus::signal::Sender sender(PIL_OBJECT_PATH, PIL_EVENT_INTERFACE);
 		sender.addSignal(PIL_MANIFEST_PATH, name, "(s)");
+		DEBUG(DPM, "Success to create new event: " << name);
 	} catch(runtime::Exception& e) {
-		ERROR(e.what() << ", name: " << name);
+		ERROR(DPM, e.what() << ", name: " << name);
 	}
 }
 
@@ -55,7 +57,8 @@ void PolicyEventNotifier::emit(const std::string& name, const std::string& state
 	try {
 		dbus::signal::Sender sender(PIL_OBJECT_PATH, PIL_EVENT_INTERFACE);
 		sender.emit(name, "(s)", state.c_str());
+		DEBUG(DPM, "Event occured name: " << name << ", state: " << state);
 	} catch(runtime::Exception& e) {
-		ERROR(e.what() << ", name: " << name << ", state: " << state);
+		ERROR(DPM, e.what() << ", name: " << name << ", state: " << state);
 	}
 }

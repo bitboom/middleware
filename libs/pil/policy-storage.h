@@ -40,12 +40,10 @@ public:
 	}
 
 	bool operator==(const DataSetInt& rhs) const {
-		std::cout << "Equal operator" << std::endl;
 		return value == rhs.value;
 	}
 
 	bool operator!=(const DataSetInt& rhs) const {
-		std::cout << "Not Equal operator" << std::endl;
 		return value != rhs.value;
 	}
 

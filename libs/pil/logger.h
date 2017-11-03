@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2017 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,6 +19,18 @@
 
 #include <klay/audit/logger.h>
 
-extern audit::LogSink *SINK;
+#include <memory>
+#include <mutex>
+
+#define DPM Logger::GetLogSink("DPM")
+
+class Logger {
+public:
+	static audit::LogSink* GetLogSink(const std::string& tag);
+
+private:
+	static std::unique_ptr<audit::LogSink> logSink;
+	static std::once_flag flag;
+};
 
 #endif //__DPM_LOGGER_H__
