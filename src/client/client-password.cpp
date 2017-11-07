@@ -82,7 +82,7 @@ int auth_passwd_check_passwd(password_type passwd_type,
 		int retCode = sendToServer(SERVICE_SOCKET_PASSWD_CHECK, send.Pop(), recv);
 
 		if (AUTH_PASSWD_API_SUCCESS != retCode) {
-			LogDebug("Error in sendToServer. Error code: " << retCode);
+			LogError("Error in sendToServer. Error code: " << retCode);
 			return retCode;
 		}
 
@@ -132,7 +132,7 @@ int auth_passwd_check_passwd_state(password_type passwd_type,
 		int retCode = sendToServer(SERVICE_SOCKET_PASSWD_CHECK, send.Pop(), recv);
 
 		if (AUTH_PASSWD_API_SUCCESS != retCode) {
-			LogDebug("Error in sendToServer. Error code: " << retCode);
+			LogError("Error in sendToServer. Error code: " << retCode);
 			return retCode;
 		}
 
@@ -167,7 +167,7 @@ int auth_passwd_check_passwd_available(password_type passwd_type, const char *pa
 		int retCode = sendToServer(SERVICE_SOCKET_PASSWD_CHECK, send.Pop(), recv);
 
 		if (AUTH_PASSWD_API_SUCCESS != retCode) {
-			LogDebug("Error in sendToServer. Error code: " << retCode);
+			LogError("Error in sendToServer. Error code: " << retCode);
 			return retCode;
 		}
 
@@ -198,7 +198,7 @@ int auth_passwd_check_passwd_reused(password_type passwd_type,
 		int retCode = sendToServer(SERVICE_SOCKET_PASSWD_SET, send.Pop(), recv);
 
 		if (AUTH_PASSWD_API_SUCCESS != retCode) {
-			LogDebug("Error in sendToServer. Error code: " << retCode);
+			LogError("Error in sendToServer. Error code: " << retCode);
 			return retCode;
 		}
 
