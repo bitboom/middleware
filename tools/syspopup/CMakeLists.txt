@@ -45,6 +45,7 @@ SET(PKG_POPUP_SRC
 		src/popup/wifi.cpp
 		src/popup/wifi-hotspot.cpp
 		src/popup/usb-client.cpp
+		src/popup/external-storage.cpp
 		)
 
 SET(PKG_UI_SRC
