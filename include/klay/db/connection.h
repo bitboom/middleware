@@ -32,7 +32,7 @@ public:
 		ReadWrite = SQLITE_OPEN_READWRITE
 	};
 
-	Connection(const std::string& name, const int flags);
+	Connection(const std::string& name, const int flags, bool integrityCheck = true);
 	~Connection();
 
 	int exec(const std::string& query);

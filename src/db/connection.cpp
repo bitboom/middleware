@@ -13,16 +13,39 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+#include <cstring>
+
 #include <klay/exception.h>
 #include <klay/db/connection.h>
 
 namespace database {
 
-Connection::Connection(const std::string& name, const int flags) :
+Connection::Connection(const std::string& name, const int flags, bool integrityCheck) :
 	handle(nullptr), filename(name)
 {
 	if (::sqlite3_open_v2(filename.c_str(), &handle, flags, NULL)) {
 		throw runtime::Exception(getErrorMessage());
+	}
+
+	if (integrityCheck) {
+		bool verified = false;
+		sqlite3_stmt *integrity = NULL;
+		if (::sqlite3_prepare_v2(handle, "PRAGMA integrity_check;", -1, &integrity, NULL) == SQLITE_OK ) {
+			while (::sqlite3_step(integrity) == SQLITE_ROW) {
+				const unsigned char *result = ::sqlite3_column_text(integrity, 0);
+				if (result && ::strcmp((const char *)result, (const char *)"ok") == 0) {
+					verified = true;
+					break;
+				}
+			}
+
+			::sqlite3_finalize(integrity);
+		}
+
+		if (!verified) {
+			::sqlite3_close(handle);
+			throw runtime::Exception("Malformed database");
+		}
 	}
 }
 
