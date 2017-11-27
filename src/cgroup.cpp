@@ -27,19 +27,14 @@
 #include <klay/exception.h>
 #include <klay/filesystem.h>
 
+#define NAME_PATTERN "^[A-Za-z_][A-Za-z0-9_-]*"
+#define PATH_PATTERN "(/*[A-Za-z_][A-Za-z0-9_-]*)*"
 
 namespace runtime {
 
-namespace {
-
-static std::regex namePattern("^[A-Za-z_][A-Za-z0-9_-]*");
-static std::regex pathPattern("(/*[A-Za-z_][A-Za-z0-9_-]*)*");
-
-} // namespace
-
 bool Cgroup::existSubsystem(const std::string& name)
 {
-	if (!std::regex_match(name, namePattern)) {
+	if (!std::regex_match(name, std::regex(NAME_PATTERN))) {
 		return false;
 	}
 
@@ -56,7 +51,7 @@ bool Cgroup::existSubsystem(const std::string& name)
 
 void Cgroup::createSubsystem(const std::string& name)
 {
-	if (!std::regex_match(name, namePattern)) {
+	if (!std::regex_match(name, std::regex(NAME_PATTERN))) {
 		throw runtime::Exception("Invalid subsystem name");
 	}
 
@@ -115,7 +110,7 @@ void Cgroup::destroySubsystem(const std::string& name)
 
 bool Cgroup::exist(const std::string& subsystem, const std::string& path)
 {
-	if (!std::regex_match(path, pathPattern)) {
+	if (!std::regex_match(path, std::regex(PATH_PATTERN))) {
 		return false;
 	}
 
@@ -132,7 +127,7 @@ bool Cgroup::exist(const std::string& subsystem, const std::string& path)
 
 void Cgroup::create(const std::string& subsystem, const std::string& path)
 {
-	if (!std::regex_match(path, pathPattern)) {
+	if (!std::regex_match(path, std::regex(PATH_PATTERN))) {
 		throw runtime::Exception("Invalid path");
 	}
 
