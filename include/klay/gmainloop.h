@@ -15,11 +15,14 @@
  */
 #ifndef __GMAINLOOP_WRAPPER_H__
 #define __GMAINLOOP_WRAPPER_H__
+
 #include <thread>
 #include <memory>
 #include <glib.h>
 
-class ScopedGMainLoop {
+#include <klay/klay.h>
+
+class KLAY_EXPORT ScopedGMainLoop {
 public:
 	ScopedGMainLoop() :
 		mainloop(g_main_loop_new(NULL, FALSE), g_main_loop_unref)

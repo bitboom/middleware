@@ -23,6 +23,8 @@
 #include <vector>
 #include <utility>
 
+#include <klay/klay.h>
+
 namespace dbus {
 
 using BusNode = GDBusNodeInfo*;
@@ -33,7 +35,7 @@ using Property = GDBusPropertyInfo*;
 
 using XmlProperties = std::vector<std::pair<std::string, std::string>>;
 
-class Introspection {
+class KLAY_EXPORT Introspection {
 public:
 	explicit Introspection(const std::string &xmlData);
 	virtual ~Introspection(void);

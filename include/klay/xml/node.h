@@ -23,9 +23,11 @@
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 
+#include <klay/klay.h>
+
 namespace xml {
 
-class Node {
+class KLAY_EXPORT Node {
 public:
 	typedef std::vector<Node> NodeList;
 

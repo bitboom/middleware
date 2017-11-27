@@ -21,11 +21,12 @@
 
 #include <string>
 
+#include <klay/klay.h>
 #include <klay/db/statement.h>
 
 namespace database {
 
-class Column {
+class KLAY_EXPORT Column {
 public:
 	Column(const Statement& stmt, int idx);
 	virtual ~Column() noexcept;

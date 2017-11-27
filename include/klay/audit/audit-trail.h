@@ -17,6 +17,8 @@
 #ifndef __AUDIT_TRAIL_H__
 #define __AUDIT_TRAIL_H__
 
+#include <klay/klay.h>
+
 #include <thread>
 #include <string>
 
@@ -24,7 +26,7 @@
 
 namespace audit {
 
-class AuditTrail {
+class KLAY_EXPORT AuditTrail {
 public:
 	AuditTrail();
 	~AuditTrail();

@@ -26,11 +26,13 @@
 #include <mutex>
 #include <atomic>
 
+#include <klay/klay.h>
+
 #include "eventfd.h"
 
 namespace runtime {
 
-class Mainloop {
+class KLAY_EXPORT Mainloop {
 public:
 	typedef unsigned int Event;
 	typedef std::function<void(int fd, Event event)> Callback;

@@ -22,13 +22,15 @@
 
 #include <string>
 
+#include <klay/klay.h>
+
 #ifndef INVALID_GID
 #define INVALID_GID             UINT_MAX
 #endif
 
 namespace runtime {
 
-class Group final {
+class KLAY_EXPORT Group final {
 public:
 	Group(const std::string& name);
 	Group(const gid_t group);

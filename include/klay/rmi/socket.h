@@ -17,23 +17,24 @@
 #ifndef __RMI_SOCKET_H__
 #define __RMI_SOCKET_H__
 
+#include <klay/klay.h>
 #include <klay/exception.h>
 
 namespace rmi {
 
-class SocketException: public runtime::Exception {
+class KLAY_EXPORT SocketException: public runtime::Exception {
 public:
 	SocketException(const std::string& msg) : runtime::Exception(msg) {}
 };
 
-struct Credentials {
+struct KLAY_EXPORT Credentials {
 	pid_t pid;
 	uid_t uid;
 	gid_t gid;
 	std::string security;
 };
 
-class Socket {
+class KLAY_EXPORT Socket {
 public:
 	explicit Socket(int socketFd = -1, bool autoclose = true);
 	Socket(Socket&& socket) noexcept;

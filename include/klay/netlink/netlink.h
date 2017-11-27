@@ -19,13 +19,15 @@
 
 #include <linux/netlink.h>
 
+#include <klay/klay.h>
+
 #ifndef NETLINK_AUDIT
 #define NETLINK_AUDIT 9
 #endif
 
 namespace netlink {
 
-class Netlink final {
+class KLAY_EXPORT Netlink final {
 public:
 	Netlink(int);
 	Netlink(Netlink&&);

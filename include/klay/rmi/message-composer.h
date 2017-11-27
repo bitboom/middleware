@@ -19,9 +19,11 @@
 
 #include <cstddef>
 
+#include <klay/klay.h>
+
 namespace rmi {
 
-class MessageComposer {
+class KLAY_EXPORT MessageComposer {
 public:
 	MessageComposer(size_t caps = 4096);
 	MessageComposer(const MessageComposer& rhs);

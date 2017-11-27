@@ -21,11 +21,12 @@
 
 #include <string>
 
+#include <klay/klay.h>
 #include <klay/xml/document.h>
 
 namespace xml {
 
-class Parser {
+class KLAY_EXPORT Parser {
 public:
 	static Document* parseFile(const std::string& filename, bool validate = false);
 	static Document* parseString(const std::string& xml, bool validate = false);

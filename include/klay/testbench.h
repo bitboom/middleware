@@ -14,8 +14,8 @@
  *  limitations under the License
  */
 
-#ifndef __DPM_TESTBENCH_H__
-#define __DPM_TESTBENCH_H__
+#ifndef __KLAY_TESTBENCH_H__
+#define __KLAY_TESTBENCH_H__
 
 #include <cstring>
 
@@ -24,9 +24,11 @@
 #include <memory>
 #include <sstream>
 
+#include <klay/klay.h>
+
 namespace testbench {
 
-struct Source {
+struct KLAY_EXPORT Source {
 	Source(const std::string& file, long line, const std::string& msg);
 
 	std::string fileName;
@@ -34,7 +36,7 @@ struct Source {
 	std::string	message;
 };
 
-class TestResult {
+class KLAY_EXPORT TestResult {
 public:
 	TestResult();
 	virtual ~TestResult();
@@ -46,7 +48,7 @@ private:
 	int	__failureCount;
 };
 
-class TestSuite {
+class KLAY_EXPORT TestSuite {
 public:
 	TestSuite(const std::string& name);
 	virtual ~TestSuite();
@@ -94,7 +96,7 @@ private:
 	TestCaseRegistry __registry;
 };
 
-class Testbench {
+class KLAY_EXPORT Testbench {
 public:
 	static void addTestSuite(TestSuite *testSuite);
 	static void runAllTestSuites();
@@ -160,4 +162,4 @@ void TestName##TestCase::standalone()
 	return;                                             \
 }
 } // namespace testbench
-#endif //!__DPM_TESTBENCH_H__
+#endif //!__KLAY_TESTBENCH_H__

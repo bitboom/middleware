@@ -20,9 +20,11 @@
 #include <mutex>
 #include <condition_variable>
 
+#include <klay/klay.h>
+
 namespace runtime {
 
-class Latch {
+class KLAY_EXPORT Latch {
 public:
 	Latch() :
 		count(0)

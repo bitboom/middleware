@@ -17,11 +17,13 @@
 #ifndef __AUDIT_LOGSINK_H__
 #define __AUDIT_LOGSINK_H__
 
+#include <klay/klay.h>
+
 #include <string>
 
 namespace audit {
 
-class LogSink {
+class KLAY_EXPORT LogSink {
 public:
 	LogSink() {}
 	virtual ~LogSink() {}

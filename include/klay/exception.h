@@ -20,9 +20,11 @@
 #include <stdexcept>
 #include <string>
 
+#include <klay/klay.h>
+
 namespace runtime {
 
-class Exception: public std::runtime_error {
+class KLAY_EXPORT Exception: public std::runtime_error {
 public:
 	Exception(const std::string& error) :
 		std::runtime_error(error)
@@ -34,13 +36,13 @@ public:
 	virtual const char *className() const;
 };
 
-#define EXCEPTION_DEFINE(CLS)             \
-	class CLS : public Exception {        \
-	public:                               \
-		CLS(const std::string& error);    \
-		~CLS() {}                         \
-		const char *className() const;    \
-		const char *name() const;         \
+#define EXCEPTION_DEFINE(CLS)                 \
+	class KLAY_EXPORT CLS : public Exception {   \
+	public:                                   \
+		CLS(const std::string& error);        \
+		~CLS() {}                             \
+		const char *className() const;        \
+		const char *name() const;             \
 	};
 
 

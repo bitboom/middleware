@@ -23,11 +23,12 @@
 #include <functional>
 #include <map>
 
+#include <klay/klay.h>
 #include <klay/dbus/variant.h>
 
 namespace dbus {
 
-class Connection {
+class KLAY_EXPORT Connection {
 public:
 	typedef unsigned int NameId;
 	typedef unsigned int ObjectId;

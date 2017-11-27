@@ -19,9 +19,11 @@
 
 #include <sched.h>
 
+#include <klay/klay.h>
+
 namespace runtime {
 
-class Namespace final {
+class KLAY_EXPORT Namespace final {
 public:
 	Namespace() = delete;
 

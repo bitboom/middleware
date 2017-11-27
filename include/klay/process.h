@@ -20,9 +20,11 @@
 #include <string>
 #include <vector>
 
+#include <klay/klay.h>
+
 namespace runtime {
 
-class Process {
+class KLAY_EXPORT Process {
 public:
 	typedef pid_t Pid;
 

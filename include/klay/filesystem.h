@@ -22,9 +22,11 @@
 
 #include <string>
 
+#include <klay/klay.h>
+
 namespace runtime {
 
-class File {
+class KLAY_EXPORT File {
 public:
 	File() :
 		descriptor(-1)
@@ -129,7 +131,7 @@ private:
 	std::string path;
 };
 
-class DirectoryIterator {
+class KLAY_EXPORT DirectoryIterator {
 public:
 	DirectoryIterator() :
 	    directoryHandle(nullptr)
@@ -182,7 +184,7 @@ private:
 	std::string basename;
 };
 
-class Mount final {
+class KLAY_EXPORT Mount final {
 public:
 	Mount() = delete;
 

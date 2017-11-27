@@ -21,9 +21,11 @@
 
 #include <string>
 
+#include <klay/klay.h>
+
 namespace dbus {
 
-class Variant {
+class KLAY_EXPORT Variant {
 public:
 	Variant();
 	Variant(GVariant* var);
@@ -40,7 +42,7 @@ private:
 	GVariant* variant;
 };
 
-class VariantIterator {
+class KLAY_EXPORT VariantIterator {
 public:
 	VariantIterator(GVariantIter* it);
 	VariantIterator(VariantIterator&& it);

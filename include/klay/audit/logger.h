@@ -27,7 +27,7 @@
 
 namespace audit {
 
-enum class LogLevel : int {
+enum class KLAY_EXPORT LogLevel : int {
 	Silent,
 	Error,
 	Warning,
@@ -36,7 +36,7 @@ enum class LogLevel : int {
 	Trace
 };
 
-struct LogRecord {
+struct KLAY_EXPORT LogRecord {
 	LogLevel severity;
 	std::string file;
 	unsigned int line;
@@ -44,13 +44,13 @@ struct LogRecord {
 	std::string message;
 };
 
-class Logger {
+class KLAY_EXPORT Logger {
 public:
 	static void log(LogSink* logSink, const LogRecord record);
 };
 
-std::string LogLevelToString(const LogLevel level);
-LogLevel StringToLogLevel(const std::string& level);
+KLAY_EXPORT std::string LogLevelToString(const LogLevel level);
+KLAY_EXPORT LogLevel StringToLogLevel(const std::string& level);
 
 #ifndef __FILENAME__
 #define __FILENAME__                                                  \

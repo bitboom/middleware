@@ -21,9 +21,11 @@
 
 #include <linux/audit.h>
 
+#include <klay/klay.h>
+
 namespace netlink {
 
-class AuditRule final {
+class KLAY_EXPORT AuditRule final {
 public:
 	AuditRule();
 	AuditRule(std::vector<char>& buf);

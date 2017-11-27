@@ -17,9 +17,11 @@
 #ifndef __RUNTIME_DBUS_SIGNAL_H__
 #define __RUNTIME_DBUS_SIGNAL_H__
 
+
 #include <string>
 #include <utility>
 
+#include <klay/klay.h>
 #include <klay/dbus/connection.h>
 
 namespace dbus {
@@ -27,7 +29,7 @@ namespace signal {
 
 using SignalCallback = dbus::Connection::SignalCallback;
 
-class Sender {
+class KLAY_EXPORT Sender {
 public:
 	explicit Sender(const std::string &objectPath, const std::string &interfaceName);
 	virtual ~Sender(void) = default;
@@ -50,7 +52,7 @@ private:
 	std::string interfaceName;
 };
 
-class Receiver {
+class KLAY_EXPORT Receiver {
 public:
 	explicit Receiver(const std::string &objectPath, const std::string &interfaceName);
 	virtual ~Receiver(void) = default;

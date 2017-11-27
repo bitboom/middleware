@@ -26,6 +26,7 @@
 #include <functional>
 #include <unordered_map>
 
+#include <klay/klay.h>
 #include <klay/mainloop.h>
 #include <klay/thread-pool.h>
 #include <klay/preprocessor.h>
@@ -145,7 +146,7 @@ typedef std::function<bool(const Connection& connection)> ConnectionCallback;
 typedef std::function<bool(const Credentials& cred, const std::string& privilege)> PrivilegeChecker;
 typedef std::function<void(const Credentials& cred, const std::string& method, int condition)> AuditTrail;
 
-class Service {
+class KLAY_EXPORT Service {
 public:
 	Service(const std::string& address);
 	virtual ~Service();

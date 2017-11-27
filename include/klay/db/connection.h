@@ -21,9 +21,11 @@
 
 #include <string>
 
+#include <klay/klay.h>
+
 namespace database {
 
-class Connection {
+class KLAY_EXPORT Connection {
 public:
 	enum Mode {
 		Create = SQLITE_OPEN_CREATE,

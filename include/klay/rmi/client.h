@@ -22,6 +22,7 @@
 #include <memory>
 #include <iostream>
 
+#include <klay/klay.h>
 #include <klay/mainloop.h>
 #include <klay/rmi/message.h>
 #include <klay/rmi/connection.h>
@@ -30,7 +31,7 @@
 namespace rmi {
 
 template <typename ExceptionModel>
-class RemoteAccessClient {
+class KLAY_EXPORT RemoteAccessClient {
 public:
 	RemoteAccessClient(const std::string& address);
 	virtual ~RemoteAccessClient();
@@ -176,7 +177,7 @@ Type RemoteAccessClient<ExceptionModel>::methodCall(const std::string& method, A
 	return response;
 }
 
-class DefaultExceptionModel {
+class KLAY_EXPORT DefaultExceptionModel {
 public:
 	void raise(const std::string& target, const std::string& except);
 };

@@ -17,9 +17,11 @@
 #ifndef __RUNTIME_FILE_DESCRIPTOR_H__
 #define __RUNTIME_FILE_DESCRIPTOR_H__
 
+#include <klay/klay.h>
+
 namespace runtime {
 
-struct FileDescriptor {
+struct KLAY_EXPORT FileDescriptor {
 	FileDescriptor(int fd = -1, bool autoclose = false) :
 		fileDescriptor(fd), autoClose(autoclose)
 	{

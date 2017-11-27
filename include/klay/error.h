@@ -19,17 +19,19 @@
 
 #include <string>
 
+#include <klay/klay.h>
+
 namespace runtime {
 
-class Error {
+class KLAY_EXPORT Error {
 public:
 	static std::string message();
 	static std::string message(int errorCode);
 	static int lastErrorCode();
 };
 
-std::string GetSystemErrorMessage();
-std::string GetSystemErrorMessage(int errorCode);
+KLAY_EXPORT std::string GetSystemErrorMessage();
+KLAY_EXPORT std::string GetSystemErrorMessage(int errorCode);
 
 } // namespace runtime
 #endif //__RUNTIME_ERROR_H__

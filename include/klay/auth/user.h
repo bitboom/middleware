@@ -22,13 +22,15 @@
 
 #include <string>
 
+#include <klay/klay.h>
+
 #ifndef INVALID_UID
 #define INVALID_UID             UINT_MAX
 #endif
 
 namespace runtime  {
 
-class User final {
+class KLAY_EXPORT User final {
 public:
 	User(const std::string& name);
 	User(const uid_t user);

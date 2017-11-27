@@ -25,6 +25,7 @@
 #include <utility>
 #include <unordered_map>
 
+#include <klay/klay.h>
 #include <klay/rmi/socket.h>
 #include <klay/rmi/message.h>
 #include <klay/audit/logger.h>
@@ -33,7 +34,7 @@ namespace rmi {
 
 typedef std::pair<int, int> SubscriptionId;
 
-class Notification {
+class KLAY_EXPORT Notification {
 public:
 	Notification();
 	Notification(const std::string& name);

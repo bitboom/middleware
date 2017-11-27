@@ -24,9 +24,11 @@
 #include <vector>
 #include <deque>
 
+#include <klay/klay.h>
+
 namespace runtime {
 
-class ThreadPool {
+class KLAY_EXPORT ThreadPool {
 public:
 	ThreadPool(size_t threads);
 	~ThreadPool();

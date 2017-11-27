@@ -21,12 +21,13 @@
 #include <string>
 #include <utility>
 
+#include <klay/klay.h>
 #include <klay/reflection.h>
 
 namespace runtime {
 
 template<typename T>
-struct SerializableArgument {
+struct KLAY_EXPORT SerializableArgument {
 	SerializableArgument(const T& arg) :
 		value(arg)
 	{
@@ -37,7 +38,7 @@ struct SerializableArgument {
 };
 
 template<typename T>
-struct DeserializableArgument {
+struct KLAY_EXPORT DeserializableArgument {
 	DeserializableArgument(T& arg) :
 		value(arg)
 	{
@@ -48,7 +49,7 @@ struct DeserializableArgument {
 };
 
 template<class StorageType>
-class Serializer {
+class KLAY_EXPORT Serializer {
 public:
 	Serializer(StorageType& source) :
 		storage(source)
@@ -94,7 +95,7 @@ private:
 };
 
 template<class StorageType>
-class Deserializer {
+class KLAY_EXPORT Deserializer {
 public:
 	Deserializer(StorageType& source) :
 		storage(source)

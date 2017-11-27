@@ -20,9 +20,11 @@
 #include <string>
 #include <vector>
 
+#include <klay/klay.h>
+
 namespace runtime {
 
-class Cgroup final {
+class KLAY_EXPORT Cgroup final {
 public:
 	Cgroup() = delete;
 

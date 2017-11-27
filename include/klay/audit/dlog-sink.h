@@ -23,7 +23,7 @@
 
 namespace audit {
 
-class DlogLogSink : public LogSink {
+class KLAY_EXPORT DlogLogSink : public LogSink {
 public:
 	explicit DlogLogSink(const std::string& tag);
 	void sink(const std::string& message) override;

@@ -22,13 +22,14 @@
 
 #include <linux/audit.h>
 
+#include <klay/klay.h>
 #include <klay/mainloop.h>
 #include <klay/netlink/netlink.h>
 #include <klay/netlink/audit-rule.h>
 
 namespace netlink {
 
-class Audit final {
+class KLAY_EXPORT Audit final {
 public:
 	typedef std::pair<int, std::vector<char>> Message;
 	typedef std::function<void(Message&)> MessageHandler;

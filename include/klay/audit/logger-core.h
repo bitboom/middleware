@@ -25,7 +25,7 @@
 
 namespace audit {
 
-class LoggerCore {
+class KLAY_EXPORT LoggerCore {
 public:
 	LoggerCore();
 	virtual ~LoggerCore() = default;

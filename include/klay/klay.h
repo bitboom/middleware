@@ -14,26 +14,11 @@
  *  limitations under the License
  */
 
-#ifndef __XML_KEEPBLANKS_H__
-#define __XML_KEEPBLANKS_H__
+#ifndef __KLAY_H__
+#define __KLAY_H__
 
-#include <libxml/globals.h>
+#ifndef KLAY_EXPORT
+#define KLAY_EXPORT __attribute__((visibility("default")))
+#endif // KLAY_EXPORT
 
-#include <klay/klay.h>
-
-namespace xml {
-
-class KLAY_EXPORT KeepBlanks {
-public:
-	KeepBlanks(bool value);
-	~KeepBlanks();
-
-	static const bool Default = true;
-
-private:
-	int preservedKeepBlanksDefault;
-	int preservedIndentTreeOutput;
-};
-
-} // namespace xml
-#endif //__XML_KEEPBLANKS_H__
+#endif //__KLAY_H__

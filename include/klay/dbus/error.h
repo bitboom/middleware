@@ -19,9 +19,11 @@
 
 #include <gio/gio.h>
 
+#include <klay/klay.h>
+
 namespace dbus {
 
-class Error {
+class KLAY_EXPORT Error {
 public:
 	Error();
 	~Error();

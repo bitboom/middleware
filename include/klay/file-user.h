@@ -20,9 +20,11 @@
 #include <string>
 #include <vector>
 
+#include <klay/klay.h>
+
 namespace runtime {
 
-class FileUser final {
+class KLAY_EXPORT FileUser final {
 public:
 	FileUser() = delete;
 

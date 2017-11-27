@@ -20,12 +20,13 @@
 #include <mutex>
 #include <string>
 
+#include <klay/klay.h>
 #include <klay/rmi/socket.h>
 #include <klay/rmi/message.h>
 
 namespace rmi {
 
-class Connection {
+class KLAY_EXPORT Connection {
 public:
 	Connection(Socket&& sock);
 	Connection(const Connection&) = delete;

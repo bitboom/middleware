@@ -22,11 +22,12 @@
 
 #include <string>
 
+#include <klay/klay.h>
 #include <klay/xml/node.h>
 
 namespace xml {
 
-class Document {
+class KLAY_EXPORT Document {
 public:
 	Document(const std::string& root, const std::string& version = XML_DEFAULT_VERSION);
 	Document(xmlDoc* doc);

@@ -22,12 +22,14 @@
 #include <map>
 #include <string>
 
+#include <klay/klay.h>
+
 namespace database {
 
 class Column;
 class Connection;
 
-class Statement {
+class KLAY_EXPORT Statement {
 public:
 	Statement(const Connection& db, const std::string& query);
 	virtual ~Statement();

@@ -22,13 +22,14 @@
 #include <memory>
 #include <atomic>
 
+#include <klay/klay.h>
 #include <klay/serialize.h>
 #include <klay/file-descriptor.h>
 #include <klay/rmi/message-composer.h>
 
 namespace rmi {
 
-class Message {
+class KLAY_EXPORT Message {
 public:
 	enum Type {
 		Invalid,

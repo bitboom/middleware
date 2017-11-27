@@ -19,9 +19,11 @@
 
 #include <sys/eventfd.h>
 
+#include <klay/klay.h>
+
 namespace runtime {
 
-class EventFD {
+class KLAY_EXPORT EventFD {
 public:
 	EventFD(unsigned int initval = 0, int flags = EFD_SEMAPHORE | EFD_CLOEXEC);
 	~EventFD();
