@@ -5,7 +5,7 @@ Summary: Certification service
 Version: 2.2.1
 Release: 0
 Group:   Security/Certificate Management
-License: Apache-2.0 and OpenSSL
+License: Apache-2.0
 Source0: %{name}-%{version}.tar.gz
 BuildRequires: cmake
 BuildRequires: coreutils
@@ -158,7 +158,6 @@ fi
 %files
 %manifest %name.manifest
 %license LICENSE
-%license LICENSE.OpenSSL
 %_unitdir/cert-server.service
 %_unitdir/cert-server.socket
 %_unitdir/sockets.target.wants/cert-server.socket
