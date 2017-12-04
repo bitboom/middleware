@@ -34,8 +34,12 @@ namespace runtime {
 
 bool Cgroup::existSubsystem(const std::string& name)
 {
-	if (!std::regex_match(name, std::regex(NAME_PATTERN))) {
-		return false;
+	try {
+		if (!std::regex_match(name, std::regex(NAME_PATTERN))) {
+			return false;
+		}
+	} catch (std::runtime_error &e) {
+		throw runtime::Exception("Unexpected regex error");
 	}
 
 	runtime::File dir("/sys/fs/cgroup/" + name);
@@ -51,8 +55,12 @@ bool Cgroup::existSubsystem(const std::string& name)
 
 void Cgroup::createSubsystem(const std::string& name)
 {
-	if (!std::regex_match(name, std::regex(NAME_PATTERN))) {
-		throw runtime::Exception("Invalid subsystem name");
+	try {
+		if (!std::regex_match(name, std::regex(NAME_PATTERN))) {
+			throw runtime::Exception("Invalid subsystem name");
+		}
+	} catch (std::runtime_error &e) {
+		throw runtime::Exception("Unexpected regex error");
 	}
 
 	if (existSubsystem(name)) {
@@ -110,8 +118,12 @@ void Cgroup::destroySubsystem(const std::string& name)
 
 bool Cgroup::exist(const std::string& subsystem, const std::string& path)
 {
-	if (!std::regex_match(path, std::regex(PATH_PATTERN))) {
-		return false;
+	try {
+		if (!std::regex_match(path, std::regex(PATH_PATTERN))) {
+			return false;
+		}
+	} catch (std::runtime_error &e) {
+		throw runtime::Exception("Unexpected regex error");
 	}
 
 	runtime::File dir("/sys/fs/cgroup/" + subsystem + "/" + path);
@@ -127,8 +139,12 @@ bool Cgroup::exist(const std::string& subsystem, const std::string& path)
 
 void Cgroup::create(const std::string& subsystem, const std::string& path)
 {
-	if (!std::regex_match(path, std::regex(PATH_PATTERN))) {
-		throw runtime::Exception("Invalid path");
+	try {
+		if (!std::regex_match(path, std::regex(PATH_PATTERN))) {
+			throw runtime::Exception("Invalid path");
+		}
+	} catch (std::runtime_error &e) {
+		throw runtime::Exception("Unexpected regex error");
 	}
 
 	if (exist(subsystem, path)) {
