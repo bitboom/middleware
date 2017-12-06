@@ -47,6 +47,8 @@ DevicePolicyManager::DevicePolicyManager() :
 	PolicyEventNotifier::init();
 
 	setPrivilegeChecker(std::bind(&DevicePolicyManager::checkPeerPrivilege, this, _1, _2));
+	setNewConnectionCallback(std::bind(&DevicePolicyManager::checkNewConnection, this, _1));
+	setCloseConnectionCallback(std::bind(&DevicePolicyManager::checkCloseConnection, this, _1));
 
 	expose(this, "", (int)(DevicePolicyManager::enroll)(std::string, uid_t));
 	expose(this, "", (int)(DevicePolicyManager::disenroll)(std::string, uid_t));
@@ -125,6 +127,35 @@ bool DevicePolicyManager::checkPeerPrivilege(const rmi::Credentials& cred, const
 		}
 
 		::cynara_finish(p_cynara);
+	}
+
+	return true;
+}
+
+bool DevicePolicyManager::checkNewConnection(const rmi::Connection& connection)
+{
+	auto pid = (connection.getPeerCredentials()).pid;
+	if(clientRegistry.count(pid)) {
+		if(clientRegistry[pid] >= MAX_CLIENT_CONNECTIONS) {
+			return false;
+		} else {
+			clientRegistry[pid]++;
+		}
+	} else {
+		clientRegistry.emplace(pid, 1);
+	}
+
+	return true;
+}
+
+bool DevicePolicyManager::checkCloseConnection(const rmi::Connection& connection)
+{
+	auto pid = (connection.getPeerCredentials()).pid;
+	if(clientRegistry.count(pid)) {
+		clientRegistry[pid]--;
+		if(clientRegistry[pid] == 0) {
+			clientRegistry.erase(pid);
+		}
 	}
 
 	return true;

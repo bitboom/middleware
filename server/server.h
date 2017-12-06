@@ -28,6 +28,8 @@
 #include "plugin.h"
 #include "sql-backend.h"
 
+#define MAX_CLIENT_CONNECTIONS	10
+
 class DevicePolicyManager : public rmi::Service {
 public:
 	DevicePolicyManager();
@@ -43,8 +45,13 @@ private:
 	int disenroll(const std::string& name, uid_t uid);
 
 	bool checkPeerPrivilege(const rmi::Credentials& cred, const std::string& privilege);
+	bool checkNewConnection(const rmi::Connection& connection);
+	bool checkCloseConnection(const rmi::Connection& connection);
 
 private:
+	typedef std::unordered_map<int, int> ClientRegistry;
+	ClientRegistry clientRegistry;
+
 	std::vector<AbstractPolicyProvider *> policyList;
 	std::unique_ptr<PolicyLoader> policyLoader;
 };
