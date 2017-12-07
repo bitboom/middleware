@@ -55,9 +55,7 @@ SET (KLAY_SOURCES		${KLAY_SRC}/error.cpp
 						${KLAY_SRC}/audit/console-sink.cpp
 						${KLAY_SRC}/audit/dlog-sink.cpp
 						${KLAY_SRC}/audit/audit-trail.cpp
-						${KLAY_SRC}/netlink/audit.cpp
 						${KLAY_SRC}/netlink/netlink.cpp
-						${KLAY_SRC}/netlink/audit-rule.cpp
 )
 
 SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,noexecstack")
