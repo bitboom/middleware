@@ -52,37 +52,30 @@ int GetPolicyEnforceMode()
 
 
 DevicePolicyClient::DevicePolicyClient() noexcept :
-	maintenanceMode(GetPolicyEnforceMode())
+	maintenanceMode(GetPolicyEnforceMode()), clientAddress(POLICY_MANAGER_ADDRESS)
 {
+	client.reset(new rmi::Client(clientAddress));
 }
 
 DevicePolicyClient::~DevicePolicyClient() noexcept
 {
-	disconnect();
-}
-
-int DevicePolicyClient::connect(const std::string& address) noexcept
-{
-	try {
-		client.reset(new rmi::Client(address));
-		if (maintenanceMode) {
-			client->connect();
-		}
-	} catch (runtime::Exception& e) {
-		return -1;
-	}
-
-	return 0;
+	client.reset();
 }
 
 int DevicePolicyClient::connect() noexcept
 {
-	return connect(POLICY_MANAGER_ADDRESS);
+	try {
+		client->connect();
+	} catch (runtime::Exception& e) {
+		ERROR(e.what());
+		return -1;
+	}
+	return 0;
 }
 
 void DevicePolicyClient::disconnect() noexcept
 {
-	client.reset();
+	client->disconnect();
 }
 
 int DevicePolicyClient::subscribeSignal(const std::string& name,
@@ -135,12 +128,7 @@ EXPORT_API device_policy_manager_h dpm_manager_create(void)
 		return NULL;
 	}
 
-	if (client->connect() < 0) {
-		delete client;
-	return NULL;
-}
-
-return reinterpret_cast<device_policy_manager_h>(client);
+	return reinterpret_cast<device_policy_manager_h>(client);
 }
 
 EXPORT_API int dpm_manager_destroy(device_policy_manager_h handle)

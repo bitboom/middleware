@@ -46,7 +46,6 @@ static int registerAdministrator(const std::string& pkgname, uid_t uid)
 	try {
 		DevicePolicyClient client;
 
-		client.connect();
 		Status<int> status { -1 };
 		status = client.methodCall<int>("DevicePolicyManager::enroll", pkgname, uid);
 		return status.get();
@@ -61,7 +60,6 @@ static int deregisterAdministrator(const std::string& pkgname, uid_t uid)
 	try {
 		DevicePolicyClient client;
 
-		client.connect();
 		Status<int> status { -1 };
 		status = client.methodCall<int>("DevicePolicyManager::disenroll", pkgname, uid);
 		return status.get();

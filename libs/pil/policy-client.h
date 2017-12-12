@@ -34,7 +34,6 @@ public:
 	~DevicePolicyClient() noexcept;
 
 	int connect() noexcept;
-	int connect(const std::string& address) noexcept;
 	void disconnect() noexcept;
 
 	int subscribeSignal(const std::string& name,
@@ -46,9 +45,15 @@ public:
 	Type methodCall(const std::string& method, Args&&... args)
 	{
 		if (maintenanceMode) {
-			return client->methodCall<Type, Args...>(method, std::forward<Args>(args)...);
+			if (connect() == 0) {
+				Type ret = client->methodCall<Type, Args...>(method, std::forward<Args>(args)...);
+				disconnect();
+				return ret;
+			} else {
+				errno = ENOTCONN;
+				return Type();
+			}
 		}
-
 		errno = EPROTONOSUPPORT;
 		return Type();
 	}
@@ -56,6 +61,7 @@ public:
 private:
 	int maintenanceMode;
 	std::unique_ptr<rmi::Client> client;
+	std::string clientAddress;
 };
 
 DevicePolicyClient& GetDevicePolicyClient(void* handle);
