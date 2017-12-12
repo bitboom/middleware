@@ -139,6 +139,7 @@ void Mainloop::prepare()
 void Mainloop::run(int timeout)
 {
 	bool done = false;
+	stopped = false;
 
 	prepare();
 
