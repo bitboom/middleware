@@ -46,11 +46,6 @@ TESTCASE(PIL_EVENT)
 			if (client == nullptr)
 				return nullptr;
 
-			if (client->connect() < 0) {
-				delete client;
-				return nullptr;
-			}
-
 			return client;
 		}());
 	TEST_EXPECT(true, handle != nullptr);

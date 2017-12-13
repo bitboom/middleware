@@ -54,28 +54,10 @@ int GetPolicyEnforceMode()
 DevicePolicyClient::DevicePolicyClient() noexcept :
 	maintenanceMode(GetPolicyEnforceMode()), clientAddress(POLICY_MANAGER_ADDRESS)
 {
-	client.reset(new rmi::Client(clientAddress));
 }
 
 DevicePolicyClient::~DevicePolicyClient() noexcept
 {
-	client.reset();
-}
-
-int DevicePolicyClient::connect() noexcept
-{
-	try {
-		client->connect();
-	} catch (runtime::Exception& e) {
-		ERROR(e.what());
-		return -1;
-	}
-	return 0;
-}
-
-void DevicePolicyClient::disconnect() noexcept
-{
-	client->disconnect();
 }
 
 int DevicePolicyClient::subscribeSignal(const std::string& name,

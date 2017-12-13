@@ -22,7 +22,7 @@
 #include <functional>
 #include <cerrno>
 
-#include <klay/rmi/client.h>
+#include <klay/rmi/method.h>
 
 #include "status.h"
 
@@ -33,9 +33,6 @@ public:
 	DevicePolicyClient() noexcept;
 	~DevicePolicyClient() noexcept;
 
-	int connect() noexcept;
-	void disconnect() noexcept;
-
 	int subscribeSignal(const std::string& name,
 						const SignalHandler& handler,
 						void* data) noexcept;
@@ -44,23 +41,18 @@ public:
 	template<typename Type, typename... Args>
 	Type methodCall(const std::string& method, Args&&... args)
 	{
-		if (maintenanceMode) {
-			if (connect() == 0) {
-				Type ret = client->methodCall<Type, Args...>(method, std::forward<Args>(args)...);
-				disconnect();
-				return ret;
-			} else {
-				errno = ENOTCONN;
-				return Type();
-			}
+		if (!maintenanceMode) {
+			errno = EPROTONOSUPPORT;
+			return Type();
 		}
-		errno = EPROTONOSUPPORT;
-		return Type();
+
+		rmi::Connection conn(clientAddress);
+		Type ret = rmi::RemoteMethod<>::invoke<Type, Args...>(conn, method, std::forward<Args>(args)...);
+		return ret;
 	}
 
 private:
 	int maintenanceMode;
-	std::unique_ptr<rmi::Client> client;
 	std::string clientAddress;
 };
 
