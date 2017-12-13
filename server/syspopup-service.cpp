@@ -35,10 +35,9 @@ int main()
 	_sink.reset(new audit::DlogLogSink("DPM"));
 	SINK = dynamic_cast<audit::LogSink*>((_sink).get());
 
-	ScopedGMainLoop mainloop;
-	SyspopupService syspopup;
-
 	try {
+		ScopedGMainLoop mainloop;
+		SyspopupService syspopup;
 		syspopup.run();
 	} catch (std::exception &e) {
 		ERROR(SINK, e.what());
