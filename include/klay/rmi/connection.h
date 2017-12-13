@@ -29,6 +29,7 @@ namespace rmi {
 class KLAY_EXPORT Connection {
 public:
 	Connection(Socket&& sock);
+	Connection(const std::string &address);
 	Connection(const Connection&) = delete;
 	~Connection() noexcept;
 

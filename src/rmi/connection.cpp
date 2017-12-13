@@ -25,6 +25,11 @@ Connection::Connection(Socket&& sock) :
 {
 }
 
+Connection::Connection(const std::string &address) :
+	socket(Socket::connect(address))
+{
+}
+
 Connection::~Connection() noexcept
 {
 }
