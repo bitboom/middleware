@@ -20,6 +20,7 @@
 #include <vector>
 #include <unordered_map>
 #include <iostream>
+#include <mutex>
 
 #include <klay/exception.h>
 
@@ -49,9 +50,14 @@ public:
 	virtual bool apply(const Type& value, uid_t domain) {}
 
 private:
+	void enforce(uid_t domid);
+
+private:
 	int id;
 	Type initial;
 	std::unordered_map<uid_t, Type> current;
+	std::unordered_map<uid_t, bool> ready;
+	std::mutex mtx;
 };
 
 template<typename Type>
@@ -63,12 +69,6 @@ DomainPolicy<Type>::DomainPolicy(const std::string& name) :
 		throw runtime::Exception("Failed to define policy");
 	}
 
-	std::vector<uid_t> domains = PolicyStorage::fetchDomains();
-	for (auto domid : domains) {
-		current[domid] = initial;
-		PolicyStorage::strictize(id, current[domid], domid);
-	}
-
 	PolicyStorage::subscribeEvent(this);
 }
 
@@ -78,27 +78,40 @@ DomainPolicy<Type>::~DomainPolicy()
 }
 
 template<typename Type>
+void DomainPolicy<Type>::enforce(uid_t domid)
+{
+	Type value = initial;
+	if (!ready[domid])
+		current[domid] = initial;
+
+	PolicyStorage::strictize(id, value, domid);
+	if (current[domid] != value) {
+		apply(value, domid);
+		current[domid] = value;
+	}
+
+	ready[domid] = true;
+}
+
+template<typename Type>
 void DomainPolicy<Type>::set(const DataType& val)
 {
 	PolicyAdmin admin(rmi::Service::getPeerPid(), rmi::Service::getPeerUid());
-
 	PolicyStorage::update(id, admin.getName(), admin.getUid(), val);
 
-	Type value = initial;
-	PolicyStorage::strictize(id, value, admin.getUid());
-
-	if (current[admin.getUid()] != value) {
-		apply(value, admin.getUid());
-		current[admin.getUid()] = value;
-	}
+	std::lock_guard<std::mutex> mtxGuard(mtx);
+	enforce(admin.getUid());
 }
 
 template<typename Type>
 Type DomainPolicy<Type>::get()
 {
 	uid_t domain = rmi::Service::getPeerUid();
-	if (!current.count(domain))
-		return initial;
+
+	std::lock_guard<std::mutex> mtxGuard(mtx);
+	if (!current.count(domain)) {
+		enforce(domain);
+	}
 
 	return current[domain].value;
 }
@@ -106,12 +119,8 @@ Type DomainPolicy<Type>::get()
 template<typename Type>
 void DomainPolicy<Type>::onEvent(uid_t domain)
 {
-	Type value = initial;
-	PolicyStorage::strictize(id, value, domain);
-	if (current[domain] != value) {
-		apply(value, domain);
-		current[domain] = value;
-	}
+	std::lock_guard<std::mutex> mtxGuard(mtx);
+	enforce(domain);
 }
 
 template<typename Type>
@@ -130,18 +139,26 @@ public:
 	virtual bool apply(const Type& value) {}
 
 private:
+	void enforce();
+
+private:
 	int id;
 	Type initial;
 	Type current;
+	bool ready;
+	std::mutex mtx;
 };
 
 template<typename Type>
 GlobalPolicy<Type>::GlobalPolicy(const std::string& name) :
-	id(-1), current()
+	id(-1), current(), ready(false)
 {
 	id = PolicyStorage::define(name, initial);
+	if (id < 0) {
+		throw runtime::Exception("Failed to define policy");
+	}
+
 	current = initial;
-	PolicyStorage::strictize(id, current);
 	PolicyStorage::subscribeEvent(this);
 }
 
@@ -151,12 +168,8 @@ GlobalPolicy<Type>::~GlobalPolicy()
 }
 
 template<typename Type>
-void GlobalPolicy<Type>::set(const Type& val)
+void GlobalPolicy<Type>::enforce()
 {
-	PolicyAdmin admin(rmi::Service::getPeerPid(), rmi::Service::getPeerUid());
-
-	PolicyStorage::update(id, admin.getName(), admin.getUid(), val);
-
 	Type value = initial;
 	PolicyStorage::strictize(id, value);
 	if (current != value) {
@@ -166,19 +179,30 @@ void GlobalPolicy<Type>::set(const Type& val)
 }
 
 template<typename Type>
+void GlobalPolicy<Type>::set(const Type& val)
+{
+	PolicyAdmin admin(rmi::Service::getPeerPid(), rmi::Service::getPeerUid());
+	PolicyStorage::update(id, admin.getName(), admin.getUid(), val);
+
+	std::lock_guard<std::mutex> mtxGuard(mtx);
+	enforce();
+}
+
+template<typename Type>
 Type GlobalPolicy<Type>::get()
 {
+	std::lock_guard<std::mutex> mtxGuard(mtx);
+	if (!ready) {
+		enforce();
+		ready = true;
+	}
 	return current.value;
 }
 
 template<typename Type>
 void GlobalPolicy<Type>::onEvent(uid_t domain)
 {
-	Type value = initial;
-	PolicyStorage::strictize(id, value);
-	if (current != value) {
-		apply(value);
-		current = value;
-	}
+	std::lock_guard<std::mutex> mtxGuard(mtx);
+	enforce();
 }
 #endif //__DPM_POLICY_MODEL_H__
