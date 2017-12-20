@@ -37,6 +37,7 @@ public:
 
 	int loadManagedClients();
 	void loadPolicyPlugins();
+	void applyPolicies();
 
 private:
 	void initPolicyStorage();
@@ -54,6 +55,7 @@ private:
 
 	std::vector<AbstractPolicyProvider *> policyList;
 	std::unique_ptr<PolicyLoader> policyLoader;
+	std::thread policyApplyThread;
 };
 
 #endif //__DEVICE_POLICY_MANAGER_H__

@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
 
 		manager.loadManagedClients();
 		manager.loadPolicyPlugins();
+		manager.applyPolicies();
 
 		manager.start(ondemand, timeout);
 	} catch (std::exception &e) {

@@ -110,6 +110,13 @@ public:
 		return rc;
 	}
 
+	static void notify() {
+		std::vector<uid_t> domains = backend->fetchDomains();
+		for (auto domid : domains) {
+			observers.notify({domid});
+		}
+	}
+
 	static std::vector<uid_t> fetchDomains() {
 		return backend->fetchDomains();
 	}

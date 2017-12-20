@@ -56,6 +56,8 @@ DevicePolicyManager::DevicePolicyManager() :
 
 DevicePolicyManager::~DevicePolicyManager()
 {
+	if (policyApplyThread.joinable())
+		policyApplyThread.join();
 }
 
 void DevicePolicyManager::loadPolicyPlugins()
@@ -91,6 +93,11 @@ void DevicePolicyManager::initPolicyStorage()
 
 	PolicyStorage::setBackend(backend);
 	DEBUG(DPM, "Success to init policy-storage.");
+}
+
+void DevicePolicyManager::applyPolicies()
+{
+	policyApplyThread = std::thread(PolicyStorage::notify);
 }
 
 int DevicePolicyManager::enroll(const std::string& name, uid_t uid)
