@@ -30,6 +30,10 @@
 #include "server.h"
 #include "sql-backend.h"
 
+#include <vconf.h>
+
+#define VCONFKEY_DPM_MODE_STATE "db/dpm/mode_state"
+
 using namespace std::placeholders;
 
 namespace {
@@ -93,6 +97,14 @@ void DevicePolicyManager::initPolicyStorage()
 
 	PolicyStorage::setBackend(backend);
 	DEBUG(DPM, "Success to init policy-storage.");
+
+	bool mode = false;
+	if(loadManagedClients() > 0) {
+		mode = true;
+	}
+	if(::vconf_set_bool(VCONFKEY_DPM_MODE_STATE, mode) != 0) {
+		DEBUG(DPM, "VCONFKEY_DPM_MODE_STATE set  failed.");
+	}
 }
 
 void DevicePolicyManager::applyPolicies()
@@ -102,12 +114,28 @@ void DevicePolicyManager::applyPolicies()
 
 int DevicePolicyManager::enroll(const std::string& name, uid_t uid)
 {
-	return PolicyStorage::enroll(name, uid);
+	int ret = PolicyStorage::enroll(name, uid);
+	if(ret == 0) {
+		if(::vconf_set_bool(VCONFKEY_DPM_MODE_STATE, true) != 0) {
+			DEBUG(DPM, "VCONFKEY_DPM_MODE_STATE set  failed.");
+		}
+	}
+
+	return ret;
 }
 
 int DevicePolicyManager::disenroll(const std::string& name, uid_t uid)
 {
-	return PolicyStorage::unenroll(name, uid);
+	int ret = PolicyStorage::unenroll(name, uid);
+	if(ret == 0) {
+		if(loadManagedClients() == 0) {
+			if(::vconf_set_bool(VCONFKEY_DPM_MODE_STATE, false) != 0) {
+				DEBUG(DPM, "VCONFKEY_DPM_MODE_STATE set  failed.");
+			}
+		}
+	}
+
+	return ret;
 }
 
 int DevicePolicyManager::loadManagedClients()
