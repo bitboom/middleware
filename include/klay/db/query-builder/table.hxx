@@ -3,6 +3,7 @@
 #include "column.hxx"
 #include "table-impl.hxx"
 #include "tuple-helper.hxx"
+#include "expression.hxx"
 
 #include <vector>
 #include <string>
@@ -57,6 +58,15 @@ private:
 				names.emplace_back(name);
 		}
 	};
+
+	template<typename L, typename R>
+	std::string processWhere(condition::And<L,R>& expr);
+
+	template<typename L, typename R>
+	std::string processWhere(condition::Or<L,R>& expr);
+
+	template<typename Expr>
+	std::string processWhere(Expr expr);
 
 	std::string name;
 	ImplType impl;
@@ -114,10 +124,8 @@ template<typename... Columns>
 template<typename Expr>
 Table<Columns...> Table<Columns...>::where(Expr expr)
 {
-	auto name = this->impl.getColumnName(expr.l); 
-
 	std::stringstream ss;
-	ss << "WHERE " << name << " " << std::string(expr) << " ?";
+	ss << "WHERE " << this->processWhere(expr);
 
 	this->cache.emplace_back(ss.str());
 
@@ -162,6 +170,38 @@ template<typename ColumnType>
 std::string Table<Columns...>::getColumnName(ColumnType&& type) const noexcept
 {
 	return this->impl.getColumnName(std::forward<ColumnType>(type));
+}
+
+template<typename... Columns>
+template<typename L, typename R>
+std::string Table<Columns...>::processWhere(condition::And<L,R>& expr) {
+	std::stringstream ss;
+	ss << this->processWhere(expr.l) << " ";
+	ss << static_cast<std::string>(expr) << " ";
+	ss << this->processWhere(expr.r);
+
+	return ss.str();
+}
+
+template<typename... Columns>
+template<typename L, typename R>
+std::string Table<Columns...>::processWhere(condition::Or<L,R>& expr) {
+	std::stringstream ss;
+	ss << this->processWhere(expr.l) << " ";
+	ss << static_cast<std::string>(expr) << " ";
+	ss << this->processWhere(expr.r);
+
+	return ss.str();
+}
+
+template<typename... Columns>
+template<typename Expr>
+std::string Table<Columns...>::processWhere(Expr expr) {
+	std::stringstream ss;
+	ss << this->impl.getColumnName(expr.l);
+	ss << " = ?";
+
+	return ss.str();
 }
 
 } // namespace qxx
