@@ -22,6 +22,15 @@ public:
 
 	Self selectAll(void);
 
+	template<typename... ColumnTypes>
+	Self update(ColumnTypes&&... cts);
+
+	template<typename... ColumnTypes>
+	Self insert(ColumnTypes&&... cts);
+
+	template<typename... ColumnTypes>
+	Self remove(ColumnTypes&&... cts);
+
 	template<typename Expr>
 	Self where(Expr expr);
 
@@ -97,7 +106,7 @@ Table<Columns...> Table<Columns...>::select(ColumnTypes&&... cts)
 	std::stringstream ss;
 	ss << "SELECT ";
 
-	for(const auto& c : columnNames)
+	for (const auto& c : columnNames)
 		ss << c << " ";
 
 	ss << "FROM " << this->name;
@@ -114,6 +123,78 @@ Table<Columns...> Table<Columns...>::selectAll(void)
 
 	std::stringstream ss;
 	ss << "SELECT * FROM " << this->name;
+
+	cache.emplace_back(ss.str());
+
+	return *this;
+}
+
+template<typename... Columns>
+template<typename... ColumnTypes>
+Table<Columns...> Table<Columns...>::update(ColumnTypes&&... cts)
+{
+	this->cache.clear();
+
+	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
+	auto columnNames = this->getColumnNames(std::move(columnTuple));
+
+	std::stringstream ss;
+	ss << "UPDATE " << this->name << " ";
+	ss << "SET";
+
+	for (const auto& c : columnNames)
+		ss << " " << c << " = ?";
+
+	cache.emplace_back(ss.str());
+
+	return *this;
+}
+
+template<typename... Columns>
+template<typename... ColumnTypes>
+Table<Columns...> Table<Columns...>::insert(ColumnTypes&&... cts)
+{
+	this->cache.clear();
+
+	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
+	auto columnNames = this->getColumnNames(std::move(columnTuple));
+
+	std::stringstream ss;
+	ss << "INSERT INTO " << this->name << " (";
+
+	const int columnCount = columnNames.size();
+	for (int i = 0; i < columnCount; i++) {
+		ss << columnNames[i];
+		if (i < columnCount - 1)
+			ss << ", ";
+	}
+
+	ss << ") VALUES (";
+
+	for (int i = 0; i < columnCount; i++) {
+		ss << "?";
+		if (i < columnCount - 1)
+			ss << ", ";
+	}
+
+	ss << ")";
+
+	cache.emplace_back(ss.str());
+
+	return *this;
+}
+
+template<typename... Columns>
+template<typename... ColumnTypes>
+Table<Columns...> Table<Columns...>::remove(ColumnTypes&&... cts)
+{
+	this->cache.clear();
+
+	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
+	auto columnNames = this->getColumnNames(std::move(columnTuple));
+
+	std::stringstream ss;
+	ss << "DELETE FROM " << this->name;
 
 	cache.emplace_back(ss.str());
 
