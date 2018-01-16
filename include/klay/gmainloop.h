@@ -16,32 +16,94 @@
 #ifndef __GMAINLOOP_WRAPPER_H__
 #define __GMAINLOOP_WRAPPER_H__
 
+#include <atomic>
 #include <thread>
+#include <future>
 #include <memory>
 #include <glib.h>
+#include <deque>
+#include <mutex>
+#include <functional>
 
 #include <klay/klay.h>
+#include <klay/audit/logger.h>
 
 class KLAY_EXPORT ScopedGMainLoop {
 public:
 	ScopedGMainLoop() :
-		mainloop(g_main_loop_new(NULL, FALSE), g_main_loop_unref)
+		done(0),
+		context(g_main_context_new(), g_main_context_unref),
+		mainloop(g_main_loop_new(context.get(), FALSE), g_main_loop_unref)
 	{
-		handle = std::thread(g_main_loop_run, mainloop.get());
+		worker = std::thread([this] {
+			g_main_context_push_thread_default(context.get());
+			while (!done) {
+
+				{
+					std::lock_guard<std::mutex> l(queuelock);
+					if (!tasks.empty()) {
+						try {
+							auto&& task = tasks.front();
+							task.first();
+
+							auto&& barrier = std::move(task.second);
+							barrier.set_value();
+
+							tasks.pop_front();
+						} catch (std::future_error& e) {
+							ERROR(KSINK, e.what());
+						}
+					}
+				}
+
+				g_main_context_iteration(context.get(), TRUE);
+			}
+
+			g_main_context_pop_thread_default(context.get());
+		});
 	}
 
 	~ScopedGMainLoop()
 	{
-		while (!g_main_loop_is_running(mainloop.get())) {
-			std::this_thread::yield();
-		}
+		done = true;
+		g_main_context_wakeup(context.get());
 
-		g_main_loop_quit(mainloop.get());
-		handle.join();
+		if (worker.joinable())
+			worker.join();
+	}
+
+	void dispatch(std::function<void(void)>&& task)
+	{
+		if (done)
+			return;
+
+		try {
+			std::promise<void> barrier;
+			std::future<void> future = barrier.get_future();
+
+			{
+				std::lock_guard<std::mutex> l(queuelock);
+				tasks.emplace_back(std::make_pair(std::move(task), std::move(barrier)));
+			}
+
+			g_main_context_wakeup(context.get());
+			future.wait();
+		} catch (std::future_error& e) {
+			ERROR(KSINK, e.what());
+		}
 	}
 
 private:
+	std::unique_ptr<GMainContext, void(*)(GMainContext*)> context;
 	std::unique_ptr<GMainLoop, void(*)(GMainLoop*)> mainloop;
-	std::thread handle;
+
+	std::atomic<bool> done;
+
+	std::thread worker;
+
+	std::mutex queuelock;
+
+	using Task = std::pair<std::function<void(void)>, std::promise<void>>;
+	std::deque<Task> tasks;
 };
 #endif
