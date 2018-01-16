@@ -20,6 +20,9 @@ public:
 	template<typename... ColumnTypes>
 	Self select(ColumnTypes&&... cts);
 
+	template<typename Type>
+	Self select(Distinct<Type> distinct);
+
 	Self selectAll(void);
 
 	template<typename... ColumnTypes>
@@ -43,6 +46,9 @@ private:
 
 	template<typename ...Cs>
 	friend Table<Cs...> make_table(const std::string& name, Cs&& ...columns);
+
+	template<typename ColumnTuple>
+	Self selectInternal(ColumnTuple&& ct, bool distinct = false);
 
 	template<typename Cs>
 	std::vector<std::string> getColumnNames(Cs&& tuple);
@@ -98,13 +104,31 @@ template<typename... Columns>
 template<typename... ColumnTypes>
 Table<Columns...> Table<Columns...>::select(ColumnTypes&&... cts)
 {
+	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
+
+	return this->selectInternal(std::move(columnTuple));
+}
+
+template<typename... Columns>
+template<typename Type>
+Table<Columns...> Table<Columns...>::select(Distinct<Type> distinct)
+{
+	return this->selectInternal(std::move(distinct.value), true);
+}
+
+template<typename... Columns>
+template<typename ColumnTuple>
+Table<Columns...> Table<Columns...>::selectInternal(ColumnTuple&& ct, bool distinct)
+{
 	this->cache.clear();
 
-	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
-	auto columnNames = this->getColumnNames(std::move(columnTuple));
+	auto columnNames = this->getColumnNames(std::move(ct));
 
 	std::stringstream ss;
 	ss << "SELECT ";
+
+	if (distinct)
+		ss << "DISTINCT ";
 
 	for (const auto& c : columnNames)
 		ss << c << " ";

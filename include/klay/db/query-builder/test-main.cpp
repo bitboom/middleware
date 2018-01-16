@@ -30,6 +30,8 @@ int main() {
 												  expr(&Admin::pkg) == "dpm");
 	std::string select6 = admin.selectAll().where(expr(&Admin::uid) > 3 ||
 												  expr(&Admin::pkg) == "dpm");
+	std::string select7 = admin.select(distinct(&Admin::uid, &Admin::key))
+							   .where(expr(&Admin::id) > 3);
 
 	std::cout << select1 << '\n'; // SELECT id pkg uid key FROM admin
 	std::cout << select2 << '\n'; // SELECT id uid key FROM admin
@@ -37,6 +39,7 @@ int main() {
 	std::cout << select4 << '\n'; // SELECT * FROM admin WHERE uid = ?
 	std::cout << select5 << '\n'; // SELECT * FROM admin WHERE uid = ? AND pkg = ?
 	std::cout << select6 << '\n'; // SELECT * FROM admin WHERE uid = ? OR pkg = ?
+	std::cout << select7 << '\n'; // SELECT DISTINCT uid key FROM admin WHERE id = ?
 
 	int uid = 0, id = 1;
 	std::string update1 = admin.update(&Admin::id, &Admin::pkg, &Admin::uid, &Admin::key);
