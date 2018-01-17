@@ -63,6 +63,7 @@ void Service::start(bool activation, int timeout)
 
 void Service::stop()
 {
+	mainloop.stop();
 }
 
 Service::ConnectionRegistry::iterator Service::getConnectionIterator(const int id)
