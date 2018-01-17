@@ -43,6 +43,13 @@ const std::string PolicyPluginBase = PLUGIN_INSTALL_DIR;
 
 } // namespace
 
+void DevicePolicyManager::modeChangeDispatcher(keynode_t *node, void *data)
+{
+	DevicePolicyManager *manager = reinterpret_cast<DevicePolicyManager*>(data);
+	if (!manager->getMaintenanceMode())
+		manager->stop();
+}
+
 DevicePolicyManager::DevicePolicyManager() :
 	rmi::Service(PolicyManagerSocket)
 {
@@ -62,6 +69,8 @@ DevicePolicyManager::~DevicePolicyManager()
 {
 	if (policyApplyThread.joinable())
 		policyApplyThread.join();
+
+	::vconf_ignore_key_changed(VCONFKEY_DPM_MODE_STATE, modeChangeDispatcher);
 }
 
 void DevicePolicyManager::loadPolicyPlugins()
@@ -98,10 +107,11 @@ void DevicePolicyManager::initPolicyStorage()
 	PolicyStorage::setBackend(backend);
 	DEBUG(DPM, "Success to init policy-storage.");
 
-	bool mode = false;
+	int mode = 0;
 	if(loadManagedClients() > 0) {
-		mode = true;
+		mode = 1;
 	}
+
 	if(::vconf_set_bool(VCONFKEY_DPM_MODE_STATE, mode) != 0) {
 		DEBUG(DPM, "VCONFKEY_DPM_MODE_STATE set  failed.");
 	}
@@ -112,15 +122,31 @@ void DevicePolicyManager::applyPolicies()
 	policyApplyThread = std::thread(PolicyStorage::notify);
 }
 
+bool DevicePolicyManager::getMaintenanceMode()
+{
+	return loadManagedClients() > 0 ? true : false;
+}
+
+void DevicePolicyManager::run(int activation, int timeout)
+{
+	if (getMaintenanceMode()) {
+		/* Maintenance mode */
+		::vconf_notify_key_changed(VCONFKEY_DPM_MODE_STATE, modeChangeDispatcher, reinterpret_cast<void*>(this));
+		timeout = -1;
+		DEBUG(DPM, "Set maintenance mode");
+	}
+
+	start(activation, timeout);
+}
+
 int DevicePolicyManager::enroll(const std::string& name, uid_t uid)
 {
 	int ret = PolicyStorage::enroll(name, uid);
 	if(ret == 0) {
-		if(::vconf_set_bool(VCONFKEY_DPM_MODE_STATE, true) != 0) {
+		if(::vconf_set_bool(VCONFKEY_DPM_MODE_STATE, 1) != 0) {
 			DEBUG(DPM, "VCONFKEY_DPM_MODE_STATE set  failed.");
 		}
 	}
-
 	return ret;
 }
 
@@ -129,12 +155,11 @@ int DevicePolicyManager::disenroll(const std::string& name, uid_t uid)
 	int ret = PolicyStorage::unenroll(name, uid);
 	if(ret == 0) {
 		if(loadManagedClients() == 0) {
-			if(::vconf_set_bool(VCONFKEY_DPM_MODE_STATE, false) != 0) {
+			if(::vconf_set_bool(VCONFKEY_DPM_MODE_STATE, 0) != 0) {
 				DEBUG(DPM, "VCONFKEY_DPM_MODE_STATE set  failed.");
 			}
 		}
 	}
-
 	return ret;
 }
 

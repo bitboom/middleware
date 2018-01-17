@@ -21,6 +21,8 @@
 #include <memory>
 #include <vector>
 
+#include <vconf.h>
+
 #include <klay/filesystem.h>
 #include <klay/file-descriptor.h>
 #include <klay/rmi/service.h>
@@ -39,6 +41,8 @@ public:
 	void loadPolicyPlugins();
 	void applyPolicies();
 
+	void run(int activation, int timeout);
+
 private:
 	void initPolicyStorage();
 
@@ -48,6 +52,9 @@ private:
 	bool checkPeerPrivilege(const rmi::Credentials& cred, const std::string& privilege);
 	bool checkNewConnection(const rmi::Connection& connection);
 	bool checkCloseConnection(const rmi::Connection& connection);
+
+	bool getMaintenanceMode();
+	static void modeChangeDispatcher(keynode_t *node, void *data);
 
 private:
 	typedef std::unordered_map<int, int> ClientRegistry;

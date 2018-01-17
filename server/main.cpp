@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 		manager.loadPolicyPlugins();
 		manager.applyPolicies();
 
-		manager.start(ondemand, timeout);
+		manager.run(ondemand, timeout);
 	} catch (std::exception &e) {
 		ERROR(DPM, e.what());
 		return EXIT_FAILURE;
