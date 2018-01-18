@@ -16,33 +16,12 @@
 
 #pragma once
 
-#include <string>
-#include <tuple>
+#include "query-builder/table.hxx"
+#include "query-builder/column.hxx"
+#include "query-builder/expression.hxx"
 
-namespace qxx {
+namespace query_builder {
 
-template<typename Object, typename Field>
-struct Column {
-	typedef Field Object::*Type;
+	using namespace qxx;
 
-	std::string name;
-	Type type;
-};
-
-template<typename O, typename F>
-Column<O, F> make_column(const std::string& name, F O::*field) {
-	return {name, field};
-}
-
-template<typename Type>
-struct Distinct {
-	Type value;
-};
-
-template<typename... Args>
-auto distinct(Args&&... args) -> decltype(Distinct<std::tuple<Args...>>())
-{
-	return {std::make_tuple(std::forward<Args>(args)...)};
-}
-
-} // namespace qxx
+} // namespace query_builder
