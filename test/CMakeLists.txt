@@ -25,6 +25,7 @@ SET(TEST_SRC	main.cpp
 				logger.cpp
 				eventfd.cpp
 				database.cpp
+				query-builder.cpp
 				filesystem.cpp
 )
 
