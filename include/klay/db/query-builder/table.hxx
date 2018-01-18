@@ -25,6 +25,19 @@
 #include <string>
 #include <algorithm>
 #include <sstream>
+#include <cctype>
+
+namespace {
+
+std::string&& rtrim(std::string&& s)
+{
+	auto predicate = [](unsigned char c){ return !std::isspace(c); };
+	auto base = std::find_if(s.rbegin(), s.rend(), predicate).base();
+	s.erase(base, s.end());
+	return std::move(s);
+}
+
+} // anonymous namespace
 
 namespace qxx {
 
@@ -261,7 +274,7 @@ Table<Columns...>::operator std::string()
 		ss << c << " ";
 
 	this->cache.clear();
-	return ss.str();
+	return rtrim(ss.str());
 }
 
 template<typename... Columns>
