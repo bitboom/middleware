@@ -37,6 +37,9 @@
 
 namespace {
 
+const std::string SIGNAL_OBJECT_PATH = "/org/tizen/DevicePolicyManger/PIL";
+const std::string SIGNAL_EVENT_INTERFACE = "org.tizen.DevicePolicyManager.PIL.Event";
+
 const std::string POLICY_MANAGER_ADDRESS = "/tmp/.device-policy-manager.sock";
 
 } // namespace
@@ -50,12 +53,14 @@ void DevicePolicyClient::maintenanceModeDispatcher(keynode_t *node, void *data)
 DevicePolicyClient::DevicePolicyClient() noexcept :
 	maintenanceMode(0), clientAddress(POLICY_MANAGER_ADDRESS)
 {
+	mainloop.reset(new ScopedGMainLoop);
 	::vconf_notify_key_changed(VCONFKEY_DPM_MODE_STATE, maintenanceModeDispatcher, reinterpret_cast<void *>(&this->maintenanceMode));
 	::vconf_get_bool(VCONFKEY_DPM_MODE_STATE, &maintenanceMode);
 }
 
 DevicePolicyClient::~DevicePolicyClient() noexcept
 {
+	mainloop.reset();
 	::vconf_ignore_key_changed(VCONFKEY_DPM_MODE_STATE, maintenanceModeDispatcher);
 }
 
@@ -66,16 +71,20 @@ int DevicePolicyClient::subscribeSignal(const std::string& name,
 	if (!maintenanceMode)
 		return 0;
 
+	int ret = -1;
 	try {
-		auto dispatch = [name, handler, data](dbus::Variant variant) {
-			char *state = NULL;
-			variant.get("(s)", &state);
+		mainloop->dispatch([&]() {
+			auto task = [name, handler, data](dbus::Variant variant) {
+				char *state = NULL;
+				variant.get("(s)", &state);
 
-			handler(name.c_str(), state, data);
-		};
+				handler(name.c_str(), state, data);
+			};
 
-		dbus::signal::Receiver receiver(PIL_OBJECT_PATH, PIL_EVENT_INTERFACE);
-		return receiver.subscribe(name, dispatch);
+			dbus::signal::Receiver receiver(SIGNAL_OBJECT_PATH, SIGNAL_EVENT_INTERFACE);
+			ret = receiver.subscribe(name, std::move(task));
+		});
+		return ret;
 	} catch (runtime::Exception& e) {
 		ERROR(DPM, e.what());
 		return -1;
@@ -88,8 +97,11 @@ int DevicePolicyClient::unsubscribeSignal(int id) noexcept
 		return 0;
 
 	try {
-		dbus::signal::Receiver receiver(PIL_OBJECT_PATH, PIL_EVENT_INTERFACE);
-		receiver.unsubscribe(id);
+		mainloop->dispatch([&]() {
+			dbus::signal::Receiver receiver(SIGNAL_OBJECT_PATH, SIGNAL_EVENT_INTERFACE);
+			receiver.unsubscribe(id);
+		});
+
 		return 0;
 	} catch (runtime::Exception& e) {
 		ERROR(DPM, e.what());

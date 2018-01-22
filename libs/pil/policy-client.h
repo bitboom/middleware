@@ -24,6 +24,7 @@
 #include <vconf.h>
 
 #include <klay/rmi/method.h>
+#include <klay/gmainloop.h>
 
 #include "status.h"
 
@@ -65,6 +66,7 @@ private:
 private:
 	int maintenanceMode;
 	std::string clientAddress;
+	std::unique_ptr<ScopedGMainLoop> mainloop;
 };
 
 DevicePolicyClient& GetDevicePolicyClient(void* handle);
