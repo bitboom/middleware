@@ -47,7 +47,7 @@ static int registerAdministrator(const std::string& pkgname, uid_t uid)
 		DevicePolicyClient client;
 
 		Status<int> status { -1 };
-		status = client.methodCall<int>("DevicePolicyManager::enroll", pkgname, uid);
+		status = client.methodCallForce<int>("DevicePolicyManager::enroll", pkgname, uid);
 		return status.get();
 	} catch (...) {
 		std::cerr << "Failed to enroll device" << std::endl;
@@ -61,7 +61,7 @@ static int deregisterAdministrator(const std::string& pkgname, uid_t uid)
 		DevicePolicyClient client;
 
 		Status<int> status { -1 };
-		status = client.methodCall<int>("DevicePolicyManager::disenroll", pkgname, uid);
+		status = client.methodCallForce<int>("DevicePolicyManager::disenroll", pkgname, uid);
 		return status.get();
 	} catch (...) {
 		std::cerr << "Failed to disenroll device" << std::endl;

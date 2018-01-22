@@ -51,6 +51,14 @@ public:
 		return ret;
 	}
 
+	template<typename Type, typename... Args>
+	Type methodCallForce(const std::string& method, Args&&... args)
+	{
+		rmi::Connection conn(clientAddress);
+		Type ret = rmi::RemoteMethod<>::invoke<Type, Args...>(conn, method, std::forward<Args>(args)...);
+		return ret;
+	}
+
 private:
 	int maintenanceMode;
 	std::string clientAddress;
