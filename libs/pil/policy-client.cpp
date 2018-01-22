@@ -33,31 +33,30 @@
 		return (ret);             \
 }
 
+#define VCONFKEY_DPM_MODE_STATE "db/dpm/mode_state"
+
 namespace {
 
 const std::string POLICY_MANAGER_ADDRESS = "/tmp/.device-policy-manager.sock";
 
-int GetPolicyEnforceMode()
-{
-	runtime::File policyManagerSocket(POLICY_MANAGER_ADDRESS);
-
-	if (policyManagerSocket.exists()) {
-		return 1;
-	}
-
-	return 0;
-}
-
 } // namespace
 
+void DevicePolicyClient::maintenanceModeDispatcher(keynode_t *node, void *data)
+{
+	int *mode = reinterpret_cast<int *>(data);
+	::vconf_get_bool(VCONFKEY_DPM_MODE_STATE, mode);
+}
 
 DevicePolicyClient::DevicePolicyClient() noexcept :
-	maintenanceMode(GetPolicyEnforceMode()), clientAddress(POLICY_MANAGER_ADDRESS)
+	maintenanceMode(0), clientAddress(POLICY_MANAGER_ADDRESS)
 {
+	::vconf_notify_key_changed(VCONFKEY_DPM_MODE_STATE, maintenanceModeDispatcher, reinterpret_cast<void *>(&this->maintenanceMode));
+	::vconf_get_bool(VCONFKEY_DPM_MODE_STATE, &maintenanceMode);
 }
 
 DevicePolicyClient::~DevicePolicyClient() noexcept
 {
+	::vconf_ignore_key_changed(VCONFKEY_DPM_MODE_STATE, maintenanceModeDispatcher);
 }
 
 int DevicePolicyClient::subscribeSignal(const std::string& name,

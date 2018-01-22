@@ -21,6 +21,7 @@
 #include <memory>
 #include <functional>
 #include <cerrno>
+#include <vconf.h>
 
 #include <klay/rmi/method.h>
 
@@ -59,6 +60,8 @@ public:
 		return ret;
 	}
 
+private:
+	static void maintenanceModeDispatcher(keynode_t *node, void *data);
 private:
 	int maintenanceMode;
 	std::string clientAddress;
