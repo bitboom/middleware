@@ -54,7 +54,6 @@ private:
 	bool checkCloseConnection(const rmi::Connection& connection);
 
 	bool getMaintenanceMode();
-	static void modeChangeDispatcher(keynode_t *node, void *data);
 
 private:
 	typedef std::unordered_map<int, int> ClientRegistry;

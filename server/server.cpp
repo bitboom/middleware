@@ -43,13 +43,6 @@ const std::string PolicyPluginBase = PLUGIN_INSTALL_DIR;
 
 } // namespace
 
-void DevicePolicyManager::modeChangeDispatcher(keynode_t *node, void *data)
-{
-	DevicePolicyManager *manager = reinterpret_cast<DevicePolicyManager*>(data);
-	if (!manager->getMaintenanceMode())
-		manager->stop();
-}
-
 DevicePolicyManager::DevicePolicyManager() :
 	rmi::Service(PolicyManagerSocket)
 {
@@ -69,8 +62,6 @@ DevicePolicyManager::~DevicePolicyManager()
 {
 	if (policyApplyThread.joinable())
 		policyApplyThread.join();
-
-	::vconf_ignore_key_changed(VCONFKEY_DPM_MODE_STATE, modeChangeDispatcher);
 }
 
 void DevicePolicyManager::loadPolicyPlugins()
@@ -131,7 +122,6 @@ void DevicePolicyManager::run(int activation, int timeout)
 {
 	if (getMaintenanceMode()) {
 		/* Maintenance mode */
-		::vconf_notify_key_changed(VCONFKEY_DPM_MODE_STATE, modeChangeDispatcher, reinterpret_cast<void*>(this));
 		timeout = -1;
 		DEBUG(DPM, "Set maintenance mode");
 	}
@@ -158,6 +148,7 @@ int DevicePolicyManager::disenroll(const std::string& name, uid_t uid)
 			if(::vconf_set_bool(VCONFKEY_DPM_MODE_STATE, 0) != 0) {
 				DEBUG(DPM, "VCONFKEY_DPM_MODE_STATE set  failed.");
 			}
+			stop();
 		}
 	}
 	return ret;
