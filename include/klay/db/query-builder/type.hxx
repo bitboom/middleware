@@ -16,34 +16,22 @@
 
 #pragma once
 
-#include <string>
-#include <tuple>
+#include <type_traits>
 
 namespace qxx {
+namespace type {
 
-template<typename Object, typename Field>
-struct Column {
-	typedef Field Object::*Type;
-	using FieldType = Field;
-
-	std::string name;
-	Type type;
-};
-
-template<typename O, typename F>
-Column<O, F> make_column(const std::string& name, F O::*field) {
-	return {name, field};
-}
-
-template<typename Type>
-struct Distinct {
-	Type value;
-};
-
-template<typename... Args>
-auto distinct(Args&&... args) -> decltype(Distinct<std::tuple<Args...>>())
+template<typename L, typename R>
+inline bool compare(L l, R r)
 {
-	return {std::make_tuple(std::forward<Args>(args)...)};
+	return (l == reinterpret_cast<L>(r));
 }
 
+template<typename L, typename R>
+inline void assert_compare(L l, R r)
+{
+	static_assert(std::is_same<L, R>::value, "Type is unsafe.");
+}
+
+} // namespace type
 } // namespace qxx

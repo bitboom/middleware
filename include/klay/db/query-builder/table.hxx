@@ -332,7 +332,7 @@ template<typename... Columns>
 template<typename Expr>
 std::string Table<Columns...>::processWhere(Expr expr) {
 	std::stringstream ss;
-	ss << this->impl.getColumnName(expr.l);
+	ss << this->impl.getColumnName(expr.l.type);
 	ss << " " << std::string(expr) << " ?";
 
 	return ss.str();

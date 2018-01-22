@@ -109,3 +109,18 @@ TESTCASE(INSERT)
 	TEST_EXPECT(true, insert1 == "INSERT INTO admin (id, pkg, uid, key) VALUES (?, ?, ?, ?)");
 	TEST_EXPECT(true, insert2 == "INSERT INTO admin (id, pkg, key) VALUES (?, ?, ?)");
 }
+
+TESTCASE(TYPE_SAFE)
+{
+/*
+ * Below cause complie error since expression types are dismatch.
+
+	std::string type_unsafe1 = admin.selectAll().where(expr(&Admin::uid) > "dpm");
+	std::string type_unsafe2 = admin.selectAll().where(expr(&Admin::uid) == "dpm");
+	std::string type_unsafe3 = admin.selectAll().where(expr(&Admin::pkg) == 3);
+	int pkg = 3;
+	std::string type_unsafe4 = admin.selectAll().where(expr(&Admin::pkg) < pkg);
+	std::string type_unsafe5 = admin.remove().where(expr(&Admin::pkg) == "dpm" &&
+													expr(&Admin::uid) == "dpm");
+*/
+}

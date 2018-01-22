@@ -16,6 +16,9 @@
 
 #pragma once
 
+#include "column.hxx"
+#include "type.hxx"
+
 #include <type_traits>
 
 namespace qxx {
@@ -52,7 +55,23 @@ struct Binary : public Base {
 	L l;
 	R r;
 
-	Binary(L l, R r) : l(l), r(r) {}
+	Binary(L l, R r) : l(l), r(r)
+	{
+		using FieldType = typename L::FieldType;
+		type::assert_compare(FieldType(), r);
+	}
+};
+
+template<typename L>
+struct Binary<L, const char*> : public Base {
+	L l;
+	std::string r;
+
+	Binary(L l, const char* r) : l(l), r(r)
+	{
+		using FieldType = typename L::FieldType;
+		type::assert_compare(FieldType(), std::string());
+	}
 };
 
 } // namespace condition
@@ -62,10 +81,11 @@ struct Expression {
 	Type value;
 };
 
-template<typename Type>
-Expression<Type> expr(Type value)
+template<typename O, typename F>
+Expression<Column<O, F>> expr(F O::*field)
 {
-	return {value};
+	Column<O, F> anonymous = {"anonymous", field};
+	return {anonymous};
 }
 
 template<typename L, typename R>

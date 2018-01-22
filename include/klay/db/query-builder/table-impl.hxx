@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "type.hxx"
+
 #include <string>
 #include <vector>
 
@@ -50,11 +52,7 @@ public:
 
 	template<typename ColumnType>
 	std::string getColumnName(ColumnType type) const noexcept {
-		// [TO-DO] Do Not Cast.
-		// [ALTER] std::is_same<F, typename T::field_type>{}
-		// [PROBLEM] Cannot multi-table select..
-		// [CRITICAL] (&Data::int == &Data2::int) is same
-		if (reinterpret_cast<ColumnType>(column.type) == type)
+		if (type::compare(column.type, type))
 			return column.name;
 
 		return Base::template getColumnName<ColumnType>(type);
