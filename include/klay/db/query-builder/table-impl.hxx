@@ -39,20 +39,23 @@ template<typename Front, typename... Rest>
 class TableImpl<Front, Rest...> : public TableImpl<Rest...> {
 public:
 	using Column = Front;
+	using TableType = typename Column::TableType;
 
 	explicit TableImpl(Front front, Rest ...rest) : Base(rest...), column(front) {}
 
 	int size() const noexcept { return Base::size() + 1; }
 
-	std::vector<std::string> getColumnNames(void) const noexcept {
+	std::vector<std::string> getColumnNames(void) const noexcept
+	{
 		auto names = Base::getColumnNames();
 		names.emplace_back(this->column.name);
 		return names;
 	}
 
 	template<typename ColumnType>
-	std::string getColumnName(ColumnType type) const noexcept {
-		if (type::compare(column.type, type))
+	std::string getColumnName(ColumnType type) const noexcept
+	{
+		if (type::cast_compare(column.type, type))
 			return column.name;
 
 		return Base::template getColumnName<ColumnType>(type);

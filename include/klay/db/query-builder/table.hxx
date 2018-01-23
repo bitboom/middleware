@@ -20,24 +20,11 @@
 #include "table-impl.hxx"
 #include "tuple-helper.hxx"
 #include "expression.hxx"
+#include "util.hxx"
 
 #include <vector>
 #include <string>
-#include <algorithm>
 #include <sstream>
-#include <cctype>
-
-namespace {
-
-std::string&& rtrim(std::string&& s)
-{
-	auto predicate = [](unsigned char c){ return !std::isspace(c); };
-	auto base = std::find_if(s.rbegin(), s.rend(), predicate).base();
-	s.erase(base, s.end());
-	return std::move(s);
-}
-
-} // anonymous namespace
 
 namespace qxx {
 
@@ -45,6 +32,8 @@ template<typename... Columns>
 class Table {
 public:
 	using Self = Table<Columns...>;
+	using ImplType = internal::TableImpl<Columns...>;
+	using TableType = typename ImplType::TableType;
 
 	template<typename... ColumnTypes>
 	Self select(ColumnTypes&&... cts);
@@ -66,11 +55,17 @@ public:
 	template<typename Expr>
 	Self where(Expr expr);
 
+	template<typename Column>
+	bool find(Column column);
+
 	operator std::string();
 
-private:
-	using ImplType = internal::TableImpl<Columns...>;
+	template<typename ColumnType>
+	std::string getColumnName(ColumnType&& type) const noexcept;
 
+	std::string name;
+
+private:
 	explicit Table(const std::string& name, ImplType impl);
 
 	template<typename ...Cs>
@@ -85,9 +80,6 @@ private:
 	int size() const noexcept;
 
 	std::vector<std::string> getColumnNames(void) const noexcept;
-
-	template<typename ColumnType>
-	std::string getColumnName(ColumnType&& type) const noexcept;
 
 	struct GetColumnNames {
 		ImplType impl;
@@ -112,9 +104,7 @@ private:
 	template<typename Expr>
 	std::string processWhere(Expr expr);
 
-	std::string name;
 	ImplType impl;
-
 	std::vector<std::string> cache;
 };
 
@@ -274,7 +264,14 @@ Table<Columns...>::operator std::string()
 		ss << c << " ";
 
 	this->cache.clear();
-	return rtrim(ss.str());
+	return util::rtrim(ss.str());
+}
+
+template<typename... Columns>
+template<typename Column>
+bool Table<Columns...>::find(Column column)
+{
+	return type::compare(TableType(), typename Column::TableType());
 }
 
 template<typename... Columns>
@@ -308,7 +305,8 @@ std::string Table<Columns...>::getColumnName(ColumnType&& type) const noexcept
 
 template<typename... Columns>
 template<typename L, typename R>
-std::string Table<Columns...>::processWhere(condition::And<L,R>& expr) {
+std::string Table<Columns...>::processWhere(condition::And<L,R>& expr)
+{
 	std::stringstream ss;
 	ss << this->processWhere(expr.l) << " ";
 	ss << static_cast<std::string>(expr) << " ";
@@ -319,7 +317,8 @@ std::string Table<Columns...>::processWhere(condition::And<L,R>& expr) {
 
 template<typename... Columns>
 template<typename L, typename R>
-std::string Table<Columns...>::processWhere(condition::Or<L,R>& expr) {
+std::string Table<Columns...>::processWhere(condition::Or<L,R>& expr)
+{
 	std::stringstream ss;
 	ss << this->processWhere(expr.l) << " ";
 	ss << static_cast<std::string>(expr) << " ";
@@ -330,7 +329,8 @@ std::string Table<Columns...>::processWhere(condition::Or<L,R>& expr) {
 
 template<typename... Columns>
 template<typename Expr>
-std::string Table<Columns...>::processWhere(Expr expr) {
+std::string Table<Columns...>::processWhere(Expr expr)
+{
 	std::stringstream ss;
 	ss << this->impl.getColumnName(expr.l.type);
 	ss << " " << std::string(expr) << " ?";

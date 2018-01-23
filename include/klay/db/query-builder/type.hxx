@@ -22,9 +22,15 @@ namespace qxx {
 namespace type {
 
 template<typename L, typename R>
+inline bool cast_compare(L l, R r)
+{
+	return l == reinterpret_cast<L>(r);
+}
+
+template<typename L, typename R>
 inline bool compare(L l, R r)
 {
-	return (l == reinterpret_cast<L>(r));
+	return std::is_same<L, R>::value;
 }
 
 template<typename L, typename R>

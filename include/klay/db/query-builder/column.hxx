@@ -25,6 +25,7 @@ template<typename Object, typename Field>
 struct Column {
 	typedef Field Object::*Type;
 	using FieldType = Field;
+	using TableType = Object;
 
 	std::string name;
 	Type type;

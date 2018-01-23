@@ -31,11 +31,26 @@ struct Admin {
 	int removable;
 };
 
+struct ManagedPolicy {
+	int id;
+	int aid;
+	int pid;
+	int value;
+};
+
 auto admin = make_table("admin", make_column("id", &Admin::id),
 								 make_column("pkg", &Admin::pkg),
 								 make_column("uid", &Admin::uid),
 								 make_column("key", &Admin::key),
 								 make_column("removable", &Admin::removable));
+
+auto managedPolicy = make_table("managed_policy",
+								 make_column("id", &ManagedPolicy::id),
+								 make_column("aid", &ManagedPolicy::aid),
+								 make_column("pid", &ManagedPolicy::pid),
+								 make_column("value", &ManagedPolicy::value));
+
+auto db = make_database("dpm", admin, managedPolicy);
 
 TESTCASE(SELECT)
 {
@@ -123,4 +138,19 @@ TESTCASE(TYPE_SAFE)
 	std::string type_unsafe5 = admin.remove().where(expr(&Admin::pkg) == "dpm" &&
 													expr(&Admin::uid) == "dpm");
 */
+}
+
+TESTCASE(MULTI_SELECT)
+{
+	std::string multiSelect1 = db.select(&Admin::uid, &Admin::key,
+										 &ManagedPolicy::id, &ManagedPolicy::value);
+	std::string multiSelect2 = db.select(&Admin::uid, &Admin::key,
+										 &ManagedPolicy::id, &ManagedPolicy::value)
+								 .where(expr(&Admin::uid) > 0 && expr(&ManagedPolicy::id) == 3);
+
+	TEST_EXPECT(true, multiSelect1 == "SELECT admin.uid admin.key managed_policy.id "
+									  "managed_policy.value FROM admin, managed_policy");
+	TEST_EXPECT(true, multiSelect2 == "SELECT admin.uid admin.key managed_policy.id "
+									  "managed_policy.value FROM admin, managed_policy "
+									  "WHERE admin.uid > ? AND managed_policy.id = ?");
 }

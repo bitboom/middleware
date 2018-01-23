@@ -16,13 +16,20 @@
 
 #pragma once
 
-#include "query-builder/database.hxx"
-#include "query-builder/table.hxx"
-#include "query-builder/column.hxx"
-#include "query-builder/expression.hxx"
+#include <string>
+#include <algorithm>
+#include <cctype>
 
-namespace query_builder {
+namespace qxx {
+namespace util {
 
-	using namespace qxx;
+std::string&& rtrim(std::string&& s)
+{
+	auto predicate = [](unsigned char c){ return !std::isspace(c); };
+	auto base = std::find_if(s.rbegin(), s.rend(), predicate).base();
+	s.erase(base, s.end());
+	return std::move(s);
+}
 
-} // namespace query_builder
+} // namespace util
+} // namespace qxx
