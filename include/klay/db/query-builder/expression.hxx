@@ -18,63 +18,11 @@
 
 #include "column.hxx"
 #include "type.hxx"
+#include "condition.hxx"
 
 #include <type_traits>
 
 namespace qxx {
-namespace condition {
-
-struct Base {};
-
-template<typename L, typename R>
-struct And : public Base {
-	L l;
-	R r;
-
-	And(L l, R r) : l(l), r(r) {}
-	operator std::string() const
-	{
-		return "AND";
-	}
-};
-
-template<typename L, typename R>
-struct Or : public Base {
-	L l;
-	R r;
-
-	Or(L l, R r) : l(l), r(r) {}
-	operator std::string() const
-	{
-		return "OR";
-	}
-};
-
-template<typename L, typename R>
-struct Binary : public Base {
-	L l;
-	R r;
-
-	Binary(L l, R r) : l(l), r(r)
-	{
-		using FieldType = typename L::FieldType;
-		type::assert_compare(FieldType(), r);
-	}
-};
-
-template<typename L>
-struct Binary<L, const char*> : public Base {
-	L l;
-	std::string r;
-
-	Binary(L l, const char* r) : l(l), r(r)
-	{
-		using FieldType = typename L::FieldType;
-		type::assert_compare(FieldType(), std::string());
-	}
-};
-
-} // namespace condition
 
 template<typename Type>
 struct Expression {
@@ -109,7 +57,8 @@ struct Equal : public condition::Binary<L, R>
 {
 	using condition::Binary<L, R>::Binary;
 
-	operator std::string() const {
+	operator std::string() const
+	{
 		return "=";
 	}
 };
@@ -120,12 +69,35 @@ Equal<L, R> operator==(Expression<L> expr, R r)
 	return {expr.value, r};
 }
 
+namespace join {
+
+template<typename L, typename R>
+struct Equal
+{
+	L l;
+	R r;
+
+	operator std::string() const
+	{
+		return "=";
+	}
+};
+
+} // namespace join
+
+template<typename L, typename R>
+join::Equal<L, R> operator==(Expression<L> l, Expression<R> r)
+{
+	return {l.value, r.value};
+}
+
 template<typename L, typename R>
 struct Greater : public condition::Binary<L, R>
 {
 	using condition::Binary<L, R>::Binary;
 
-	operator std::string() const {
+	operator std::string() const
+	{
 		return ">";
 	}
 };

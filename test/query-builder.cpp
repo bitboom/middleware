@@ -38,6 +38,13 @@ struct ManagedPolicy {
 	int value;
 };
 
+struct PolicyDefinition {
+	int id;
+	int scope;
+	std::string name;
+	int ivalue;
+};
+
 auto admin = make_table("admin", make_column("id", &Admin::id),
 								 make_column("pkg", &Admin::pkg),
 								 make_column("uid", &Admin::uid),
@@ -50,7 +57,13 @@ auto managedPolicy = make_table("managed_policy",
 								 make_column("pid", &ManagedPolicy::pid),
 								 make_column("value", &ManagedPolicy::value));
 
-auto db = make_database("dpm", admin, managedPolicy);
+auto policyDefinition = make_table("policy_definition",
+								   make_column("id", &PolicyDefinition::id),
+								   make_column("scope", &PolicyDefinition::scope),
+								   make_column("name", &PolicyDefinition::name),
+								   make_column("ivalue", &PolicyDefinition::ivalue));
+
+auto db = make_database("dpm", admin, managedPolicy, policyDefinition);
 
 TESTCASE(SELECT)
 {
@@ -153,4 +166,28 @@ TESTCASE(MULTI_SELECT)
 	TEST_EXPECT(true, multiSelect2 == "SELECT admin.uid admin.key managed_policy.id "
 									  "managed_policy.value FROM admin, managed_policy "
 									  "WHERE admin.uid > ? AND managed_policy.id = ?");
+}
+
+TESTCASE(JOIN)
+{
+	std::string join1 = db.select(&Admin::uid, &Admin::key)
+						  .join<PolicyDefinition>(condition::Join::LEFT_OUTER);
+	std::string join2 = db.select(&Admin::uid, &Admin::key)
+						  .join<ManagedPolicy>(condition::Join::CROSS);
+	std::string join3 = db.select(&ManagedPolicy::value)
+						  .join<PolicyDefinition>()
+						  .on(expr(&ManagedPolicy::pid) == expr(&PolicyDefinition::id))
+						  .join<Admin>()
+						  .on(expr(&ManagedPolicy::aid) == expr(&Admin::id))
+						  .where(expr(&ManagedPolicy::pid) == 99);
+
+	TEST_EXPECT(true, join1 == "SELECT admin.uid admin.key FROM admin "
+							   "LEFT OUTER JOIN policy_definition");
+	TEST_EXPECT(true, join2 == "SELECT admin.uid admin.key FROM admin "
+							   "CROSS JOIN managed_policy");
+	TEST_EXPECT(true, join3 == "SELECT managed_policy.value FROM managed_policy "
+							   "INNER JOIN policy_definition "
+							   "ON managed_policy.pid = policy_definition.id "
+							   "INNER JOIN admin ON managed_policy.aid = admin.id "
+							   "WHERE managed_policy.pid = ?");
 }

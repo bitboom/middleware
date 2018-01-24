@@ -28,8 +28,8 @@ namespace internal {
 template<typename... Base>
 class DatabaseImpl {
 public:
-	template<typename Column>
-	std::string getTableName(Column) const noexcept { return std::string(); }
+	template<typename Table>
+	std::string getTableName(Table) const noexcept { return std::string(); }
 
 	template<typename Column>
 	std::string getColumnName(Column column) const noexcept { return std::string(); }
@@ -44,19 +44,20 @@ public:
 
 	Table table;
 
-	template<typename Column>
-	std::string getTableName(Column column) const noexcept
+	template<typename Table>
+	std::string getTableName(Table table) const noexcept
 	{
-		if (this->table.find(column))
+		if (this->table.find(table))
 			return this->table.name;
 
-		return Base::template getTableName<Column>(column);
+		return Base::template getTableName<Table>(table);
 	}
 
 	template<typename Column>
 	std::string getColumnName(Column column) const noexcept
 	{
-		if (this->table.find(column)) {
+		using TableType = typename decltype(column)::TableType;
+		if (this->table.find(TableType())) {
 			auto cname = this->table.getColumnName(column.type);
 			return this->table.name + "." + cname;
 		}

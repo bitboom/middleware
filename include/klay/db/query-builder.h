@@ -20,6 +20,8 @@
 #include "query-builder/table.hxx"
 #include "query-builder/column.hxx"
 #include "query-builder/expression.hxx"
+#include "query-builder/condition.hxx"
+#include "query-builder/util.hxx"
 
 namespace query_builder {
 

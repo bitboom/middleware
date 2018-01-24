@@ -23,12 +23,12 @@
 namespace qxx {
 namespace util {
 
-std::string&& rtrim(std::string&& s)
+inline std::string rtrim(std::string&& s)
 {
 	auto predicate = [](unsigned char c){ return !std::isspace(c); };
 	auto base = std::find_if(s.rbegin(), s.rend(), predicate).base();
 	s.erase(base, s.end());
-	return std::move(s);
+	return s;
 }
 
 } // namespace util

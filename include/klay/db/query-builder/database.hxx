@@ -24,6 +24,7 @@
 
 #include "database-impl.hxx"
 #include "tuple-helper.hxx"
+#include "condition.hxx"
 #include "expression.hxx"
 #include "util.hxx"
 
@@ -39,6 +40,12 @@ public:
 
 	template<typename Expr>
 	Self where(Expr expr);
+
+	template<typename Table>
+	Self join(condition::Join type = condition::Join::INNER);
+
+	template<typename Expr>
+	Self on(Expr expr);
 
 	operator std::string();
 
@@ -69,7 +76,8 @@ private:
 		void operator()(T&& type)
 		{
 			auto column = make_column("anonymous", type);
-			auto name = this->impl.getTableName(std::move(column));
+			using TableType = typename decltype(column)::TableType;
+			auto name = this->impl.getTableName(TableType());
 			if (!name.empty())
 				names.emplace(name);
 		}
@@ -155,6 +163,38 @@ Database<Tables...> Database<Tables...>::where(Expr expr)
 
 	this->cache.emplace_back(ss.str());
 
+	return *this;
+}
+
+template<typename... Tables>
+template<typename Table>
+Database<Tables...> Database<Tables...>::join(condition::Join type)
+{
+	std::stringstream ss;
+	ss << condition::to_string(type) << " ";
+	ss << "JOIN ";
+	ss << this->impl.getTableName(Table());
+
+	this->cache.emplace_back(ss.str());
+	return *this;
+}
+
+template<typename... Tables>
+template<typename Expr>
+Database<Tables...> Database<Tables...>::on(Expr expr)
+{
+	std::stringstream ss;
+	ss << "ON ";
+
+	auto lname = this->impl.getColumnName(std::move(expr.l));
+	ss << lname << " ";
+
+	ss << std::string(expr) << " ";
+
+	auto rname = this->impl.getColumnName(std::move(expr.r));
+	ss << rname;
+
+	this->cache.emplace_back(ss.str());
 	return *this;
 }
 

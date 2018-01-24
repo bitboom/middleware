@@ -23,7 +23,7 @@ namespace qxx {
 
 template<typename Object, typename Field>
 struct Column {
-	typedef Field Object::*Type;
+	using Type = Field Object::*;
 	using FieldType = Field;
 	using TableType = Object;
 
@@ -32,7 +32,8 @@ struct Column {
 };
 
 template<typename O, typename F>
-Column<O, F> make_column(const std::string& name, F O::*field) {
+Column<O, F> make_column(const std::string& name, F O::*field)
+{
 	return {name, field};
 }
 

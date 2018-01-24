@@ -88,7 +88,8 @@ private:
 		GetColumnNames(const ImplType &impl) : impl(impl) {}
 
 		template <typename T>
-		void operator()(T&& type) {
+		void operator()(T&& type)
+		{
 			auto name = this->impl.getColumnName(std::forward<T>(type));
 			if (!name.empty())
 				names.emplace_back(name);
@@ -268,10 +269,11 @@ Table<Columns...>::operator std::string()
 }
 
 template<typename... Columns>
-template<typename Column>
-bool Table<Columns...>::find(Column column)
+template<typename That>
+bool Table<Columns...>::find(That that)
 {
-	return type::compare(TableType(), typename Column::TableType());
+	using This = TableType;
+	return type::compare(This(), That());
 }
 
 template<typename... Columns>
