@@ -8,6 +8,7 @@ Source0:    %{name}-%{version}.tar.gz
 Source1001: %{name}.manifest
 Source1002: lib%{name}-client.manifest
 Source1003: lib%{name}-client-admin.manifest
+Source1004: %{name}-test.manifest
 Requires: security-config
 BuildRequires: cmake
 BuildRequires: pkgconfig(dlog)
@@ -64,7 +65,7 @@ Authentication framework package (client-devel)
 
 %prep
 %setup -q
-cp -a %{SOURCE1001} %{SOURCE1002} %{SOURCE1003} .
+cp -a %{SOURCE1001} %{SOURCE1002} %{SOURCE1003} %{SOURCE1004} .
 
 %build
 export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
@@ -174,3 +175,17 @@ fi
 %{_includedir}/%{name}/auth-passwd-error.h
 %{_includedir}/%{name}/auth-passwd-policy-types.h
 %{_libdir}/pkgconfig/*.pc
+
+## Test Package ##############################################################
+%package test
+Summary: Authentication framework (test)
+Group: Security/Testing
+BuildRequires: pkgconfig(klay)
+Requires: %{name} = %{version}
+
+%description test
+Testcases for authentication framework
+
+%files test
+%manifest %{name}-test.manifest
+%{bin_dir}/%{name}-test
