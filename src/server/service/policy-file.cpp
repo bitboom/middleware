@@ -162,7 +162,7 @@ void PolicyFile::loadMemoryFromFile()
 
 	Deserialization::Deserialize(policyBuffer, m_enable);
 	PolicySerializable policys(policyBuffer);
-	m_policy = *(dynamic_cast<Policy *>(&policys));
+	m_policy = *(static_cast<Policy *>(&policys));
 	LogSecureDebug("User: " << m_user << "Policy: " << m_policy.info());
 }
 
@@ -282,9 +282,9 @@ bool PolicyFile::checkMaxNumSeqLength(const std::string &password) const
 			num_cnt++;
 
 			if (order == -2) { // not set, fist or second char of a sequence
-				if (prev_num == 0)   // fist second char
+				if (prev_num == 0) { // fist second char
 					curr_num_seq_len = 1;
-				else if (curr_ch == prev_num - 1) { // decreasing order
+				} else if (curr_ch == prev_num - 1) { // decreasing order
 					order = -1;
 					curr_num_seq_len = 2;
 				} else if (curr_ch == prev_num + 0) { // same order
@@ -300,9 +300,9 @@ bool PolicyFile::checkMaxNumSeqLength(const std::string &password) const
 					order = -2;
 					curr_num_seq_len = 1;
 				}
-			} else if (curr_ch == prev_num + order)   // order is still working
+			} else if (curr_ch == prev_num + order) { // order is still working
 				curr_num_seq_len++;
-			else { // order changed
+			} else { // order changed
 				if (max_num_seq_len < curr_num_seq_len)
 					max_num_seq_len = curr_num_seq_len;
 
@@ -382,7 +382,7 @@ bool PolicyFile::checkQualityType(const std::string &password) const
 		return false;
 	} catch (...) {
 		LogError("Fail to check quality with unknown reason : QualityType="
-			<< m_policy.qualityType << ", Pattern=" << pattern );
+			<< m_policy.qualityType << ", Pattern=" << pattern);
 		return false;
 	}
 }

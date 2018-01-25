@@ -109,7 +109,7 @@ struct SignalService : public GenericSocketService {
 
 		if (siginfo->ssi_signo == SIGTERM) {
 			LogInfo("Got signal: SIGTERM");
-			auto socketManager = dynamic_cast<SocketManager *>(m_serviceManager);
+			auto socketManager = static_cast<SocketManager *>(m_serviceManager);
 			if (socketManager != nullptr)
 				socketManager->MainLoopStop();
 			return;
