@@ -17,6 +17,7 @@
 #
 
 SET(TEST_SRCS main.cpp
+			  test-util.cpp
 			  test-client.cpp
 			  test-admin.cpp)
 

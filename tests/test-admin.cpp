@@ -23,6 +23,8 @@
 
 #include <klay/testbench.h>
 
+#include "test-util.h"
+
 #include <auth-passwd.h>
 #include <auth-passwd-admin.h>
 
@@ -46,12 +48,11 @@ TESTCASE(T00200_init)
 
 TESTCASE(T00201_set_policy_params)
 {
-	policy_h *policy = nullptr;
+	test::ScopedPolicy sp(test::create_policy_h(), auth_passwd_free_policy);
+	policy_h *policy = sp.get();
+	TEST_EXPECT(true, policy != nullptr);
 
-	int ret = auth_passwd_new_policy(&policy);
-	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
-
-	ret = auth_passwd_set_user(policy, getuid());
+	int ret = auth_passwd_set_user(policy, getuid());
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
 
 	ret = auth_passwd_set_max_attempts(policy, 10);
@@ -84,7 +85,6 @@ TESTCASE(T00201_set_policy_params)
 	ret = auth_passwd_set_policy(policy);
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
 
-	auth_passwd_free_policy(policy);
 }
 
 TESTCASE(T00202_disable_policy)
@@ -95,12 +95,11 @@ TESTCASE(T00202_disable_policy)
 
 TESTCASE(T00203_password_qaulity)
 {
-	policy_h *policy = nullptr;
+	test::ScopedPolicy sp(test::create_policy_h(), auth_passwd_free_policy);
+	policy_h *policy = sp.get();
+	TEST_EXPECT(true, policy != nullptr);
 
-	int ret = auth_passwd_new_policy(&policy);
-	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
-
-	ret = auth_passwd_set_user(policy, getuid());
+	int ret = auth_passwd_set_user(policy, getuid());
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
 
 	// ===============================
@@ -230,20 +229,16 @@ TESTCASE(T00203_password_qaulity)
 
 	ret = auth_passwd_set_passwd(AUTH_PWD_NORMAL, default_pass, "12@tizen");
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
-
-	// ===============================
-	auth_passwd_free_policy(policy);
 }
 
 
 TESTCASE(T00204_min_complex_char)
 {
-	policy_h *policy = nullptr;
+	test::ScopedPolicy sp(test::create_policy_h(), auth_passwd_free_policy);
+	policy_h *policy = sp.get();
+	TEST_EXPECT(true, policy != nullptr);
 
-	int ret = auth_passwd_new_policy(&policy);
-	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
-
-	ret = auth_passwd_set_user(policy, getuid());
+	int ret = auth_passwd_set_user(policy, getuid());
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
 
 	ret = auth_passwd_set_history_size(policy, 0);
@@ -408,22 +403,19 @@ TESTCASE(T00204_min_complex_char)
 
 	ret = auth_passwd_set_passwd(AUTH_PWD_NORMAL, default_pass, "aaaaa1234@");
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
-
-	auth_passwd_free_policy(policy);
 }
 
 TESTCASE(T00205_pattern)
 {
-	policy_h *policy = nullptr;
-
 	const char* pattern = "[0-9]+";
 	const char* allowed_pass = "Tizen123";
 	const char* not_allowed_pass = "Tizen";
 
-	int ret = auth_passwd_new_policy(&policy);
-	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
+	test::ScopedPolicy sp(test::create_policy_h(), auth_passwd_free_policy);
+	policy_h *policy = sp.get();
+	TEST_EXPECT(true, policy != nullptr);
 
-	ret = auth_passwd_set_user(policy, getuid());
+	int ret = auth_passwd_set_user(policy, getuid());
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
 
 	ret = auth_passwd_set_history_size(policy, 0);
@@ -457,6 +449,4 @@ TESTCASE(T00205_pattern)
 
 	ret = auth_passwd_set_policy(policy);
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
-
-	auth_passwd_free_policy(policy);
 }

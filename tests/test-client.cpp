@@ -23,6 +23,8 @@
 
 #include <klay/testbench.h>
 
+#include "test-util.h"
+
 #include <auth-passwd.h>
 #include <auth-passwd-admin.h> /* for init/deinit */
 
@@ -144,15 +146,15 @@ TESTCASE(T00114_set)
 
 TESTCASE(T00115_check_passwd_available)
 {
-	policy_h *policy = nullptr;
 	const char* not_usable_pass = "123456";
 	const char* usable_pass = "tizen";
 
 	// prepare test
-	int ret = auth_passwd_new_policy(&policy);
-	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
+	test::ScopedPolicy sp(test::create_policy_h(), auth_passwd_free_policy);
+	policy_h *policy = sp.get();
+	TEST_EXPECT(true, policy != nullptr);
 
-	ret = auth_passwd_set_user(policy, getuid());
+	int ret = auth_passwd_set_user(policy, getuid());
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
 
 	ret = auth_passwd_set_quality(policy, AUTH_PWD_QUALITY_ALPHABETIC);
@@ -175,18 +177,16 @@ TESTCASE(T00115_check_passwd_available)
 
 	ret = auth_passwd_set_policy(policy);
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
-
-	auth_passwd_free_policy(policy);
 }
 
 TESTCASE(T00116_remove_password_with_empty_policy)
 {
 	/* precondition : set empty policy */
-	policy_h *policy = nullptr;
-	int ret = auth_passwd_new_policy(&policy);
-	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
+	test::ScopedPolicy sp(test::create_policy_h(), auth_passwd_free_policy);
+	policy_h *policy = sp.get();
+	TEST_EXPECT(true, policy != nullptr);
 
-	ret = auth_passwd_set_user(policy, getuid());
+	int ret = auth_passwd_set_user(policy, getuid());
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
 
 	ret = auth_passwd_set_policy(policy);
@@ -200,7 +200,6 @@ TESTCASE(T00116_remove_password_with_empty_policy)
 	/* restore */
 	ret = auth_passwd_disable_policy(getuid());
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
-	auth_passwd_free_policy(policy);
 
 	sleep_for_retry_timeout();
 	ret = auth_passwd_set_passwd(AUTH_PWD_NORMAL, NULL, default_pass);
@@ -210,11 +209,11 @@ TESTCASE(T00116_remove_password_with_empty_policy)
 TESTCASE(T00117_remove_password_with_min_length_policy)
 {
 	/* precondition : set min-length policy */
-	policy_h *policy = nullptr;
-	int ret = auth_passwd_new_policy(&policy);
-	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
+	test::ScopedPolicy sp(test::create_policy_h(), auth_passwd_free_policy);
+	policy_h *policy = sp.get();
+	TEST_EXPECT(true, policy != nullptr);
 
-	ret = auth_passwd_set_user(policy, getuid());
+	int ret = auth_passwd_set_user(policy, getuid());
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
 
 	ret = auth_passwd_set_min_length(policy, 4);
@@ -231,7 +230,6 @@ TESTCASE(T00117_remove_password_with_min_length_policy)
 	/* restore */
 	ret = auth_passwd_disable_policy(getuid());
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
-	auth_passwd_free_policy(policy);
 
 	sleep_for_retry_timeout();
 	ret = auth_passwd_set_passwd(AUTH_PWD_NORMAL, NULL, default_pass);
@@ -241,11 +239,11 @@ TESTCASE(T00117_remove_password_with_min_length_policy)
 TESTCASE(T00118_remove_password_with_min_complex_char_policy)
 {
 	/* precondition : set min-complex-char policy */
-	policy_h *policy = nullptr;
-	int ret = auth_passwd_new_policy(&policy);
-	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
+	test::ScopedPolicy sp(test::create_policy_h(), auth_passwd_free_policy);
+	policy_h *policy = sp.get();
+	TEST_EXPECT(true, policy != nullptr);
 
-	ret = auth_passwd_set_user(policy, getuid());
+	int ret = auth_passwd_set_user(policy, getuid());
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
 
 	ret = auth_passwd_set_min_complex_char_num(policy, AUTH_PWD_COMPLEX_CHAR_GROUP_1);
@@ -262,7 +260,6 @@ TESTCASE(T00118_remove_password_with_min_complex_char_policy)
 	/* restore */
 	ret = auth_passwd_disable_policy(getuid());
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
-	auth_passwd_free_policy(policy);
 
 	sleep_for_retry_timeout();
 	ret = auth_passwd_set_passwd(AUTH_PWD_NORMAL, NULL, default_pass);
@@ -272,11 +269,11 @@ TESTCASE(T00118_remove_password_with_min_complex_char_policy)
 TESTCASE(T00119_check_expire_policy)
 {
 	/* precondition : set validity(expire time) policy */
-	policy_h *policy = nullptr;
-	int ret = auth_passwd_new_policy(&policy);
-	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
+	test::ScopedPolicy sp(test::create_policy_h(), auth_passwd_free_policy);
+	policy_h *policy = sp.get();
+	TEST_EXPECT(true, policy != nullptr);
 
-	ret = auth_passwd_set_user(policy, getuid());
+	int ret = auth_passwd_set_user(policy, getuid());
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
 
 	ret = auth_passwd_set_validity(policy, 1);
@@ -307,6 +304,4 @@ TESTCASE(T00119_check_expire_policy)
 
 	ret = auth_passwd_disable_policy(getuid());
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
-
-	auth_passwd_free_policy(policy);
 }
