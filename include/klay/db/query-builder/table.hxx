@@ -150,10 +150,15 @@ Table<Columns...> Table<Columns...>::selectInternal(ColumnTuple&& ct, bool disti
 	if (distinct)
 		ss << "DISTINCT ";
 
-	for (const auto& c : columnNames)
-		ss << c << " ";
+	int i = 0;
+	for (const auto& c : columnNames) {
+		ss << c;
 
-	ss << "FROM " << this->name;
+		if (i++ < columnNames.size() - 1)
+			ss << ", ";
+	}
+
+	ss << " FROM " << this->name;
 
 	cache.emplace_back(ss.str());
 
@@ -184,10 +189,15 @@ Table<Columns...> Table<Columns...>::update(ColumnTypes&&... cts)
 
 	std::stringstream ss;
 	ss << "UPDATE " << this->name << " ";
-	ss << "SET";
+	ss << "SET ";
 
-	for (const auto& c : columnNames)
-		ss << " " << c << " = ?";
+	int i = 0;
+	for (const auto& c : columnNames) {
+		ss << c << " = ?";
+
+		if (i++ < columnNames.size() - 1)
+			ss << ", ";
+	}
 
 	cache.emplace_back(ss.str());
 

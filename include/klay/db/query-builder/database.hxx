@@ -136,16 +136,21 @@ Database<Tables...> Database<Tables...>::select(ColumnTypes&&... cts)
 	std::stringstream ss;
 	ss << "SELECT ";
 
-	for(const auto& c : columnNames)
-		ss << c << " ";
-
-	ss << "FROM ";
-
 	int i = 0;
-	for(const auto& t : tableNames) {
+	for (const auto& c : columnNames) {
+		ss << c;
+
+		if (i++ < columnNames.size() - 1)
+			ss << ", ";
+	}
+
+	ss << " FROM ";
+
+	i = 0;
+	for (const auto& t : tableNames) {
 		ss << t;
 
-		if(i++ < tableNames.size() - 1)
+		if (i++ < tableNames.size() - 1)
 			ss << ", ";
 	}
 

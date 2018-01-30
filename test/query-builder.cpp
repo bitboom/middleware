@@ -70,8 +70,8 @@ TESTCASE(SELECT)
 	std::string select1 = admin.select(&Admin::id, &Admin::pkg, &Admin::uid, &Admin::key);
 	std::string select2 = admin.select(&Admin::id, &Admin::uid, &Admin::key);
 
-	TEST_EXPECT(true, select1 == "SELECT id pkg uid key FROM admin");
-	TEST_EXPECT(true, select2 == "SELECT id uid key FROM admin");
+	TEST_EXPECT(true, select1 == "SELECT id, pkg, uid, key FROM admin");
+	TEST_EXPECT(true, select2 == "SELECT id, uid, key FROM admin");
 }
 
 TESTCASE(SELECT_ALL)
@@ -91,7 +91,7 @@ TESTCASE(SELECT_WHERE)
 	std::string select4 = admin.selectAll().where(expr(&Admin::uid) > 3 ||
 												  expr(&Admin::pkg) == "dpm");
 
-	TEST_EXPECT(true, select1 == "SELECT uid key FROM admin WHERE id > ?");
+	TEST_EXPECT(true, select1 == "SELECT uid, key FROM admin WHERE id > ?");
 	TEST_EXPECT(true, select2 == "SELECT * FROM admin WHERE uid > ?");
 	TEST_EXPECT(true, select3 == "SELECT * FROM admin WHERE uid > ? AND pkg = ?");
 	TEST_EXPECT(true, select4 == "SELECT * FROM admin WHERE uid > ? OR pkg = ?");
@@ -102,7 +102,7 @@ TESTCASE(SELECT_DISTINCT)
 	std::string select = admin.select(distinct(&Admin::uid, &Admin::key))
 							   .where(expr(&Admin::id) > 3);
 
-	TEST_EXPECT(true, select == "SELECT DISTINCT uid key FROM admin WHERE id > ?");
+	TEST_EXPECT(true, select == "SELECT DISTINCT uid, key FROM admin WHERE id > ?");
 }
 
 TESTCASE(UPDATE)
@@ -114,9 +114,9 @@ TESTCASE(UPDATE)
 	std::string update3 = admin.update(&Admin::key, &Admin::pkg)
 							   .where(expr(&Admin::uid) == 0 && expr(&Admin::id) == 1);
 
-	TEST_EXPECT(true, update1 == "UPDATE admin SET id = ? pkg = ? uid = ? key = ?");
+	TEST_EXPECT(true, update1 == "UPDATE admin SET id = ?, pkg = ?, uid = ?, key = ?");
 	TEST_EXPECT(true, update2 == "UPDATE admin SET key = ? WHERE uid = ? AND id = ?");
-	TEST_EXPECT(true, update3 == "UPDATE admin SET key = ? pkg = ? WHERE uid = ? AND id = ?");
+	TEST_EXPECT(true, update3 == "UPDATE admin SET key = ?, pkg = ? WHERE uid = ? AND id = ?");
 }
 
 TESTCASE(DELETE)
@@ -161,9 +161,9 @@ TESTCASE(MULTI_SELECT)
 										 &ManagedPolicy::id, &ManagedPolicy::value)
 								 .where(expr(&Admin::uid) > 0 && expr(&ManagedPolicy::id) == 3);
 
-	TEST_EXPECT(true, multiSelect1 == "SELECT admin.uid admin.key managed_policy.id "
+	TEST_EXPECT(true, multiSelect1 == "SELECT admin.uid, admin.key, managed_policy.id, "
 									  "managed_policy.value FROM admin, managed_policy");
-	TEST_EXPECT(true, multiSelect2 == "SELECT admin.uid admin.key managed_policy.id "
+	TEST_EXPECT(true, multiSelect2 == "SELECT admin.uid, admin.key, managed_policy.id, "
 									  "managed_policy.value FROM admin, managed_policy "
 									  "WHERE admin.uid > ? AND managed_policy.id = ?");
 }
@@ -181,9 +181,9 @@ TESTCASE(JOIN)
 						  .on(expr(&ManagedPolicy::aid) == expr(&Admin::id))
 						  .where(expr(&ManagedPolicy::pid) == 99);
 
-	TEST_EXPECT(true, join1 == "SELECT admin.uid admin.key FROM admin "
+	TEST_EXPECT(true, join1 == "SELECT admin.uid, admin.key FROM admin "
 							   "LEFT OUTER JOIN policy_definition");
-	TEST_EXPECT(true, join2 == "SELECT admin.uid admin.key FROM admin "
+	TEST_EXPECT(true, join2 == "SELECT admin.uid, admin.key FROM admin "
 							   "CROSS JOIN managed_policy");
 	TEST_EXPECT(true, join3 == "SELECT managed_policy.value FROM managed_policy "
 							   "INNER JOIN policy_definition "
