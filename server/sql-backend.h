@@ -35,7 +35,7 @@ public:
 
 	bool strictize(int id, DataSetInt& value, uid_t domain);
 
-	void update(int id, const std::string& admin, uid_t domain, const DataSetInt& value);
+	void update(int id, const std::string& name, uid_t domain, const DataSetInt& value);
 
 	int enroll(const std::string& name, uid_t domain);
 	int unenroll(const std::string& name, uid_t domain);

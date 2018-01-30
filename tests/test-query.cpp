@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2018 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,13 +14,11 @@
  *  limitations under the License
  */
 
-#include <klay/exception.h>
-#include <klay/db/query-builder.h>
-
-#include "pil/logger.h"
-
-#include "sql-backend.h"
 #include "db-schema.h"
+
+#include <klay/testbench.h>
+
+#include <klay/db/query-builder.h>
 
 using namespace query_builder;
 using namespace schema;
@@ -50,44 +48,21 @@ auto dpm = make_database("dpm", admin, managedPolicy, policyDefinition);
 
 } // anonymous namespace
 
-int SQLBackend::open(const std::string& path)
+TESTCASE(DEFINE)
 {
-	try {
-		database.reset(new database::Connection(path, database::Connection::ReadWrite |
-													  database::Connection::Create));
-		return 0;
-	} catch (runtime::Exception& e) {
-		ERROR(DPM, e.what());
-	}
-
-	return -1;
-}
-
-void SQLBackend::close()
-{
-	database.reset();
-}
-
-int SQLBackend::define(const std::string& name, DataSetInt& value)
-{
-	int id = -1;
+	std::string name;
 	std::string query = policyDefinition.select(&PolicyDefinition::id,
 												&PolicyDefinition::ivalue)
 										.where(expr(&PolicyDefinition::name) == name);
-	database::Statement stmt(*database, query);
 
-	stmt.bind(1, name);
-	if (stmt.step()) {
-		id = stmt.getColumn(0);
-		value = stmt.getColumn(1);
-	}
+	std::string expect = "SELECT id, ivalue FROM policy_definition WHERE name = ?";
 
-	return id;
+	TEST_EXPECT(expect, query);
 }
 
-bool SQLBackend::strictize(int id, DataSetInt& value, uid_t domain)
+TESTCASE(STRICTIZE)
 {
-	bool updated = false;
+	int id = 0;
 	std::string query = dpm.select(&ManagedPolicy::value)
 						   .join<PolicyDefinition>()
 						   .on(expr(&ManagedPolicy::pid) == expr(&PolicyDefinition::id))
@@ -95,97 +70,71 @@ bool SQLBackend::strictize(int id, DataSetInt& value, uid_t domain)
 						   .on(expr(&ManagedPolicy::aid) == expr(&Admin::id))
 						   .where(expr(&ManagedPolicy::pid) == id);
 
-	if (domain) {
-		query += "AND admin.uid = ? ";
-	}
+	std::string expect = "SELECT managed_policy.value FROM managed_policy " \
+						 "INNER JOIN policy_definition ON managed_policy.pid = policy_definition.id " \
+						 "INNER JOIN admin ON managed_policy.aid = admin.id " \
+						 "WHERE managed_policy.pid = ?";
 
-	database::Statement stmt(*database, query);
-	stmt.bind(1, id);
-	if (domain) {
-		stmt.bind(2, static_cast<int>(domain));
-	}
-
-	while (stmt.step()) {
-		updated = value.strictize(DataSetInt(stmt.getColumn(0)));
-	}
-
-	return updated;
+	TEST_EXPECT(expect, query);
 }
 
-void SQLBackend::update(int id, const std::string& name, uid_t domain, const DataSetInt& value)
+TESTCASE(UPDATE)
 {
-	int uid = static_cast<int>(domain);
+	std::string name;
+	int uid = 0;
 	std::string selectQuery = admin.select(&Admin::id).where(expr(&Admin::pkg) == name &&
 															 expr(&Admin::uid) == uid);
-	database::Statement stmt0(*database, selectQuery);
-	stmt0.bind(1, name);
-	stmt0.bind(2, uid);
-	if (!stmt0.step()) {
-		throw runtime::Exception("Unknown device admin client: " + name);
-	}
 
-	int aid = stmt0.getColumn(0);
+	std::string selectExpect = "SELECT id FROM admin WHERE pkg = ? AND uid = ?";
 
+	TEST_EXPECT(selectExpect, selectQuery);
+
+	int id = 0, aid = 0;
 	std::string updateQuery = managedPolicy.update(&ManagedPolicy::value)
 										   .where(expr(&ManagedPolicy::pid) == id &&
 												  expr(&ManagedPolicy::aid) == aid);
-	database::Statement stmt(*database, updateQuery);
-	stmt.bind(1, value);
-	stmt.bind(2, id);
-	stmt.bind(3, aid);
-	if (!stmt.exec()) {
-		throw runtime::Exception("Failed to update policy");
-	}
+
+	std::string updateExpect = "UPDATE managed_policy SET value = ? WHERE pid = ? AND aid = ?";
+
+	TEST_EXPECT(updateExpect, updateQuery);
 }
 
-int SQLBackend::enroll(const std::string& name, uid_t domain)
+TESTCASE(ENROLL)
 {
-	int uid = static_cast<int>(domain);
+	std::string name;
+	int uid = 0;
 	std::string selectQuery = admin.selectAll().where(expr(&Admin::pkg) == name &&
 													  expr(&Admin::uid) == uid);
-	database::Statement stmt0(*database, selectQuery);
-	stmt0.bind(1, name);
-	stmt0.bind(2, uid);
-	if (stmt0.step())
-		return -1;
 
-	std::string key = "Not supported";
+	std::string selectExpect = "SELECT * FROM admin WHERE pkg = ? AND uid = ?";
+
+	TEST_EXPECT(selectExpect, selectQuery);
 
 	std::string insertQuery = admin.insert(&Admin::pkg, &Admin::uid,
 										   &Admin::key, &Admin::removable);
-	database::Statement stmt(*database, insertQuery);
-	stmt.bind(1, name);
-	stmt.bind(2, uid);
-	stmt.bind(3, key);
-	stmt.bind(4, true);
-	if (!stmt.exec())
-		return -1;
 
-	return 0;
+	std::string insertExpect = "INSERT INTO admin (pkg, uid, key, removable) VALUES (?, ?, ?, ?)";
+
+	TEST_EXPECT(insertExpect, insertQuery);
 }
 
-int SQLBackend::unenroll(const std::string& name, uid_t domain)
+TESTCASE(UNENROLL)
 {
-	int uid = static_cast<int>(domain);
+	std::string name;
+	int uid = 0;
 	std::string query = admin.remove().where(expr(&Admin::pkg) == name &&
 											 expr(&Admin::uid) == uid);
-	database::Statement stmt(*database, query);
-	stmt.bind(1, name);
-	stmt.bind(2, uid);
-	if (!stmt.exec())
-		return -1;
 
-	return 0;
+	std::string expect = "DELETE FROM admin WHERE pkg = ? AND uid = ?";
+
+	TEST_EXPECT(expect, query);
 }
 
-std::vector<uid_t> SQLBackend::fetchDomains()
+TESTCASE(FETCH_DOMAIN)
 {
-	std::vector<uid_t> managedDomains;
 	std::string query = admin.select(distinct(&Admin::uid));
-	database::Statement stmt(*database, query);
-	while (stmt.step()) {
-		managedDomains.push_back(stmt.getColumn(0).getInt());
-	}
 
-	return managedDomains;
+	std::string expect = "SELECT DISTINCT uid FROM admin";
+
+	TEST_EXPECT(expect, query);
 }
