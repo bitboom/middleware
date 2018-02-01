@@ -18,6 +18,9 @@
 #include <iostream>
 
 #include <klay/testbench.h>
+#include <klay/colorize.h>
+
+using namespace console;
 
 namespace testbench {
 
@@ -41,10 +44,12 @@ void TestResult::testsStarted()
 
 void TestResult::addFailure(const std::string& name, const Source& source)
 {
-	std::cout << "Testcase \"" << name << "\""
+	std::cout << Colorize(RED)
+			  << "\tTestcase \"" << name << "\""
 			  << " failed: \"" << source.message << "\""
 			  << " line " << source.lineNumber
-			  << " in " << source.fileName << std::endl;
+			  << " in " << source.fileName << std::endl
+			  << Colorize(DEFAULT);
 
 	__failureCount++;
 }
@@ -52,9 +57,13 @@ void TestResult::addFailure(const std::string& name, const Source& source)
 void TestResult::testsEnded()
 {
 	if (__failureCount > 0) {
-		std::cout << "\nThere were " << __failureCount << " failures" << std::endl;
+		std::cout << Colorize(RED)
+				  << "\nThere were " << __failureCount << " failures" << std::endl
+				  << Colorize(DEFAULT);
 	} else {
-		std::cout << "\nThere were no test failures" << std::endl;
+		std::cout << Colorize(GREEN)
+				  << "\nThere were no test failures" << std::endl
+				  << Colorize(DEFAULT);
 	}
 }
 
@@ -86,14 +95,19 @@ void TestSuite::run()
 
 		std::cout << "Entering testcase: "
 				  << testcase.testName << std::endl;
+
+		TIME_MEASURE_START
 		try {
 			(this->*testcase.function)();
 		} catch (...) {
-			TEST_FAIL("Caught exception from " +
+			TEST_FAIL("\tCaught exception from " +
 					  testcase.testName + " testcase");
 		}
-		std::cout << "Leaving testcase: "
-				  << testcase.testName << std::endl;
+		TIME_MEASURE_END
+
+		std::cout << "Leaving testcase: " << testcase.testName
+				  << " (Elapsed time: " << time
+				  << "ms)" << std::endl;
 
 		iter++;
 	}

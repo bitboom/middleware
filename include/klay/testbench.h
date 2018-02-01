@@ -23,8 +23,16 @@
 #include <vector>
 #include <memory>
 #include <sstream>
+#include <chrono>
 
 #include <klay/klay.h>
+
+using namespace std::chrono;
+
+#define TIME_MEASURE_START auto start = system_clock::now();
+#define TIME_MEASURE_END auto end = system_clock::now(); \
+						 auto ms = duration_cast<milliseconds>(end - start); \
+						 auto time = ms.count();
 
 namespace testbench {
 
@@ -151,7 +159,6 @@ void TestName##TestCase::standalone()
 				<< " but it was " << _act;              \
 		testbench::Testbench::report(__testName,        \
 		testbench::Source(__FILENAME__, __LINE__, _stream.str())); \
-		return;                                         \
 	}                                                   \
 }
 
