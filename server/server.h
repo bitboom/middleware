@@ -62,6 +62,8 @@ private:
 	std::vector<AbstractPolicyProvider *> policyList;
 	std::unique_ptr<PolicyLoader> policyLoader;
 	std::thread policyApplyThread;
+
+	runtime::File bootCompletedFile;
 };
 
 #endif //__DEVICE_POLICY_MANAGER_H__

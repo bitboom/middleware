@@ -40,6 +40,8 @@ namespace {
 const std::string PolicyStoragePath = "/opt/dbspace/.dpm.db";
 const std::string PolicyManagerSocket = "/tmp/.device-policy-manager.sock";
 const std::string PolicyPluginBase = PLUGIN_INSTALL_DIR;
+const std::string BootCompleted = "/tmp/.dpm-bootCompleted";
+const std::string BootString = "bootCompleted";
 
 } // namespace
 
@@ -56,12 +58,24 @@ DevicePolicyManager::DevicePolicyManager() :
 
 	expose(this, "", (int)(DevicePolicyManager::enroll)(std::string, uid_t));
 	expose(this, "", (int)(DevicePolicyManager::disenroll)(std::string, uid_t));
+
+	bootCompletedFile = runtime::File(BootCompleted);
+	bootCompletedFile.create(0644);
+	bootCompletedFile.close();
 }
 
 DevicePolicyManager::~DevicePolicyManager()
 {
 	if (policyApplyThread.joinable())
 		policyApplyThread.join();
+
+	try {
+		if (bootCompletedFile.exists()) {
+			bootCompletedFile.remove();
+		}
+	} catch (std::exception &e) {
+		ERROR(DPM, e.what());
+	}
 }
 
 void DevicePolicyManager::loadPolicyPlugins()
@@ -110,7 +124,18 @@ void DevicePolicyManager::initPolicyStorage()
 
 void DevicePolicyManager::applyPolicies()
 {
-	policyApplyThread = std::thread(PolicyStorage::notify);
+	policyApplyThread = std::thread(
+		[this]() {
+			PolicyStorage::notify();
+
+			if (bootCompletedFile.exists()) {
+				bootCompletedFile.open(O_WRONLY);
+				bootCompletedFile.lock();
+				bootCompletedFile.write(BootString.c_str(), BootString.length());
+				bootCompletedFile.unlock();
+				bootCompletedFile.close();
+			}
+		});
 }
 
 bool DevicePolicyManager::getMaintenanceMode()
