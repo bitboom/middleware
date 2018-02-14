@@ -68,9 +68,6 @@ int DevicePolicyClient::subscribeSignal(const std::string& name,
 										const SignalHandler& handler,
 										void* data) noexcept
 {
-	if (!maintenanceMode)
-		return 0;
-
 	int ret = -1;
 	try {
 		mainloop->dispatch([&]() {
@@ -93,9 +90,6 @@ int DevicePolicyClient::subscribeSignal(const std::string& name,
 
 int DevicePolicyClient::unsubscribeSignal(int id) noexcept
 {
-	if (!maintenanceMode)
-		return 0;
-
 	try {
 		mainloop->dispatch([&]() {
 			dbus::signal::Receiver receiver(SIGNAL_OBJECT_PATH, SIGNAL_EVENT_INTERFACE);
