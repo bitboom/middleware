@@ -183,10 +183,13 @@ std::vector<pid_t> Cgroup::getProcessList(const std::string& subsystem, const st
 	std::ifstream ifs("/sys/fs/cgroup/" + subsystem + "/" + path +
 						"/tasks");
 
+	pid_t pid;
+
+	ifs >> pid;
+
 	while (ifs.good()) {
-		pid_t pid;
-		ifs >> pid;
 		ret.push_back(pid);
+		ifs >> pid;
 	}
 
 	return ret;
