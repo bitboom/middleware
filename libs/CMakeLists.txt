@@ -44,7 +44,9 @@ SET(PAPIS			pil/app-bundle.h
 					pil/observer.h
 )
 
-SET(CAPIS			device-policy-manager.h)
+SET(CAPIS			device-policy-manager.h
+					administration.h
+)
 
 SET(DEPENDENCY		klay
 					glib-2.0

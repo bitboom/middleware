@@ -183,3 +183,37 @@ EXPORT_API int dpm_remove_signal_cb(device_policy_manager_h handle, int id)
 	DevicePolicyClient& context = GetDevicePolicyClient(handle);
 	return context.unsubscribeSignal(id);
 }
+
+EXPORT_API int dpm_admin_register_client(device_policy_manager_h handle, const char* name, uid_t uid)
+{
+	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(name, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(uid, DPM_ERROR_INVALID_PARAMETER);
+
+	DevicePolicyClient &client = GetDevicePolicyClient(handle);
+
+	try {
+		Status<int> status { -1 };
+		status = client.methodCallForce<int>("DevicePolicyManager::enroll", name, uid);
+		return status.get();
+	} catch (...) {
+		return -1;
+	}
+}
+
+EXPORT_API int dpm_admin_deregister_client(device_policy_manager_h handle, const char* name, uid_t uid)
+{
+	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(name, DPM_ERROR_INVALID_PARAMETER);
+	RET_ON_FAILURE(uid, DPM_ERROR_INVALID_PARAMETER);
+
+	DevicePolicyClient &client = GetDevicePolicyClient(handle);
+
+	try {
+		Status<int> status { -1 };
+		status = client.methodCallForce<int>("DevicePolicyManager::disenroll", name, uid);
+		return status.get();
+	} catch (...) {
+		return -1;
+	}
+}

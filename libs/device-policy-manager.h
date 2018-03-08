@@ -210,6 +210,58 @@ int dpm_remove_signal_cb(device_policy_manager_h handle, int id);
  * @}
  */
 
+/**
+ * @addtogroup  CAPI_DPM_ADMINISTRATION_POLICY_MODULE
+ * @{
+ */
+
+/**
+ * @brief       Registers device policy admin client.
+ * @details     This API is used to register the device policy admin client to
+ *              the device policy manager. The device policy admin client must be
+ *              registered to use the device administration APIs.
+ * @since_tizen 3.0
+ * @param[in]   handle The device policy manager handle
+ * @param[in]   name The name of the device policy admin package
+ * @param[in]   uid The uid of the device policy admin package
+ * @return      #DPM_ERROR_NONE on success, otherwise a negative value
+ * @retval      #DPM_ERROR_NONE Successful
+ * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid package name
+ * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
+ *              the privilege to call this API
+ * @pre         handle must be created by dpm_context_create()
+ * @see         dpm_manager_create()
+ * @see         dpm_manager_destroy()
+ * @see         dpm_admin_deregister_client()
+ */
+int dpm_admin_register_client(device_policy_manager_h handle, const char* name, uid_t uid);
+
+/**
+ * @brief       Deregisters the device policy admin client.
+ * @details     This API is used to deregister the Device Policy Client from
+ *              the device policy manager.
+ * @since_tizen 3.0
+ * @param[in]   handle The device policy manager handle
+ * @param[in]   name The name of the device policy admin package
+ * @param[in]   uid The uid of the device policy admin package
+ * @return      #DPM_ERROR_NONE on success, otherwise a negative value
+ * @retval      #DPM_ERROR_NONE Successful
+ * @retval      #DPM_ERROR_TIMEOUT Time out
+ * @retval      #DPM_ERROR_INVALID_PARAMETER Invalid package name
+ * @retval      #DPM_ERROR_PERMISSION_DENIED The application does not have
+ *              the privilege to call this API
+ * @pre         handle must be created by dpm_context_create()
+ * @see         dpm_manager_create()
+ * @see         dpm_manager_destroy()
+ * @see         dpm_admin_register_client()
+ */
+int dpm_admin_deregister_client(device_policy_manager_h handle, const char* name, uid_t uid);
+/**
+ * @}
+ */
+
+
 #ifdef __cplusplus
 }
 #endif

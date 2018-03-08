@@ -82,7 +82,6 @@ int main(int argc, char *argv[])
 		ScopedGMainLoop gmainloop;
 		DevicePolicyManager manager;
 
-		manager.loadManagedClients();
 		manager.loadPolicyPlugins();
 		manager.applyPolicies();
 
