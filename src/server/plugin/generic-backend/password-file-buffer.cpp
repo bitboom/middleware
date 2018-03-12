@@ -22,7 +22,7 @@
  * @brief       Implementation of PasswordFileBuffer, used for serialization in PasswordFile class
  */
 
-#include <password-file-buffer.h>
+#include <generic-backend/password-file-buffer.h>
 
 #include <fstream>
 #include <iterator>

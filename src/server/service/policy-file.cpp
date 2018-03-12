@@ -41,7 +41,7 @@
 
 #include <error-description.h>
 #include <password-exception.h>
-#include <password-file-buffer.h>
+#include <generic-backend/password-file-buffer.h>
 
 namespace {
 const std::string POLICY_FILE = "/policy";

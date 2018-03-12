@@ -16,6 +16,7 @@ INCLUDE_DIRECTORIES(
     ${SERVER_PATH}/service/include
     ${DPL_PATH}/core/include
     ${DPL_PATH}/log/include
+    ${PLUGIN_PATH}/
     )
 
 SET(SERVER_SOURCES
@@ -25,11 +26,13 @@ SET(SERVER_SOURCES
     main/socket-manager.cpp
     main/user-check.cpp
     service/password.cpp
-    service/password-file-buffer.cpp
-    service/password-file.cpp
     service/password-manager.cpp
     service/policy-file.cpp
     service/policy-manager.cpp
+    plugin/generic-backend/password-file-buffer.cpp
+
+    # TODO: Replace with dynamic load. (Temporary included for TDD)
+    plugin/sw-backend/password-file.cpp
     )
 
 SET_SOURCE_FILES_PROPERTIES(${SERVER_SOURCES}
@@ -59,3 +62,5 @@ INSTALL(TARGETS ${TARGET_SERVER}
         WORLD_READ
         WORLD_EXECUTE
     )
+
+ADD_SUBDIRECTORY(plugin)

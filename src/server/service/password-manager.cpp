@@ -39,6 +39,9 @@
 
 #include <policy.h>
 
+// TODO(sangwan.kwon): Replace with dynamic load.
+#include <sw-backend/password-file.h>
+
 namespace {
 void calculateExpiredTime(unsigned int receivedDays, time_t &validSecs)
 {
@@ -52,12 +55,20 @@ void calculateExpiredTime(unsigned int receivedDays, time_t &validSecs)
 	validSecs = (curTime + (receivedDays * 86400));
 	return;
 }
+
+AuthPasswd::IPasswordFile* CreatePasswordFile(unsigned int user)
+{
+	return new AuthPasswd::SWBackend::PasswordFile(user);
+}
+
 } //namespace
 
 namespace AuthPasswd {
 void PasswordManager::addPassword(unsigned int user)
 {
-	m_pwdFile.insert(PasswordFileMap::value_type(user, PasswordFile(user)));
+	PasswordFileFactory factory = &CreatePasswordFile;
+	std::shared_ptr<IPasswordFile> passwordFile((*factory)(user));
+	m_pwdFile.insert(PasswordFileMap::value_type(user, passwordFile));
 }
 
 void PasswordManager::removePassword(unsigned int user)
@@ -87,40 +98,40 @@ int PasswordManager::checkPassword(unsigned int passwdType,
 	existPassword(currentUser);
 	PasswordFileMap::iterator itPwd = m_pwdFile.find(currentUser);
 
-	if (itPwd->second.isIgnorePeriod()) {
+	if (itPwd->second->isIgnorePeriod()) {
 		LogError("Retry timeout occurred.");
 		return AUTH_PASSWD_API_ERROR_PASSWORD_RETRY_TIMER;
 	}
 
-	if (!itPwd->second.isPasswordActive(passwdType) && !challenge.empty()) {
+	if (!itPwd->second->isPasswordActive(passwdType) && !challenge.empty()) {
 		LogError("Password not active.");
 		return AUTH_PASSWD_API_ERROR_NO_PASSWORD;
 	}
 
 	switch (passwdType) {
 	case AUTH_PWD_NORMAL:
-		itPwd->second.incrementAttempt();
-		itPwd->second.writeAttemptToFile();
-		currentAttempt = itPwd->second.getAttempt();
-		maxAttempt = itPwd->second.getMaxAttempt();
-		expirationTime = itPwd->second.getExpireTimeLeft();
+		itPwd->second->incrementAttempt();
+		itPwd->second->writeAttemptToFile();
+		currentAttempt = itPwd->second->getAttempt();
+		maxAttempt = itPwd->second->getMaxAttempt();
+		expirationTime = itPwd->second->getExpireTimeLeft();
 
-		if (itPwd->second.checkIfAttemptsExceeded()) {
+		if (itPwd->second->checkIfAttemptsExceeded()) {
 			LogError("Too many tries.");
 			return AUTH_PASSWD_API_ERROR_PASSWORD_MAX_ATTEMPTS_EXCEEDED;
 		}
 
-		if (!itPwd->second.checkPassword(AUTH_PWD_NORMAL, challenge)) {
+		if (!itPwd->second->checkPassword(AUTH_PWD_NORMAL, challenge)) {
 			LogError("Wrong password.");
 			return AUTH_PASSWD_API_ERROR_PASSWORD_MISMATCH;
 		}
 
 		// Password maches and attempt number is fine - time to reset counter.
-		itPwd->second.resetAttempt();
-		itPwd->second.writeAttemptToFile();
+		itPwd->second->resetAttempt();
+		itPwd->second->writeAttemptToFile();
 
 		// Password is too old. You must change it before login.
-		if (itPwd->second.checkExpiration()) {
+		if (itPwd->second->checkExpiration()) {
 			LogError("Password expired.");
 			return AUTH_PASSWD_API_ERROR_PASSWORD_EXPIRED;
 		}
@@ -142,16 +153,16 @@ int PasswordManager::isPwdValid(unsigned int passwdType, unsigned int currentUse
 	existPassword(currentUser);
 	PasswordFileMap::iterator itPwd = m_pwdFile.find(currentUser);
 
-	if (!itPwd->second.isPasswordActive(passwdType)) {
+	if (!itPwd->second->isPasswordActive(passwdType)) {
 		LogError("Current password not active.");
 		return AUTH_PASSWD_API_ERROR_NO_PASSWORD;
 	}
 
 	switch (passwdType) {
 	case AUTH_PWD_NORMAL:
-		currentAttempt = itPwd->second.getAttempt();
-		maxAttempt = itPwd->second.getMaxAttempt();
-		expirationTime = itPwd->second.getExpireTimeLeft();
+		currentAttempt = itPwd->second->getAttempt();
+		maxAttempt = itPwd->second->getMaxAttempt();
+		expirationTime = itPwd->second->getExpireTimeLeft();
 		break;
 
 	default:
@@ -173,8 +184,8 @@ int PasswordManager::isPwdReused(unsigned int passwdType, const std::string &pas
 	case AUTH_PWD_NORMAL:
 
 		// check history, however only if history is active and password is not empty
-		if (itPwd->second.isHistoryActive() && !passwd.empty())
-			isReused = itPwd->second.isPasswordReused(passwd);
+		if (itPwd->second->isHistoryActive() && !passwd.empty())
+			isReused = itPwd->second->isPasswordReused(passwd);
 
 		break;
 
@@ -198,14 +209,14 @@ int PasswordManager::setPassword(unsigned int passwdType,
 	existPassword(currentUser);
 	PasswordFileMap::iterator itPwd = m_pwdFile.find(currentUser);
 
-	if (itPwd->second.isIgnorePeriod()) {
+	if (itPwd->second->isIgnorePeriod()) {
 		LogError("Retry timeout occured.");
 		return AUTH_PASSWD_API_ERROR_PASSWORD_RETRY_TIMER;
 	}
 
 	// check delivered currentPassword
 	// when m_passwordActive flag is false, current password should be empty
-	if (!currentPassword.empty() && !itPwd->second.isPasswordActive(passwdType)) {
+	if (!currentPassword.empty() && !itPwd->second->isPasswordActive(passwdType)) {
 		LogError("Password not active.");
 		return AUTH_PASSWD_API_ERROR_NO_PASSWORD;
 	}
@@ -213,39 +224,39 @@ int PasswordManager::setPassword(unsigned int passwdType,
 	switch (passwdType) {
 	case AUTH_PWD_NORMAL:
 		//increment attempt count before checking it against max attempt count
-		itPwd->second.incrementAttempt();
-		itPwd->second.writeAttemptToFile();
+		itPwd->second->incrementAttempt();
+		itPwd->second->writeAttemptToFile();
 
-		if (itPwd->second.checkIfAttemptsExceeded()) {
+		if (itPwd->second->checkIfAttemptsExceeded()) {
 			LogError("Too many tries.");
 			return AUTH_PASSWD_API_ERROR_PASSWORD_MAX_ATTEMPTS_EXCEEDED;
 		}
 
-		if (!itPwd->second.checkPassword(AUTH_PWD_NORMAL, currentPassword)) {
+		if (!itPwd->second->checkPassword(AUTH_PWD_NORMAL, currentPassword)) {
 			LogError("Wrong password.");
 			return AUTH_PASSWD_API_ERROR_PASSWORD_MISMATCH;
 		}
 
 		//here we are sure that user knows current password - we can reset attempt counter
-		itPwd->second.resetAttempt();
-		itPwd->second.writeAttemptToFile();
+		itPwd->second->resetAttempt();
+		itPwd->second->writeAttemptToFile();
 
 		// check history, however only if history is active and new password is not empty
-		if (itPwd->second.isHistoryActive() && !newPassword.empty()) {
-			if (itPwd->second.isPasswordReused(newPassword)) {
+		if (itPwd->second->isHistoryActive() && !newPassword.empty()) {
+			if (itPwd->second->isPasswordReused(newPassword)) {
 				LogError("Password reused.");
 				return AUTH_PASSWD_API_ERROR_PASSWORD_REUSED;
 			}
 		}
 
 		if (!newPassword.empty())
-			receivedDays = itPwd->second.getExpireTime();
+			receivedDays = itPwd->second->getExpireTime();
 
 		calculateExpiredTime(receivedDays, valid_secs);
 		//setting password
-		itPwd->second.setPassword(AUTH_PWD_NORMAL, newPassword);
-		itPwd->second.setExpireTimeLeft(valid_secs);
-		itPwd->second.writeMemoryToFile();
+		itPwd->second->setPassword(AUTH_PWD_NORMAL, newPassword);
+		itPwd->second->setExpireTimeLeft(valid_secs);
+		itPwd->second->writeMemoryToFile();
 		break;
 
 	default:
@@ -268,14 +279,14 @@ int PasswordManager::resetPassword(unsigned int passwdType,
 	switch (passwdType) {
 	case AUTH_PWD_NORMAL:
 		if (!newPassword.empty())
-			receivedDays = itPwd->second.getExpireTime();
+			receivedDays = itPwd->second->getExpireTime();
 
 		calculateExpiredTime(receivedDays, valid_secs);
-		itPwd->second.resetAttempt();
-		itPwd->second.writeAttemptToFile();
-		itPwd->second.setPassword(AUTH_PWD_NORMAL, newPassword);
-		itPwd->second.setExpireTimeLeft(valid_secs);
-		itPwd->second.writeMemoryToFile();
+		itPwd->second->resetAttempt();
+		itPwd->second->writeAttemptToFile();
+		itPwd->second->setPassword(AUTH_PWD_NORMAL, newPassword);
+		itPwd->second->setExpireTimeLeft(valid_secs);
+		itPwd->second->writeMemoryToFile();
 		break;
 
 	default:
@@ -292,12 +303,12 @@ void PasswordManager::setPasswordMaxAttempts(unsigned int receivedUser,
 	LogSecureDebug("received_attempts: " << receivedAttempts);
 	existPassword(receivedUser);
 	PasswordFileMap::iterator itPwd = m_pwdFile.find(receivedUser);
-	itPwd->second.setMaxAttempt(receivedAttempts);
-	itPwd->second.writeMemoryToFile();
+	itPwd->second->setMaxAttempt(receivedAttempts);
+	itPwd->second->writeMemoryToFile();
 	// Do not reset current attempt when max attempt is reset.
 	// It's a platform policy(2017.0327).
-	//itPwd->second.resetAttempt();
-	//itPwd->second.writeAttemptToFile();
+	//itPwd->second->resetAttempt();
+	//itPwd->second->writeAttemptToFile();
 }
 
 void PasswordManager::setPasswordValidity(unsigned int receivedUser,
@@ -309,11 +320,11 @@ void PasswordManager::setPasswordValidity(unsigned int receivedUser,
 	PasswordFileMap::iterator itPwd = m_pwdFile.find(receivedUser);
 	calculateExpiredTime(receivedDays, valid_secs);
 
-	if (itPwd->second.isPasswordActive(AUTH_PWD_NORMAL))
-		itPwd->second.setExpireTimeLeft(valid_secs);
+	if (itPwd->second->isPasswordActive(AUTH_PWD_NORMAL))
+		itPwd->second->setExpireTimeLeft(valid_secs);
 
-	itPwd->second.setExpireTime(receivedDays);
-	itPwd->second.writeMemoryToFile();
+	itPwd->second->setExpireTime(receivedDays);
+	itPwd->second->writeMemoryToFile();
 }
 
 void PasswordManager::setPasswordHistory(unsigned int receivedUser,
@@ -322,7 +333,7 @@ void PasswordManager::setPasswordHistory(unsigned int receivedUser,
 	LogSecureDebug("received_historySize: " << receivedHistory);
 	existPassword(receivedUser);
 	PasswordFileMap::iterator itPwd = m_pwdFile.find(receivedUser);
-	itPwd->second.setMaxHistorySize(receivedHistory);
-	itPwd->second.writeMemoryToFile();
+	itPwd->second->setMaxHistorySize(receivedHistory);
+	itPwd->second->writeMemoryToFile();
 }
 } //namespace AuthPasswd

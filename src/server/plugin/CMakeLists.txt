@@ -1,0 +1,35 @@
+PKG_CHECK_MODULES(SW_BACKEND_DEP
+    REQUIRED
+    openssl
+    )
+
+FIND_PACKAGE(Threads REQUIRED)
+
+INCLUDE_DIRECTORIES(
+    SYSTEM
+    ${SW_BACKEND_DEP_INCLUDE_DIRS}
+    ${COMMON_PATH}/include
+    ${SERVER_PATH}/service/include
+    ${DPL_PATH}/core/include
+    ${DPL_PATH}/log/include
+    ${PLUGIN_PATH}
+    )
+
+SET(SW_BACKEND_SOURCES
+    generic-backend/password-file-buffer.cpp
+    sw-backend/password-file.cpp
+    )
+
+ADD_LIBRARY(${TARGET_SW_BACKEND} SHARED ${SW_BACKEND_SOURCES})
+
+SET_TARGET_PROPERTIES(
+    ${TARGET_SW_BACKEND}
+    PROPERTIES
+        COMPILE_FLAGS "-D_GNU_SOURCE -fPIC -fvisibility=default"
+        SOVERSION ${API_VERSION}
+        VERSION ${VERSION}
+    )
+
+TARGET_LINK_LIBRARIES(${TARGET_SW_BACKEND} ${SW_BACKEND_DEP_LIBRARIES} ${TARGET_COMMON})
+
+INSTALL(TARGETS ${TARGET_SW_BACKEND} DESTINATION ${LIB_INSTALL_DIR})

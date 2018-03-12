@@ -8,11 +8,11 @@ Source0:    %{name}-%{version}.tar.gz
 Source1001: %{name}.manifest
 Source1002: lib%{name}-client.manifest
 Source1003: lib%{name}-client-admin.manifest
-Source1004: %{name}-test.manifest
+Source1004: lib%{name}-sw-backend.manifest
+Source1005: %{name}-test.manifest
 Requires: security-config
 BuildRequires: cmake
 BuildRequires: pkgconfig(dlog)
-BuildRequires: pkgconfig(openssl)
 BuildRequires: pkgconfig(libsmack)
 BuildRequires: pkgconfig(libsystemd-daemon)
 BuildRequires: pkgconfig(libtzplatform-config)
@@ -59,13 +59,14 @@ Summary:    Authentication framework (client-devel)
 Group:      Security/Development
 Requires:   lib%{name}-client = %{version}-%{release}
 Requires:   lib%{name}-client-admin = %{version}-%{release}
+Requires:   lib%{name}-sw-backend = %{version}-%{release}
 
 %description -n lib%{name}-client-devel
 Authentication framework package (client-devel)
 
 %prep
 %setup -q
-cp -a %{SOURCE1001} %{SOURCE1002} %{SOURCE1003} %{SOURCE1004} .
+cp -a %{SOURCE1001} %{SOURCE1002} %{SOURCE1003} %{SOURCE1004} %{SOURCE1005} .
 
 %build
 export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
@@ -169,12 +170,30 @@ fi
 %files -n lib%{name}-client-devel
 %{_libdir}/lib%{name}-client.so
 %{_libdir}/lib%{name}-client-admin.so
+%{_libdir}/lib%{name}-sw-backend.so
 %{_libdir}/lib%{name}-commons.so
 %{_includedir}/%{name}/auth-passwd.h
 %{_includedir}/%{name}/auth-passwd-admin.h
 %{_includedir}/%{name}/auth-passwd-error.h
 %{_includedir}/%{name}/auth-passwd-policy-types.h
 %{_libdir}/pkgconfig/*.pc
+
+## SW-Backend(PasswordFile) Package ##########################################
+%package -n lib%{name}-sw-backend
+Summary: Authentication framework (sw-backend)
+Group: Security/Libraries
+BuildRequires: pkgconfig(openssl)
+Requires: %{name} = %{version}
+Requires(post): %{sbin_dir}/ldconfig
+Requires(postun): %{sbin_dir}/ldconfig
+
+%description -n lib%{name}-sw-backend
+SW-Backend for authentication framework
+
+%files -n lib%{name}-sw-backend
+%manifest lib%{name}-sw-backend.manifest
+%license LICENSE
+%{_libdir}/lib%{name}-sw-backend.so.*
 
 ## Test Package ##############################################################
 %package test

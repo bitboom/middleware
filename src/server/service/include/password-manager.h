@@ -29,13 +29,14 @@
 
 #include <string>
 #include <map>
+#include <memory>
 
-#include <password-file.h>
+#include <generic-backend/ipassword-file.h>
 
 namespace AuthPasswd {
 class PasswordManager {
 public:
-	typedef std::map<unsigned int, PasswordFile> PasswordFileMap;
+	typedef std::map<unsigned int, std::shared_ptr<IPasswordFile>> PasswordFileMap;
 
 	//checking functions
 	//no const in checkPassword, attempts are update

@@ -24,8 +24,8 @@
  * @version     1.0
  * @brief       Implementation of PasswordFile, used to manage password files.
  */
-#ifndef _PASSWORD_FILE_H_
-#define _PASSWORD_FILE_H_
+#ifndef _SW_BACKEND_PASSWORD_FILE_H_
+#define _SW_BACKEND_PASSWORD_FILE_H_
 
 #include <string>
 #include <vector>
@@ -37,8 +37,9 @@
 
 #include <dpl/serialization.h>
 
+#include <generic-backend/ipassword-file.h>
+
 namespace AuthPasswd {
-extern const time_t PASSWORD_INFINITE_EXPIRATION_TIME;
 
 struct IPassword: public ISerializable {
 	typedef std::vector<unsigned char> RawHash;
@@ -51,44 +52,46 @@ struct IPassword: public ISerializable {
 	virtual bool match(const std::string &password) const = 0;
 };
 
-typedef std::shared_ptr<IPassword> IPasswordPtr;
-typedef std::list<IPasswordPtr> PasswordList;
+using IPasswordPtr = std::shared_ptr<IPassword>;
+using PasswordList = std::list<IPasswordPtr>;
 
-class PasswordFile {
+namespace SWBackend {
+
+class PasswordFile : public IPasswordFile {
 public:
 	PasswordFile(unsigned int user);
 
-	void writeMemoryToFile() const;
-	void writeAttemptToFile() const;
+	void writeMemoryToFile() const override;
+	void writeAttemptToFile() const override;
 
-	void setPassword(unsigned int passwdType, const std::string &password);
-	bool checkPassword(unsigned int passwdType, const std::string &password) const;
+	void setPassword(unsigned int passwdType, const std::string &password) override;
+	bool checkPassword(unsigned int passwdType,
+					   const std::string &password) const override;
 
-	bool isPasswordActive(unsigned int passwdType) const;
+	bool isPasswordActive(unsigned int passwdType) const override;
 
-	void setMaxHistorySize(unsigned int history);
-	unsigned int getMaxHistorySize() const;
+	void setMaxHistorySize(unsigned int history) override;
+	unsigned int getMaxHistorySize() const override;
 
-	unsigned int getExpireTime() const;
-	void setExpireTime(unsigned int expireTime);
+	unsigned int getExpireTime() const override;
+	void setExpireTime(unsigned int expireTime) override;
 
-	unsigned int getExpireTimeLeft() const;
-	void setExpireTimeLeft(time_t expireTimeLeft);
+	unsigned int getExpireTimeLeft() const override;
+	void setExpireTimeLeft(time_t expireTimeLeft) override;
 
-	//attempt manipulating functions
-	unsigned int getAttempt() const;
-	void resetAttempt();
-	void incrementAttempt();
-	int getMaxAttempt() const;
-	void setMaxAttempt(unsigned int maxAttempt);
+	unsigned int getAttempt() const override;
+	void resetAttempt() override;
+	void incrementAttempt() override;
+	int getMaxAttempt() const override;
+	void setMaxAttempt(unsigned int maxAttempt) override;
 
-	bool isPasswordReused(const std::string &password) const;
+	bool isPasswordReused(const std::string &password) const override;
 
-	bool checkExpiration() const;
-	bool checkIfAttemptsExceeded() const;
-	bool isIgnorePeriod() const;
+	bool checkExpiration() const override;
+	bool checkIfAttemptsExceeded() const override;
+	bool isIgnorePeriod() const override;
 
-	bool isHistoryActive() const;
+	bool isHistoryActive() const override;
 
 private:
 #if (__GNUC__ > 4) || (__GNUC__ == 4 && (__GNUC_MINOR__ >= 7))
@@ -112,12 +115,10 @@ private:
 
 	mutable TimePoint m_retryTimerStart;
 
-	//user name
 	const unsigned int m_user;
 
-	//password file data
-	IPasswordPtr m_passwordCurrent;
-	PasswordList m_passwordHistory;
+	::AuthPasswd::IPasswordPtr m_passwordCurrent;
+	::AuthPasswd::PasswordList m_passwordHistory;
 	unsigned int m_maxAttempt;
 	unsigned int m_maxHistorySize;
 	unsigned int m_expireTime;
@@ -128,6 +129,8 @@ private:
 	//attempt file data
 	unsigned int m_attempt;
 };
-}    //namespace AuthPasswd
+
+} // namespace SWBackend
+} // namespace AuthPasswd
 
 #endif

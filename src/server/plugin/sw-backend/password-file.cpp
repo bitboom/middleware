@@ -24,11 +24,10 @@
  * @version     1.0
  * @brief       Implementation of PasswordFile, used to manage password files.
  */
-#include <password-file.h>
+#include <sw-backend/password-file.h>
 
 #include <fstream>
 #include <algorithm>
-#include <limits>
 
 #include <fcntl.h>
 #include <string.h>
@@ -46,7 +45,7 @@
 #include <error-description.h>
 #include <policy.h>
 #include <password-exception.h>
-#include <password-file-buffer.h>
+#include <generic-backend/password-file-buffer.h>
 
 namespace {
 const std::string PASSWORD_FILE = "/password";
@@ -58,7 +57,6 @@ const unsigned int CURRENT_FILE_VERSION = 4;
 } // namespace anonymous
 
 namespace AuthPasswd {
-const time_t PASSWORD_INFINITE_EXPIRATION_TIME = std::numeric_limits<time_t>::max();
 
 class NoPassword: public IPassword {
 public:
@@ -107,7 +105,6 @@ private:
 	}
 };
 
-// deserialization of new password format
 template <>
 void Deserialization::Deserialize(IStream &stream, IPasswordPtr &ptr)
 {
@@ -127,6 +124,8 @@ void Deserialization::Deserialize(IStream &stream, IPasswordPtr &ptr)
 		Throw(PasswordException::FStreamReadError);
 	}
 }
+
+namespace SWBackend {
 
 PasswordFile::PasswordFile(unsigned int user) :
 	m_user(user),
@@ -527,4 +526,6 @@ bool PasswordFile::isHistoryActive() const
 {
 	return (m_maxHistorySize != 0);
 }
+
+} //namespace SWBackend
 } //namespace AuthPasswd
