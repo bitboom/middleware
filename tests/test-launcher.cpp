@@ -47,9 +47,9 @@ TESTCASE(TRUST_ANCHOR_LAUNCH)
 	TEST_EXPECT(true, pid >= 0);
 
 	if (pid == 0) {
-		TIME_MEASURE_START
+		TANCHOR_TIME_MEASURE_START
 		ret = ta.launch();
-		TIME_MEASURE_END
+		TANCHOR_TIME_MEASURE_END
 		TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 		// check file-system
@@ -83,9 +83,9 @@ TESTCASE(TRUST_ANCHOR_LAUNCH_WITH_SYS)
 	TEST_EXPECT(true, pid >= 0);
 
 	if (pid == 0) {
-		TIME_MEASURE_START
+		TANCHOR_TIME_MEASURE_START
 		ret = ta.launch();
-		TIME_MEASURE_END
+		TANCHOR_TIME_MEASURE_END
 		TEST_EXPECT(true, ret == TRUST_ANCHOR_ERROR_NONE);
 
 		// check file-system
