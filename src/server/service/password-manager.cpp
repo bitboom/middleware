@@ -39,9 +39,6 @@
 
 #include <policy.h>
 
-// TODO(sangwan.kwon): Replace with dynamic load.
-#include <sw-backend/password-file.h>
-
 namespace {
 void calculateExpiredTime(unsigned int receivedDays, time_t &validSecs)
 {
@@ -55,19 +52,26 @@ void calculateExpiredTime(unsigned int receivedDays, time_t &validSecs)
 	validSecs = (curTime + (receivedDays * 86400));
 	return;
 }
-
-AuthPasswd::IPasswordFile* CreatePasswordFile(unsigned int user)
-{
-	return new AuthPasswd::SWBackend::PasswordFile(user);
-}
-
 } //namespace
 
 namespace AuthPasswd {
+
+PasswordManager::PasswordManager()
+{
+	if (m_pluginManager.isSupport(BackendType::TZ)) {
+		m_pluginManager.setBackend(BackendType::TZ);
+		LogDebug("Success to set TZ-Backend.");
+	} else {
+		m_pluginManager.setBackend(BackendType::SW);
+		LogDebug("Success to set SW-Backend.");
+	}
+
+	m_pluginManager.loadFactory("PasswordFileFactory", m_factory);
+}
+
 void PasswordManager::addPassword(unsigned int user)
 {
-	PasswordFileFactory factory = &CreatePasswordFile;
-	std::shared_ptr<IPasswordFile> passwordFile((*factory)(user));
+	std::shared_ptr<IPasswordFile> passwordFile((*m_factory)(user));
 	m_pwdFile.insert(PasswordFileMap::value_type(user, passwordFile));
 }
 

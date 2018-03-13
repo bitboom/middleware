@@ -19,18 +19,28 @@
 SET(TEST_SRCS main.cpp
 			  test-util.cpp
 			  test-client.cpp
-			  test-admin.cpp)
+			  test-admin.cpp
+			  test-sw-backend.cpp
+
+			  ${SERVER_PATH}/service/plugin-loader.cpp
+			  ${SERVER_PATH}/service/plugin-manager.cpp)
 
 PKG_CHECK_MODULES(${TARGET_TEST}_DEP REQUIRED klay)
 
 INCLUDE_DIRECTORIES(SYSTEM ${${TARGET_TEST}_DEP_INCLUDE_DIRS}
-						   ${INCLUDE_PATH})
+						   ${INCLUDE_PATH}
+						   ${SERVER_PATH}/service/include
+						   ${DPL_PATH}/core/include
+						   ${DPL_PATH}/log/include
+						   ${PLUGIN_PATH})
 
 ADD_EXECUTABLE(${TARGET_TEST} ${TEST_SRCS})
 
 TARGET_LINK_LIBRARIES(${TARGET_TEST} ${${TARGET_TEST}_DEP_LIBRARIES}
 									 ${TARGET_CLIENT}
-									 ${TARGET_CLIENT_ADMIN})
+									 ${TARGET_CLIENT_ADMIN}
+									 ${TARGET_SW_BACKEND}
+									 -ldl)
 
 SET_TARGET_PROPERTIES(${TARGET_TEST} PROPERTIES COMPILE_FLAGS "-fPIE")
 SET_TARGET_PROPERTIES(${TARGET_TEST} PROPERTIES LINK_FLAGS "-pie")

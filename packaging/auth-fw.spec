@@ -28,6 +28,7 @@ Authentication framework which is consist of client library and server daemon
 # image creation error occured if /usr/sbin used for ldconfig
 #%global sbin_dir %{?TZ_SYS_SBIN:%TZ_SYS_SBIN}%{!?TZ_SYS_SBIN:%_sbindir}
 %global sbin_dir /sbin
+%global plugin_dir %{_datadir}/auth-fw
 %global rw_data_dir %{?TZ_SYS_DATA:%TZ_SYS_DATA/%name}%{!?TZ_SYS_DATA:/opt/data/%name}
 %global sock_passwd_check %{name}-passwd-check.socket
 %global sock_passwd_set %{name}-passwd-set.socket
@@ -82,6 +83,9 @@ export LDFLAGS+="-Wl,--rpath=%{_libdir}"
         -DSYS_CONFIG_DIR:PATH=%{_sysconfdir} \
         -DRUN_DIR:PATH=%{run_dir} \
         -DRW_DATA_DIR:PATH=%{rw_data_dir} \
+        -DPLUGIN_DIR:PATH=%{plugin_dir} \
+        -DPLUGIN_SW_BACKEND_PATH=%{plugin_dir}/lib%{name}-sw-backend.so.%{version} \
+        -DPLUGIN_TZ_BACKEND_PATH=%{plugin_dir}/lib%{name}-tz-backend.so.%{version} \
         -DSYSTEMD_UNIT_DIR:PATH=%{_unitdir} \
         -DINCLUDE_DIR:PATH=%{_includedir} \
         -DSOCK_PASSWD_CHECK=%{sock_passwd_check} \
@@ -170,7 +174,6 @@ fi
 %files -n lib%{name}-client-devel
 %{_libdir}/lib%{name}-client.so
 %{_libdir}/lib%{name}-client-admin.so
-%{_libdir}/lib%{name}-sw-backend.so
 %{_libdir}/lib%{name}-commons.so
 %{_includedir}/%{name}/auth-passwd.h
 %{_includedir}/%{name}/auth-passwd-admin.h
@@ -193,7 +196,8 @@ SW-Backend for authentication framework
 %files -n lib%{name}-sw-backend
 %manifest lib%{name}-sw-backend.manifest
 %license LICENSE
-%{_libdir}/lib%{name}-sw-backend.so.*
+%{plugin_dir}/lib%{name}-sw-backend.so
+%{plugin_dir}/lib%{name}-sw-backend.so.*
 
 ## Test Package ##############################################################
 %package test

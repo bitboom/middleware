@@ -22,9 +22,11 @@
 #ifndef AUTHPASSWD_SINGLETON_H
 #define AUTHPASSWD_SINGLETON_H
 
+#include <symbol-visibility.h>
+
 namespace AuthPasswd {
 template<typename Class>
-class Singleton :
+class COMMON_API Singleton :
 	private Class {
 	//
 	// Note:

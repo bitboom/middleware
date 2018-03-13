@@ -2,7 +2,6 @@ PKG_CHECK_MODULES(SERVER_DEP
     REQUIRED
     libsmack
     libsystemd-daemon
-    openssl
     )
 
 FIND_PACKAGE(Threads REQUIRED)
@@ -29,10 +28,9 @@ SET(SERVER_SOURCES
     service/password-manager.cpp
     service/policy-file.cpp
     service/policy-manager.cpp
+    service/plugin-loader.cpp
+    service/plugin-manager.cpp
     plugin/generic-backend/password-file-buffer.cpp
-
-    # TODO: Replace with dynamic load. (Temporary included for TDD)
-    plugin/sw-backend/password-file.cpp
     )
 
 SET_SOURCE_FILES_PROPERTIES(${SERVER_SOURCES}

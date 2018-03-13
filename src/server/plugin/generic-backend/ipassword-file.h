@@ -61,7 +61,7 @@ struct IPasswordFile {
 	virtual bool isHistoryActive() const = 0;
 };
 
-using PasswordFileFactory = IPasswordFile* (*)(unsigned int);
+using PasswordFileFactory = AuthPasswd::IPasswordFile* (*)(unsigned int);
 
 } //namespace AuthPasswd
 

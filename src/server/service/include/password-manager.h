@@ -31,12 +31,17 @@
 #include <map>
 #include <memory>
 
+#include <plugin-manager.h>
+
 #include <generic-backend/ipassword-file.h>
 
 namespace AuthPasswd {
-class PasswordManager {
+class PasswordManager final {
 public:
 	typedef std::map<unsigned int, std::shared_ptr<IPasswordFile>> PasswordFileMap;
+
+	PasswordManager();
+	~PasswordManager() = default;
 
 	//checking functions
 	//no const in checkPassword, attempts are update
@@ -70,6 +75,9 @@ private:
 	void existPassword(unsigned int user);
 
 	PasswordFileMap m_pwdFile;
+	PasswordFileFactory m_factory = nullptr;
+
+	PluginManager m_pluginManager;
 };
 } //namespace AuthPasswd
 

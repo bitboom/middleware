@@ -47,6 +47,15 @@
 #include <password-exception.h>
 #include <generic-backend/password-file-buffer.h>
 
+extern "C" {
+
+AuthPasswd::IPasswordFile* PasswordFileFactory(unsigned int user)
+{
+	return new AuthPasswd::SWBackend::PasswordFile(user);
+}
+
+} // extern "C"
+
 namespace {
 const std::string PASSWORD_FILE = "/password";
 const std::string OLD_VERSION_PASSWORD_FILE = "/password.old";
