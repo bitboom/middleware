@@ -18,6 +18,7 @@
 #define __RUNTIME_NETLINK_NETLINK_H__
 
 #include <linux/netlink.h>
+#include <vector>
 
 #include <klay/klay.h>
 
@@ -29,6 +30,8 @@ namespace netlink {
 
 class KLAY_EXPORT Netlink final {
 public:
+	typedef std::pair<int, std::vector<char>> Message;
+
 	Netlink(int);
 	Netlink(Netlink&&);
 	Netlink(const Netlink&) = delete;
@@ -36,8 +39,8 @@ public:
 
 	Netlink& operator=(const Netlink&) = delete;
 
-	void send(const void *data, unsigned int size);
-	void recv(void *data, unsigned int size, int options = 0);
+	void send(int type, const std::vector<char>& data);
+	Message recv(int options = 0);
 
 	int getFd() const {
 		return fd;
@@ -45,6 +48,7 @@ public:
 
 private:
 	int fd;
+	unsigned int sequence;
 };
 
 } // namespace runtime
