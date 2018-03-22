@@ -100,11 +100,12 @@ Certificate::Certificate(const std::string &data,
 					  "Internal Openssl error in d2i_X509 function.");
 }
 
-static off_t getFileSize(const std::string &location)
+static int getFileSize(const std::string &location, off_t &size)
 {
 	struct stat status;
-	stat(location.c_str(), &status);
-	return status.st_size;
+	int ret = stat(location.c_str(), &status);
+	size = status.st_size;
+	return ret;
 }
 
 CertificatePtr Certificate::createFromFile(const std::string &location)
@@ -130,8 +131,10 @@ CertificatePtr Certificate::createFromFile(const std::string &location)
 		return CertificatePtr(new Certificate(x509));
 	}
 
-	off_t filesize = getFileSize(location);
-
+	off_t filesize = 0;
+	if(getFileSize(location, filesize) != 0)
+		VcoreThrowMsg(Certificate::Exception::WrongParamError,
+					"Fail to get file size. : " << location);
 	if (filesize == 0)
 		VcoreThrowMsg(Certificate::Exception::WrongParamError,
 					  "File content is empty : " << location);

@@ -42,7 +42,7 @@ void AssertProc(const char *condition,
 		LogError("### Line: " << line);
 		LogError("### Function: " << function);
 		LogError("########################################################################");
-	} catch (Exception) {
+	} catch (Exception &) {
 		// Just ignore possible double errors
 	}
 

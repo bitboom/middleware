@@ -96,7 +96,7 @@ VCerr SignatureValidator::Impl::checkAll(bool checkOcsp,
 	if (m_fileInfoSet.size() < 2)
 		return E_SIG_UNKNOWN; // TODO(sangwan.kwon) Add error code (INVALID SIZE)
 
-	VCerr result;
+	VCerr result = E_SIG_UNKNOWN;
 	for (const auto &sig : m_fileInfoSet) {
 		m_fileInfo = sig;
 		m_disregarded = false;
@@ -123,7 +123,7 @@ VCerr SignatureValidator::Impl::checkListAll(bool checkOcsp,
 	if (m_fileInfoSet.size() < 2)
 		return E_SIG_UNKNOWN; // TODO(sangwan.kwon) Add error code (INVALID SIZE)
 
-	VCerr result;
+	VCerr result = E_SIG_UNKNOWN;
 	for (const auto &sig : m_fileInfoSet) {
 		m_fileInfo = sig;
 		m_disregarded = false;

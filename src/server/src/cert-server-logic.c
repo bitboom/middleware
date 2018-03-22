@@ -1149,11 +1149,6 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 		query = NULL;
 	}
 
-	if (stmt) {
-		sqlite3_finalize(stmt);
-		stmt = NULL;
-	}
-
 	CertStoreType other = ALL_STORE & ~SYSTEM_STORE & ~storeType;
 	CertStoreType current;
 	int gname_exist = 0;

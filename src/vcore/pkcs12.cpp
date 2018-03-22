@@ -665,6 +665,7 @@ void rollbackStore(CertStoreType storeTypes, const std::string &endCertName)
 			vcore_client_delete_certificate_from_store(storeType, certChainName[i]);
 			free(certChainName[i]);
 		}
+		free(certChainName);
 
 		vcore_client_delete_certificate_from_store(storeType, endCertName.c_str());
 	}
