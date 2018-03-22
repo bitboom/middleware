@@ -120,13 +120,10 @@ bool DevicePolicyManager::getMaintenanceMode()
 
 void DevicePolicyManager::run(int activation, int timeout)
 {
-	if (getMaintenanceMode()) {
-		/* Maintenance mode */
+	do {
+		start(activation, timeout);
 		timeout = -1;
-		DEBUG(DPM, "Set maintenance mode");
-	}
-
-	start(activation, timeout);
+	} while (getMaintenanceMode());
 }
 
 int DevicePolicyManager::enroll(const std::string& name, uid_t uid)
