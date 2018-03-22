@@ -56,7 +56,6 @@ void Service::prepare(bool activation)
 	mainloop.addEventSource(socket->getFd(),
 							EPOLLIN | EPOLLHUP | EPOLLRDHUP,
 							accept);
-
 }
 
 void Service::start(bool activation, int timeout)

@@ -201,7 +201,7 @@ private:
 		Credentials credentials;
 	};
 
-	void prepare(bool activiation);
+	void prepare(bool activation);
 
 	typedef std::list<std::shared_ptr<Connection>> ConnectionRegistry;
 	typedef std::function<void(const std::shared_ptr<Connection>& connection)> CallbackDispatcher;
