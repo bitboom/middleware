@@ -51,23 +51,27 @@ SyspopupInterface::~SyspopupInterface()
 int SyspopupInterface::getProfile()
 {
 	char *profileName = nullptr;
-	::system_info_get_platform_string("http://tizen.org/feature/profile", &profileName);
+	int ret = ::system_info_get_platform_string("http://tizen.org/feature/profile", &profileName);
+	if (ret != SYSTEM_INFO_ERROR_NONE) {
+		return Profile::Invalid;
+	}
 
 	switch (*profileName) {
 	case 'm':
 	case 'M':
-		::free(profileName);
-		return Profile::Mobile;
+		ret = Profile::Mobile;
 		break;
 	case 'w':
 	case 'W':
-		::free(profileName);
-		return Profile::Wearable;
+		ret = Profile::Wearable;
 		break;
 	default:
+		ret = Profile::Invalid;
 		break;
 	}
-	return Profile::Invalid;
+
+	::free(profileName);
+	return ret;
 }
 
 bool SyspopupInterface::isManufacturer(const std::string &name)
