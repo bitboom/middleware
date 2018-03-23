@@ -42,7 +42,7 @@ PolicyAdmin::PolicyAdmin(pid_t pid, uid_t user)
 			throw runtime::Exception("Failed to get admin info");
 		}
 
-		pkgid[bytes] = '\0';
+		pkgid[bytes-1] = '\0';
 	}
 
 	name = pkgid;
