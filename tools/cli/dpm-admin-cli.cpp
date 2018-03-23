@@ -78,8 +78,8 @@ static int getUID(const std::string& username)
 		bufsize = 16384;
 
 	std::unique_ptr<char[]> buf(new char[bufsize]);
-	::getpwnam_r(username.c_str(), &pwd, buf.get(), bufsize, &result);
-	if (result == NULL) {
+	int ret = ::getpwnam_r(username.c_str(), &pwd, buf.get(), bufsize, &result);
+	if (ret != 0 || result == NULL) {
 		std::cout << "User " << username << " isn't exist" << std::endl;
 		return -1;
 	}
@@ -129,6 +129,11 @@ int main(int argc, char *argv[])
 			usage();
 			exit(EXIT_FAILURE);
 		}
+	}
+
+	if (username == NULL) {
+		usage();
+		return EXIT_FAILURE;
 	}
 
 	int uid = getUID(username);
