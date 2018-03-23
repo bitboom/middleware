@@ -35,9 +35,6 @@ TESTCASE(CONNECT_SSL)
 {
 	int ret = test::util::connectSSL("https://google.com");
 	TEST_EXPECT(true, ret == 0);
-
-	if (ret != 0)
-		std::cout << "Check wifi connection.." << std::endl;
 }
 
 TESTCASE(TRUST_ANCHOR_LAUNCH)

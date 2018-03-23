@@ -36,8 +36,10 @@ TESTCASE(GET_SUBJECT_NAME_HASH)
 		TEST_EXPECT(true, hash.compare(TEST_PEM_HASH) == 0);
 	} catch (const std::exception &e) {
 		std::cout << "std::exception occured." << e.what() << std::endl;
+		TEST_EXPECT(true, false);
 	} catch (...) {
 		std::cout << "Unknown exception occured." << std::endl;
+		TEST_EXPECT(true, false);
 	}
 }
 
@@ -49,7 +51,9 @@ TESTCASE(GET_CERTIFICATE_DATA)
 		TEST_EXPECT(true, data.compare(TEST_PEM_DATA) == 0);
 	} catch (const std::exception &e) {
 		std::cout << "std::exception occured." << e.what() << std::endl;
+		TEST_EXPECT(true, false);
 	} catch (...) {
 		std::cout << "Unknown exception occured." << std::endl;
+		TEST_EXPECT(true, false);
 	}
 }

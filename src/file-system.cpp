@@ -48,13 +48,17 @@ std::string File::read(const std::string &path)
 	if (std::ferror(fp.get()))
 		throw std::logic_error("Failed to set the position as end [" + path + "].");
 
-	unsigned int fsize = std::ftell(fp.get());
+	long fsize = std::ftell(fp.get());
+	if (fsize == -1L)
+		throw std::logic_error("Failed to get the position [" + path + "].");
+
 	std::fseek(fp.get(), 0L, SEEK_SET);
 	if (std::ferror(fp.get()))
 		throw std::logic_error("Failed to set the position as beginning [" + path + "].");
 
 	std::string buff(fsize, 0);
-	if (fsize != std::fread(static_cast<void*>(&buff[0]), 1, fsize, fp.get()))
+	size_t rsize = std::fread(static_cast<void*>(&buff[0]), 1, fsize, fp.get());
+	if (rsize != static_cast<size_t>(fsize))
 		throw std::logic_error("Failed to read [" + path + "]");
 
 	return buff;
