@@ -23,6 +23,7 @@
 #include <regex>
 #include <memory>
 
+#include <klay/error.h>
 #include <klay/exception.h>
 #include <klay/auth/group.h>
 
@@ -36,7 +37,7 @@ Group::Group(const Group& group) :
 Group::Group(const std::string& group)
 {
 	struct group grp, *result;
-	int bufsize;
+	int bufsize, ret;
 
 	bufsize = sysconf(_SC_GETGR_R_SIZE_MAX);
 	if (bufsize == -1)
@@ -44,9 +45,12 @@ Group::Group(const std::string& group)
 
 	std::unique_ptr<char[]> buf(new char[bufsize]);
 
-	::getgrnam_r(group.c_str(), &grp, buf.get(), bufsize, &result);
+	ret = ::getgrnam_r(group.c_str(), &grp, buf.get(), bufsize, &result);
 	if (result == NULL) {
-		throw runtime::Exception("Group doesn't exist");
+		if (ret == 0)
+			throw runtime::Exception("Group doesn't exist");
+		else
+			throw runtime::Exception(runtime::GetSystemErrorMessage(ret));
 	}
 
 	name = result->gr_name;
@@ -56,7 +60,7 @@ Group::Group(const std::string& group)
 Group::Group(const gid_t group)
 {
 	struct group grp, *result;
-	int bufsize;
+	int bufsize, ret;
 
 	bufsize = sysconf(_SC_GETGR_R_SIZE_MAX);
 	if (bufsize == -1)
@@ -64,9 +68,12 @@ Group::Group(const gid_t group)
 
 	std::unique_ptr<char[]> buf(new char[bufsize]);
 
-	::getgrgid_r(group, &grp, buf.get(), bufsize, &result);
+	ret = ::getgrgid_r(group, &grp, buf.get(), bufsize, &result);
 	if (result == NULL) {
-		throw runtime::Exception("Group doesn't exist");
+		if (ret == 0)
+			throw runtime::Exception("Group doesn't exist");
+		else
+			throw runtime::Exception(runtime::GetSystemErrorMessage(ret));
 	}
 
 	name = result->gr_name;

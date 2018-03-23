@@ -124,7 +124,11 @@ bool Mainloop::dispatch(int timeout)
 
 void Mainloop::stop()
 {
-	wakeupSignal.send();
+	try {
+		wakeupSignal.send();
+	} catch (std::exception &e) {
+		std::cout << "EXCEPTION ON EVENTFD IN MAINLOOP" << std::endl;
+	}
 }
 
 void Mainloop::prepare()

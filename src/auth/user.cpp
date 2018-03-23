@@ -23,6 +23,7 @@
 #include <regex>
 #include <memory>
 
+#include <klay/error.h>
 #include <klay/exception.h>
 #include <klay/auth/user.h>
 
@@ -36,7 +37,7 @@ User::User(const User& user) :
 User::User(const std::string& user)
 {
 	struct passwd pwd, *result;
-	int bufsize;
+	int bufsize, ret;
 
 	bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
 	if (bufsize == -1)
@@ -44,9 +45,12 @@ User::User(const std::string& user)
 
 	std::unique_ptr<char[]> buf(new char[bufsize]);
 
-	::getpwnam_r(user.c_str(), &pwd, buf.get(), bufsize, &result);
+	ret = ::getpwnam_r(user.c_str(), &pwd, buf.get(), bufsize, &result);
 	if (result == NULL) {
-		throw runtime::Exception("User " + user + " doesn't exist");
+		if (ret == 0)
+			throw runtime::Exception("User " + user + " doesn't exist");
+		else
+			throw runtime::Exception(runtime::GetSystemErrorMessage(ret));
 	}
 
 	name = result->pw_name;
@@ -57,16 +61,19 @@ User::User(const std::string& user)
 User::User(const uid_t user)
 {
 	struct passwd pwd, *result;
-	int bufsize;
+	int bufsize, ret;
 
 	bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
 	if (bufsize == -1)
 		bufsize = 16384;
 
 	std::unique_ptr<char[]> buf(new char[bufsize]);
-	::getpwuid_r(user, &pwd, buf.get(), bufsize, &result);
+	ret = ::getpwuid_r(user, &pwd, buf.get(), bufsize, &result);
 	if (result == NULL) {
-		throw runtime::Exception("User " + std::to_string(user) + "doesn't exist");
+		if (ret == 0)
+			throw runtime::Exception("User " + std::to_string(user) + "doesn't exist");
+		else
+			throw runtime::Exception(runtime::GetSystemErrorMessage(ret));
 	}
 
 	name = result->pw_name;
