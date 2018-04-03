@@ -31,7 +31,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <dirent.h>
-#include <sys/smack.h>
 #include <sys/socket.h>
 
 #include <ckmc/ckmc-manager.h>
