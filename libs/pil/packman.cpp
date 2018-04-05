@@ -27,11 +27,11 @@ int PackageEventCallback(uid_t uid, int id, const char* type, const char* name,
 
 int PackageListCallback(pkgmgrinfo_pkginfo_h handle, void *data)
 {
-	char* pkgid = nullptr;
-	::pkgmgrinfo_pkginfo_get_pkgid(handle, &pkgid);
-
-	std::vector<std::string>* packageList = static_cast<std::vector<std::string>*>(data);
-	packageList->push_back(pkgid);
+	char* pkgid;
+	if (::pkgmgrinfo_pkginfo_get_pkgid(handle, &pkgid) == PMINFO_R_OK) {
+		std::vector<std::string>* packageList = static_cast<std::vector<std::string>*>(data);
+		packageList->push_back(pkgid);
+	}
 
 	return 0;
 }

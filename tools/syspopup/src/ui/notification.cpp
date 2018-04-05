@@ -31,29 +31,59 @@ Notification::~Notification()
 
 void Notification::setTitle(const std::string &title)
 {
-	::notification_set_text(notification, NOTIFICATION_TEXT_TYPE_TITLE,
-				dgettext("dpm-syspopup", title.c_str()), NULL, NOTIFICATION_VARIABLE_TYPE_NONE);
+	int ret;
+
+	ret = ::notification_set_text(notification, NOTIFICATION_TEXT_TYPE_TITLE,
+				dgettext("dpm-syspopup", title.c_str()), NULL,
+				NOTIFICATION_VARIABLE_TYPE_NONE);
+
+	if (ret != NOTIFICATION_ERROR_NONE)
+		throw runtime::Exception("Failed to set title to noti");
 }
 
 void Notification::setContent(const std::string &content)
 {
-	::notification_set_text(notification, NOTIFICATION_TEXT_TYPE_CONTENT,
-				dgettext("dpm-syspopup", content.c_str()), NULL, NOTIFICATION_VARIABLE_TYPE_NONE);
+	int ret;
+
+	ret = ::notification_set_text(notification, NOTIFICATION_TEXT_TYPE_CONTENT,
+				dgettext("dpm-syspopup", content.c_str()), NULL,
+				NOTIFICATION_VARIABLE_TYPE_NONE);
+
+	if (ret != NOTIFICATION_ERROR_NONE)
+		throw runtime::Exception("Failed to set content to noti");
 }
 
 void Notification::setImage(const std::string &path)
 {
-	::notification_set_image(notification, NOTIFICATION_IMAGE_TYPE_THUMBNAIL, path.c_str());
+	int ret;
+
+	ret = ::notification_set_image(notification, NOTIFICATION_IMAGE_TYPE_THUMBNAIL,
+									path.c_str());
+
+	if (ret != NOTIFICATION_ERROR_NONE)
+		throw runtime::Exception("Failed to set image to noti");
 }
+
 
 void Notification::setAppControl(AppControl &appControl)
 {
-	::notification_set_launch_option(notification, NOTIFICATION_LAUNCH_OPTION_APP_CONTROL, appControl);
+	int ret;
+
+	ret = ::notification_set_launch_option(notification,
+						NOTIFICATION_LAUNCH_OPTION_APP_CONTROL, appControl);
+
+	if (ret != NOTIFICATION_ERROR_NONE)
+		throw runtime::Exception("Failed to set launch option to noti");
 }
 
 void Notification::post()
 {
-	::notification_post(notification);
+	int ret;
+
+	ret = ::notification_post(notification);
+
+	if (ret != NOTIFICATION_ERROR_NONE)
+		throw runtime::Exception("Failed to post the noti");
 }
 
 void Notification::dispose()
