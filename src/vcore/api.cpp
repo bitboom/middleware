@@ -791,7 +791,11 @@ err:
 		}
 
 		X509_STORE_CTX context;
-		X509_STORE_CTX_init(&context, store, cert, ustore);
+		if(!X509_STORE_CTX_init(&context, store, cert, ustore)) {
+			X509_STORE_free(store);
+			sk_X509_free(ustore);
+			return CERTSVC_FAIL;
+		}
 		int result = X509_verify_cert(&context);
 
 		if (result == 1 && checkCaFlag) { // check strictly
