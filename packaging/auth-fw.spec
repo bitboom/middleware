@@ -1,6 +1,6 @@
 Name:       auth-fw
 Summary:    Authentication framework
-Version:    0.1.2
+Version:    1.0.0
 Release:    1
 Group:      Security/Service
 License:    Apache-2.0
@@ -10,12 +10,13 @@ Source1002: lib%{name}-client.manifest
 Source1003: lib%{name}-client-admin.manifest
 Source1004: lib%{name}-sw-backend.manifest
 Source1005: %{name}-test.manifest
-Requires: security-config
 BuildRequires: cmake
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(libsmack)
 BuildRequires: pkgconfig(libsystemd-daemon)
 BuildRequires: pkgconfig(libtzplatform-config)
+Requires: security-config
+Requires: lib%{name}-sw-backend = %{version}-%{release}
 %{?systemd_requires}
 
 %description
