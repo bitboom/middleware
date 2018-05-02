@@ -30,21 +30,41 @@ std::unique_ptr<audit::DlogLogSink> _sink = nullptr;
 
 audit::LogSink *SINK = nullptr;
 
+class SyspopupMainLoop {
+public:
+	SyspopupMainLoop() :
+		mainloop(g_main_loop_new(NULL, FALSE), g_main_loop_unref)
+	{
+		handle = std::thread(g_main_loop_run, mainloop.get());
+	}
+	~SyspopupMainLoop()
+	{
+		while (!g_main_loop_is_running(mainloop.get())) {
+			std::this_thread::yield();
+		}
+		g_main_loop_quit(mainloop.get());
+		handle.join();
+	}
+private:
+	std::unique_ptr<GMainLoop, void(*)(GMainLoop*)> mainloop;
+	std::thread handle;
+};
+
 int main()
 {
 	_sink.reset(new audit::DlogLogSink("DPM"));
 	SINK = dynamic_cast<audit::LogSink*>((_sink).get());
 
 	try {
-		ScopedGMainLoop mainloop;
+		SyspopupMainLoop mainloop;
 		SyspopupService syspopup;
 		syspopup.run();
+
+		::sleep(3);
 	} catch (std::exception &e) {
 		ERROR(SINK, e.what());
 		return EXIT_FAILURE;
 	}
-
-	::sleep(3);
 
 	return EXIT_SUCCESS;
 }
