@@ -127,7 +127,7 @@ void XmlSec::fileExtractPrefix(XmlSecContext &context)
 		s_prefixPath.erase(pos + 1, std::string::npos);
 }
 
-void LogDebugPrint(const char *file,
+void LogErrorPrint(const char *file,
 				   int line,
 				   const char *func,
 				   const char *errorObject,
@@ -159,10 +159,7 @@ void LogDebugPrint(const char *file,
 			(errorMsg != NULL) ? errorMsg : "",
 			(msg != NULL) ? msg : "");
 
-	if (reason == XMLSEC_ERRORS_MAX_NUMBER)
-		LogError(buff);
-	else
-		LogDebug(buff);
+	LogError(buff);
 }
 
 XmlSec::XmlSec() :
@@ -394,7 +391,7 @@ void XmlSec::validateInternal(XmlSecContext &context)
 	LogDebug("Start to validate.");
 	Assert(!context.signatureFile.empty());
 	Assert(!!context.certificatePtr || !context.certificatePath.empty());
-	xmlSecErrorsSetCallback(LogDebugPrint);
+	xmlSecErrorsSetCallback(LogErrorPrint);
 
 	std::unique_ptr<xmlSecKeysMngr, std::function<void(xmlSecKeysMngrPtr)>>
 		mngrPtr(xmlSecKeysMngrCreate(), xmlSecKeysMngrDestroy);
