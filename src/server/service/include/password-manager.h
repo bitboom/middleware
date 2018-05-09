@@ -38,10 +38,10 @@
 namespace AuthPasswd {
 class PasswordManager final {
 public:
-	typedef std::map<unsigned int, std::shared_ptr<IPasswordFile>> PasswordFileMap;
+	typedef std::map<unsigned int, IPasswordFile*> PasswordFileMap;
 
 	PasswordManager();
-	~PasswordManager() = default;
+	~PasswordManager();
 
 	//checking functions
 	//no const in checkPassword, attempts are update

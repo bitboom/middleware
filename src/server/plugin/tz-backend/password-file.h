@@ -26,6 +26,12 @@ class PasswordFile : public IPasswordFile {
 public:
 	PasswordFile(unsigned int user);
 
+	PasswordFile(const PasswordFile&) = delete;
+	PasswordFile& operator=(const PasswordFile&) = delete;
+
+	PasswordFile(PasswordFile&&) = delete;
+	PasswordFile& operator=(PasswordFile&&) = delete;
+
 	void writeMemoryToFile() const override;
 	void writeAttemptToFile() const override;
 

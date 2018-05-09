@@ -28,7 +28,14 @@ namespace AuthPasswd {
 constexpr time_t PASSWORD_INFINITE_EXPIRATION_TIME = std::numeric_limits<time_t>::max();
 
 struct IPasswordFile {
+	IPasswordFile() = default;
 	virtual ~IPasswordFile() = default;
+
+	IPasswordFile(const IPasswordFile&) = delete;
+	IPasswordFile& operator=(const IPasswordFile&) = delete;
+
+	IPasswordFile(IPasswordFile&&) = delete;
+	IPasswordFile& operator=(IPasswordFile&&) = delete;
 
 	virtual void writeMemoryToFile() const = 0;
 	virtual void writeAttemptToFile() const = 0;

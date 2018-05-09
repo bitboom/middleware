@@ -69,10 +69,19 @@ PasswordManager::PasswordManager()
 	m_pluginManager.loadFactory("PasswordFileFactory", m_factory);
 }
 
+PasswordManager::~PasswordManager()
+{
+	PasswordFileMap::iterator iter;
+	for (iter = m_pwdFile.begin(); iter != m_pwdFile.end(); iter++) {
+		if (iter->second != nullptr)
+			delete iter->second;
+	}
+}
+
 void PasswordManager::addPassword(unsigned int user)
 {
-	std::shared_ptr<IPasswordFile> passwordFile((*m_factory)(user));
-	m_pwdFile.insert(PasswordFileMap::value_type(user, passwordFile));
+	IPasswordFile* passwordFile = (*m_factory)(user);
+	m_pwdFile[user] = passwordFile;
 }
 
 void PasswordManager::removePassword(unsigned int user)
