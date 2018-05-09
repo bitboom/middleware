@@ -47,7 +47,10 @@ public:
 
 	void onEvent(uid_t domain);
 
-	virtual bool apply(const Type& value, uid_t domain) {}
+	virtual bool apply(const Type& value, uid_t domain)
+	{
+		return true;
+	}
 
 private:
 	void enforce(uid_t domid);
@@ -136,7 +139,10 @@ public:
 
 	void onEvent(uid_t domain);
 
-	virtual bool apply(const Type& value) {}
+	virtual bool apply(const Type& value)
+	{
+		return true;
+	}
 
 private:
 	void enforce();
