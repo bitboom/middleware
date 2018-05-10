@@ -11,7 +11,6 @@ BuildRequires: gettext
 BuildRequires: pkgconfig(capi-appfw-application)
 BuildRequires: pkgconfig(db-util)
 BuildRequires: pkgconfig(dbus-1)
-BuildRequires: pkgconfig(dbus-glib-1)
 BuildRequires: pkgconfig(elementary)
 BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(icu-i18n)

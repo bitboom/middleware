@@ -22,7 +22,6 @@
 PKG_CHECK_MODULES(${TARGET_CERT_CHECKER}_DEP
     REQUIRED
     dbus-1
-    dbus-glib-1
     db-util
     glib-2.0
     gio-2.0

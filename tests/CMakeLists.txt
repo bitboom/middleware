@@ -3,7 +3,6 @@ PKG_CHECK_MODULES(CERT_CHECKER_TESTS_DEP
     capi-appfw-application
     db-util
     dbus-1
-    dbus-glib-1
     elementary
     glib-2.0
     gio-2.0
