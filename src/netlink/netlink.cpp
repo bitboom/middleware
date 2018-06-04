@@ -22,6 +22,7 @@
 
 #include <klay/error.h>
 #include <klay/exception.h>
+#include <klay/audit/logger.h>
 #include <klay/netlink/netlink.h>
 
 namespace netlink {
@@ -97,7 +98,7 @@ void Netlink::send(int type, const std::vector<char>& data)
 			throw runtime::Exception("Netlink error: " +
 										std::to_string(err->error));
 	} else {
-			throw runtime::Exception("Missing ack of netlink message");
+			WARN("Missing ack of netlink message");
 	}
 }
 
