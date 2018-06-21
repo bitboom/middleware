@@ -32,6 +32,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${${TARGET_TEST}_DEP_INCLUDE_DIRS}
 						   ${SERVER_PATH}/service/include
 						   ${DPL_PATH}/core/include
 						   ${DPL_PATH}/log/include
+						   ${COMMON_PATH}/include
 						   ${PLUGIN_PATH})
 
 ADD_EXECUTABLE(${TARGET_TEST} ${TEST_SRCS})
