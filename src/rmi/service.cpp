@@ -212,7 +212,13 @@ void Service::onMessageProcess(const std::shared_ptr<Connection>& connection)
 
 			connection->send(methodContext->dispatcher(request));
 		} catch (runtime::Exception& e) {
-			connection->send(request.createErrorMessage(e.className(), e.what()));
+			try {
+				// Forward the exception to the peer
+				connection->send(request.createErrorMessage(e.className(), e.what()));
+			} catch (std::exception& ex) {
+				// The connection is abnormally closed by the peer.
+				ERROR(KSINK, ex.what());
+			}
 		} catch (std::exception& e) {
 			try {
 				// Forward the exception to the peer
