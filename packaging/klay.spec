@@ -1,3 +1,4 @@
+%define keepstatic 1
 Name:    klay
 Version: 0.0.1
 Release: 0
@@ -69,6 +70,7 @@ developing with the Klay library.
 %manifest %name.manifest
 %defattr(644,root,root,755)
 %{_libdir}/libklay.so
+%{_libdir}/*.a
 %{_libdir}/pkgconfig/*.pc
 %{_includedir}/klay
 
