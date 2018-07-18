@@ -64,6 +64,17 @@ public:
         	std::ostream& os, 
         	boost::unit_test::const_string value);
 	void    entry_context_finish(std::ostream& os);
+#if BOOST_VERSION >= 106500
+	void 	log_entry_context(
+		std::ostream& os,
+		boost::unit_test::log_level l,
+		boost::unit_test::const_string value);
+	void 	entry_context_finish(
+		std::ostream& os,
+		boost::unit_test::log_level l);
+#endif
+
+
 private:
 	bool m_isTestCaseFailed;
 };

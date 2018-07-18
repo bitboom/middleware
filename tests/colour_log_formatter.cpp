@@ -306,6 +306,22 @@ colour_log_formatter::entry_context_finish(std::ostream& os)
 }
 //____________________________________________________________________________//
 
+#if BOOST_VERSION >= 106500
+void
+colour_log_formatter::log_entry_context(std::ostream& os, log_level l, const_string value)
+{
+	(void)os;
+	(void)l;
+	(void)value;
+}
+void
+colour_log_formatter::entry_context_finish(std::ostream& os, log_level l)
+{
+	(void)os;
+	(void)l;
+}
+#endif
+
 //____________________________________________________________________________//
 
 } // namespace CCHECKER
