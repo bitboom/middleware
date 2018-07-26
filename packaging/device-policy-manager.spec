@@ -34,7 +34,7 @@ BuildRequires: pkgconfig(capi-base-common)
 
 %global dpm_base         %{TZ_SYS_DATA}/dpm
 %global dpm_event        %{dpm_base}/event
-%global dpm_plugins      %{dpm_base}/plugins
+%global dpm_plugins      %{_libdir}/dpm/plugins
 
 %description
 The device-policy-manager package provides a daemon which is responsible for
