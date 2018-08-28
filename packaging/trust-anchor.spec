@@ -13,6 +13,7 @@ BuildRequires: pkgconfig(openssl)
 BuildRequires: pkgconfig(libtzplatform-config)
 BuildRequires: ca-certificates
 BuildRequires: ca-certificates-devel
+Requires: security-config
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 
