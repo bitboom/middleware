@@ -30,7 +30,7 @@
   * policies enforced on the device to restrict their operations on
   * some circumstance, such as Exchange ActiveSync or corporate apps.<br>
   * The device policy API supports the policies listed in the below table, and
-  * any application can subscribe those policies by registring policy changed callback to
+  * any application can subscribe those policies by registering policy changed callback to
   * the device policy manager.<br>
   * @subsection CAPI_SECURITY_DPM_MODULE_POLICY Policy List
   *<table>
