@@ -1,5 +1,5 @@
 Name: trust-anchor
-Version: 2.1.1
+Version: 2.1.2
 Release: 0
 License: Apache-2.0
 Source0: file://%{name}-%{version}.tar.gz
