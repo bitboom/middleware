@@ -335,7 +335,10 @@ std::string readFromFile(const std::string &path)
 	}
 
 	FileUniquePtr filePtr(fp, fclose);
-	fseek(fp, 0L, SEEK_END);
+	if (fseek(fp, 0L, SEEK_END) != 0) {
+		LogError("Fail in fseek");
+		return std::string();
+	}
 	int len = ftell(fp);
 
 	if (len <= 0 || len == INT_MAX) {

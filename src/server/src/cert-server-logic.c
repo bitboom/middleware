@@ -226,8 +226,13 @@ int write_to_ca_cert_crt_file(const char *mode, const char *cert)
 	}
 
 	/* if mode of writing is to append, then goto end of file */
-	if (strcmp(mode, "ab") == 0)
-		fseek(fp, 0L, SEEK_END);
+	if (strcmp(mode, "ab") == 0) {
+		if (fseek(fp, 0L, SEEK_END) != 0) {
+			SLOGE("Fail in fseek.");
+			result = CERTSVC_FAIL;
+			goto error;
+		}
+	}
 
 	size_t cert_len = strlen(cert);
 
