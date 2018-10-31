@@ -55,8 +55,8 @@ public:
 	template<typename Expr>
 	Self where(Expr expr);
 
-	template<typename Column>
-	bool find(Column column);
+	template<typename That>
+	bool compare(const That& that) const noexcept;
 
 	operator std::string();
 
@@ -66,7 +66,7 @@ public:
 	std::string name;
 
 private:
-	explicit Table(const std::string& name, ImplType impl);
+	explicit Table(const std::string& name, ImplType&& impl);
 
 	template<typename ...Cs>
 	friend Table<Cs...> make_table(const std::string& name, Cs&& ...columns);
@@ -117,8 +117,8 @@ Table<Columns...> make_table(const std::string& name, Columns&& ...cs)
 }
 
 template<typename... Columns>
-Table<Columns...>::Table(const std::string& name, ImplType impl)
-	: name(name), impl(impl) {} 
+Table<Columns...>::Table(const std::string& name, ImplType&& impl)
+	: name(name), impl(std::move(impl)) {}
 
 template<typename... Columns>
 template<typename... ColumnTypes>
@@ -280,10 +280,10 @@ Table<Columns...>::operator std::string()
 
 template<typename... Columns>
 template<typename That>
-bool Table<Columns...>::find(That that)
+bool Table<Columns...>::compare(const That& that) const noexcept
 {
 	using This = TableType;
-	return type::compare(This(), That());
+	return type::compare(This(), that);
 }
 
 template<typename... Columns>

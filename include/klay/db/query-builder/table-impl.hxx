@@ -30,7 +30,7 @@ public:
 	std::vector<std::string> getColumnNames() const noexcept { return {}; }
 
 	template<class Type>
-	std::string getColumnName(Type type) const noexcept { return std::string(); }
+	std::string getColumnName(Type&&) const noexcept { return std::string(); }
 
 	int size() const noexcept { return 0; }
 };
@@ -41,7 +41,8 @@ public:
 	using Column = Front;
 	using TableType = typename Column::TableType;
 
-	explicit TableImpl(Front front, Rest ...rest) : Base(rest...), column(front) {}
+	explicit TableImpl(Front&& front, Rest&& ...rest) :
+		Base(std::forward<Rest>(rest)...), column(front) {}
 
 	int size() const noexcept { return Base::size() + 1; }
 
@@ -53,12 +54,12 @@ public:
 	}
 
 	template<typename ColumnType>
-	std::string getColumnName(ColumnType type) const noexcept
+	std::string getColumnName(ColumnType&& type) const noexcept
 	{
-		if (type::cast_compare(column.type, type))
+		if (type::cast_compare(column.type, std::forward<ColumnType>(type)))
 			return column.name;
 
-		return Base::template getColumnName<ColumnType>(type);
+		return Base::template getColumnName<ColumnType>(std::forward<ColumnType>(type));
 	}
 
 private:

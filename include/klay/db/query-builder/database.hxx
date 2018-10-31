@@ -56,7 +56,7 @@ private:
 	using ColumnNames = std::vector<std::string>;
 	using TableNames = std::set<std::string>;
 
-	explicit Database(const std::string& name, ImplType impl);
+	explicit Database(const std::string& name, ImplType&& impl);
 
 	template<typename ...Ts>
 	friend Database<Ts...> make_database(const std::string& name, Ts&& ...tables);
@@ -120,8 +120,8 @@ Database<Tables...> make_database(const std::string& name, Tables&& ...tables)
 }
 
 template<typename ...Tables>
-Database<Tables...>::Database(const std::string& name, ImplType impl)
-	: name(name), impl(impl) {}
+Database<Tables...>::Database(const std::string& name, ImplType&& impl)
+	: name(name), impl(std::move(impl)) {}
 
 template<typename... Tables>
 template<typename... ColumnTypes>

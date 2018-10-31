@@ -29,10 +29,10 @@ template<typename... Base>
 class DatabaseImpl {
 public:
 	template<typename Table>
-	std::string getTableName(Table) const noexcept { return std::string(); }
+	std::string getTableName(Table&&) const noexcept { return std::string(); }
 
 	template<typename Column>
-	std::string getColumnName(Column column) const noexcept { return std::string(); }
+	std::string getColumnName(Column&&) const noexcept { return std::string(); }
 };
 
 template<typename Front, typename... Rest>
@@ -40,29 +40,31 @@ class DatabaseImpl<Front, Rest...> : public DatabaseImpl<Rest...> {
 public:
 	using Table = Front;
 
-	DatabaseImpl(Front front, Rest ...rest) : Base(rest...), table(front) {}
+	DatabaseImpl(Front&& front, Rest&& ...rest) :
+		Base(std::forward<Rest>(rest)...), table(front) {}
 
 	Table table;
 
 	template<typename Table>
-	std::string getTableName(Table table) const noexcept
+	std::string getTableName(Table&& table) const noexcept
 	{
-		if (this->table.find(table))
+		if (this->table.compare(table))
 			return this->table.name;
 
-		return Base::template getTableName<Table>(table);
+		return Base::template getTableName<Table>(std::forward<Table>(table));
 	}
 
 	template<typename Column>
-	std::string getColumnName(Column column) const noexcept
+	std::string getColumnName(Column&& column) const noexcept
 	{
-		using TableType = typename decltype(column)::TableType;
-		if (this->table.find(TableType())) {
+		using ColumnType = typename std::decay<Column>::type;
+		using TableType = typename ColumnType::TableType;
+		if (this->table.compare(TableType())) {
 			auto cname = this->table.getColumnName(column.type);
 			return this->table.name + "." + cname;
 		}
 
-		return Base::template getColumnName<Column>(column);
+		return Base::template getColumnName<Column>(std::forward<Column>(column));
 	}
 
 private:
