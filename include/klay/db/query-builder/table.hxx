@@ -36,24 +36,24 @@ public:
 	using TableType = typename ImplType::TableType;
 
 	template<typename... ColumnTypes>
-	Self select(ColumnTypes&&... cts);
+	Self& select(ColumnTypes&&... cts);
 
 	template<typename Type>
-	Self select(Distinct<Type> distinct);
+	Self& select(Distinct<Type> distinct);
 
-	Self selectAll(void);
-
-	template<typename... ColumnTypes>
-	Self update(ColumnTypes&&... cts);
+	Self& selectAll(void);
 
 	template<typename... ColumnTypes>
-	Self insert(ColumnTypes&&... cts);
+	Self& update(ColumnTypes&&... cts);
 
 	template<typename... ColumnTypes>
-	Self remove(ColumnTypes&&... cts);
+	Self& insert(ColumnTypes&&... cts);
+
+	template<typename... ColumnTypes>
+	Self& remove(ColumnTypes&&... cts);
 
 	template<typename Expr>
-	Self where(Expr expr);
+	Self& where(Expr expr);
 
 	template<typename That>
 	bool compare(const That& that) const noexcept;
@@ -72,7 +72,7 @@ private:
 	friend Table<Cs...> make_table(const std::string& name, Cs&& ...columns);
 
 	template<typename ColumnTuple>
-	Self selectInternal(ColumnTuple&& ct, bool distinct = false);
+	Self& selectInternal(ColumnTuple&& ct, bool distinct = false);
 
 	template<typename Cs>
 	std::vector<std::string> getColumnNames(Cs&& tuple);
@@ -122,7 +122,7 @@ Table<Columns...>::Table(const std::string& name, ImplType&& impl)
 
 template<typename... Columns>
 template<typename... ColumnTypes>
-Table<Columns...> Table<Columns...>::select(ColumnTypes&&... cts)
+Table<Columns...>& Table<Columns...>::select(ColumnTypes&&... cts)
 {
 	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
 
@@ -131,14 +131,14 @@ Table<Columns...> Table<Columns...>::select(ColumnTypes&&... cts)
 
 template<typename... Columns>
 template<typename Type>
-Table<Columns...> Table<Columns...>::select(Distinct<Type> distinct)
+Table<Columns...>& Table<Columns...>::select(Distinct<Type> distinct)
 {
 	return this->selectInternal(std::move(distinct.value), true);
 }
 
 template<typename... Columns>
 template<typename ColumnTuple>
-Table<Columns...> Table<Columns...>::selectInternal(ColumnTuple&& ct, bool distinct)
+Table<Columns...>& Table<Columns...>::selectInternal(ColumnTuple&& ct, bool distinct)
 {
 	this->cache.clear();
 
@@ -166,7 +166,7 @@ Table<Columns...> Table<Columns...>::selectInternal(ColumnTuple&& ct, bool disti
 }
 
 template<typename ...Columns>
-Table<Columns...> Table<Columns...>::selectAll(void)
+Table<Columns...>& Table<Columns...>::selectAll(void)
 {
 	this->cache.clear();
 
@@ -180,7 +180,7 @@ Table<Columns...> Table<Columns...>::selectAll(void)
 
 template<typename... Columns>
 template<typename... ColumnTypes>
-Table<Columns...> Table<Columns...>::update(ColumnTypes&&... cts)
+Table<Columns...>& Table<Columns...>::update(ColumnTypes&&... cts)
 {
 	this->cache.clear();
 
@@ -206,7 +206,7 @@ Table<Columns...> Table<Columns...>::update(ColumnTypes&&... cts)
 
 template<typename... Columns>
 template<typename... ColumnTypes>
-Table<Columns...> Table<Columns...>::insert(ColumnTypes&&... cts)
+Table<Columns...>& Table<Columns...>::insert(ColumnTypes&&... cts)
 {
 	this->cache.clear();
 
@@ -240,7 +240,7 @@ Table<Columns...> Table<Columns...>::insert(ColumnTypes&&... cts)
 
 template<typename... Columns>
 template<typename... ColumnTypes>
-Table<Columns...> Table<Columns...>::remove(ColumnTypes&&... cts)
+Table<Columns...>& Table<Columns...>::remove(ColumnTypes&&... cts)
 {
 	this->cache.clear();
 
@@ -257,7 +257,7 @@ Table<Columns...> Table<Columns...>::remove(ColumnTypes&&... cts)
 
 template<typename... Columns>
 template<typename Expr>
-Table<Columns...> Table<Columns...>::where(Expr expr)
+Table<Columns...>& Table<Columns...>::where(Expr expr)
 {
 	std::stringstream ss;
 	ss << "WHERE " << this->processWhere(expr);

@@ -36,16 +36,16 @@ public:
 	using Self = Database<Tables...>;
 
 	template<typename... ColumnTypes>
-	Self select(ColumnTypes&&... cts);
+	Self& select(ColumnTypes&&... cts);
 
 	template<typename Expr>
-	Self where(Expr expr);
+	Self& where(Expr expr);
 
 	template<typename Table>
-	Self join(condition::Join type = condition::Join::INNER);
+	Self& join(condition::Join type = condition::Join::INNER);
 
 	template<typename Expr>
-	Self on(Expr expr);
+	Self& on(Expr expr);
 
 	operator std::string();
 
@@ -125,7 +125,7 @@ Database<Tables...>::Database(const std::string& name, ImplType&& impl)
 
 template<typename... Tables>
 template<typename... ColumnTypes>
-Database<Tables...> Database<Tables...>::select(ColumnTypes&&... cts)
+Database<Tables...>& Database<Tables...>::select(ColumnTypes&&... cts)
 {
 	this->cache.clear();
 
@@ -161,7 +161,7 @@ Database<Tables...> Database<Tables...>::select(ColumnTypes&&... cts)
 
 template<typename... Tables>
 template<typename Expr>
-Database<Tables...> Database<Tables...>::where(Expr expr)
+Database<Tables...>& Database<Tables...>::where(Expr expr)
 {
 	std::stringstream ss;
 	ss << "WHERE " << this->processWhere(expr);
@@ -173,7 +173,7 @@ Database<Tables...> Database<Tables...>::where(Expr expr)
 
 template<typename... Tables>
 template<typename Table>
-Database<Tables...> Database<Tables...>::join(condition::Join type)
+Database<Tables...>& Database<Tables...>::join(condition::Join type)
 {
 	std::stringstream ss;
 	ss << condition::to_string(type) << " ";
@@ -186,7 +186,7 @@ Database<Tables...> Database<Tables...>::join(condition::Join type)
 
 template<typename... Tables>
 template<typename Expr>
-Database<Tables...> Database<Tables...>::on(Expr expr)
+Database<Tables...>& Database<Tables...>::on(Expr expr)
 {
 	std::stringstream ss;
 	ss << "ON ";
