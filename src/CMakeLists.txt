@@ -107,7 +107,6 @@ PKG_CHECK_MODULES(CERT_SERVER_DEP
     REQUIRED
     dlog
     sqlite3
-    db-util
     libsystemd-daemon
     key-manager
     )

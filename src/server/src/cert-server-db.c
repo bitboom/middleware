@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2018 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
  * @brief    cert server db utils.
  */
 
-#include <db-util.h>
 #include <cert-server-debug.h>
 #include <cert-server-db.h>
 
@@ -31,7 +30,7 @@ int initialize_db(void)
 	if (cert_store_db != NULL)
 		return CERTSVC_SUCCESS;
 
-	int result = db_util_open(CERTSVC_SYSTEM_STORE_DB, &cert_store_db, 0);
+	int result = sqlite3_open(CERTSVC_SYSTEM_STORE_DB, &cert_store_db);
 
 	if (result != SQLITE_OK) {
 		SLOGE("opening %s failed!", CERTSVC_SYSTEM_STORE_DB);
@@ -47,7 +46,7 @@ void deinitialize_db(void)
 	if (cert_store_db == NULL)
 		return;
 
-	db_util_close(cert_store_db);
+	sqlite3_close(cert_store_db);
 	cert_store_db = NULL;
 }
 
