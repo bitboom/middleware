@@ -38,6 +38,8 @@ Mainloop::Mainloop() :
 	if (pollFd == -1) {
 		throw Exception(GetSystemErrorMessage());
 	}
+
+	prepare();
 }
 
 Mainloop::~Mainloop()
@@ -140,8 +142,6 @@ void Mainloop::run(int timeout)
 {
 	bool done = false;
 	stopped = false;
-
-	prepare();
 
 	while (!stopped && !done) {
 		done = !dispatch(timeout);

@@ -201,6 +201,8 @@ private:
 		Credentials credentials;
 	};
 
+	void prepare(bool activiation);
+
 	typedef std::list<std::shared_ptr<Connection>> ConnectionRegistry;
 	typedef std::function<void(const std::shared_ptr<Connection>& connection)> CallbackDispatcher;
 
@@ -240,6 +242,7 @@ private:
 	std::mutex methodRegistryLock;
 
 	static thread_local ProcessingContext processingContext;
+	std::unique_ptr<Socket> socket;
 };
 
 template<typename Type, typename... Args>

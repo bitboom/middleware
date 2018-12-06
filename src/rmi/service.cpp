@@ -46,18 +46,24 @@ Service::~Service()
 {
 }
 
-void Service::start(bool activation, int timeout)
+void Service::prepare(bool activation)
 {
-	Socket socket(Socket::create(address, activation));
-
+	socket.reset(new Socket(Socket::create(address, activation)));
 	auto accept = [&](int fd, runtime::Mainloop::Event event) {
-		onNewConnection(std::make_shared<Connection>(socket.accept()));
+		onNewConnection(std::make_shared<Connection>(socket->accept()));
 	};
 
-	mainloop.addEventSource(socket.getFd(),
+	mainloop.addEventSource(socket->getFd(),
 							EPOLLIN | EPOLLHUP | EPOLLRDHUP,
 							accept);
 
+}
+
+void Service::start(bool activation, int timeout)
+{
+	if (socket == nullptr) {
+		prepare(activation);
+	}
 	mainloop.run(timeout);
 }
 
