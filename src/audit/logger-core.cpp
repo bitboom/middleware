@@ -16,7 +16,7 @@
 
 #include <klay/audit/logger-core.h>
 
-namespace audit {
+namespace klay {
 
 std::unique_ptr<LoggerCore> LoggerCore::instance = nullptr;
 std::once_flag LoggerCore::flag;
@@ -39,4 +39,4 @@ void LoggerCore::dispatch(LogSink* logSink, const std::string& message)
 	logSink->sink(message);
 }
 
-} // namespace audit
+} // namespace klay

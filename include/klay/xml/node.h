@@ -25,6 +25,7 @@
 
 #include <klay/klay.h>
 
+namespace klay {
 namespace xml {
 
 class KLAY_EXPORT Node {
@@ -58,4 +59,8 @@ private:
 };
 
 } // namespace xml
+} // namespace klay
+
+namespace xml = klay::xml;
+
 #endif //__XML_NODE_H__

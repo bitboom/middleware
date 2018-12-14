@@ -22,7 +22,7 @@
 
 #include <klay/klay.h>
 
-namespace runtime {
+namespace klay {
 
 class KLAY_EXPORT Cgroup final {
 public:
@@ -44,6 +44,8 @@ public:
 	static const std::string getPath(const std::string& subsystem, const pid_t pid);
 };
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
 
 #endif //!__RUNTIME_CGROUP_H__

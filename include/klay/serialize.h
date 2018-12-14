@@ -24,7 +24,7 @@
 #include <klay/klay.h>
 #include <klay/reflection.h>
 
-namespace runtime {
+namespace klay {
 
 template<typename T>
 struct KLAY_EXPORT SerializableArgument {
@@ -145,6 +145,8 @@ private:
 	StorageType& storage;
 };
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
 
 #endif //__RUNTIME_SERIALIZER_H__

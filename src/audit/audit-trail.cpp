@@ -15,7 +15,7 @@
  */
 #include <klay/audit/audit-trail.h>
 
-namespace audit {
+namespace klay {
 
 AuditTrail::AuditTrail()
 {
@@ -49,4 +49,4 @@ void AuditTrail::unsubscribe(const int fd)
 	mainloop.removeEventSource(fd);
 }
 
-} // namespace audit
+} // namespace klay

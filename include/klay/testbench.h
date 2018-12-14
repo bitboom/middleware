@@ -34,6 +34,7 @@ using namespace std::chrono;
 						 auto ms = duration_cast<milliseconds>(end - start); \
 						 auto time = ms.count();
 
+namespace klay {
 namespace testbench {
 
 struct KLAY_EXPORT Source {
@@ -169,4 +170,8 @@ void TestName##TestCase::standalone()
 	return;                                             \
 }
 } // namespace testbench
+} // namespace klay
+
+namespace testbench = klay::testbench;
+
 #endif //!__KLAY_TESTBENCH_H__

@@ -21,7 +21,7 @@
 
 #include <klay/klay.h>
 
-namespace runtime {
+namespace klay {
 
 class KLAY_EXPORT Namespace final {
 public:
@@ -31,6 +31,8 @@ public:
 	static void attach(const pid_t pid);
 };
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
 
 #endif //!__RUNTIME_NAMESPACE_H__

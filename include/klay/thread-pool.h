@@ -26,7 +26,7 @@
 
 #include <klay/klay.h>
 
-namespace runtime {
+namespace klay {
 
 class KLAY_EXPORT ThreadPool {
 public:
@@ -44,6 +44,8 @@ private:
 	bool stop;
 };
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
 
 #endif //__RUNTIME_THREAD_POOL_H__

@@ -30,7 +30,7 @@
 
 #include "eventfd.h"
 
-namespace runtime {
+namespace klay {
 
 class KLAY_EXPORT Mainloop {
 public:
@@ -58,6 +58,8 @@ private:
 	void prepare();
 };
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
 
 #endif //__RUNTIME_MAINLOOP_H__

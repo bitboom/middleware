@@ -24,7 +24,7 @@
 
 #include <klay/klay.h>
 
-namespace runtime {
+namespace klay {
 
 class KLAY_EXPORT File {
 public:
@@ -195,5 +195,8 @@ public:
 int Open(const std::string& path, int flags, mode_t mode);
 void Close(int fd);
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
+
 #endif //__RUNTIME_FILESYSTEM_H__

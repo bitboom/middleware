@@ -22,6 +22,7 @@
 #include <klay/xml/document.h>
 #include <klay/xml/keepblanks.h>
 
+namespace klay {
 namespace xml {
 
 Document::Document(const std::string& root, const std::string& version) :
@@ -132,3 +133,4 @@ void Document::write(const std::string& filename, const std::string& encoding, b
 }
 
 } // namespace xml
+} // namespace klay

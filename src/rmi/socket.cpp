@@ -29,6 +29,7 @@
 #include <klay/error.h>
 #include <klay/rmi/socket.h>
 
+namespace klay {
 namespace rmi {
 
 namespace {
@@ -320,4 +321,5 @@ Socket Socket::connect(const std::string& path)
 	return Socket(fd);
 }
 
-} // namespace Ipc
+} // namespace rmi
+} // namespace klay

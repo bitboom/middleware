@@ -24,6 +24,7 @@
 #include <klay/klay.h>
 #include <klay/dbus/connection.h>
 
+namespace klay {
 namespace dbus {
 namespace signal {
 
@@ -86,5 +87,8 @@ void Sender::emit(const std::string &signalName,
 
 } // namespace signal
 } // namespace dbus
+} // namespace klay
+
+namespace dbus = klay::dbus;
 
 #endif //! __RUNTIME_DBUS_SIGNAL_H__

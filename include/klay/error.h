@@ -17,11 +17,13 @@
 #ifndef __RUNTIME_ERROR_H__
 #define __RUNTIME_ERROR_H__
 
+#include <errno.h>
+
 #include <string>
 
 #include <klay/klay.h>
 
-namespace runtime {
+namespace klay {
 
 class KLAY_EXPORT Error {
 public:
@@ -33,5 +35,8 @@ public:
 KLAY_EXPORT std::string GetSystemErrorMessage();
 KLAY_EXPORT std::string GetSystemErrorMessage(int errorCode);
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
+
 #endif //__RUNTIME_ERROR_H__

@@ -32,7 +32,7 @@
 #include <klay/exception.h>
 #include <klay/filesystem.h>
 
-namespace runtime {
+namespace klay {
 
 File::File(const std::string& pathname, int flags) :
 	File(pathname)
@@ -566,4 +566,4 @@ void Mount::mountEntry(const std::string& src, const std::string& dest, const st
 	}
 }
 
-} // namespace runtime
+} // namespace klay

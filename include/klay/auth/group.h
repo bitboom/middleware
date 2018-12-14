@@ -28,7 +28,7 @@
 #define INVALID_GID             UINT_MAX
 #endif
 
-namespace runtime {
+namespace klay {
 
 class KLAY_EXPORT Group final {
 public:
@@ -52,6 +52,8 @@ private:
 	gid_t gid;
 };
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
 
 #endif //__RUNTIME_GROUP_H__

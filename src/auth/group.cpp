@@ -27,7 +27,7 @@
 #include <klay/exception.h>
 #include <klay/auth/group.h>
 
-namespace runtime {
+namespace klay {
 
 Group::Group(const Group& group) :
 	name(group.name), gid(group.gid)
@@ -85,4 +85,4 @@ Group::Group() :
 {
 }
 
-} // namespace Shadow
+} // namespace klay

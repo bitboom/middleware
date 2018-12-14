@@ -21,12 +21,15 @@
 
 #include "logsink.h"
 
-namespace audit {
+namespace klay {
 
 class KLAY_EXPORT ConsoleLogSink : public LogSink {
 public:
 	void sink(const std::string& message) override;
 };
 
-} // namespace audit
+} // namespace klay
+
+namespace audit = klay;
+
 #endif //__AUDIT_CONSOLE_LOGSINK_H__

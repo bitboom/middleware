@@ -24,7 +24,7 @@
 #include <syslog.h>
 #include <security/pam_appl.h>
 
-namespace runtime {
+namespace klay {
 
 class PAM final {
 public:
@@ -61,5 +61,8 @@ private:
 	pam_handle_t* pamh;
 };
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
+
 #endif // __RUNTIME_PAM_H__

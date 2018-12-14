@@ -20,6 +20,7 @@
 #include <klay/klay.h>
 #include <klay/exception.h>
 
+namespace klay {
 namespace rmi {
 
 class KLAY_EXPORT SocketException: public runtime::Exception {
@@ -68,4 +69,8 @@ private:
 };
 
 } // namespace rmi
+} // namespace klay
+
+namespace rmi = klay::rmi;
+
 #endif //__RMI_SOCKET_H__

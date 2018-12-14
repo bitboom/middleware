@@ -140,6 +140,7 @@ setMethodHandler<TYPEOF(M), TYPEOF(STRIP(STRIP(M)))>                          \
 setMethodHandler<TYPEOF(M)>                                                   \
 				(P, STRINGIFY(TYPEOF(STRIP(M))), std::bind(&TYPEOF(STRIP(M)), T))
 
+namespace klay {
 namespace rmi {
 
 typedef std::function<bool(const Connection& connection)> ConnectionCallback;
@@ -276,5 +277,8 @@ void Service::notify(const std::string& name, Args&&... args)
 }
 
 } // namespace rmi
+} // namespace klay
+
+namespace rmi = klay::rmi;
 
 #endif //__RMI_SERVICE_H__

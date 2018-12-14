@@ -27,7 +27,7 @@
 #include <klay/exception.h>
 #include <klay/auth/user.h>
 
-namespace runtime {
+namespace klay {
 
 User::User(const User& user) :
 	name(user.name), uid(user.uid), gid(user.gid)
@@ -86,4 +86,4 @@ User::User() :
 {
 }
 
-} // namespace runtime
+} // namespace klay

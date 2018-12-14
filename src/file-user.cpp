@@ -24,7 +24,7 @@
 #include <klay/file-user.h>
 #include <klay/filesystem.h>
 
-namespace runtime {
+namespace klay {
 
 bool FileUser::isUsedAsFD(const std::string &filePath, const pid_t pid, bool isMount)
 {
@@ -139,4 +139,4 @@ std::vector<pid_t> FileUser::getList(const std::string &path, bool isMount)
 	return list;
 }
 
-} // namespace runtime
+} // namespace klay

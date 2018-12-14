@@ -22,7 +22,7 @@
 
 #include <klay/klay.h>
 
-namespace runtime {
+namespace klay {
 
 class KLAY_EXPORT Latch {
 public:
@@ -72,5 +72,8 @@ private:
 	unsigned int count;
 };
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
+
 #endif // __RUNTIME_LATCH_H__

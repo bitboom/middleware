@@ -16,6 +16,7 @@
 #include <klay/exception.h>
 #include <klay/xml/node.h>
 
+namespace klay {
 namespace xml {
 
 Node::Node(xmlNode* node) :
@@ -113,3 +114,4 @@ bool Node::isBlank() const
 }
 
 } // namespace xml
+} // namespace klay

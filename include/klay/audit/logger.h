@@ -25,7 +25,7 @@
 
 #include "logsink.h"
 
-namespace audit {
+namespace klay {
 
 enum class KLAY_EXPORT LogLevel : int {
 	Silent,
@@ -98,5 +98,8 @@ do {                                                                   \
 #define INFO(args...)  GET_MACRO(args, INFO2, INFO1)(args)
 #define TRACE(args...) GET_MACRO(args, TRACE2, TRACE1)(args)
 
-} // namespace audit
+} // namespace klay
+
+namespace audit = klay;
+
 #endif //__AUDIT_LOGGER_H__

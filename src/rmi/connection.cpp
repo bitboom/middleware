@@ -18,6 +18,7 @@
 
 #include <klay/rmi/connection.h>
 
+namespace klay {
 namespace rmi {
 
 Connection::Connection(Socket&& sock) :
@@ -56,3 +57,4 @@ Message Connection::dispatch() const
 }
 
 } // namespace rmi
+} // namespace klay

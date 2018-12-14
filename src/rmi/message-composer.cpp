@@ -22,6 +22,7 @@
 #include <klay/audit/logger.h>
 #include <klay/rmi/message-composer.h>
 
+namespace klay {
 namespace rmi {
 
 MessageComposer::MessageComposer(size_t caps) :
@@ -161,3 +162,4 @@ void MessageComposer::reserve(size_t size)
 }
 
 } // namespae rmi
+} // namespae klay

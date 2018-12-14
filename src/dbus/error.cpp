@@ -15,6 +15,7 @@
  */
 #include <klay/dbus/error.h>
 
+namespace klay {
 namespace dbus {
 
 Error::Error() :
@@ -45,3 +46,4 @@ Error::operator bool () const
 }
 
 } // namespace dbus
+} // namespace klay

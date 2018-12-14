@@ -24,6 +24,7 @@
 
 #include <klay/klay.h>
 
+namespace klay {
 namespace database {
 
 class Column;
@@ -82,5 +83,8 @@ private:
 };
 
 } // namespace database
+} // namespace klay
+
+namespace database = klay::database;
 
 #endif //__DATABASE_STATEMENT_H__

@@ -24,6 +24,7 @@
 #include <klay/rmi/socket.h>
 #include <klay/rmi/message.h>
 
+namespace klay {
 namespace rmi {
 
 class KLAY_EXPORT Connection {
@@ -58,4 +59,8 @@ private:
 };
 
 } // namespace rmi
+} // namespace klay
+
+namespace rmi = klay::rmi;
+
 #endif //__RMI_CONNECTION_H__

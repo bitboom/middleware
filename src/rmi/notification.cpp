@@ -21,6 +21,7 @@
 #include <klay/exception.h>
 #include <klay/rmi/notification.h>
 
+namespace klay {
 namespace rmi {
 
 Notification::Notification()
@@ -69,3 +70,4 @@ int Notification::removeSubscriber(const int id)
 }
 
 } // namespace rmi
+} // namespace klay

@@ -18,6 +18,7 @@
 #include <klay/exception.h>
 #include <klay/db/connection.h>
 
+namespace klay {
 namespace database {
 
 Connection::Connection(const std::string& name, const int flags, bool integrityCheck) :
@@ -64,3 +65,4 @@ int Connection::exec(const std::string& query)
 }
 
 } // namespace database
+} // namespace klay

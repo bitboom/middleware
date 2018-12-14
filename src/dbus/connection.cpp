@@ -19,6 +19,7 @@
 #include <klay/dbus/connection.h>
 #include <klay/audit/logger.h>
 
+namespace klay {
 namespace dbus {
 
 namespace {
@@ -306,3 +307,4 @@ void Connection::onMethodCall(GDBusConnection* connection,
 }
 
 } // namespace dbus
+} // namespace klay

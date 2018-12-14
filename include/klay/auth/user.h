@@ -28,7 +28,7 @@
 #define INVALID_UID             UINT_MAX
 #endif
 
-namespace runtime  {
+namespace klay  {
 
 class KLAY_EXPORT User final {
 public:
@@ -58,6 +58,8 @@ private:
 	gid_t gid;
 };
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
 
 #endif //__RUNTIME_USER_H__

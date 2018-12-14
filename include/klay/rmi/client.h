@@ -28,6 +28,7 @@
 #include <klay/rmi/connection.h>
 #include <klay/rmi/callback-holder.h>
 
+namespace klay {
 namespace rmi {
 
 template <typename ExceptionModel>
@@ -185,4 +186,8 @@ public:
 using Client = RemoteAccessClient<DefaultExceptionModel>;
 
 } // namespace rmi
+} // namespace klay
+
+namespace rmi = klay::rmi;
+
 #endif //__RMI_CLIENT_H__

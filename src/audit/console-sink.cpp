@@ -18,11 +18,11 @@
 
 #include <klay/audit/console-sink.h>
 
-namespace audit {
+namespace klay {
 
 void ConsoleLogSink::sink(const std::string& message)
 {
 	std::cout << message << std::flush;
 }
 
-} // namespace audit
+} // namespace klay

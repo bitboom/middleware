@@ -22,7 +22,7 @@
 #include <klay/exception.h>
 #include <klay/namespace.h>
 
-namespace runtime {
+namespace klay {
 
 namespace {
 
@@ -77,4 +77,4 @@ void Namespace::unshare(int flags)
 	}
 }
 
-} // namespace runtime
+} // namespace klay

@@ -21,7 +21,7 @@
 
 #include <klay/klay.h>
 
-namespace runtime {
+namespace klay {
 
 class KLAY_EXPORT EventFD {
 public:
@@ -44,6 +44,8 @@ private:
 	int fd;
 };
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
 
 #endif //__RUNTIME_EVENTFD_H__

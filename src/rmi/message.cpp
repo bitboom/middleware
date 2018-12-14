@@ -16,6 +16,7 @@
 #include <klay/exception.h>
 #include <klay/rmi/message.h>
 
+namespace klay {
 namespace rmi {
 
 std::atomic<unsigned int> Message::sequence(0);
@@ -107,3 +108,4 @@ template<> void Message::disclose(runtime::FileDescriptor& fd)
 }
 
 } // namespace rmi
+} // namespace klay

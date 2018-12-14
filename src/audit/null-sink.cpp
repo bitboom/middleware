@@ -15,10 +15,10 @@
  */
 #include <klay/audit/null-sink.h>
 
-namespace audit {
+namespace klay {
 
 void NullLogSink::sink(const std::string& message)
 {
 };
 
-} // namespace audit
+} // namespace klay

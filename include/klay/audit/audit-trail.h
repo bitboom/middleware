@@ -24,7 +24,7 @@
 
 #include <klay/mainloop.h>
 
-namespace audit {
+namespace klay {
 
 class KLAY_EXPORT AuditTrail {
 public:
@@ -42,5 +42,8 @@ private:
 	std::thread dispatcher;
 };
 
-} // namespace audit
+} // namespace klay
+
+namespace audit = klay;
+
 #endif //__AUDIT_TRAIL_H__

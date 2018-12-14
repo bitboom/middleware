@@ -21,6 +21,7 @@
 
 #include <klay/klay.h>
 
+namespace klay {
 namespace dbus {
 
 class KLAY_EXPORT Error {
@@ -37,5 +38,8 @@ private:
 };
 
 } // namespace dbus
+} // namespace klay
+
+namespace dbus = klay::dbus;
 
 #endif //!__RUNTIME_DBUS_ERROR_H__

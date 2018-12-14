@@ -16,7 +16,7 @@
 #include <klay/exception.h>
 #include <klay/preprocessor.h>
 
-namespace runtime {
+namespace klay {
 
 const char *Exception::name() const
 {
@@ -39,4 +39,4 @@ EXCEPTION_IMPLEMENT(TimeoutException, "Timeout")
 EXCEPTION_IMPLEMENT(NoPermissionException, "No permission")
 EXCEPTION_IMPLEMENT(OutOfMemoryException, "Out of memory")
 EXCEPTION_IMPLEMENT(IOException, "I/O error")
-} // namespace runtime
+} // namespace klay

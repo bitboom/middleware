@@ -23,7 +23,7 @@
 #include <klay/pam.h>
 #include <klay/exception.h>
 
-namespace runtime {
+namespace klay {
 
 PAM::PAM(const std::string& service, const std::string& user)
 {
@@ -161,4 +161,4 @@ void PAM::closeSession(int flags)
 	}
 }
 
-} // namespace runtime
+} // namespace klay

@@ -23,7 +23,7 @@
 #include <klay/eventfd.h>
 #include <klay/exception.h>
 
-namespace runtime {
+namespace klay {
 
 EventFD::EventFD(unsigned int initval, int flags)
 {
@@ -61,4 +61,4 @@ void EventFD::receive()
 	}
 }
 
-} // namespace runtime
+} // namespace klay

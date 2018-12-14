@@ -18,7 +18,7 @@
 
 #include <klay/file-descriptor.h>
 
-namespace runtime {
+namespace klay {
 
 FileDescriptor::~FileDescriptor()
 {
@@ -44,4 +44,4 @@ FileDescriptor& FileDescriptor::operator=(FileDescriptor&& rhs)
 	return *this;
 }
 
-} // namespace runtime
+} // namespace klay

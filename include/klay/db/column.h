@@ -24,6 +24,7 @@
 #include <klay/klay.h>
 #include <klay/db/statement.h>
 
+namespace klay {
 namespace database {
 
 class KLAY_EXPORT Column {
@@ -76,5 +77,8 @@ private:
 };
 
 } // namespace database
+} // namespace klay
+
+namespace database = klay::database;
 
 #endif //__DATABASE_COLUMN_H__

@@ -19,6 +19,7 @@
 #include <klay/xml/parser.h>
 #include <klay/xml/keepblanks.h>
 
+namespace klay {
 namespace xml {
 
 Document* Parser::parseContext(xmlParserCtxt* context, bool validate)
@@ -80,3 +81,4 @@ Document* Parser::parseString(const std::string& xml, bool validate)
 }
 
 } // namespace xml
+} // namespace klay

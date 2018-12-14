@@ -15,6 +15,7 @@
  */
 #include <klay/xml/keepblanks.h>
 
+namespace klay {
 namespace xml {
 
 KeepBlanks::KeepBlanks(bool value)
@@ -30,3 +31,4 @@ KeepBlanks::~KeepBlanks()
 }
 
 } // namespace xml
+} // namespace klay

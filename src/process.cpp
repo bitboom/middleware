@@ -23,7 +23,7 @@
 #include <klay/process.h>
 #include <klay/exception.h>
 
-namespace runtime {
+namespace klay {
 
 Process::Process(const std::string& prog) :
 	status(-1), pid(-1), program(prog)
@@ -97,4 +97,4 @@ void Process::terminate()
 	}
 }
 
-} // namespace runtime
+} // namespace klay

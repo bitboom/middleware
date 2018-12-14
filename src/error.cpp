@@ -18,7 +18,7 @@
 
 #include <klay/error.h>
 
-namespace runtime {
+namespace klay {
 
 int Error::lastErrorCode()
 {
@@ -46,4 +46,4 @@ std::string GetSystemErrorMessage()
 	return Error::message();
 }
 
-} // namespace runtime
+} // namespace klay

@@ -22,6 +22,7 @@
 #include <klay/db/statement.h>
 #include <klay/db/connection.h>
 
+namespace klay {
 namespace database {
 
 Statement::Statement(const Connection& db, const std::string& query) :
@@ -223,3 +224,4 @@ void Statement::bind(const std::string& name)
 }
 
 } // namespace database
+} // namespace klay

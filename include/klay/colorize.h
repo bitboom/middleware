@@ -17,7 +17,7 @@
 
 #include <ostream>
 
-namespace console {
+namespace klay {
 
 enum Code {
 	BLACK = 31,
@@ -44,4 +44,6 @@ private:
 	Code code;
 };
 
-} // namespace console
+} // namespace klay
+
+namespace console = klay;

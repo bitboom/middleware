@@ -23,6 +23,7 @@
 
 #include <klay/klay.h>
 
+namespace klay {
 namespace dbus {
 
 class KLAY_EXPORT Variant {
@@ -58,7 +59,9 @@ private:
 	GVariantIter* iterator;
 };
 
-
 } // namespace dbus
+} // namespace klay
+
+namespace dbus = klay::dbus;
 
 #endif //!__RUNTIME_DBUS_VARIANT_H__

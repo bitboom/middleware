@@ -21,7 +21,7 @@
 #include <klay/audit/dlog-sink.h>
 #include <klay/audit/logger.h>
 
-namespace audit {
+namespace klay {
 
 DlogLogSink::DlogLogSink(const std::string& tag) : tag(tag) {}
 
@@ -52,4 +52,4 @@ void DlogLogSink::sink(const std::string &message)
 	}
 }
 
-} // namespace audit
+} // namespace klay

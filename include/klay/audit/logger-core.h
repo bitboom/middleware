@@ -23,7 +23,7 @@
 #include <memory>
 #include <mutex>
 
-namespace audit {
+namespace klay {
 
 class KLAY_EXPORT LoggerCore {
 public:
@@ -46,5 +46,8 @@ private:
 	ConsoleLogSink defaultSink;
 };
 
-} // namespace audit
+} // namespace klay
+
+namespace audit = klay;
+
 #endif //__AUDIT_LOGGER_CORE_H__

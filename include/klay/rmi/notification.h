@@ -30,6 +30,7 @@
 #include <klay/rmi/message.h>
 #include <klay/audit/logger.h>
 
+namespace klay {
 namespace rmi {
 
 typedef std::pair<int, int> SubscriptionId;
@@ -71,4 +72,8 @@ void Notification::notify(Args&&... args)
 }
 
 } // namespae rmi
+} // namespae klay
+
+namespace rmi = klay::rmi;
+
 #endif //__RMI_NOTIFICATION_H__

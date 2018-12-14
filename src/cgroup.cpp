@@ -30,7 +30,7 @@
 #define NAME_PATTERN "^[A-Za-z_][A-Za-z0-9_-]*"
 #define PATH_PATTERN "(/*[A-Za-z_][A-Za-z0-9_-]*)*"
 
-namespace runtime {
+namespace klay {
 
 bool Cgroup::existSubsystem(const std::string& name)
 {
@@ -215,4 +215,4 @@ const std::string Cgroup::getPath(const std::string& subsystem, const pid_t pid)
 	return ret;
 }
 
-} // namespace runtime
+} // namespace klay

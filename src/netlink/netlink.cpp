@@ -25,6 +25,7 @@
 #include <klay/audit/logger.h>
 #include <klay/netlink/netlink.h>
 
+namespace klay {
 namespace netlink {
 
 Netlink::Netlink(int protocol) :
@@ -144,3 +145,4 @@ Netlink::Message Netlink::recv(int options)
 }
 
 } // namespace runtime
+} // namespace klay

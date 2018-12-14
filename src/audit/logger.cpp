@@ -24,7 +24,7 @@
 #include <klay/audit/logger-core.h>
 #include <klay/audit/console-sink.h>
 
-namespace audit {
+namespace klay {
 
 std::string LogLevelToString(const LogLevel level)
 {
@@ -73,4 +73,4 @@ void Logger::log(LogSink* logSink, const LogRecord record)
 	LoggerCore::GetInstance().dispatch(logSink, buffer.str());
 }
 
-} // namespace audit
+} // namespace klay

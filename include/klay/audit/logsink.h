@@ -21,7 +21,7 @@
 
 #include <string>
 
-namespace audit {
+namespace klay {
 
 class KLAY_EXPORT LogSink {
 public:
@@ -30,5 +30,8 @@ public:
 	virtual void sink(const std::string& message) = 0;
 };
 
-} // namespace audit
+} // namespace klay
+
+namespace audit = klay;
+
 #endif //__AUDIT_LOGSINK_H__

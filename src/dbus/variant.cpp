@@ -15,6 +15,7 @@
  */
 #include <klay/dbus/variant.h>
 
+namespace klay {
 namespace dbus {
 
 Variant::Variant(GVariant* var) :
@@ -136,3 +137,4 @@ bool VariantIterator::get(const std::string& format, ...) const
 }
 
 } // namespace dbus
+} // namespace klay

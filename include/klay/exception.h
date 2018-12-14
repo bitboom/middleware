@@ -22,7 +22,7 @@
 
 #include <klay/klay.h>
 
-namespace runtime {
+namespace klay {
 
 class KLAY_EXPORT Exception: public std::runtime_error {
 public:
@@ -71,5 +71,8 @@ EXCEPTION_DEFINE(TimeoutException)
 EXCEPTION_DEFINE(NoPermissionException)
 EXCEPTION_DEFINE(OutOfMemoryException)
 EXCEPTION_DEFINE(IOException)
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
+
 #endif //__RUNTIME_EXCEPTION_H__

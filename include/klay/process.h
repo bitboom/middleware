@@ -22,7 +22,7 @@
 
 #include <klay/klay.h>
 
-namespace runtime {
+namespace klay {
 
 class KLAY_EXPORT Process {
 public:
@@ -52,5 +52,8 @@ private:
 	std::vector<std::string> args;
 };
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
+
 #endif //__RUNTIME_PROCESS_H__

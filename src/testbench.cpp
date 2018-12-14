@@ -22,6 +22,7 @@
 
 using namespace console;
 
+namespace klay {
 namespace testbench {
 
 Source::Source(const std::string& file, long line, const std::string& msg) :
@@ -179,3 +180,4 @@ void Testbench::run()
 }
 
 } //namespace testbench
+} //namespace klay

@@ -29,7 +29,7 @@
 
 #define MAX_EPOLL_EVENTS	16
 
-namespace runtime {
+namespace klay {
 
 Mainloop::Mainloop() :
 	pollFd(::epoll_create1(EPOLL_CLOEXEC)),
@@ -152,4 +152,4 @@ void Mainloop::run(int timeout)
 	}
 }
 
-} // namespace runtime
+} // namespace klay

@@ -21,7 +21,7 @@
 
 #include "logsink.h"
 
-namespace audit {
+namespace klay {
 
 class KLAY_EXPORT DlogLogSink : public LogSink {
 public:
@@ -32,5 +32,8 @@ private:
 	std::string tag;
 };
 
-} // namespace audit
+} // namespace klay
+
+namespace audit = klay;
+
 #endif //__AUDIT_DLOG_LOGSINK_H__

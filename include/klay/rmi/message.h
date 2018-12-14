@@ -27,6 +27,7 @@
 #include <klay/file-descriptor.h>
 #include <klay/rmi/message-composer.h>
 
+namespace klay {
 namespace rmi {
 
 class KLAY_EXPORT Message {
@@ -238,4 +239,8 @@ template<> void Message::enclose(runtime::FileDescriptor&& fd);
 template<> void Message::disclose(runtime::FileDescriptor& fd);
 
 } // namespae rmi
+} // namespae klay
+
+namespace rmi = klay::rmi;
+
 #endif //__RMI_MESSAGE_H__

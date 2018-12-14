@@ -19,7 +19,7 @@
 
 #include <klay/klay.h>
 
-namespace runtime {
+namespace klay {
 
 struct KLAY_EXPORT FileDescriptor {
 	FileDescriptor(int fd = -1, bool autoclose = false) :
@@ -46,6 +46,8 @@ private:
 	bool autoClose;
 };
 
-}
+} // namespace klay
+
+namespace runtime = klay;
 
 #endif //__RUNTIME_FILE_DESCRIPTOR_H__

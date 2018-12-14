@@ -15,6 +15,7 @@
  */
 #include <klay/db/column.h>
 
+namespace klay {
 namespace database {
 
 Column::Column(const Statement& stmt, int idx) :
@@ -68,3 +69,4 @@ int Column::getBytes() const
 }
 
 } // namespace database
+} // namespace klay

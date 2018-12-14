@@ -21,6 +21,7 @@
 
 #include <klay/klay.h>
 
+namespace klay {
 namespace rmi {
 
 class KLAY_EXPORT MessageComposer {
@@ -67,4 +68,8 @@ private:
 };
 
 } // namespae rmi
+} // namespae klay
+
+namespace rmi = klay::rmi;
+
 #endif //__RMI_MESSAGE_COMPOSER_H__

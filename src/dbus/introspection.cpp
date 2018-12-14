@@ -25,6 +25,7 @@
 #include <memory>
 #include <functional>
 
+namespace klay {
 namespace dbus {
 
 namespace {
@@ -272,3 +273,4 @@ void Introspection::update(void)
 }
 
 } // namespace dbus
+} // namespace klay

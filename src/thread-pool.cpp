@@ -23,7 +23,7 @@
 #define __BEGIN_CRITICAL__  { std::unique_lock<std::mutex> lock(this->queueMutex);
 #define __END_CRITICAL__    }
 
-namespace runtime {
+namespace klay {
 
 ThreadPool::ThreadPool(size_t threads)
 	: stop(false)
@@ -75,4 +75,4 @@ void ThreadPool::submit(std::function<void()>&& task)
 	condition.notify_one();
 }
 
-} // namespace runtime
+} // namespace klay

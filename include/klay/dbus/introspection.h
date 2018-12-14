@@ -25,6 +25,7 @@
 
 #include <klay/klay.h>
 
+namespace klay {
 namespace dbus {
 
 using BusNode = GDBusNodeInfo*;
@@ -85,5 +86,8 @@ private:
 };
 
 } // namespace dbus
+} // namespace klay
+
+namespace dbus = klay::dbus;
 
 #endif //! __RUNTIME_DBUS_INTROSPECTION_H__

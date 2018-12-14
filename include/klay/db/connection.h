@@ -23,6 +23,7 @@
 
 #include <klay/klay.h>
 
+namespace klay {
 namespace database {
 
 class KLAY_EXPORT Connection {
@@ -74,4 +75,8 @@ private:
 };
 
 } // namespace database
+} // namespace klay
+
+namespace database = klay::database;
+
 #endif //__DATABASE_CONNECTION_H__

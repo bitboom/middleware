@@ -16,6 +16,7 @@
 #include <klay/exception.h>
 #include <klay/rmi/client.h>
 
+namespace klay {
 namespace rmi {
 
 void DefaultExceptionModel::raise(const std::string& target, const std::string& msg)
@@ -41,3 +42,4 @@ void DefaultExceptionModel::raise(const std::string& target, const std::string& 
 }
 
 } // namespace rmi
+} // namespace klay

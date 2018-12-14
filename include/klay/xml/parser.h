@@ -24,6 +24,7 @@
 #include <klay/klay.h>
 #include <klay/xml/document.h>
 
+namespace klay {
 namespace xml {
 
 class KLAY_EXPORT Parser {
@@ -36,4 +37,8 @@ private:
 };
 
 } // namespace xml
+} // namespace klay
+
+namespace xml = klay::xml;
+
 #endif //__XML_DOMPARSER_H__

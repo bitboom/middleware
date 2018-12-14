@@ -22,6 +22,7 @@
 
 #include <klay/rmi/message.h>
 
+namespace klay {
 namespace rmi {
 
 template<typename Type, typename... Args>
@@ -71,4 +72,8 @@ struct CallbackHolder {
 };
 
 } // namespace rmi
+} // namespace klay
+
+namespace rmi = klay::rmi;
+
 #endif //!__RMI_CALLBACK_HOLDER_H__

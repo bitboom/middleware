@@ -26,6 +26,7 @@
 #include <klay/klay.h>
 #include <klay/dbus/variant.h>
 
+namespace klay {
 namespace dbus {
 
 class KLAY_EXPORT Connection {
@@ -158,5 +159,8 @@ private:
 };
 
 } // namespace dbus
+} // namespace klay
+
+namespace dbus = klay::dbus;
 
  #endif //! __RUNTIME_DBUS_CONNECTION_H__

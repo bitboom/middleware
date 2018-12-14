@@ -24,6 +24,7 @@
 #include <klay/rmi/message.h>
 #include <klay/audit/logger.h>
 
+namespace klay {
 namespace rmi {
 
 thread_local Service::ProcessingContext Service::processingContext;
@@ -243,3 +244,4 @@ void Service::onMessageProcess(const std::shared_ptr<Connection>& connection)
 }
 
 } // namespace rmi
+} // namespace klay

@@ -26,6 +26,7 @@
 #define NETLINK_AUDIT 9
 #endif
 
+namespace klay {
 namespace netlink {
 
 class KLAY_EXPORT Netlink final {
@@ -51,6 +52,9 @@ private:
 	unsigned int sequence;
 };
 
-} // namespace runtime
+} // namespace netlink
+} // namespace klay
+
+namespace netlink = klay::netlink;
 
 #endif //!__RUNTIME_NETLINK_NETLINK_H__

@@ -18,6 +18,7 @@
 #include <klay/dbus/introspection.h>
 #include <klay/exception.h>
 
+namespace klay {
 namespace dbus {
 namespace signal {
 
@@ -87,3 +88,4 @@ void Receiver::unsubscribe(unsigned int id) const
 
 } // namespace signal
 } // namespace dbus
+} // namespace klay

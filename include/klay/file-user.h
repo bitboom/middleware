@@ -22,7 +22,7 @@
 
 #include <klay/klay.h>
 
-namespace runtime {
+namespace klay {
 
 class KLAY_EXPORT FileUser final {
 public:
@@ -36,6 +36,8 @@ public:
 	static std::vector<pid_t> getList(const std::string &path, bool isMount = false);
 };
 
-} // namespace runtime
+} // namespace klay
+
+namespace runtime = klay;
 
 #endif /* __FILE_USER_H__ */
