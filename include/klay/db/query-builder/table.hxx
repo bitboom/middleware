@@ -17,7 +17,7 @@
 #pragma once
 
 #include "column.hxx"
-#include "table-impl.hxx"
+#include "column-pack.hxx"
 #include "tuple-helper.hxx"
 #include "expression.hxx"
 #include "util.hxx"
@@ -32,8 +32,8 @@ template<typename... Columns>
 class Table {
 public:
 	using Self = Table<Columns...>;
-	using ImplType = internal::TableImpl<Columns...>;
-	using TableType = typename ImplType::TableType;
+	using ColumnPackType = internal::ColumnPack<Columns...>;
+	using TableType = typename ColumnPackType::TableType;
 
 	template<typename... ColumnTypes>
 	Self& select(ColumnTypes&&... cts);
@@ -66,7 +66,7 @@ public:
 	std::string name;
 
 private:
-	explicit Table(const std::string& name, ImplType&& impl);
+	explicit Table(const std::string& name, ColumnPackType&& columnPack);
 
 	template<typename ...Cs>
 	friend Table<Cs...> make_table(const std::string& name, Cs&& ...columns);
@@ -82,15 +82,15 @@ private:
 	std::vector<std::string> getColumnNames(void) const noexcept;
 
 	struct GetColumnNames {
-		ImplType impl;
+		ColumnPackType columnPack;
 		std::vector<std::string> names;
 
-		GetColumnNames(const ImplType &impl) : impl(impl) {}
+		GetColumnNames(const ColumnPackType& columnPack) : columnPack(columnPack) {}
 
 		template <typename T>
 		void operator()(T&& type)
 		{
-			auto name = this->impl.getColumnName(std::forward<T>(type));
+			auto name = this->columnPack.getName(std::forward<T>(type));
 			if (!name.empty())
 				names.emplace_back(name);
 		}
@@ -105,20 +105,20 @@ private:
 	template<typename Expr>
 	std::string processWhere(Expr expr);
 
-	ImplType impl;
+	ColumnPackType columnPack;
 	std::vector<std::string> cache;
 };
 
 template<typename ...Columns>
 Table<Columns...> make_table(const std::string& name, Columns&& ...cs)
 {
-	auto impl = internal::TableImpl<Columns...>(std::forward<Columns>(cs)...);
-	return Table<Columns...>(name, std::move(impl));
+	auto columnPack = internal::ColumnPack<Columns...>(std::forward<Columns>(cs)...);
+	return Table<Columns...>(name, std::move(columnPack));
 }
 
 template<typename... Columns>
-Table<Columns...>::Table(const std::string& name, ImplType&& impl)
-	: name(name), impl(std::move(impl)) {}
+Table<Columns...>::Table(const std::string& name, ColumnPackType&& columnPack)
+	: name(name), columnPack(std::move(columnPack)) {}
 
 template<typename... Columns>
 template<typename... ColumnTypes>
@@ -290,7 +290,7 @@ template<typename... Columns>
 template<typename Cs>
 std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& tuple)
 {
-	GetColumnNames closure(this->impl);
+	GetColumnNames closure(this->columnPack);
 	tuple_helper::for_each(std::forward<Cs>(tuple), closure);
 
 	return closure.names;
@@ -299,20 +299,20 @@ std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& tuple)
 template<typename... Columns>
 int Table<Columns...>::size() const noexcept
 {
-	return this->impl.size();
+	return this->columnPack.size();
 }
 
 template<typename... Columns>
 std::vector<std::string> Table<Columns...>::getColumnNames(void) const noexcept
 {
-	return this->impl.getColumnNames();
+	return this->columnPack.getNames();
 }
 
 template<typename... Columns>
 template<typename ColumnType>
 std::string Table<Columns...>::getColumnName(ColumnType&& type) const noexcept
 {
-	return this->impl.getColumnName(std::forward<ColumnType>(type));
+	return this->columnPack.getName(std::forward<ColumnType>(type));
 }
 
 template<typename... Columns>
@@ -344,7 +344,7 @@ template<typename Expr>
 std::string Table<Columns...>::processWhere(Expr expr)
 {
 	std::stringstream ss;
-	ss << this->impl.getColumnName(expr.l.type);
+	ss << this->columnPack.getName(expr.l.type);
 	ss << " " << std::string(expr) << " ?";
 
 	return ss.str();

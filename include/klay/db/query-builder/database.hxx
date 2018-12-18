@@ -22,7 +22,7 @@
 #include <sstream>
 #include <algorithm>
 
-#include "database-impl.hxx"
+#include "table-pack.hxx"
 #include "tuple-helper.hxx"
 #include "condition.hxx"
 #include "expression.hxx"
@@ -52,11 +52,11 @@ public:
 	std::string name;
 
 private:
-	using ImplType = internal::DatabaseImpl<Tables...>;
+	using TablePackType = internal::TablePack<Tables...>;
 	using ColumnNames = std::vector<std::string>;
 	using TableNames = std::set<std::string>;
 
-	explicit Database(const std::string& name, ImplType&& impl);
+	explicit Database(const std::string& name, TablePackType&& tablePack);
 
 	template<typename ...Ts>
 	friend Database<Ts...> make_database(const std::string& name, Ts&& ...tables);
@@ -68,32 +68,32 @@ private:
 	std::vector<std::string> getColumnNames(Cs&& tuple);
 
 	struct GetTableNames {
-		ImplType impl;
+		TablePackType tablePack;
 		std::set<std::string> names;
-		GetTableNames(const ImplType &_impl) : impl(_impl) {}
+		GetTableNames(const TablePackType& tablePack) : tablePack(tablePack) {}
 
 		template <typename T>
 		void operator()(T&& type)
 		{
 			auto column = make_column("anonymous", type);
 			using TableType = typename decltype(column)::TableType;
-			auto name = this->impl.getTableName(TableType());
+			auto name = this->tablePack.getName(TableType());
 			if (!name.empty())
 				names.emplace(name);
 		}
 	};
 
 	struct GetColumnNames {
-		ImplType impl;
+		TablePackType tablePack;
 		std::vector<std::string> names;
 
-		GetColumnNames(const ImplType &_impl) : impl(_impl) {}
+		GetColumnNames(const TablePackType& tablePack) : tablePack(tablePack) {}
 
 		template <typename T>
 		void operator()(T&& type)
 		{
 			auto column = make_column("anonymous", type);
-			auto name = this->impl.getColumnName(std::move(column));
+			auto name = this->tablePack.getColumnName(std::move(column));
 			if (!name.empty())
 				names.emplace_back(name);
 		}
@@ -108,20 +108,20 @@ private:
 	template<typename Expr>
 	std::string processWhere(Expr expr);
 
-	ImplType impl;
+	TablePackType tablePack;
 	std::vector<std::string> cache;
 };
 
 template<typename ...Tables>
 Database<Tables...> make_database(const std::string& name, Tables&& ...tables)
 {
-	auto impl = internal::DatabaseImpl<Tables...>(std::forward<Tables>(tables)...);
-	return Database<Tables...>(name, std::move(impl));
+	auto tablePack = internal::TablePack<Tables...>(std::forward<Tables>(tables)...);
+	return Database<Tables...>(name, std::move(tablePack));
 }
 
 template<typename ...Tables>
-Database<Tables...>::Database(const std::string& name, ImplType&& impl)
-	: name(name), impl(std::move(impl)) {}
+Database<Tables...>::Database(const std::string& name, TablePackType&& tablePack)
+	: name(name), tablePack(std::move(tablePack)) {}
 
 template<typename... Tables>
 template<typename... ColumnTypes>
@@ -178,7 +178,7 @@ Database<Tables...>& Database<Tables...>::join(condition::Join type)
 	std::stringstream ss;
 	ss << condition::to_string(type) << " ";
 	ss << "JOIN ";
-	ss << this->impl.getTableName(Table());
+	ss << this->tablePack.getName(Table());
 
 	this->cache.emplace_back(ss.str());
 	return *this;
@@ -191,12 +191,12 @@ Database<Tables...>& Database<Tables...>::on(Expr expr)
 	std::stringstream ss;
 	ss << "ON ";
 
-	auto lname = this->impl.getColumnName(std::move(expr.l));
+	auto lname = this->tablePack.getColumnName(std::move(expr.l));
 	ss << lname << " ";
 
 	ss << std::string(expr) << " ";
 
-	auto rname = this->impl.getColumnName(std::move(expr.r));
+	auto rname = this->tablePack.getColumnName(std::move(expr.r));
 	ss << rname;
 
 	this->cache.emplace_back(ss.str());
@@ -218,7 +218,7 @@ template<typename... Tables>
 template<typename Cs>
 std::set<std::string> Database<Tables...>::getTableNames(Cs&& tuple)
 {
-	GetTableNames closure(this->impl);
+	GetTableNames closure(this->tablePack);
 	tuple_helper::for_each(std::forward<Cs>(tuple), closure);
 
 	return closure.names;
@@ -228,7 +228,7 @@ template<typename... Tables>
 template<typename Cs>
 std::vector<std::string> Database<Tables...>::getColumnNames(Cs&& tuple)
 {
-	GetColumnNames closure(this->impl);
+	GetColumnNames closure(this->tablePack);
 	tuple_helper::for_each(std::forward<Cs>(tuple), closure);
 
 	return closure.names;
@@ -263,7 +263,7 @@ template<typename Expr>
 std::string Database<Tables...>::processWhere(Expr expr)
 {
 	std::stringstream ss;
-	ss << this->impl.getColumnName(expr.l);
+	ss << this->tablePack.getColumnName(expr.l);
 	ss << " " << std::string(expr) << " ?";
 
 	return ss.str();
