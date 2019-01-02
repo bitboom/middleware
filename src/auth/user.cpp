@@ -48,9 +48,9 @@ User::User(const std::string& user)
 	ret = ::getpwnam_r(user.c_str(), &pwd, buf.get(), bufsize, &result);
 	if (result == NULL) {
 		if (ret == 0)
-			throw runtime::Exception("User " + user + " doesn't exist");
+			throw klay::Exception("User " + user + " doesn't exist");
 		else
-			throw runtime::Exception(runtime::GetSystemErrorMessage(ret));
+			throw klay::Exception(klay::GetSystemErrorMessage(ret));
 	}
 
 	name = result->pw_name;
@@ -71,9 +71,9 @@ User::User(const uid_t user)
 	ret = ::getpwuid_r(user, &pwd, buf.get(), bufsize, &result);
 	if (result == NULL) {
 		if (ret == 0)
-			throw runtime::Exception("User " + std::to_string(user) + "doesn't exist");
+			throw klay::Exception("User " + std::to_string(user) + "doesn't exist");
 		else
-			throw runtime::Exception(runtime::GetSystemErrorMessage(ret));
+			throw klay::Exception(klay::GetSystemErrorMessage(ret));
 	}
 
 	name = result->pw_name;

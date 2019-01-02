@@ -45,7 +45,7 @@ TESTCASE(DatabaseTest)
 	try {
 		database::Connection db(TestbenchDataSource, database::Connection::ReadWrite | database::Connection::Create);
 		db.exec(query);
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
@@ -55,7 +55,7 @@ TESTCASE(InvalidStatementTest)
 	try {
 		database::Connection db(TestbenchDataSource, database::Connection::ReadWrite | database::Connection::Create);
 		database::Statement stmt(db, "INVALID STATEMENT");
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 
@@ -64,7 +64,7 @@ TESTCASE(InvalidStatementTest2)
 	try {
 		database::Connection db(TestbenchDataSource, database::Connection::ReadWrite | database::Connection::Create);
 		db.exec("INVALID");
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 
@@ -91,7 +91,7 @@ TESTCASE(ColumnBindTestWithIndex1)
 		TEST_EXPECT(5, select.getColumnCount());
 		stmt.clearBindings();
 		stmt.reset();
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
@@ -108,7 +108,7 @@ TESTCASE(ColumnBindTestWithIndex2)
 		stmt.bind(3, false);
 		stmt.bind(4, 5001);
 		stmt.exec();
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
@@ -125,7 +125,7 @@ TESTCASE(ColumnBindTestWithName1)
 		stmt.bind(":IS_USED", true);
 		stmt.bind(":USER", 5001);
 		stmt.exec();
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
@@ -139,7 +139,7 @@ TESTCASE(ColumnBindNullTest)
 		database::Statement stmt(db, query);
 		stmt.bind(":PKG");
 		stmt.bind(2);
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
@@ -162,7 +162,7 @@ TESTCASE(ColumnBindTestWithName2)
 		stmt.bind(":IS_USED", used);
 		stmt.bind(":USER", user);
 		stmt.exec();
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
@@ -191,7 +191,7 @@ TESTCASE(ColumnTest)
 			key.getName(); key.getText(); key.getType(); key.getBytes(); key.getBlob();
 			used.getName(); used.getInt(); used.getInt64(); used.getDouble(); used.getType(); used.getBytes();
 		}
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
@@ -203,7 +203,7 @@ TESTCASE(ColumnOutRange1)
 		database::Statement select(db, "SELECT * FROM CLIENT");
 		select.step();
 		database::Column column = select.getColumn(32);
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 
@@ -214,7 +214,7 @@ TESTCASE(ColumnOutRange2)
 		database::Statement select(db, "SELECT * FROM CLIENT");
 		select.step();
 		select.isNullColumn(32);
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 
@@ -225,7 +225,7 @@ TESTCASE(ColumnOutRange3)
 		database::Statement select(db, "SELECT * FROM CLIENT");
 		select.step();
 		select.getColumnName(32);
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 
@@ -238,46 +238,46 @@ TESTCASE(ColumnBindOutRange1)
 		database::Statement stmt(db, query);
 		try {
 			stmt.bind(":TPK", "TEST PACKAGE");
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(":TPK", (int)10);
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(":TPK", (sqlite3_int64)10);
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(":TPK", (double)10);
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(":TPK", "invalid");
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(":TPK", std::string("invalid"));
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(":TPK", (void *)NULL, 12);
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(":TPK");
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		stmt.exec();
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 
@@ -290,46 +290,46 @@ TESTCASE(ColumnBindOutRange2)
 		database::Statement stmt(db, query);
 		try {
 			stmt.bind(32, "TEST PACKAGE");
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(32, (int)10);
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(32, (sqlite3_int64)10);
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(32, (double)10);
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(32, "invalid");
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(32, std::string("invalid"));
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(32, (void *)NULL, 12);
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			stmt.bind(32);
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		stmt.exec();
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 
@@ -337,6 +337,6 @@ TESTCASE(InvalidDB)
 {
 	try {
 		database::Connection db("/tmp/invalid.db", database::Connection::ReadWrite);
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }

@@ -189,7 +189,7 @@ public:
 		return processingContext.credentials.gid;
 	}
 
-	runtime::Mainloop mainloop;
+	klay::Mainloop mainloop;
 
 private:
 	struct ProcessingContext {
@@ -237,7 +237,7 @@ private:
 
 	std::string address;
 
-	runtime::ThreadPool workqueue;
+	klay::ThreadPool workqueue;
 	std::mutex stateLock;
 	std::mutex notificationLock;
 	std::mutex methodRegistryLock;
@@ -261,7 +261,7 @@ void Service::setMethodHandler(const std::string& privilege, const std::string& 
 	std::lock_guard<std::mutex> lock(methodRegistryLock);
 
 	if (methodRegistry.count(method)) {
-		throw runtime::Exception("Method handler already registered");
+		throw klay::Exception("Method handler already registered");
 	}
 
 	methodRegistry[method] = std::make_shared<MethodContext>(privilege, dispatchMethod);

@@ -45,7 +45,7 @@ TESTCASE(XPath)
 		while (iter != nodes.end()) {
 			++iter;
 		}
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
@@ -65,7 +65,7 @@ TESTCASE(XmlDomTree)
 		while (iter != list.end()) {
 			++iter;
 		}
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
@@ -88,7 +88,7 @@ TESTCASE(XmlGenerate)
 		TEST_EXPECT("Value", node.getProp("Prop"));
 
 		doc.write("/tmp/test.xml", "UTF-8", true);
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
@@ -97,6 +97,6 @@ TESTCASE(XmlException)
 {
 	try {
 		xml::Parser::parseFile("Invalid Source");
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }

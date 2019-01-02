@@ -25,7 +25,7 @@ namespace xml {
 Document* Parser::parseContext(xmlParserCtxt* context, bool validate)
 {
 	if (context == nullptr) {
-		throw runtime::Exception("Could not create parser context");
+		throw klay::Exception("Could not create parser context");
 	}
 
 	KeepBlanks(false);
@@ -42,7 +42,7 @@ Document* Parser::parseContext(xmlParserCtxt* context, bool validate)
 
 	if (xmlParseDocument(context) < 0) {
 		xmlFreeParserCtxt(context);
-		throw runtime::Exception("Parsing failed");
+		throw klay::Exception("Parsing failed");
 	}
 
 	xmlDoc* document = context->myDoc;
@@ -59,7 +59,7 @@ Document* Parser::parseFile(const std::string& filename, bool validate)
 {
 	xmlParserCtxt* context = xmlCreateFileParserCtxt(filename.c_str());
 	if (context == nullptr) {
-		throw runtime::Exception("Could not create parser context");
+		throw klay::Exception("Could not create parser context");
 	}
 
 	if (context->directory == nullptr) {
@@ -74,7 +74,7 @@ Document* Parser::parseString(const std::string& xml, bool validate)
 	xmlParserCtxt* context = xmlCreateMemoryParserCtxt(xml.c_str(), xml.size() + 1);
 
 	if (context == nullptr) {
-		throw runtime::Exception("Could not create parser context");
+		throw klay::Exception("Could not create parser context");
 	}
 
 	return parseContext(context, validate);

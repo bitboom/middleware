@@ -86,14 +86,14 @@ bool Process::isRunning() const
 void Process::kill()
 {
 	if (::kill(pid, SIGKILL) == -1) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 }
 
 void Process::terminate()
 {
 	if (::kill(pid, SIGINT) == -1) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 }
 

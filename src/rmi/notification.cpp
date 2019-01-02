@@ -43,7 +43,7 @@ SubscriptionId Notification::createSubscriber()
 {
 	int fds[2] = {-1, -1};
 	if (::socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == -1) {
-		throw runtime::Exception("Failed to create socket pair");
+		throw klay::Exception("Failed to create socket pair");
 	}
 
 	std::lock_guard<std::mutex> lock(subscriberLock);

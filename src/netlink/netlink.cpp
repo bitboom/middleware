@@ -33,12 +33,12 @@ Netlink::Netlink(int protocol) :
 {
 	fd = ::socket(PF_NETLINK, SOCK_RAW, protocol);
 	if (fd < 0) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	if (::fcntl(fd, F_SETFD, FD_CLOEXEC) == -1) {
 		::close(fd);
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 }
 
@@ -89,14 +89,14 @@ void Netlink::send(int type, const std::vector<char>& data)
 	} while (ret < 0 && errno == EINTR);
 
 	if (ret < 0) {
-		throw runtime::Exception("Failed to send a netlink message");
+		throw klay::Exception("Failed to send a netlink message");
 	}
 
 	if (recv(MSG_PEEK).first == NLMSG_ERROR) {
 		auto reply = recv().second;
 		auto err = (struct nlmsgerr*)reply.data();
 		if (err->error)
-			throw runtime::Exception("Netlink error: " +
+			throw klay::Exception("Netlink error: " +
 										std::to_string(err->error));
 	} else {
 			WARN("Missing ack of netlink message");
@@ -114,7 +114,7 @@ Netlink::Message Netlink::recv(int options)
 	} while (ret < 0 && errno == EINTR);
 
 	if (ret < 0) {
-		throw runtime::Exception("Failed to get the size of netlink message");
+		throw klay::Exception("Failed to get the size of netlink message");
 	}
 
 	struct sockaddr_nl nladdr;
@@ -130,19 +130,19 @@ Netlink::Message Netlink::recv(int options)
 	::memcpy(msg.second.data(), NLMSG_DATA(buf), msg.second.size());
 
 	if (ret < 0) {
-		throw runtime::Exception("Failed to receive audit packet");
+		throw klay::Exception("Failed to receive audit packet");
 	}
 
 	if (nladdrlen != sizeof(nladdr)) {
-		throw runtime::Exception("Bad address size in netlink socket");
+		throw klay::Exception("Bad address size in netlink socket");
 	}
 
 	if (nladdr.nl_pid) {
-		throw runtime::Exception("Spoofed packet received on netlink socket");
+		throw klay::Exception("Spoofed packet received on netlink socket");
 	}
 
 	return msg;
 }
 
-} // namespace runtime
+} // namespace klay
 } // namespace klay

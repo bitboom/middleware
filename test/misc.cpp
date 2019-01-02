@@ -25,5 +25,5 @@
 
 TESTCASE(ErrorMessage)
 {
-	std::cout << "Error Message: " << runtime::GetSystemErrorMessage(EINTR) << std::endl;
+	std::cout << "Error Message: " << klay::GetSystemErrorMessage(EINTR) << std::endl;
 }

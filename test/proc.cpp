@@ -30,61 +30,61 @@ TESTCASE(ProcWithArg)
 			"-l",
 			"-a"
 		};
-		runtime::Process proc("/bin/ls > /dev/null", args);
+		klay::Process proc("/bin/ls > /dev/null", args);
 		TEST_EXPECT(true, proc.execute() != -1);
 		proc.waitForFinished();
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 
 TESTCASE(ProcKill)
 {
 	try {
-		runtime::Process proc("/opt/data/unittest-proc.sh");
+		klay::Process proc("/opt/data/unittest-proc.sh");
 		TEST_EXPECT(true, proc.execute() != -1);
 		if (proc.isRunning()) {
 			proc.kill();
 			proc.waitForFinished();
 		}
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 
 TESTCASE(ProcTerminate)
 {
 	try {
-		runtime::Process proc("/opt/data/unittest-proc.sh");
+		klay::Process proc("/opt/data/unittest-proc.sh");
 		TEST_EXPECT(true, proc.execute() != -1);
 		if (proc.isRunning()) {
 			proc.terminate();
 			proc.waitForFinished();
 		}
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 
 TESTCASE(ProcInvalidProcess)
 {
 	try {
-		runtime::Process proc(TEST_DATA_DIR "test-proc.sh");
+		klay::Process proc(TEST_DATA_DIR "test-proc.sh");
 		TEST_EXPECT(true, proc.execute() != -1);
 		proc.terminate();
 		proc.waitForFinished();
 		TEST_EXPECT(false, proc.isRunning());
 		try {
 			proc.kill();
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			proc.terminate();
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			proc.waitForFinished();
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }

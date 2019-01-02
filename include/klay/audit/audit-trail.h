@@ -34,11 +34,11 @@ public:
 	void start();
 	void stop();
 
-	void subscribe(const int fd, const runtime::Mainloop::Event events, runtime::Mainloop::Callback&& callback);
+	void subscribe(const int fd, const klay::Mainloop::Event events, klay::Mainloop::Callback&& callback);
 	void unsubscribe(const int fd);
 
 private:
-	runtime::Mainloop mainloop;
+	klay::Mainloop mainloop;
 	std::thread dispatcher;
 };
 

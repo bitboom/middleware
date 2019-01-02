@@ -50,7 +50,7 @@ Node Node::addNewChild(const std::string& name)
 {
 	xmlNode* nodePtr = xmlNewNode(NULL, xmlStrdup((const xmlChar*)name.c_str()));
 	if (nodePtr == nullptr) {
-		throw runtime::Exception("Can not create a new node");
+		throw klay::Exception("Can not create a new node");
 	}
 	xmlAddChild(implementation, nodePtr);
 
@@ -86,7 +86,7 @@ void Node::setContent(const std::string& content)
 std::string Node::getProp(const std::string& name) const
 {
 	if (implementation->type != XML_ELEMENT_NODE) {
-		throw runtime::Exception("This node type does not have properties");
+		throw klay::Exception("This node type does not have properties");
 	}
 
 	xmlChar* prop = xmlGetProp(implementation, (xmlChar*)name.c_str());
@@ -102,7 +102,7 @@ std::string Node::getProp(const std::string& name) const
 void Node::setProp(const std::string& name, const std::string& val)
 {
 	if (implementation->type != XML_ELEMENT_NODE) {
-		throw runtime::Exception("Can not set properties for this node type");
+		throw klay::Exception("Can not set properties for this node type");
 	}
 
 	xmlSetProp(implementation, (xmlChar*)name.c_str(), (xmlChar*)val.c_str());

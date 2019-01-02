@@ -39,15 +39,15 @@ bool Cgroup::existSubsystem(const std::string& name)
 			return false;
 		}
 	} catch (std::runtime_error &e) {
-		throw runtime::Exception("Unexpected regex error");
+		throw klay::Exception("Unexpected regex error");
 	}
 
-	runtime::File dir("/sys/fs/cgroup/" + name);
+	klay::File dir("/sys/fs/cgroup/" + name);
 	if (dir.exists()) {
 		if (dir.isDirectory()) {
 			return true;
 		}
-		throw runtime::Exception("Invalid subsystem name");
+		throw klay::Exception("Invalid subsystem name");
 	}
 
 	return false;
@@ -57,21 +57,21 @@ void Cgroup::createSubsystem(const std::string& name)
 {
 	try {
 		if (!std::regex_match(name, std::regex(NAME_PATTERN))) {
-			throw runtime::Exception("Invalid subsystem name");
+			throw klay::Exception("Invalid subsystem name");
 		}
 	} catch (std::runtime_error &e) {
-		throw runtime::Exception("Unexpected regex error");
+		throw klay::Exception("Unexpected regex error");
 	}
 
 	if (existSubsystem(name)) {
 		return;
 	}
 
-	runtime::File subsystem("/sys/fs/cgroup/" + name);
+	klay::File subsystem("/sys/fs/cgroup/" + name);
 	if (::mount(NULL, "/sys/fs/cgroup/", NULL, MS_REMOUNT |
 			MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_STRICTATIME,
 			"mode=755")) {
-		throw runtime::Exception("Failed to remount cgroupfs as the writable");
+		throw klay::Exception("Failed to remount cgroupfs as the writable");
 	}
 
 	if (!subsystem.exists()) {
@@ -82,29 +82,29 @@ void Cgroup::createSubsystem(const std::string& name)
 			"cgroup", MS_NODEV | MS_NOSUID | MS_NOEXEC,
 			("none,name=" + name).c_str())) {
 		subsystem.remove(false);
-		throw runtime::Exception("Failed to mount cgroup subsystem");
+		throw klay::Exception("Failed to mount cgroup subsystem");
 	}
 
 	if (::mount(NULL, "/sys/fs/cgroup/", NULL, MS_REMOUNT | MS_RDONLY |
 			MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_STRICTATIME,
 			"mode=755")) {
-		throw runtime::Exception("Failed to remount cgroupfs as the read-only");
+		throw klay::Exception("Failed to remount cgroupfs as the read-only");
 	}
 }
 
 void Cgroup::destroySubsystem(const std::string& name)
 {
 	if (!existSubsystem(name)) {
-		 throw runtime::Exception("No such subsystem");
+		 throw klay::Exception("No such subsystem");
 	}
 
 	if (::mount(NULL, "/sys/fs/cgroup/", NULL, MS_REMOUNT |
 			MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_STRICTATIME,
 			"mode=755")) {
-		throw runtime::Exception("Failed to remount cgroupfs as the writable");
+		throw klay::Exception("Failed to remount cgroupfs as the writable");
 	}
 
-	runtime::File subsystem("/sys/fs/cgroup/" + name);
+	klay::File subsystem("/sys/fs/cgroup/" + name);
 	::umount2(subsystem.getPath().c_str(), MNT_EXPIRE);
 
 	subsystem.remove(false);
@@ -112,7 +112,7 @@ void Cgroup::destroySubsystem(const std::string& name)
 	if (::mount(NULL, "/sys/fs/cgroup/", NULL, MS_REMOUNT | MS_RDONLY |
 			MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_STRICTATIME,
 			"mode=755")) {
-		throw runtime::Exception("Failed to remount cgroupfs as the read-only");
+		throw klay::Exception("Failed to remount cgroupfs as the read-only");
 	}
 }
 
@@ -123,15 +123,15 @@ bool Cgroup::exist(const std::string& subsystem, const std::string& path)
 			return false;
 		}
 	} catch (std::runtime_error &e) {
-		throw runtime::Exception("Unexpected regex error");
+		throw klay::Exception("Unexpected regex error");
 	}
 
-	runtime::File dir("/sys/fs/cgroup/" + subsystem + "/" + path);
+	klay::File dir("/sys/fs/cgroup/" + subsystem + "/" + path);
 	if (dir.exists()) {
 		if (dir.isDirectory()) {
 			return true;
 		}
-		throw runtime::Exception("Invalid path");
+		throw klay::Exception("Invalid path");
 	}
 
 	return false;
@@ -141,34 +141,34 @@ void Cgroup::create(const std::string& subsystem, const std::string& path)
 {
 	try {
 		if (!std::regex_match(path, std::regex(PATH_PATTERN))) {
-			throw runtime::Exception("Invalid path");
+			throw klay::Exception("Invalid path");
 		}
 	} catch (std::runtime_error &e) {
-		throw runtime::Exception("Unexpected regex error");
+		throw klay::Exception("Unexpected regex error");
 	}
 
 	if (exist(subsystem, path)) {
 		return;
 	}
 
-	runtime::File dir("/sys/fs/cgroup/" + subsystem + "/" + path);
+	klay::File dir("/sys/fs/cgroup/" + subsystem + "/" + path);
 	dir.makeDirectory(true);
 }
 
 void Cgroup::destroy(const std::string& subsystem, const std::string& path)
 {
 	if (!exist(subsystem, path)) {
-		throw runtime::Exception("No such path in subsystem");
+		throw klay::Exception("No such path in subsystem");
 	}
 
-	runtime::File dir("/sys/fs/cgroup/" + subsystem + "/" + path);
+	klay::File dir("/sys/fs/cgroup/" + subsystem + "/" + path);
 	dir.remove(false);
 }
 
 void Cgroup::addProcess(const std::string& subsystem, const std::string& path, const pid_t pid)
 {
 	if (!exist(subsystem, path)) {
-		throw runtime::Exception("No such path in subsystem");
+		throw klay::Exception("No such path in subsystem");
 	}
 
 	std::ofstream ofs("/sys/fs/cgroup/" + subsystem + "/" + path +

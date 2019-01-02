@@ -97,13 +97,13 @@ TESTCASE(DbusRegisterObjectTest)
 {
 	ScopedGMainLoop mainloop;
 	mainloop.dispatch([&](){
-		runtime::Latch nameAcquired;
+		klay::Latch nameAcquired;
 		auto handler = [](const std::string& objectPath,
 						  const std::string& interface,
 						  const std::string& methodName,
 						  dbus::Variant parameters) {
 			if (objectPath != TESTSVC_OBJECT_PATH || interface != TESTSVC_INTERFACE) {
-				throw runtime::Exception("Unknown Method");
+				throw klay::Exception("Unknown Method");
 			}
 			if (methodName == TESTSVC_METHOD_NOOP) {
 				return dbus::Variant();

@@ -65,7 +65,7 @@ void Notification::notify(Args&&... args)
 	for (const std::shared_ptr<Socket>& subscriber : subscribers) {
 		try {
 			msg.encode(*subscriber);
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 			ERROR(KSINK, e.what());
 		}
 	}

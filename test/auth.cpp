@@ -28,9 +28,9 @@
 TESTCASE(GetGroupTest)
 {
 	try {
-		runtime::Group group("users");
-		runtime::Group another(group);
-	} catch (runtime::Exception& e) {
+		klay::Group group("users");
+		klay::Group another(group);
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
@@ -38,9 +38,9 @@ TESTCASE(GetGroupTest)
 TESTCASE(GetUserTest)
 {
 	try {
-		runtime::User user("root");
-		runtime::User another(user);
-	} catch (runtime::Exception& e) {
+		klay::User user("root");
+		klay::User another(user);
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
@@ -48,49 +48,49 @@ TESTCASE(GetUserTest)
 TESTCASE(GetGroupNegativeTest)
 {
 	try {
-		runtime::Group group("invalid");
-	} catch (runtime::Exception& e) {
+		klay::Group group("invalid");
+	} catch (klay::Exception& e) {
 	}
 }
 
 TESTCASE(GetGroupNegativeTest2)
 {
 	try {
-		runtime::Group group(-1);
-	} catch (runtime::Exception& e) {
+		klay::Group group(-1);
+	} catch (klay::Exception& e) {
 	}
 }
 
 TESTCASE(GetUserNegativetest)
 {
 	try {
-		runtime::User user("invalid");
-	} catch (runtime::Exception& e) {
+		klay::User user("invalid");
+	} catch (klay::Exception& e) {
 	}
 }
 
 TESTCASE(GetUserNegativetest2)
 {
 	try {
-		runtime::User user(-1);
-	} catch (runtime::Exception& e) {
+		klay::User user(-1);
+	} catch (klay::Exception& e) {
 	}
 }
 
 TESTCASE(GetCurrentGroupTest)
 {
 	try {
-		runtime::Group group;
-		runtime::Group another(group.getGid());
-	} catch (runtime::Exception& e) {
+		klay::Group group;
+		klay::Group another(group.getGid());
+	} catch (klay::Exception& e) {
 	}
 }
 
 TESTCASE(GetCurrentUserTest)
 {
 	try {
-		runtime::User user;
-		runtime::User another(user.getUid());
-	} catch (runtime::Exception& e) {
+		klay::User user;
+		klay::User another(user.getUid());
+	} catch (klay::Exception& e) {
 	}
 }

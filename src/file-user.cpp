@@ -33,16 +33,16 @@ bool FileUser::isUsedAsFD(const std::string &filePath, const pid_t pid, bool isM
 	try {
 		File file(filePath);
 
-		for (runtime::DirectoryIterator iter(path), end; iter != end;) {
+		for (klay::DirectoryIterator iter(path), end; iter != end;) {
 			File cur(File((++iter)->getPath()).readlink());
 			try {
 				if ((cur.getInode() == file.getInode() || isMount) &&
 						cur.getDevice() == file.getDevice()) {
 					return true;
 				}
-			} catch (runtime::Exception &e) {}
+			} catch (klay::Exception &e) {}
 		}
-	} catch (runtime::Exception &e) {}
+	} catch (klay::Exception &e) {}
 
 	return false;
 }
@@ -72,7 +72,7 @@ bool FileUser::isUsedAsMap(const std::string &filePath, const pid_t pid, bool is
 				}
 			}
 		}
-	} catch (runtime::Exception &e) {}
+	} catch (klay::Exception &e) {}
 
 	return false;
 }
@@ -88,7 +88,7 @@ bool FileUser::isUsedAsCwd(const std::string &filePath, const pid_t pid, bool is
 				cwd.getDevice() == file.getDevice()) {
 			return true;
 		}
-	} catch (runtime::Exception &e) {}
+	} catch (klay::Exception &e) {}
 
 	return false;
 }
@@ -104,7 +104,7 @@ bool FileUser::isUsedAsRoot(const std::string &filePath, const pid_t pid, bool i
 				root.getDevice() == file.getDevice()) {
 			return true;
 		}
-	} catch (runtime::Exception &e) {}
+	} catch (klay::Exception &e) {}
 
 	return false;
 }
@@ -114,7 +114,7 @@ std::vector<pid_t> FileUser::getList(const std::string &path, bool isMount)
 	pid_t currentPid = ::getpid();
 	std::vector<pid_t> list;
 
-	for (runtime::DirectoryIterator iter("/proc"), end; iter != end;) {
+	for (klay::DirectoryIterator iter("/proc"), end; iter != end;) {
 		const std::string name = iter->getName();
 		if (!std::isdigit(name[0])) {
 			++iter;

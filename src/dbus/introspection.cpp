@@ -52,12 +52,12 @@ Introspection::~Introspection(void)
 BusNode Introspection::getBusNode(const std::string &xmlData)
 {
 	if (xmlData.empty())
-		throw runtime::Exception("Invalid argument.");
+		throw klay::Exception("Invalid argument.");
 
 	dbus::Error error;
 	auto busNode = ::g_dbus_node_info_new_for_xml(xmlData.c_str(), &error);
 	if (busNode == nullptr || error)
-		throw runtime::Exception("Failed to get BusNode.");
+		throw klay::Exception("Failed to get BusNode.");
 
 	return busNode;
 }
@@ -65,7 +65,7 @@ BusNode Introspection::getBusNode(const std::string &xmlData)
 Interface Introspection::getInterface(const std::string &name) const
 {
 	if (name.empty())
-		throw runtime::Exception("Invalid argument.");
+		throw klay::Exception("Invalid argument.");
 
 	return ::g_dbus_node_info_lookup_interface(busNode, name.c_str());
 }
@@ -75,7 +75,7 @@ Method Introspection::getMethod(const std::string &interfaceName,
 {
 	auto interface = getInterface(interfaceName);
 	if (interface == nullptr || methodName.empty())
-		throw runtime::Exception("Invalid argument.");
+		throw klay::Exception("Invalid argument.");
 
 	return ::g_dbus_interface_info_lookup_method(interface, methodName.c_str());
 }
@@ -85,7 +85,7 @@ Signal Introspection::getSignal(const std::string &interfaceName,
 {
 	auto interface = getInterface(interfaceName);
 	if (interface == nullptr || signalName.empty())
-		throw runtime::Exception("Invalid argument.");
+		throw klay::Exception("Invalid argument.");
 
 	return ::g_dbus_interface_info_lookup_signal(interface, signalName.c_str());
 }
@@ -95,7 +95,7 @@ Property Introspection::getProperty(const std::string &interfaceName,
 {
 	auto interface = getInterface(interfaceName);
 	if (interface == nullptr || propertyName.empty())
-		throw runtime::Exception("Invalid argument.");
+		throw klay::Exception("Invalid argument.");
 
 	return ::g_dbus_interface_info_lookup_property(interface, propertyName.c_str());
 }
@@ -108,7 +108,7 @@ std::string Introspection::getXmlData(unsigned int indent)
 			::g_string_free(ptr, TRUE);
 		});
 	if (buf == nullptr)
-		throw runtime::Exception("Out of memory.");
+		throw klay::Exception("Out of memory.");
 
 	::g_dbus_node_info_generate_xml(busNode, indent, buf.get());
 	return std::string(buf->str);
@@ -116,7 +116,7 @@ std::string Introspection::getXmlData(unsigned int indent)
 
 std::string Introspection::createXmlDataFromFile(const std::string &path)
 {
-	runtime::File manifest(path);
+	klay::File manifest(path);
 	if (!manifest.exists()) {
 		manifest.create(0644);
 		manifest.lock();
@@ -133,7 +133,7 @@ std::string Introspection::createXmlDataFromFile(const std::string &path)
 void Introspection::writeXmlDataToFile(const std::string &path,
 									   const std::string &xmlData)
 {
-	runtime::File manifest(path);
+	klay::File manifest(path);
 	manifest.open(O_WRONLY | O_TRUNC);
 	manifest.lock();
 	manifest.write(xmlData.c_str(), xmlData.length());
@@ -143,11 +143,11 @@ void Introspection::writeXmlDataToFile(const std::string &path,
 void Introspection::addInterface(const std::string &name)
 {
 	if (getInterface(name) != nullptr)
-		throw runtime::Exception("Interface is already exist:" + name);
+		throw klay::Exception("Interface is already exist:" + name);
 
 	std::size_t offset = xmlData.find("</node>");
 	if (offset == std::string::npos)
-		throw runtime::Exception("Failed to find </node>.");
+		throw klay::Exception("Failed to find </node>.");
 
 	XmlProperties properties;
 	properties.emplace_back(std::make_pair("name", name));
@@ -189,16 +189,16 @@ std::string Introspection::getXmlEndTag(const std::string &node) const
 void Introspection::checkDataFormat(const std::string &data) const
 {
 	if (data.empty() || data.length() < 3)
-		throw runtime::Exception("Invalid argument.");
+		throw klay::Exception("Invalid argument.");
 
 	const std::string beginChar = "<";
 	if (data.compare(0, beginChar.length(), beginChar) != 0)
-		throw runtime::Exception("Xml data should be begin as: " + beginChar);
+		throw klay::Exception("Xml data should be begin as: " + beginChar);
 
 	const std::string endChar = "/>";
 	if (data.compare(data.length() - endChar.length(), endChar.length(), endChar) != 0 &&
 		data.find("/") == std::string::npos)
-		throw runtime::Exception("Xml data should be contain '/' or end as: " + endChar);
+		throw klay::Exception("Xml data should be contain '/' or end as: " + endChar);
 }
 
 void Introspection::addMethod(const std::string &interfaceName,
@@ -257,7 +257,7 @@ void Introspection::addInternalData(const std::string &interfaceName,
 	std::string iTemplate = getXmlBeginTag(INTERFACE_NODE, properties);
 	std::size_t offset = xmlData.find(iTemplate);
 	if (offset == std::string::npos)
-		throw runtime::Exception("Failed to find interface xml node: " + interfaceName);
+		throw klay::Exception("Failed to find interface xml node: " + interfaceName);
 
 	xmlData.insert(offset + iTemplate.length() + 1, data);
 	update();

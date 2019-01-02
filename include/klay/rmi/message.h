@@ -149,7 +149,7 @@ private:
 
 	MessageSignature signature;
 	MessageComposer buffer;
-	std::deque<runtime::FileDescriptor> fileDescriptors;
+	std::deque<klay::FileDescriptor> fileDescriptors;
 
 	static std::atomic<unsigned int> sequence;
 };
@@ -183,16 +183,16 @@ void Message::unpackParameters(F& first, R&... rest)
 template<typename DataType>
 void Message::enclose(DataType&& data)
 {
-	runtime::Serializer<MessageComposer> serializer(buffer);
-	runtime::SerializableArgument<DataType> arg(std::forward<DataType>(data));
+	klay::Serializer<MessageComposer> serializer(buffer);
+	klay::SerializableArgument<DataType> arg(std::forward<DataType>(data));
 	arg.accept(serializer);
 }
 
 template<typename DataType>
 void Message::disclose(DataType& data)
 {
-	runtime::Deserializer<MessageComposer> deserializer(buffer);
-	runtime::DeserializableArgument<DataType> arg(data);
+	klay::Deserializer<MessageComposer> deserializer(buffer);
+	klay::DeserializableArgument<DataType> arg(data);
 	arg.accept(deserializer);
 }
 
@@ -210,7 +210,7 @@ void Message::encode(const T& device) const
 	device.write(buffer.begin(), header.length);
 
 	int i = 0, fds[fileDescriptors.size()];
-	for (const runtime::FileDescriptor& fd : fileDescriptors) {
+	for (const klay::FileDescriptor& fd : fileDescriptors) {
 		fds[i++] = fd.fileDescriptor;
 	}
 
@@ -229,14 +229,14 @@ void Message::decode(const T& device)
 
 	device.receiveFileDescriptors(fds, header.ancillary);
 	for (unsigned int i = 0; i < header.ancillary; i++) {
-		fileDescriptors.emplace_back(runtime::FileDescriptor(fds[i]));
+		fileDescriptors.emplace_back(klay::FileDescriptor(fds[i]));
 	}
 
 	disclose(signature);
 }
 
-template<> void Message::enclose(runtime::FileDescriptor&& fd);
-template<> void Message::disclose(runtime::FileDescriptor& fd);
+template<> void Message::enclose(klay::FileDescriptor&& fd);
+template<> void Message::disclose(klay::FileDescriptor& fd);
 
 } // namespae rmi
 } // namespae klay

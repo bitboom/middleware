@@ -57,7 +57,7 @@ public:
 private:
 	std::string address;
 	std::shared_ptr<Connection> connection;
-	runtime::Mainloop mainloop;
+	klay::Mainloop mainloop;
 	std::thread dispatcher;
 };
 
@@ -72,7 +72,7 @@ RemoteAccessClient<ExceptionModel>::~RemoteAccessClient()
 {
 	try {
 		disconnect();
-	} catch (runtime::Exception& e) {}
+	} catch (klay::Exception& e) {}
 }
 
 template <typename ExceptionModel>
@@ -98,7 +98,7 @@ int RemoteAccessClient<ExceptionModel>::subscribe(const std::string& provider, c
 	request.packParameters(name);
 	connection->send(request);
 
-	runtime::FileDescriptor response;
+	klay::FileDescriptor response;
 	Message reply = connection->dispatch();
 	if (reply.isError()) {
 		std::string klass;
@@ -134,7 +134,7 @@ int RemoteAccessClient<ExceptionModel>::subscribe(const std::string& provider, c
 
 	std::shared_ptr<Socket> transport = std::make_shared<Socket>(id);
 
-	auto callback = [handler, transport, this](int fd, runtime::Mainloop::Event event) {
+	auto callback = [handler, transport, this](int fd, klay::Mainloop::Event event) {
 		if ((event & EPOLLHUP) || (event & EPOLLRDHUP)) {
 			mainloop.removeEventSource(fd);
 			return;

@@ -23,9 +23,9 @@
 namespace klay {
 namespace rmi {
 
-class KLAY_EXPORT SocketException: public runtime::Exception {
+class KLAY_EXPORT SocketException: public klay::Exception {
 public:
-	SocketException(const std::string& msg) : runtime::Exception(msg) {}
+	SocketException(const std::string& msg) : klay::Exception(msg) {}
 };
 
 struct KLAY_EXPORT Credentials {

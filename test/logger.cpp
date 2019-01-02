@@ -39,7 +39,7 @@ TESTCASE(LogSeverityTest)
 {
 	try {
 		audit::LogLevelToString((audit::LogLevel)-1);
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 

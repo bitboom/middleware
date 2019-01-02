@@ -39,7 +39,7 @@ void AuditTrail::stop()
 	}
 }
 
-void AuditTrail::subscribe(const int fd, const runtime::Mainloop::Event events, runtime::Mainloop::Callback&& callback)
+void AuditTrail::subscribe(const int fd, const klay::Mainloop::Event events, klay::Mainloop::Callback&& callback)
 {
 	mainloop.addEventSource(fd, events, std::move(callback));
 }

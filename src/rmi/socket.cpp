@@ -39,7 +39,7 @@ const int MAX_BACKLOG_SIZE = 100;
 void setCloseOnExec(int fd)
 {
 	if (::fcntl(fd, F_SETFD, FD_CLOEXEC) == -1) {
-		throw SocketException(runtime::GetSystemErrorMessage());
+		throw SocketException(klay::GetSystemErrorMessage());
 	}
 }
 
@@ -50,11 +50,11 @@ Credentials getCredentials(int fd)
 	struct ucred cred;
 	socklen_t credsz = sizeof(cred);
 	if (::getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &credsz)) {
-		throw SocketException(runtime::GetSystemErrorMessage());
+		throw SocketException(klay::GetSystemErrorMessage());
 	}
 
 	if (::getsockopt(fd, SOL_SOCKET, SO_PEERSEC, buf, &length)) {
-		throw SocketException(runtime::GetSystemErrorMessage());
+		throw SocketException(klay::GetSystemErrorMessage());
 	}
 
 	return {cred.pid, cred.uid, cred.gid, buf};
@@ -85,7 +85,7 @@ Socket Socket::accept()
 {
 	int sockfd = ::accept(socketFd, nullptr, nullptr);
 	if (sockfd == -1) {
-		throw SocketException(runtime::GetSystemErrorMessage());
+		throw SocketException(klay::GetSystemErrorMessage());
 	}
 
 	setCloseOnExec(sockfd);
@@ -114,7 +114,7 @@ void Socket::read(void *buffer, const size_t size) const
 		} else if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
 			continue;
 		} else {
-			throw SocketException(runtime::GetSystemErrorMessage());
+			throw SocketException(klay::GetSystemErrorMessage());
 		}
 	}
 }
@@ -130,7 +130,7 @@ void Socket::write(const void *buffer, const size_t size) const
 		} else if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
 			continue;
 		} else {
-			throw SocketException(runtime::GetSystemErrorMessage());
+			throw SocketException(klay::GetSystemErrorMessage());
 		}
 	}
 }
@@ -170,7 +170,7 @@ void Socket::sendFileDescriptors(const int* fds, const size_t nr) const
 		if (ret >= 0) {
 			written += ret;
 		} else if ((errno != EAGAIN) && (errno != EWOULDBLOCK) && (errno != EINTR)) {
-			throw SocketException(runtime::GetSystemErrorMessage());
+			throw SocketException(klay::GetSystemErrorMessage());
 		}
 	}
 }
@@ -203,7 +203,7 @@ void Socket::receiveFileDescriptors(int* fds, const size_t nr) const
 			bytes += ret;
 		} else {
 			if ((errno != EAGAIN) && (errno != EWOULDBLOCK) && (errno != EINTR)) {
-				throw SocketException(runtime::GetSystemErrorMessage());
+				throw SocketException(klay::GetSystemErrorMessage());
 			}
 		}
 	}
@@ -240,12 +240,12 @@ int Socket::createSystemdSocket(const std::string& path)
 int Socket::createRegularSocket(const std::string& path)
 {
 	if (path.size() >= sizeof(sockaddr_un::sun_path)) {
-		throw SocketException(runtime::GetSystemErrorMessage(ENAMETOOLONG));
+		throw SocketException(klay::GetSystemErrorMessage(ENAMETOOLONG));
 	}
 
 	int sockfd = ::socket(AF_UNIX, SOCK_STREAM, 0);
 	if (sockfd == -1) {
-		throw SocketException(runtime::GetSystemErrorMessage());
+		throw SocketException(klay::GetSystemErrorMessage());
 	}
 
 	setCloseOnExec(sockfd);
@@ -262,18 +262,18 @@ int Socket::createRegularSocket(const std::string& path)
 
 	if (::bind(sockfd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(struct sockaddr_un)) == -1) {
 		::close(sockfd);
-		throw SocketException(runtime::GetSystemErrorMessage());
+		throw SocketException(klay::GetSystemErrorMessage());
 	}
 
 	int optval = 1;
 	if (::setsockopt(sockfd, SOL_SOCKET, SO_PASSCRED, &optval, sizeof(optval)) == -1) {
 		::close(sockfd);
-		throw SocketException(runtime::GetSystemErrorMessage());
+		throw SocketException(klay::GetSystemErrorMessage());
 	}
 
 	if (::listen(sockfd, MAX_BACKLOG_SIZE) == -1) {
 		::close(sockfd);
-		throw SocketException(runtime::GetSystemErrorMessage());
+		throw SocketException(klay::GetSystemErrorMessage());
 	}
 
 	return sockfd;
@@ -295,12 +295,12 @@ Socket Socket::create(const std::string& path, bool activation)
 Socket Socket::connect(const std::string& path)
 {
 	if (path.size() >= sizeof(sockaddr_un::sun_path)) {
-		throw SocketException(runtime::GetSystemErrorMessage(ENAMETOOLONG));
+		throw SocketException(klay::GetSystemErrorMessage(ENAMETOOLONG));
 	}
 
 	int fd = ::socket(AF_UNIX, SOCK_STREAM, 0);
 	if (fd == -1) {
-		throw SocketException(runtime::GetSystemErrorMessage());
+		throw SocketException(klay::GetSystemErrorMessage());
 	}
 
 	setCloseOnExec(fd);
@@ -315,7 +315,7 @@ Socket Socket::connect(const std::string& path)
 
 	if (::connect(fd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(struct sockaddr_un)) == -1) {
 		::close(fd);
-		throw SocketException(runtime::GetSystemErrorMessage());
+		throw SocketException(klay::GetSystemErrorMessage());
 	}
 
 	return Socket(fd);

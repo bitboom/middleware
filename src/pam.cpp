@@ -31,7 +31,7 @@ PAM::PAM(const std::string& service, const std::string& user)
 
 	int error = ::pam_start(service.c_str(), user.c_str(), &pamc, &pamh);
 	if (error != PAM_SUCCESS) {
-		throw runtime::Exception("PAM Error");
+		throw klay::Exception("PAM Error");
 	}
 }
 
@@ -39,7 +39,7 @@ PAM::~PAM()
 {
 	int error = ::pam_end(pamh, PAM_SUCCESS);
 	if (error != PAM_SUCCESS) {
-		throw runtime::Exception("PAM Error");
+		throw klay::Exception("PAM Error");
 	}
 }
 
@@ -47,7 +47,7 @@ void PAM::setData(const std::string &name, void* data, void (*cleanup)(pam_handl
 {
 	int error = ::pam_set_data(pamh, name.c_str(), data, cleanup);
 	if (error != PAM_SUCCESS) {
-		throw runtime::Exception("PAM Error");
+		throw klay::Exception("PAM Error");
 	}
 }
 
@@ -56,7 +56,7 @@ const void* PAM::getData(const std::string &name) const
 	const void* ret;
 	int error = ::pam_get_data(pamh, name.c_str(), &ret);
 	if (error != PAM_SUCCESS) {
-		throw runtime::Exception("PAM Error");
+		throw klay::Exception("PAM Error");
 	}
 	return ret;
 }
@@ -65,7 +65,7 @@ void PAM::setItem(int item, void* data)
 {
 	int error = ::pam_set_item(pamh, item, data);
 	if (error != PAM_SUCCESS) {
-		throw runtime::Exception("PAM Error");
+		throw klay::Exception("PAM Error");
 	}
 }
 
@@ -74,7 +74,7 @@ const void* PAM::getItem(int item) const
 	const void* ret;
 	int error = ::pam_get_item(pamh, item, &ret);
 	if (error != PAM_SUCCESS) {
-		throw runtime::Exception("PAM Error");
+		throw klay::Exception("PAM Error");
 	}
 	return ret;
 }
@@ -84,7 +84,7 @@ const std::string PAM::getUser(const std::string &prompt) const
 	const char* user;
 	int error = ::pam_get_user(pamh, &user, prompt.c_str());
 	if (error != PAM_SUCCESS) {
-		throw runtime::Exception("PAM Error");
+		throw klay::Exception("PAM Error");
 	}
 	return std::string(user);
 }
@@ -93,7 +93,7 @@ void PAM::putEnv(const std::string &name_value)
 {
 	int error = ::pam_putenv(pamh, name_value.c_str());
 	if (error != PAM_SUCCESS) {
-		throw runtime::Exception("PAM Error");
+		throw klay::Exception("PAM Error");
 	}
 }
 
@@ -101,7 +101,7 @@ const std::string PAM::getEnv(const std::string &name) const
 {
 	const char* value = ::pam_getenv(pamh, name.c_str());
 	if (value == NULL) {
-		throw runtime::Exception("PAM Error");
+		throw klay::Exception("PAM Error");
 	}
 	return value;
 }
@@ -111,7 +111,7 @@ const std::vector<std::string> PAM::getEnvList() const
 	std::vector<std::string> ret;
 	char** array = ::pam_getenvlist(pamh);
 	if (array == NULL) {
-		throw runtime::Exception("PAM Error");
+		throw klay::Exception("PAM Error");
 	}
 	for (int i = 0; array[i] != NULL; i++) {
 		ret.push_back(array[i]);
@@ -149,7 +149,7 @@ void PAM::openSession(int flags)
 {
 	int error = ::pam_open_session(pamh, flags);
 	if (error != PAM_SUCCESS) {
-		throw runtime::Exception("PAM Error");
+		throw klay::Exception("PAM Error");
 	}
 }
 
@@ -157,7 +157,7 @@ void PAM::closeSession(int flags)
 {
 	int error = ::pam_close_session(pamh, flags);
 	if (error != PAM_SUCCESS) {
-		throw runtime::Exception("PAM Error");
+		throw klay::Exception("PAM Error");
 	}
 }
 

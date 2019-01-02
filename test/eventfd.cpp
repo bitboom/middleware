@@ -27,18 +27,18 @@
 TESTCASE(EventFdHandleNegative)
 {
 	try {
-		runtime::EventFD evtfd(0, -1);
-	} catch (runtime::Exception& e) {
+		klay::EventFD evtfd(0, -1);
+	} catch (klay::Exception& e) {
 	}
 }
 
 TESTCASE(EventFdSendPositive)
 {
 	try {
-		runtime::EventFD evtfd;
+		klay::EventFD evtfd;
 		evtfd.send();
 		evtfd.receive();
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
@@ -46,20 +46,20 @@ TESTCASE(EventFdSendPositive)
 TESTCASE(EventFdSendNegative)
 {
 	try {
-		runtime::EventFD evtfd;
+		klay::EventFD evtfd;
 		evtfd.close();
 		evtfd.send();
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 
 TESTCASE(EventFdReceiveNegative)
 {
 	try {
-		runtime::EventFD evtfd;
+		klay::EventFD evtfd;
 		evtfd.close();
 		evtfd.receive();
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 

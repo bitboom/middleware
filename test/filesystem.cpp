@@ -32,8 +32,8 @@
 
 TESTCASE(DirectoryIteration)
 {
-	runtime::DirectoryIterator iter("/dev");
-	runtime::DirectoryIterator end;
+	klay::DirectoryIterator iter("/dev");
+	klay::DirectoryIterator end;
 
 	TEST_EXPECT(false, iter == end);
 
@@ -45,7 +45,7 @@ TESTCASE(DirectoryIteration)
 TESTCASE(FileIO)
 {
 	char testbuf[100] = "Test Data";
-	runtime::File tmp("/tmp/test-file");
+	klay::File tmp("/tmp/test-file");
 	try {
 		tmp.create(0755);
 		tmp.lock();
@@ -53,43 +53,43 @@ TESTCASE(FileIO)
 		tmp.lseek(10, SEEK_SET);
 		tmp.unlock();
 		tmp.close();
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 
 	char readbuf[100];
 	try {
-		runtime::File tmpFile("/tmp/test-file", O_RDWR);
+		klay::File tmpFile("/tmp/test-file", O_RDWR);
 		tmpFile.read(readbuf, ::strlen(testbuf));
 		tmpFile.close();
 		tmpFile.remove();
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
 
 TESTCASE(DirOperation)
 {
-	runtime::File testDir("/tmp/dpm-unit-test/dir");
+	klay::File testDir("/tmp/dpm-unit-test/dir");
 	try {
 		testDir.makeDirectory(true, ::getuid(), ::getgid());
 		testDir.chown(::getuid(), ::getgid(), false);
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 
-	runtime::File dir("/tmp/dpm-unit-test");
+	klay::File dir("/tmp/dpm-unit-test");
 	try {
 		dir.chmod(777, true);
 		dir.remove(true);
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		TEST_FAIL(e.what());
 	}
 }
 
 TESTCASE(FileAttribute)
 {
-	runtime::File tmp("/tmp");
+	klay::File tmp("/tmp");
 
 	TEST_EXPECT(true, tmp.exists());
 	TEST_EXPECT(true, tmp.canRead());
@@ -111,7 +111,7 @@ TESTCASE(FileAttribute)
 TESTCASE(FileAttributeNegative)
 {
 	try {
-		runtime::File tmp("/unknown");
+		klay::File tmp("/unknown");
 
 		TEST_EXPECT(false, tmp.exists());
 		TEST_EXPECT(false, tmp.canRead());
@@ -120,43 +120,43 @@ TESTCASE(FileAttributeNegative)
 
 		try {
 			tmp.isLink();
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			tmp.isFile();
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			tmp.isDirectory();
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
 
 		try {
 			tmp.isDevice();
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 		}
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 	}
 }
 
 TESTCASE(FileDevice)
 {
-	runtime::File tmp("/dev/kmem");
+	klay::File tmp("/dev/kmem");
 
 	TEST_EXPECT(true, tmp.isDevice());
 }
 
 TESTCASE(FileSymlinkTest)
 {
-	runtime::File tmp("/var");
+	klay::File tmp("/var");
 
 	TEST_EXPECT(true, tmp.isLink());
 }
 
 TESTCASE(FileReferenceTest)
 {
-	runtime::File one("/tmp");
-	runtime::File two(one);
+	klay::File one("/tmp");
+	klay::File two(one);
 }

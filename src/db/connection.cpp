@@ -25,7 +25,7 @@ Connection::Connection(const std::string& name, const int flags, bool integrityC
 	handle(nullptr), filename(name)
 {
 	if (::sqlite3_open_v2(filename.c_str(), &handle, flags, NULL)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 
 	if (integrityCheck) {
@@ -45,7 +45,7 @@ Connection::Connection(const std::string& name, const int flags, bool integrityC
 
 		if (!verified) {
 			::sqlite3_close(handle);
-			throw runtime::Exception("Malformed database");
+			throw klay::Exception("Malformed database");
 		}
 	}
 }
@@ -58,7 +58,7 @@ Connection::~Connection()
 int Connection::exec(const std::string& query)
 {
 	if (::sqlite3_exec(handle, query.c_str(), NULL, NULL, NULL) != SQLITE_OK) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 
 	return ::sqlite3_changes(handle);

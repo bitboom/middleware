@@ -35,7 +35,7 @@ Statement::Statement(const Connection& db, const std::string& query) :
 										  query.size(),
 										  &statement,
 										  NULL)) {
-		throw runtime::Exception(db.getErrorMessage());
+		throw klay::Exception(db.getErrorMessage());
 	}
 
 	columnCount = sqlite3_column_count(statement);
@@ -49,14 +49,14 @@ Statement::~Statement()
 void Statement::reset()
 {
 	if (::sqlite3_reset(statement) != SQLITE_OK) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
 void Statement::clearBindings()
 {
 	if (::sqlite3_clear_bindings(statement) != SQLITE_OK) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
@@ -91,7 +91,7 @@ int Statement::exec()
 Column Statement::getColumn(const int index)
 {
 	if (!validRow || (index >= columnCount)) {
-		throw runtime::Exception(getErrorMessage(SQLITE_RANGE));
+		throw klay::Exception(getErrorMessage(SQLITE_RANGE));
 	}
 
 	return Column(*this, index);
@@ -100,7 +100,7 @@ Column Statement::getColumn(const int index)
 bool Statement::isNullColumn(const int index) const
 {
 	if (!validRow || (index >= columnCount)) {
-		throw runtime::Exception(getErrorMessage(SQLITE_RANGE));
+		throw klay::Exception(getErrorMessage(SQLITE_RANGE));
 	}
 
 	return (SQLITE_NULL == sqlite3_column_type(statement, index));
@@ -109,7 +109,7 @@ bool Statement::isNullColumn(const int index) const
 std::string Statement::getColumnName(const int index) const
 {
 	if (index >= columnCount) {
-		throw runtime::Exception(getErrorMessage(SQLITE_RANGE));
+		throw klay::Exception(getErrorMessage(SQLITE_RANGE));
 	}
 
 	return sqlite3_column_name(statement, index);
@@ -119,28 +119,28 @@ std::string Statement::getColumnName(const int index) const
 void Statement::bind(const int index, const int& value)
 {
 	if (SQLITE_OK != ::sqlite3_bind_int(statement, index, value)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
 void Statement::bind(const int index, const sqlite3_int64& value)
 {
 	if (SQLITE_OK != ::sqlite3_bind_int64(statement, index, value)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
 void Statement::bind(const int index, const double& value)
 {
 	if (SQLITE_OK != ::sqlite3_bind_double(statement, index, value)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
 void Statement::bind(const int index, const char* value)
 {
 	if (SQLITE_OK != ::sqlite3_bind_text(statement, index, value, -1, SQLITE_TRANSIENT)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
@@ -148,21 +148,21 @@ void Statement::bind(const int index, const std::string& value)
 {
 	if (SQLITE_OK != ::sqlite3_bind_text(statement, index, value.c_str(),
 										 static_cast<int>(value.size()), SQLITE_TRANSIENT)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
 void Statement::bind(const int index, const void* value, const int size)
 {
 	if (SQLITE_OK != ::sqlite3_bind_blob(statement, index, value, size, SQLITE_TRANSIENT)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
 void Statement::bind(const int index)
 {
 	if (SQLITE_OK != ::sqlite3_bind_null(statement, index)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
@@ -170,7 +170,7 @@ void Statement::bind(const std::string& name, const int& value)
 {
 	int index = sqlite3_bind_parameter_index(statement, name.c_str());
 	if (SQLITE_OK != sqlite3_bind_int(statement, index, value)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
@@ -178,7 +178,7 @@ void Statement::bind(const std::string& name, const sqlite3_int64& value)
 {
 	int index = sqlite3_bind_parameter_index(statement, name.c_str());
 	if (SQLITE_OK != ::sqlite3_bind_int64(statement, index, value)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
@@ -186,7 +186,7 @@ void Statement::bind(const std::string& name, const double& value)
 {
 	int index = sqlite3_bind_parameter_index(statement, name.c_str());
 	if (SQLITE_OK != ::sqlite3_bind_double(statement, index, value)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
@@ -195,7 +195,7 @@ void Statement::bind(const std::string& name, const std::string& value)
 	int index = sqlite3_bind_parameter_index(statement, name.c_str());
 	if (SQLITE_OK != ::sqlite3_bind_text(statement, index, value.c_str(),
 										 static_cast<int>(value.size()), SQLITE_TRANSIENT)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
@@ -203,7 +203,7 @@ void Statement::bind(const std::string& name, const char* value)
 {
 	int index = sqlite3_bind_parameter_index(statement, name.c_str());
 	if (SQLITE_OK != ::sqlite3_bind_text(statement, index, value, -1, SQLITE_TRANSIENT)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
@@ -211,7 +211,7 @@ void Statement::bind(const std::string& name, const void* value, const int size)
 {
 	int index = sqlite3_bind_parameter_index(statement, name.c_str());
 	if (SQLITE_OK != ::sqlite3_bind_blob(statement, index, value, size, SQLITE_TRANSIENT)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 
@@ -219,7 +219,7 @@ void Statement::bind(const std::string& name)
 {
 	int index = sqlite3_bind_parameter_index(statement, name.c_str());
 	if (SQLITE_OK != ::sqlite3_bind_null(statement, index)) {
-		throw runtime::Exception(getErrorMessage());
+		throw klay::Exception(getErrorMessage());
 	}
 }
 

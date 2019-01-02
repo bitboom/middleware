@@ -54,8 +54,8 @@ public:
 		service->expose(this, "", (std::string)(TestServer::method3)(std::string, std::string, std::string));
 		service->expose(this, "", (std::string)(TestServer::method4)(std::string, std::string, std::string, std::string));
 
-		service->expose(this, "", (runtime::FileDescriptor)(TestServer::signalProvider)(std::string));
-		service->expose(this, "", (runtime::FileDescriptor)(TestServer::policyNotificationProvider)(std::string));
+		service->expose(this, "", (klay::FileDescriptor)(TestServer::signalProvider)(std::string));
+		service->expose(this, "", (klay::FileDescriptor)(TestServer::policyNotificationProvider)(std::string));
 
 		service->expose(this, "", (int)(TestServer::sendSignal)());
 		service->expose(this, "", (int)(TestServer::sendPolicyChangeNotification)());
@@ -103,12 +103,12 @@ public:
 		return 0;
 	}
 
-	runtime::FileDescriptor signalProvider(const std::string& name)
+	klay::FileDescriptor signalProvider(const std::string& name)
 	{
 		return service->subscribeNotification(name);
 	}
 
-	runtime::FileDescriptor policyNotificationProvider(const std::string& name)
+	klay::FileDescriptor policyNotificationProvider(const std::string& name)
 	{
 		return service->subscribeNotification(name);
 	}
@@ -303,7 +303,7 @@ public:
 			TestClient client;
 			client.connect();
 			client.disconnect();
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 			ERROR(KSINK, e.what());
 		}
 	}
@@ -318,7 +318,7 @@ public:
 			client.requestPolicyChangeNotification();
 
 			client.disconnect();
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 			ERROR(KSINK, e.what());
 		}
 	}
@@ -343,7 +343,7 @@ public:
 			client.requestPolicyChangeNotification();
 
 			client.disconnect();
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 			ERROR(KSINK, e.what());
 		}
 	}

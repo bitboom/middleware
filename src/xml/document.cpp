@@ -29,7 +29,7 @@ Document::Document(const std::string& root, const std::string& version) :
 	implementation(xmlNewDoc((const xmlChar*)version.c_str()))
 {
 	if (implementation == nullptr) {
-		throw runtime::Exception("Failed to create document");
+		throw klay::Exception("Failed to create document");
 	}
 
 	implementation->_private = this;
@@ -60,7 +60,7 @@ Document::~Document()
 Node& Document::getRootNode()
 {
 	if (rootNode == nullptr) {
-		throw runtime::Exception("Empty document");
+		throw klay::Exception("Empty document");
 	}
 
 	return *rootNode;
@@ -70,20 +70,20 @@ Node::NodeList Document::evaluate(const std::string& xpath)
 {
 	auto ctxt = xmlXPathNewContext(implementation);
 	if (ctxt == nullptr) {
-		throw runtime::Exception("Failed to create XPath context for " + xpath);
+		throw klay::Exception("Failed to create XPath context for " + xpath);
 	}
 
 	auto result = xmlXPathEval((const xmlChar*)xpath.c_str(), ctxt);
 	if (result == nullptr) {
 		xmlXPathFreeContext(ctxt);
-		throw runtime::Exception("Invalid XPath: " + xpath);
+		throw klay::Exception("Invalid XPath: " + xpath);
 	}
 
 	if (result ->type != XPATH_NODESET) {
 		xmlXPathFreeObject(result);
 		xmlXPathFreeContext(ctxt);
 
-		throw runtime::Exception("Only nodeset result types are supported");
+		throw klay::Exception("Only nodeset result types are supported");
 	}
 
 	auto nodeset = result->nodesetval;
@@ -128,7 +128,7 @@ void Document::write(const std::string& filename, const std::string& encoding, b
 											encoding.c_str(),
 											formatted);
 	if (result == 0) {
-		throw runtime::Exception("Failed to write XML document");
+		throw klay::Exception("Failed to write XML document");
 	}
 }
 

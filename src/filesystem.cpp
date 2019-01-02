@@ -82,7 +82,7 @@ bool File::isLink() const
 {
 	struct stat st;
 	if (::lstat(path.c_str(), &st) != 0) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	return S_ISLNK(st.st_mode);
@@ -92,7 +92,7 @@ bool File::isFile() const
 {
 	struct stat st;
 	if (::lstat(path.c_str(), &st) != 0) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	return S_ISREG(st.st_mode);
@@ -102,7 +102,7 @@ bool File::isDirectory() const
 {
 	struct stat st;
 	if (::lstat(path.c_str(), &st) != 0) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	return S_ISDIR(st.st_mode);
@@ -112,7 +112,7 @@ bool File::isDevice() const
 {
 	struct stat st;
 	if (::lstat(path.c_str(), &st) != 0) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	return (S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode));
@@ -122,7 +122,7 @@ mode_t File::getMode() const
 {
 	struct stat st;
 	if (::lstat(path.c_str(), &st) != 0) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	return st.st_mode;
@@ -132,7 +132,7 @@ uid_t File::getUid() const
 {
 	struct stat st;
 	if (::lstat(path.c_str(), &st) != 0) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	return st.st_uid;
@@ -142,7 +142,7 @@ gid_t File::getGid() const
 {
 	struct stat st;
 	if (::lstat(path.c_str(), &st) != 0) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	return st.st_gid;
@@ -152,7 +152,7 @@ ino_t File::getInode() const
 {
 	struct stat st;
 	if (::lstat(path.c_str(), &st) != 0) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	return st.st_ino;
@@ -162,7 +162,7 @@ dev_t File::getDevice() const
 {
 	struct stat st;
 	if (::lstat(path.c_str(), &st) != 0) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	return st.st_dev;
@@ -172,7 +172,7 @@ off_t File::size() const
 {
 	struct stat st;
 	if (::lstat(path.c_str(), &st) != 0) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	return st.st_size;
@@ -190,7 +190,7 @@ void File::create(mode_t mode)
 			if (errno == EINTR) {
 				continue;
 			}
-			throw runtime::Exception(runtime::GetSystemErrorMessage());
+			throw klay::Exception(klay::GetSystemErrorMessage());
 		}
 		return;
 	}
@@ -208,7 +208,7 @@ void File::create(int flags, mode_t mode)
 			if (errno == EINTR) {
 				continue;
 			}
-			throw runtime::Exception(runtime::GetSystemErrorMessage());
+			throw klay::Exception(klay::GetSystemErrorMessage());
 		}
 		return;
 	}
@@ -226,7 +226,7 @@ void File::open(int flags)
 			if (errno == EINTR) {
 				continue;
 			}
-			throw runtime::Exception(runtime::GetSystemErrorMessage());
+			throw klay::Exception(klay::GetSystemErrorMessage());
 		}
 		return;
 	}
@@ -251,7 +251,7 @@ void File::read(void *buffer, const size_t size) const
 		} else if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
 			continue;
 		} else {
-			throw runtime::Exception(runtime::GetSystemErrorMessage());
+			throw klay::Exception(klay::GetSystemErrorMessage());
 		}
 	}
 }
@@ -267,7 +267,7 @@ void File::write(const void *buffer, const size_t size) const
 		} else if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
 			continue;
 		} else {
-			throw runtime::Exception(runtime::GetSystemErrorMessage());
+			throw klay::Exception(klay::GetSystemErrorMessage());
 		}
 	}
 }
@@ -275,7 +275,7 @@ void File::write(const void *buffer, const size_t size) const
 void File::lseek(off_t offset, int whence) const
 {
 	if (::lseek(descriptor, offset, whence) == -1) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 }
 
@@ -303,7 +303,7 @@ File File::copyTo(const std::string& destDir)
 			ssize_t ret;
 			ret = ::sendfile(destFile.descriptor, descriptor, &s, size() - s);
 			if (ret < 0) {
-				throw runtime::Exception(runtime::GetSystemErrorMessage());
+				throw klay::Exception(klay::GetSystemErrorMessage());
 			}
 		}
 		destFile.close();
@@ -324,11 +324,11 @@ void File::remove(bool recursive)
 			}
 		}
 		if (::rmdir(path.c_str()) != 0) {
-			throw runtime::Exception(runtime::GetSystemErrorMessage());
+			throw klay::Exception(klay::GetSystemErrorMessage());
 		}
 	} else {
 		if (::unlink(path.c_str()) != 0) {
-			throw runtime::Exception(runtime::GetSystemErrorMessage());
+			throw klay::Exception(klay::GetSystemErrorMessage());
 		}
 	}
 }
@@ -345,11 +345,11 @@ void File::makeBaseDirectory(uid_t uid, gid_t gid)
 		} else if (ret == 0) {
 			if ((uid | gid) != 0) {
 				if (::chown(substr.c_str(), uid, gid) == -1) {
-					throw runtime::Exception(runtime::GetSystemErrorMessage());
+					throw klay::Exception(klay::GetSystemErrorMessage());
 				}
 			}
 		} else {
-			throw runtime::Exception(runtime::GetSystemErrorMessage());
+			throw klay::Exception(klay::GetSystemErrorMessage());
 		}
 	}
 }
@@ -361,7 +361,7 @@ void File::makeDirectory(bool recursive, uid_t uid, gid_t gid)
 	}
 
 	if (::mkdir(path.c_str(), 0777) == -1) {
-		throw runtime::Exception("mkdir failed in makeDirectory: " + path);
+		throw klay::Exception("mkdir failed in makeDirectory: " + path);
 	}
 
 	if ((uid | gid) != 0) {
@@ -372,7 +372,7 @@ void File::makeDirectory(bool recursive, uid_t uid, gid_t gid)
 void File::chown(uid_t uid, gid_t gid, bool recursive)
 {
 	if (::chown(path.c_str(), uid, gid) != 0) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	if (recursive && isDirectory()) {
@@ -387,7 +387,7 @@ void File::chown(uid_t uid, gid_t gid, bool recursive)
 void File::chmod(mode_t mode, bool recursive)
 {
 	if (::chmod(path.c_str(), mode) != 0) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	if (recursive && isDirectory()) {
@@ -404,7 +404,7 @@ const std::string File::readlink() const
 	char buf[PATH_MAX + 1];
 	ssize_t ret = ::readlink(path.c_str(), buf, PATH_MAX);
 	if (ret == -1) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	buf[ret] = '\0';
@@ -414,14 +414,14 @@ const std::string File::readlink() const
 void File::lock() const
 {
 	if (::flock(descriptor, LOCK_EX) == -1) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 }
 
 void File::unlock() const
 {
 	if (::flock(descriptor, LOCK_UN) == -1) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 }
 
@@ -448,7 +448,7 @@ void DirectoryIterator::reset(const std::string& dir)
 	basename = dir;
 	directoryHandle = ::opendir(basename.c_str());
 	if (directoryHandle == nullptr) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 
 	next();
@@ -579,7 +579,7 @@ void Mount::mountEntry(const std::string& src, const std::string& dest, const st
 		}
 
 		if (ret) {
-			throw runtime::Exception("failed to mount " + src + " on " + dest);
+			throw klay::Exception("failed to mount " + src + " on " + dest);
 		}
 	}
 }

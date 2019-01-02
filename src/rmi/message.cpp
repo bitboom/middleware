@@ -90,16 +90,16 @@ Message Message::createErrorMessage(const std::string& target, const std::string
 	return error;
 }
 
-template<> void Message::enclose(runtime::FileDescriptor&& fd)
+template<> void Message::enclose(klay::FileDescriptor&& fd)
 {
 	if (fd.fileDescriptor == -1) {
-		throw runtime::Exception("Invalid file descriptor");
+		throw klay::Exception("Invalid file descriptor");
 	}
 
 	fileDescriptors.push_back(std::move(fd));
 }
 
-template<> void Message::disclose(runtime::FileDescriptor& fd)
+template<> void Message::disclose(klay::FileDescriptor& fd)
 {
 	if (!fileDescriptors.empty()) {
 		fd.fileDescriptor = std::move(fileDescriptors.front()).fileDescriptor;

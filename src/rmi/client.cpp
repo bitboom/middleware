@@ -22,23 +22,23 @@ namespace rmi {
 void DefaultExceptionModel::raise(const std::string& target, const std::string& msg)
 {
 	if (target == "InvalidArgumentException")
-		throw runtime::InvalidArgumentException(msg);
+		throw klay::InvalidArgumentException(msg);
 	else if (target == "NotImplementedException")
-		throw runtime::InvalidArgumentException(msg);
+		throw klay::InvalidArgumentException(msg);
 	else if (target == "RangeException")
-		throw runtime::RangeException(msg);
+		throw klay::RangeException(msg);
 	else if (target == "NotFoundException")
-		throw runtime::NotFoundException(msg);
+		throw klay::NotFoundException(msg);
 	else if (target == "UnsupportedException")
-		throw runtime::UnsupportedException(msg);
+		throw klay::UnsupportedException(msg);
 	else if (target == "NoPermissionException")
-		throw runtime::NoPermissionException(msg);
+		throw klay::NoPermissionException(msg);
 	else if (target == "IOException")
-		throw runtime::IOException(msg);
+		throw klay::IOException(msg);
 	else if (target == "OutOfMemoryException")
-		throw runtime::OutOfMemoryException(msg);
+		throw klay::OutOfMemoryException(msg);
 	else
-		throw runtime::Exception(msg);
+		throw klay::Exception(msg);
 }
 
 } // namespace rmi

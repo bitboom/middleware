@@ -50,7 +50,7 @@ Service::~Service()
 void Service::prepare(bool activation)
 {
 	socket.reset(new Socket(Socket::create(address, activation)));
-	auto accept = [&](int fd, runtime::Mainloop::Event event) {
+	auto accept = [&](int fd, klay::Mainloop::Event event) {
 		onNewConnection(std::make_shared<Connection>(socket->accept()));
 	};
 
@@ -93,7 +93,7 @@ void Service::setAuditTrail(const AuditTrail& trail)
 void Service::setNewConnectionCallback(const ConnectionCallback& connectionCallback)
 {
 	auto callback = [connectionCallback, this](const std::shared_ptr<Connection>& connection) {
-		auto handle = [&](int fd, runtime::Mainloop::Event event) {
+		auto handle = [&](int fd, klay::Mainloop::Event event) {
 			std::lock_guard<std::mutex> lock(stateLock);
 
 			auto iter = getConnectionIterator(fd);
@@ -142,7 +142,7 @@ void Service::createNotification(const std::string& name)
 	std::lock_guard<std::mutex> lock(notificationLock);
 
 	if (notificationRegistry.count(name)) {
-		throw runtime::Exception("Notification already registered");
+		throw klay::Exception("Notification already registered");
 	}
 
 	notificationRegistry.emplace(name, Notification(name));
@@ -150,7 +150,7 @@ void Service::createNotification(const std::string& name)
 
 int Service::subscribeNotification(const std::string& name)
 {
-	auto closeHandler = [&, name, this](int fd, runtime::Mainloop::Event event) {
+	auto closeHandler = [&, name, this](int fd, klay::Mainloop::Event event) {
 		if ((event & EPOLLHUP) || (event & EPOLLRDHUP)) {
 			unsubscribeNotification(name, fd);
 			return;
@@ -170,7 +170,7 @@ int Service::subscribeNotification(const std::string& name)
 		SubscriptionId slot = notification.createSubscriber();
 		mainloop.addEventSource(slot.first, EPOLLHUP | EPOLLRDHUP, closeHandler);
 		return slot.second;
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		ERROR(KSINK, e.what());
 		return -1;
 	}
@@ -205,7 +205,7 @@ void Service::onMessageProcess(const std::shared_ptr<Connection>& connection)
 	auto process = [&, connection](Message& request) {
 		try {
 			if (!methodRegistry.count(request.target()))
-				throw runtime::NotFoundException("Method not found");
+				throw klay::NotFoundException("Method not found");
 
 			std::shared_ptr<MethodContext> methodContext = methodRegistry.at(request.target());
 
@@ -213,11 +213,11 @@ void Service::onMessageProcess(const std::shared_ptr<Connection>& connection)
 			bool allowed = onPrivilegeCheck(processingContext.credentials, methodContext->privilege);
 			onAuditTrail(processingContext.credentials, request.target(), allowed);
 			if (!allowed) {
-				throw runtime::NoPermissionException("Permission denied");
+				throw klay::NoPermissionException("Permission denied");
 			}
 
 			connection->send(methodContext->dispatcher(request));
-		} catch (runtime::Exception& e) {
+		} catch (klay::Exception& e) {
 			try {
 				// Forward the exception to the peer
 				connection->send(request.createErrorMessage(e.className(), e.what()));

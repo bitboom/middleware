@@ -29,7 +29,7 @@ EventFD::EventFD(unsigned int initval, int flags)
 {
 	fd = ::eventfd(initval, flags);
 	if (fd == -1) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 }
 
@@ -49,7 +49,7 @@ void EventFD::send()
 {
 	const std::uint64_t val = 1;
 	if (::write(fd, &val, sizeof(val)) == -1) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 }
 
@@ -57,7 +57,7 @@ void EventFD::receive()
 {
 	std::uint64_t val;
 	if (::read(fd, &val, sizeof(val)) == -1) {
-		throw runtime::Exception(runtime::GetSystemErrorMessage());
+		throw klay::Exception(klay::GetSystemErrorMessage());
 	}
 }
 

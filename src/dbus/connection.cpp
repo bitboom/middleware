@@ -50,7 +50,7 @@ Connection::Connection(const std::string& address) :
 	connection = g_dbus_connection_new_for_address_sync(address.c_str(), flags, NULL, NULL, &error);
 	if (error) {
 		ERROR(KSINK, error->message);
-		throw runtime::Exception(error->message);
+		throw klay::Exception(error->message);
 	}
 }
 
@@ -130,7 +130,7 @@ Variant Connection::methodcall(const std::string& busName,
 
 	if (error) {
 		ERROR(KSINK, error->message);
-		throw runtime::Exception(error->message);
+		throw klay::Exception(error->message);
 	}
 
 	return result;
@@ -159,7 +159,7 @@ void Connection::emitSignal(const std::string& busName,
 								  &error);
 	if (error) {
 		ERROR(KSINK, error->message);
-		throw runtime::Exception(error->message);
+		throw klay::Exception(error->message);
 	}
 }
 
@@ -192,7 +192,7 @@ Connection::ObjectId Connection::registerObject(const std::string& object,
 	}
 
 	if (error) {
-		throw runtime::Exception(error->message);
+		throw klay::Exception(error->message);
 	}
 
 	GDBusInterfaceInfo* inf = node->interfaces[0];
@@ -211,7 +211,7 @@ Connection::ObjectId Connection::registerObject(const std::string& object,
 	g_dbus_node_info_unref(node);
     if (error) {
         ERROR(KSINK, error->message);
-        throw runtime::Exception(error->message);
+        throw klay::Exception(error->message);
     }
 
 	return id;
@@ -300,7 +300,7 @@ void Connection::onMethodCall(GDBusConnection* connection,
 	try {
 		Variant variant = callbackSet.methodcall(objectPath, interface, method, Variant(parameters));
 		g_dbus_method_invocation_return_value(invocation, &variant);
-	} catch (runtime::Exception& e) {
+	} catch (klay::Exception& e) {
 		ERROR(KSINK, "Error on metod handling");
 		g_dbus_method_invocation_return_dbus_error(invocation, (interface + std::string(".Error")).c_str(), e.what());
 	}

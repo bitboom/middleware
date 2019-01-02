@@ -53,7 +53,7 @@ private:
 	Mutex mutex;
 	int pollFd;
 	std::atomic<bool> stopped;
-	runtime::EventFD wakeupSignal;
+	klay::EventFD wakeupSignal;
 
 	void prepare();
 };

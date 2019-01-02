@@ -53,12 +53,12 @@ void Namespace::attach(const pid_t pid)
 
 		if (fd == -1) {
 			if (errno != ENOENT) {
-				throw runtime::Exception("Failed to open namesapce: " + nspath);
+				throw klay::Exception("Failed to open namesapce: " + nspath);
 			}
 		} else {
 			if (::setns(fd, ns.second)) {
 				::close(fd);
-				throw runtime::Exception("Failed to set namespace: " + nspath);
+				throw klay::Exception("Failed to set namespace: " + nspath);
 			}
 			::close(fd);
 		}
@@ -68,12 +68,12 @@ void Namespace::attach(const pid_t pid)
 void Namespace::unshare(int flags)
 {
 	if (::unshare(flags)) {
-		throw runtime::Exception("Failed to unshare namespace");
+		throw klay::Exception("Failed to unshare namespace");
 	}
 
 	if (flags & CLONE_NEWNS &&
 			::mount(NULL, "/", NULL, MS_SLAVE | MS_REC, NULL) == -1) {
-		throw runtime::Exception("Failed to mount root filesystem");
+		throw klay::Exception("Failed to mount root filesystem");
 	}
 }
 

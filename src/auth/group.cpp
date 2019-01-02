@@ -48,9 +48,9 @@ Group::Group(const std::string& group)
 	ret = ::getgrnam_r(group.c_str(), &grp, buf.get(), bufsize, &result);
 	if (result == NULL) {
 		if (ret == 0)
-			throw runtime::Exception("Group doesn't exist");
+			throw klay::Exception("Group doesn't exist");
 		else
-			throw runtime::Exception(runtime::GetSystemErrorMessage(ret));
+			throw klay::Exception(klay::GetSystemErrorMessage(ret));
 	}
 
 	name = result->gr_name;
@@ -71,9 +71,9 @@ Group::Group(const gid_t group)
 	ret = ::getgrgid_r(group, &grp, buf.get(), bufsize, &result);
 	if (result == NULL) {
 		if (ret == 0)
-			throw runtime::Exception("Group doesn't exist");
+			throw klay::Exception("Group doesn't exist");
 		else
-			throw runtime::Exception(runtime::GetSystemErrorMessage(ret));
+			throw klay::Exception(klay::GetSystemErrorMessage(ret));
 	}
 
 	name = result->gr_name;
