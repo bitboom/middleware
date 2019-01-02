@@ -196,6 +196,24 @@ void File::create(mode_t mode)
 	}
 }
 
+void File::create(int flags, mode_t mode)
+{
+	if (descriptor != -1) {
+		close();
+	}
+
+	while (1) {
+		descriptor = ::open(path.c_str(), O_CREAT | flags, mode);
+		if (descriptor == -1) {
+			if (errno == EINTR) {
+				continue;
+			}
+			throw runtime::Exception(runtime::GetSystemErrorMessage());
+		}
+		return;
+	}
+}
+
 void File::open(int flags)
 {
 	if (descriptor != -1) {

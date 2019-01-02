@@ -98,6 +98,7 @@ public:
 	off_t size() const;
 
 	void create(mode_t mode);
+	void create(int flags, mode_t mode);
 	void open(int flags);
 	void read(void *buffer, const size_t size) const;
 	void write(const void *buffer, const size_t size) const;
