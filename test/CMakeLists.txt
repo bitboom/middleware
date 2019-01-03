@@ -27,6 +27,7 @@ SET(TEST_SRC	main.cpp
 				database.cpp
 				query-builder.cpp
 				filesystem.cpp
+				exception.cpp
 )
 
 ADD_EXECUTABLE(${PROJECT_NAME} ${TEST_SRC})
