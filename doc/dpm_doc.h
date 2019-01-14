@@ -42,7 +42,7 @@
   *  <tr>
   *   <td>wifi</td>
   *   <td>allowed / disallowed</td>
-  *   <td>Specifies wether the use of Wi-Fi is allowed or not</td>
+  *   <td>Specifies whether the use of Wi-Fi is allowed or not</td>
   *  </tr>
   *  <tr>
   *   <td>wifi-hotspot</td>
