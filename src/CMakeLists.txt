@@ -18,11 +18,9 @@ SET(LIB_SOVERSION "0")
 
 SET (KLAY_SOURCES		${KLAY_SRC}/error.cpp
 						${KLAY_SRC}/exception.cpp
-						${KLAY_SRC}/cgroup.cpp
 						${KLAY_SRC}/process.cpp
 						${KLAY_SRC}/eventfd.cpp
 						${KLAY_SRC}/mainloop.cpp
-						${KLAY_SRC}/namespace.cpp
 						${KLAY_SRC}/testbench.cpp
 						${KLAY_SRC}/file-user.cpp
 						${KLAY_SRC}/filesystem.cpp
@@ -31,10 +29,6 @@ SET (KLAY_SOURCES		${KLAY_SRC}/error.cpp
 						${KLAY_SRC}/db/column.cpp
 						${KLAY_SRC}/db/statement.cpp
 						${KLAY_SRC}/db/connection.cpp
-						${KLAY_SRC}/xml/node.cpp
-						${KLAY_SRC}/xml/parser.cpp
-						${KLAY_SRC}/xml/document.cpp
-						${KLAY_SRC}/xml/keepblanks.cpp
 						${KLAY_SRC}/rmi/socket.cpp
 						${KLAY_SRC}/rmi/client.cpp
 						${KLAY_SRC}/rmi/service.cpp
@@ -69,7 +63,6 @@ SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SOVERSION ${LIB_SOVERSION})
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES VERSION   ${LIB_VERSION})
 
 PKG_CHECK_MODULES(KLAY_DEPS REQUIRED	gio-2.0
-										libxml-2.0
 										sqlite3
 										dlog
 										libsystemd-daemon

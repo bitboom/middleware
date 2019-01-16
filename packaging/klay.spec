@@ -12,7 +12,6 @@ BuildRequires: cmake
 BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(dlog)
-BuildRequires: pkgconfig(libxml-2.0)
 BuildRequires: pkgconfig(libsystemd-daemon)
 BuildRequires: pkgconfig(libtzplatform-config)
 Requires(post): /sbin/ldconfig
@@ -88,4 +87,3 @@ Testcases for klay library.
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/klay-test
 %attr(755,root,root) %{TZ_SYS_DATA}/klay-test/test-proc.sh
-%{TZ_SYS_DATA}/klay-test/sample-policy.xml
