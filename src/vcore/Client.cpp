@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -481,7 +481,7 @@ int vcore_client_get_certificate_from_store(CertStoreType storeType, const char 
 
 	recvData = cert_svc_client_comm(pSendData);
 
-	if (recvData.result < 0) {
+	if (recvData.result != CERTSVC_SUCCESS) {
 		LogError("An error occurred from server side err : " << recvData.result);
 		free(pSendData);
 		return recvData.result;
@@ -499,7 +499,7 @@ int vcore_client_get_certificate_from_store(CertStoreType storeType, const char 
 		*certData = outData;
 		*certSize = recvData.dataBlockLen;
 
-		return recvData.result;
+		return CERTSVC_SUCCESS;
 	} else {
 		LogError("revcData length is wrong : " << recvData.dataBlockLen);
 		return CERTSVC_WRONG_ARGUMENT;

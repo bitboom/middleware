@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 - 2017 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -368,11 +368,8 @@ error:
 	if (result != CERTSVC_SUCCESS)
 		free(tempBuffer);
 
-	if (query)
-		sqlite3_free(query);
-
-	if (stmt)
-		sqlite3_finalize(stmt);
+	sqlite3_free(query);
+	sqlite3_finalize(stmt);
 
 	return result;
 }
@@ -415,10 +412,8 @@ int update_ca_certificate_file(char *cert)
 
 		result = execute_select_query(query, &stmt);
 
-		if (query) {
-			sqlite3_free(query);
-			query = NULL;
-		}
+		sqlite3_free(query);
+		query = NULL;
 
 		if (result != CERTSVC_SUCCESS) {
 			SLOGE("Querying database failed.");
@@ -486,8 +481,7 @@ int update_ca_certificate_file(char *cert)
 		  counter);
 error_and_exit:
 
-	if (stmt)
-		sqlite3_finalize(stmt);
+	sqlite3_finalize(stmt);
 
 	return result;
 }
@@ -1129,15 +1123,11 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 		goto error;
 	}
 
-	if (query) {
-		sqlite3_free(query);
-		query = NULL;
-	}
+	sqlite3_free(query);
+	query = NULL;
 
-	if (stmt) {
-		sqlite3_finalize(stmt);
-		stmt = NULL;
-	}
+	sqlite3_finalize(stmt);
+	stmt = NULL;
 
 	query = sqlite3_mprintf("delete from %Q where gname=%Q",
 							storetype_to_string(storeType), gname);
@@ -1148,10 +1138,8 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 		goto error;
 	}
 
-	if (query) {
-		sqlite3_free(query);
-		query = NULL;
-	}
+	sqlite3_free(query);
+	query = NULL;
 
 	CertStoreType other = ALL_STORE & ~SYSTEM_STORE & ~storeType;
 	CertStoreType current;
@@ -1215,11 +1203,9 @@ int deleteCertificateFromStore(CertStoreType storeType, const char *gname)
 	result = CERTSVC_SUCCESS;
 error:
 
-	if (query)
-		sqlite3_free(query);
 
-	if (stmt)
-		sqlite3_finalize(stmt);
+	sqlite3_free(query);
+	sqlite3_finalize(stmt);
 
 	free(private_key_name);
 	return result;
@@ -1319,7 +1305,8 @@ int getCertificateListFromStore(
 		} else if (reqType == CERTSVC_GET_USER_CERTIFICATE_LIST) {
 			if (storeType == SYSTEM_STORE) {
 				SLOGE("Invalid store type passed.");
-				return CERTSVC_WRONG_ARGUMENT;
+				result = CERTSVC_WRONG_ARGUMENT;
+				goto error;
 			} else {
 				query = sqlite3_mprintf("select gname, common_name, enabled from %Q where "\
 										"private_key_gname IS NOT NULL and is_root_app_enabled=%d and enabled=%d",
@@ -1385,15 +1372,11 @@ int getCertificateListFromStore(
 			goto error;
 		}
 
-		if (query) {
-			sqlite3_free(query);
-			query = NULL;
-		}
+		sqlite3_free(query);
+		query = NULL;
 
-		if (stmt) {
-			sqlite3_finalize(stmt);
-			stmt = NULL;
-		}
+		sqlite3_finalize(stmt);
+		stmt = NULL;
 	}
 
 	*certCount = count;
@@ -1440,11 +1423,8 @@ int getCertificateListFromStore(
 	result = CERTSVC_SUCCESS;
 error:
 
-	if (query)
-		sqlite3_free(query);
-
-	if (stmt)
-		sqlite3_finalize(stmt);
+	sqlite3_free(query);
+	sqlite3_finalize(stmt);
 
 	if (rootCertHead) {
 		currentNode = rootCertHead;
@@ -1511,11 +1491,8 @@ int getCertificateAliasFromStore(CertStoreType storeType, const char *gname,
 	SLOGD("success : getCertificateAliasFromStore");
 error:
 
-	if (query)
-		sqlite3_free(query);
-
-	if (stmt)
-		sqlite3_finalize(stmt);
+	sqlite3_free(query);
+	sqlite3_finalize(stmt);
 
 	return result;
 }
@@ -1654,14 +1631,9 @@ int loadCertificatesFromStore(
 	SLOGD("success: loadCertificatesFromStore. CERT_COUNT=%d", gnameSize);
 error:
 
-	if (query)
-		sqlite3_free(query);
-
-	if (stmt)
-		sqlite3_finalize(stmt);
-
-	if (columnText)
-		free(columnText);
+	sqlite3_free(query);
+	sqlite3_finalize(stmt);
+	free(columnText);
 
 	if (certs) {
 		for (i = 0; i < gnameSize; i++)

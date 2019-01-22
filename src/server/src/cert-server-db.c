@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 - 2018 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -141,11 +141,8 @@ int get_schema_version(schema_version *version)
 
 exit:
 
-	if (query)
-		sqlite3_free(query);
-
-	if (stmt)
-		sqlite3_finalize(stmt);
+	sqlite3_free(query);
+	sqlite3_finalize(stmt);
 
 	return result;
 }
@@ -170,8 +167,7 @@ int set_schema_version(schema_version version)
 	if (result != CERTSVC_SUCCESS)
 		SLOGE("Insert schema version to database failed.");
 
-	if (query)
-		sqlite3_free(query);
+	sqlite3_free(query);
 
 	return result;
 }
