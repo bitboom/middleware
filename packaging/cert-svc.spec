@@ -112,7 +112,6 @@ export FFLAGS="$FFLAGS -DTIZEN_EMULATOR_MODE"
          -DTZ_SYS_RO_CA_CERTS=%TZ_SYS_RO_CA_CERTS \
          -DTZ_SYS_RO_CA_BUNDLE=%TZ_SYS_RO_CA_BUNDLE \
          -DCERT_SVC_CA_BUNDLE=%cert_svc_ca_bundle \
-         -DFINGERPRINT_LIST_RW_PATH=%TZ_SYS_REVOKED_CERTS_FINGERPRINTS_RUNTIME \
          -DCERT_SVC_PATH=%cert_svc_path \
          -DCERT_SVC_RO_PATH=%cert_svc_ro_path \
          -DCERT_SVC_PKCS12=%cert_svc_pkcs12 \

@@ -56,13 +56,6 @@ const CertificateIdentifier &createCertificateIdentifier()
 		exReader.read(certificateIdentifier);
 	}
 
-	if (std::ifstream(FINGERPRINT_LIST_RW_PATH)) {
-		LogInfo(FINGERPRINT_LIST_RW_PATH << " exist, add it.");
-		CertificateConfigReader rwReader;
-		rwReader.initialize(FINGERPRINT_LIST_RW_PATH, schema);
-		rwReader.read(certificateIdentifier);
-	}
-
 	initialized = true;
 
 	return certificateIdentifier;
