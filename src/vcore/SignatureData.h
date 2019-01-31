@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@
 #include <list>
 #include <set>
 #include <map>
+#include <unordered_map>
 #include <string>
 
 #include <vcore/Certificate.h>
@@ -75,6 +76,8 @@ public:
 	const MEIDList &getMEIDList() const;
 	CertificatePtr getEndEntityCertificatePtr() const;
 	CertificatePtr getRootCaCertificatePtr() const;
+	void setExtSignatureParam(const std::string &key, const std::string value);
+	bool getExtSignatureParam(const std::string &key, std::string &value);
 
 	friend class SignatureReader;
 
@@ -100,6 +103,9 @@ private:
 	ObjectList m_objectList;
 	CertStoreId::Set m_storeIdSet;
 	bool m_certificateSorted;
+
+	//A map that can be used ie. by validator plugins to pass additional information to installer
+	std::unordered_map<std::string, std::string> m_extSignatureParams;
 };
 
 } // ValidationCore

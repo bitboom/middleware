@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -151,6 +151,21 @@ CertificatePtr SignatureData::getRootCaCertificatePtr() const
 		return m_certList.back();
 
 	return CertificatePtr();
+}
+
+void SignatureData::setExtSignatureParam(const std::string &key, const std::string value)
+{
+	m_extSignatureParams[key] = value;
+}
+
+bool SignatureData::getExtSignatureParam(const std::string &key, std::string &value)
+{
+	std::unordered_map<std::string, std::string>::const_iterator it = m_extSignatureParams.find(key);
+	if (it != m_extSignatureParams.end()) {
+		value = it->second;
+		return true;
+	}
+	return false;
 }
 
 } // ValidationCore
