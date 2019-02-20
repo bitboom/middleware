@@ -31,17 +31,17 @@ TestDriver& TestDriver::GetInstance()
 	return *TestDriver::instance;
 }
 
-void TestDriver::addTestCase(TestCase* testCase)
+void TestDriver::addTestCase(TestCase* testCase) noexcept
 {
 	this->testSuite.addTestCase(testCase);
 }
 
-void TestDriver::addFailure(const std::string& name, const Source& source)
+void TestDriver::addFailure(const std::string& name, const Source& source) noexcept
 {
 	this->reporter.addFailure(name, source);
 }
 
-void TestDriver::run(void)
+void TestDriver::run(void) noexcept
 {
 	const auto& testCases = this->testSuite.getTestCases();
 	for (const auto& tc : testCases) {
@@ -57,6 +57,36 @@ void TestDriver::run(void)
 	}
 
 	this->reporter.report();
+}
+
+void TestDriver::run(const std::string& name) noexcept
+{
+	const auto& testCases = this->testSuite.getTestCases();
+	for (const auto& tc : testCases) {
+		if (name.compare(tc->getName()) != 0)
+			continue;
+
+		auto startTime = this->reporter.start(tc->getName());
+
+		try {
+			tc->task();
+		} catch (...) {
+			this->reporter.addException(tc->getName());
+		}
+
+		this->reporter.end(tc->getName(), startTime);
+
+		break;
+	}
+
+	this->reporter.report();
+}
+
+void TestDriver::list(void) const noexcept
+{
+	const auto& testCases = this->testSuite.getTestCases();
+	for (const auto& tc : testCases)
+		this->reporter.print(tc->getName());
 }
 
 } //namespace testbench

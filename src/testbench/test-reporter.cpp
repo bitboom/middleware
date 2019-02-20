@@ -80,5 +80,10 @@ void TestReporter::report(void) const noexcept
 				  << Colorize(DEFAULT);
 }
 
+void TestReporter::print(const std::string& name) const noexcept
+{
+	std::cout << "Testcase name: " << name << std::endl;
+}
+
 } //namespace testbench
 } //namespace klay

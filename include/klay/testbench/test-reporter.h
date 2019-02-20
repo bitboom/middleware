@@ -46,6 +46,7 @@ public:
 	void addFailure(const std::string& name, const Source& source) noexcept;
 	void addException(const std::string& name) noexcept;
 	void report(void) const noexcept;
+	void print(const std::string& name) const noexcept;
 
 private:
 	std::size_t total = 0;

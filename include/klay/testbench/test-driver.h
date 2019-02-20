@@ -39,10 +39,12 @@ public:
 
 	static TestDriver& GetInstance(void);
 
-	void addTestCase(TestCase* testCase);
-	void addFailure(const std::string& name, const Source& source);
+	void addTestCase(TestCase* testCase) noexcept;
+	void addFailure(const std::string& name, const Source& source) noexcept;
 
-	void run(void);
+	void run(void) noexcept;
+	void run(const std::string& name) noexcept;
+	void list(void) const noexcept;
 
 private:
 	TestDriver() = default;

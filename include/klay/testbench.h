@@ -30,7 +30,9 @@ namespace testbench {
 
 class KLAY_EXPORT Testbench {
 public:
-	static void runAllTestSuites();
+	static void run(int argc, char* argv[]);
+
+	static void runAllTestSuites(); // Deprecated Function
 };
 
 struct KLAY_EXPORT Source;
