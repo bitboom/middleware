@@ -16,7 +16,7 @@
 PROJECT(klay-test)
 
 SET(TEST_SRC	main.cpp
-				rmi.cpp
+#				rmi.cpp
 				auth.cpp
 				dbus.cpp
 				proc.cpp

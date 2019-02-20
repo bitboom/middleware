@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,158 +17,59 @@
 #ifndef __KLAY_TESTBENCH_H__
 #define __KLAY_TESTBENCH_H__
 
-#include <cstring>
-
-#include <string>
-#include <vector>
-#include <memory>
-#include <sstream>
-#include <chrono>
-
 #include <klay/klay.h>
+#include <klay/testbench/test-driver.h>
+#include <klay/testbench/test-reporter.h>
 
-using namespace std::chrono;
-
-#define TIME_MEASURE_START auto start = system_clock::now();
-#define TIME_MEASURE_END auto end = system_clock::now(); \
-						 auto ms = duration_cast<milliseconds>(end - start); \
-						 auto time = ms.count();
+#include <cstring>
+#include <string>
+#include <sstream>
 
 namespace klay {
 namespace testbench {
 
-struct KLAY_EXPORT Source {
-	Source(const std::string& file, long line, const std::string& msg);
-
-	std::string fileName;
-	long lineNumber;
-	std::string	message;
-};
-
-class KLAY_EXPORT TestResult {
-public:
-	TestResult();
-	virtual ~TestResult();
-	virtual void testsStarted();
-	virtual void addFailure(const std::string& name, const Source& source);
-	virtual void testsEnded();
-
-private:
-	int	__failureCount;
-};
-
-class KLAY_EXPORT TestSuite {
-public:
-	TestSuite(const std::string& name);
-	virtual ~TestSuite();
-
-	TestSuite(const TestSuite&) = delete;
-	TestSuite& operator=(const TestSuite&) = delete;
-
-	void run();
-
-	const std::string& name() const {
-		return __testName;
-	}
-
-protected:
-	typedef void (TestSuite::*TestFunction)();
-
-	struct TestCase {
-		TestCase(TestFunction func, const std::string& name) :
-			function(func), testName(name)
-		{
-		}
-
-		TestFunction function;
-		std::string testName;
-	};
-
-	virtual void setup();
-	virtual void teardown();
-
-#define addTest(func)	\
-	registerTestCase(static_cast<TestFunction>(&func), #func)
-
-#define addTestWithName(func, name)	\
-	registerTestCase(static_cast<TestFunction>(&func), name)
-
-	void registerTestCase(TestFunction func, const std::string& name);
-	bool check(long expected, long actual, const std::string& file, long line);
-
-protected:
-	std::string __testName;
-
-private:
-	typedef std::vector<TestCase> TestCaseRegistry;
-
-	TestCaseRegistry __registry;
-};
-
 class KLAY_EXPORT Testbench {
 public:
-	static void addTestSuite(TestSuite *testSuite);
 	static void runAllTestSuites();
-	static void report(const std::string& name, const Source& source);
-
-private:
-	static Testbench& instance();
-
-	void add(TestSuite *testSuite);
-	void run();
-
-private:
-	static std::unique_ptr<TestResult> collector;
-
-	typedef std::vector<TestSuite *> TestSuiteRegistry;
-	TestSuiteRegistry __testSuites;
 };
 
+struct KLAY_EXPORT Source;
+
 #ifndef __FILENAME__
-#define __FILENAME__                                    \
+#define __FILENAME__                                                 \
 (::strrchr(__FILE__, '/') ? ::strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 
-#define TESTCASE(TestName)                              \
-class TestName##TestCase : public testbench::TestSuite {\
-public:                                                 \
-	TestName##TestCase()                                \
-		: TestSuite(#TestName)                          \
-	{                                                   \
-		addTestWithName(TestName##TestCase::standalone, #TestName); \
-	}                                                   \
-	void standalone();                                  \
-} TestName##TestCase##Instance;                         \
-void TestName##TestCase::standalone()
+#define TESTCASE(TestName)                                             \
+class TestName##TestCase final : public klay::testbench::TestCase {    \
+public:                                                                \
+	TestName##TestCase() : TestCase(#TestName)                         \
+	{                                                                  \
+		klay::testbench::TestDriver::GetInstance().addTestCase(this);  \
+	}                                                                  \
+	void task(void) override;                                          \
+} TestName##TestCase##Instance;                                        \
+void TestName##TestCase::task()
 
-#define TEST_CHECK(condition)                           \
-{                                                       \
-	if (!(condition)) {                                 \
-		testbench::Testbench::report(__testName,        \
-		testbench::Source(__FILENAME__, __LINE__, #condition));  \
-		return;                                         \
-	}                                                   \
+#define TEST_EXPECT(expected, actual)                                             \
+{                                                                                 \
+	__typeof__(expected) exp = (expected);                                        \
+	__typeof__(actual) act = (actual);                                            \
+	if (exp != act) {                                                             \
+		std::stringstream ss;                                                     \
+		ss << "expected " << exp << " but it was " << act;                        \
+		klay::testbench::TestDriver::GetInstance().addFailure(this->getName(),    \
+		klay::testbench::Source(__FILENAME__, __LINE__, ss.str()));               \
+	}                                                                             \
 }
 
-#define TEST_EXPECT(expected, actual)                   \
-{                                                       \
-	__typeof__(expected) _exp = (expected);             \
-	__typeof__(actual) _act = (actual);                 \
-	if (_exp != _act) {                                 \
-		std::stringstream _stream;                      \
-		_stream << "expected " << _exp                  \
-				<< " but it was " << _act;              \
-		testbench::Testbench::report(__testName,        \
-		testbench::Source(__FILENAME__, __LINE__, _stream.str())); \
-	}                                                   \
+#define TEST_FAIL(text)                                                       \
+{                                                                             \
+	klay::testbench::TestDriver::GetInstance().addFailure(this->getName(),    \
+	klay::testbench::Source(__FILENAME__, __LINE__, (text)));                 \
+	return;                                                                   \
 }
 
-#define TEST_FAIL(text)                                 \
-{                                                       \
-	testbench::Testbench::report(__testName,            \
-	testbench::Source(__FILENAME__, __LINE__, (text))); \
-	return;                                             \
-}
 } // namespace testbench
 } // namespace klay
 

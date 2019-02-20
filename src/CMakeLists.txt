@@ -22,6 +22,10 @@ SET (KLAY_SOURCES		${KLAY_SRC}/error.cpp
 						${KLAY_SRC}/eventfd.cpp
 						${KLAY_SRC}/mainloop.cpp
 						${KLAY_SRC}/testbench.cpp
+						${KLAY_SRC}/testbench/test-case.cpp
+						${KLAY_SRC}/testbench/test-suite.cpp
+						${KLAY_SRC}/testbench/test-driver.cpp
+						${KLAY_SRC}/testbench/test-reporter.cpp
 						${KLAY_SRC}/file-user.cpp
 						${KLAY_SRC}/filesystem.cpp
 						${KLAY_SRC}/thread-pool.cpp

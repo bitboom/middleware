@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,15 +14,34 @@
  *  limitations under the License
  */
 
-#include <klay/testbench.h>
+#pragma once
+
+#include <klay/klay.h>
+#include <klay/testbench/test-case.h>
+
+#include <memory>
+#include <vector>
 
 namespace klay {
 namespace testbench {
 
-void Testbench::runAllTestSuites()
-{
-	TestDriver::GetInstance().run();
-}
+class KLAY_EXPORT TestSuite {
+public:
+	TestSuite() = default;
+	TestSuite(const std::string& name);
+	virtual ~TestSuite() = default;
 
-} //namespace testbench
-} //namespace klay
+	void addTestCase(TestCase* testCase) noexcept;
+
+	const std::vector<TestCase*>& getTestCases(void) const noexcept;
+
+	const std::string& getName(void) const noexcept;
+
+private:
+	std::vector<TestCase*> testCases;
+
+	std::string name;
+};
+
+} // namespace testbench
+} // namespace klay
