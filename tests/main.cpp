@@ -22,9 +22,9 @@
 
 #include <klay/testbench.h>
 
-int main(int /*argc*/, char** /*argv*/)
+int main(int argc, char** argv)
 {
-	testbench::Testbench::runAllTestSuites();
+	testbench::Testbench::run(argc, argv);
 
 	return 0;
 }
