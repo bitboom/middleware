@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2000 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Contact: Jooseong Lee <jooseong.lee@samsung.com>
  *
@@ -71,6 +71,7 @@ protected:
 	void ProcessQueue(void);
 	void NotifyMe(void);
 	void CloseSocket(int sock);
+	time_t monotonicNow();
 
 	struct SocketDescription {
 		bool isListen;
