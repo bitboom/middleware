@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2000 - 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2000 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Contact: Jooseong Lee <jooseong.lee@samsung.com>
  *
@@ -134,7 +134,7 @@ SocketManager::CreateDefaultReadSocketDescription(int sock, bool timeout,
 	desc.counter = ++m_counter;
 
 	if (timeout) {
-		desc.timeout = time(NULL) + SOCKET_TIMEOUT;
+		desc.timeout = monotonicNow() + SOCKET_TIMEOUT;
 
 		if (false == desc.isTimeout) {
 			Timeout tm;
@@ -248,7 +248,7 @@ void SocketManager::ReadyForRead(int sock)
 	event.connectionID.counter = m_socketDescriptionVector[sock].counter;
 	event.interfaceID = desc.interfaceID;
 	event.rawBuffer.resize(4096);
-	desc.timeout = time(NULL) + SOCKET_TIMEOUT;
+	desc.timeout = monotonicNow() + SOCKET_TIMEOUT;
 	ssize_t size = read(sock, &event.rawBuffer[0], 4096);
 
 	if (size == 0) {
@@ -306,7 +306,7 @@ void SocketManager::ReadyForSendMsg(int sock)
 	if (desc.sendMsgDataQueue.empty())
 		FD_CLR(sock, &m_writeSet);
 
-	desc.timeout = time(NULL) + SOCKET_TIMEOUT;
+	desc.timeout = monotonicNow() + SOCKET_TIMEOUT;
 	GenericSocketService::WriteEvent event;
 	event.connectionID.sock = sock;
 	event.connectionID.counter = desc.counter;
@@ -341,7 +341,7 @@ void SocketManager::ReadyForWriteBuffer(int sock)
 	}
 
 	desc.rawBuffer.erase(desc.rawBuffer.begin(), desc.rawBuffer.begin() + result);
-	desc.timeout = time(NULL) + SOCKET_TIMEOUT;
+	desc.timeout = monotonicNow() + SOCKET_TIMEOUT;
 
 	if (desc.rawBuffer.empty())
 		FD_CLR(sock, &m_writeSet);
@@ -400,7 +400,7 @@ void SocketManager::MainLoop()
 	  		ptrTimeout->tv_sec = SOCKET_TIMEOUT;
 			ptrTimeout->tv_usec = 0;
 		} else {
-			time_t currentTime = time(NULL);
+			time_t currentTime = monotonicNow();
 			auto &pqTimeout = m_timeoutQueue.top();
 			// 0 means that select won't block and socket will be closed ;-)
 			ptrTimeout->tv_sec =
@@ -787,6 +787,16 @@ void SocketManager::CloseSocket(int sock)
 	TEMP_FAILURE_RETRY(close(sock));
 	FD_CLR(sock, &m_readSet);
 	FD_CLR(sock, &m_writeSet);
+}
+
+time_t SocketManager::monotonicNow() {
+	struct timespec now;
+	if (clock_gettime(CLOCK_MONOTONIC_RAW, &now) == -1) {
+		int err = errno;
+		LogError("Can't access monothonic clock, error: " <<  errnoToString(err));
+		return 0;
+	}
+	return now.tv_sec;
 }
 
 } // namespace AuthPasswd
