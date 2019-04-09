@@ -1,5 +1,8 @@
 # Programming interface for client
 
+---
+
+# #1. Execute query
 ## Check smack table schema
 ### 'smack' table
 | name | type |
@@ -9,8 +12,7 @@
 | access_type | TEXT |
 | permission | TEXT |
 
-
-## Use OsqueryManager for getting smack information
+## Use OsqueryManager to get smack information
 ```cpp
   using namespace osquerypp;
   
@@ -20,7 +22,7 @@
   // 2. Load OsqueryManager
   auto manager = OsqueryManager::Load();
    
-  // 3. Execute Query by using OsqueryManager
+  // 3. Execute query by using OsqueryManager
   auto rows = OsqueryManager::executeQuery(query);
    
   // 4. Get result
@@ -28,4 +30,39 @@
       std::string slabel = row["subject_label"];
       std::string olabel = row["object_label];
   }
+```
+
+# #2. Subscribe event table
+## Check smack_deny_events table schema
+- The name of the event table ends with *_events.
+### 'smack_deny_events' table
+| name | type |
+|---|---|
+| action | TEXT |
+| subject_label | TEXT |
+| object_label | TEXT |
+| access_type | TEXT |
+| permission | TEXT |
+| requested | TEXT |
+| pid | INTEGER |
+
+## Use OsqueryManager to subscribe smack-deny-events
+```cpp
+  using namespace osquerypp;
+  
+  // 1. Write callback function
+  auto  onDeny = [&](const EventContext& ec, const Row& row)
+    {
+      // get data of event table
+      std::cout << row["action"] << std::endl;
+      std::cout << row["permission"] << std::endl;
+      std::cout << row["subject_label"] << std::endl;
+      std::cout << row["object_label"] << std::endl;
+    }
+    
+  // 2. Load OsqueryManager
+  auto manager = OsqueryManager::Load();
+   
+  // 3. Register callback with event_table by using OsqueryManager
+  OsqueryManager::subscribe("smack_deny_events", onDeny);
 ```
