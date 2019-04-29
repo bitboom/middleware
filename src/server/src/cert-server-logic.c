@@ -1399,8 +1399,8 @@ int getCertificateListFromStore(
 		tmpNode = currentNode->next;
 		currRespCertData = respCertData + i;
 
-		if (strlen(currentNode->gname) > sizeof(currRespCertData->gname)
-				|| strlen(currentNode->title) > sizeof(currRespCertData->title)) {
+		if (strlen(currentNode->gname) >= sizeof(currRespCertData->gname)
+				|| strlen(currentNode->title) >= sizeof(currRespCertData->title)) {
 			SLOGE("String is too long. [%s], [%s]", currentNode->gname, currentNode->title);
 			result = CERTSVC_FAIL;
 			*certListBuffer = NULL;
@@ -1613,7 +1613,7 @@ int loadCertificatesFromStore(
 	for (i = 0; i < gnameSize; i++) {
 		currentBlock = certBlockList + i;
 
-		if (sizeof(currentBlock->dataBlock) < strlen(certs[i])) {
+		if (sizeof(currentBlock->dataBlock) <= strlen(certs[i])) {
 			SLOGE("src is longer than dst. src[%s] dst size[%d]",
 				  certs[i],
 				  sizeof(currentBlock->dataBlock));

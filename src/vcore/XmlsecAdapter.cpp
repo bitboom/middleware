@@ -158,6 +158,7 @@ void LogErrorPrint(const char *file,
 			reason,
 			(errorMsg != NULL) ? errorMsg : "",
 			(msg != NULL) ? msg : "");
+	buff[sizeof(buff) - 1] = '\0';
 
 	LogError(buff);
 }

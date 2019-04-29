@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016-2019 Samsung Electronics Co., Ltd. All rights reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -89,17 +89,17 @@ public:
 
 	Result checkOutbound(const std::string &linkPath, const std::string &appPath)
 	{
-		char resolvedPath[PATH_MAX];
-
-		if (realpath((appPath + "/" + linkPath).c_str(), resolvedPath) == NULL)
+		const auto path = appPath + "/" + linkPath;
+		const auto resolvedPath = realpath(path.c_str(), nullptr);
+		if (!resolvedPath)
 			return ERROR_READING_LNK;
-
-		std::string linkRealPath(resolvedPath);
-
-		if (linkRealPath.compare(0, appPath.size(), appPath) == 0)
-			return NO_ERROR;
-		else
-			return ERROR_OUTBOUND_LNK;
+		const auto ret =
+			strncmp(resolvedPath, appPath.c_str(), appPath.size())
+			|| resolvedPath[appPath.size()] != '/'
+				? ERROR_OUTBOUND_LNK
+				: NO_ERROR;
+		free(resolvedPath);
+		return ret;
 	}
 
 private:
