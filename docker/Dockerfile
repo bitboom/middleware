@@ -32,3 +32,6 @@ RUN cd /usr/src/rocksdb && \
 
 # boost
 RUN apt-get install -qq libboost-all-dev
+
+# sqlite3
+RUN apt-get install -qq libsqlite3-dev
