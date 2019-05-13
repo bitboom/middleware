@@ -11,6 +11,20 @@ BuildRequires: gcc-c++
 BuildRequires: make
 BuildRequires: cmake
 BuildRequires: gtest-devel
+BuildRequires: glog-devel
+BuildRequires: rocksdb
+BuildRequires: snappy-devel
+BuildRequires: zlib-devel
+BuildRequires: bzip2-devel
+BuildRequires: lz4-devel
+BuildRequires: zstd-devel
+Requires: glog
+Requires: rocksdb
+Requires: snappy
+Requires: zlib
+Requires: bzip2
+Requires: lz4
+Requires: zstd
 
 %description
 Osquery exposes an operating system as a high-performance relational database.
@@ -44,3 +58,4 @@ Testcases for osquery
 %files test
 %manifest %{name}.manifest
 %{_bindir}/osquery_status_test
+%{_bindir}/db_handle_tests
