@@ -60,4 +60,5 @@ Testcases for osquery
 %files test
 %manifest %{name}.manifest
 %{_bindir}/osquery_status_test
-%{_bindir}/db_handle_tests
+%{_bindir}/osquery_db_handle_tests
+%{_bindir}/osquery_results_tests
