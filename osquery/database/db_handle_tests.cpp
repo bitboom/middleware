@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-//#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/operations.hpp>
 
 #include <glog/logging.h>
 #include <gtest/gtest.h>
@@ -94,6 +94,6 @@ int main(int argc, char* argv[]) {
   testing::InitGoogleTest(&argc, argv);
   google::InitGoogleLogging(argv[0]);
   int status = RUN_ALL_TESTS();
-//  boost::filesystem::remove_all(kTestingDBHandlePath);
+  boost::filesystem::remove_all(kTestingDBHandlePath);
   return status;
 }

@@ -20,7 +20,9 @@ SET(${TARGET_OSQUERY_LIB}_DEP glog
 							  z
 							  bz2
 							  lz4
-							  zstd)
+							  zstd
+							  boost_system
+							  boost_filesystem)
 SET(${TARGET_OSQUERY_LIB}_SRCS "")
 
 MACRO(ADD_OSQUERY_LIBRARY TARGET)

@@ -18,6 +18,7 @@ BuildRequires: zlib-devel
 BuildRequires: bzip2-devel
 BuildRequires: lz4-devel
 BuildRequires: zstd-devel
+BuildRequires: boost-devel
 Requires: glog
 Requires: rocksdb
 Requires: snappy
@@ -25,6 +26,7 @@ Requires: zlib
 Requires: bzip2
 Requires: lz4
 Requires: zstd
+Requires: boost-system boost-filesystem
 
 %description
 Osquery exposes an operating system as a high-performance relational database.
