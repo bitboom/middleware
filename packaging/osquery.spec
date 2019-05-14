@@ -75,3 +75,4 @@ Testcases for osquery
 %{_bindir}/osquery_sqlite_util_tests
 %{_bindir}/osquery_test_util_tests
 %{_bindir}/osquery_text_tests
+%{_bindir}/osquery_logger_tests
