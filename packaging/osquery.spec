@@ -10,8 +10,8 @@ Source1: %name.manifest
 BuildRequires: gcc-c++
 BuildRequires: make
 BuildRequires: cmake
-BuildRequires: gtest-devel
 BuildRequires: glog-devel
+BuildRequires: gflags-devel
 
 BuildRequires: rocksdb
 BuildRequires: snappy-devel
@@ -23,13 +23,14 @@ BuildRequires: zstd-devel
 BuildRequires: boost-devel
 BuildRequires: pkgconfig(sqlite3)
 Requires: glog
+Requires: gflag
 Requires: rocksdb
 Requires: snappy
 Requires: zlib
 Requires: bzip2
 Requires: lz4
 Requires: zstd
-Requires: boost-system boost-filesystem
+Requires: boost-system boost-thread boost-filesystem
 Requires: sqlite3
 
 %description
@@ -56,6 +57,7 @@ make %{?jobs:-j%jobs}
 %package test 
 Summary: Osquery test
 Group: Security/Testing
+BuildRequires: gtest-devel
 Requires: gtest
 
 %description test 
@@ -67,3 +69,9 @@ Testcases for osquery
 %{_bindir}/osquery_db_handle_tests
 %{_bindir}/osquery_results_tests
 %{_bindir}/osquery_registry_tests
+%{_bindir}/osquery_config_tests
+%{_bindir}/osquery_filesystem_tests
+%{_bindir}/osquery_query_tests
+%{_bindir}/osquery_sqlite_util_tests
+%{_bindir}/osquery_test_util_tests
+%{_bindir}/osquery_text_tests

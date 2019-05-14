@@ -9,11 +9,11 @@
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 
-// #include "osquery/core/test_util.h"
+#include "osquery/core/test_util.h"
 
 namespace pt = boost::property_tree;
 
-//using namespace osquery::core;
+using namespace osquery::core;
 
 namespace osquery {
 
@@ -32,7 +32,6 @@ TEST_F(ResultsTests, test_simple_diff) {
   EXPECT_EQ(results.removed, o);
 }
 
-/*
 TEST_F(ResultsTests, test_serialize_row) {
   auto results = getSerializedRow();
   pt::ptree tree;
@@ -124,7 +123,6 @@ TEST_F(ResultsTests, test_serialize_scheduled_query_log_item_json) {
   EXPECT_EQ(s.toString(), "OK");
   EXPECT_EQ(results.first, json);
 }
-*/
 }
 
 int main(int argc, char* argv[]) {

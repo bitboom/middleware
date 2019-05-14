@@ -14,6 +14,7 @@
 
 SET(TARGET_OSQUERY_LIB osquery)
 SET(${TARGET_OSQUERY_LIB}_DEP glog
+							  gflags
 							  librocksdb.a
 							  pthread
 							  snappy
@@ -22,7 +23,9 @@ SET(${TARGET_OSQUERY_LIB}_DEP glog
 							  lz4
 							  zstd
 							  boost_system
-							  boost_filesystem)
+							  boost_thread
+							  boost_filesystem
+							  sqlite3)
 SET(${TARGET_OSQUERY_LIB}_SRCS "")
 
 MACRO(ADD_OSQUERY_LIBRARY TARGET)
@@ -48,8 +51,10 @@ MACRO(ADD_OSQUERY_TEST TEST_NAME SOURCE)
 ENDMACRO(ADD_OSQUERY_TEST)
 
 ADD_SUBDIRECTORY(core)
+ADD_SUBDIRECTORY(config)
 ADD_SUBDIRECTORY(database)
 ADD_SUBDIRECTORY(registry)
+ADD_SUBDIRECTORY(filesystem)
 
 ADD_LIBRARY(${TARGET_OSQUERY_LIB} STATIC main/lib.cpp ${${TARGET_OSQUERY_LIB}_SRCS})
 TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_LIB} ${${TARGET_OSQUERY_LIB}_DEP})
