@@ -65,14 +65,16 @@ Testcases for osquery
 
 %files test
 %manifest %{name}.manifest
-%{_bindir}/osquery_status_test
+%{_bindir}/osquery_status_tests
 %{_bindir}/osquery_db_handle_tests
 %{_bindir}/osquery_results_tests
 %{_bindir}/osquery_registry_tests
 %{_bindir}/osquery_config_tests
 %{_bindir}/osquery_filesystem_tests
 %{_bindir}/osquery_query_tests
+%{_bindir}/osquery_sql_tests
 %{_bindir}/osquery_sqlite_util_tests
+%{_bindir}/osquery_scheduler_tests
 %{_bindir}/osquery_test_util_tests
 %{_bindir}/osquery_text_tests
 %{_bindir}/osquery_logger_tests
