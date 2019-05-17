@@ -12,16 +12,15 @@ BuildRequires: make
 BuildRequires: cmake
 BuildRequires: glog-devel
 BuildRequires: gflags-devel
-
 BuildRequires: rocksdb
 BuildRequires: snappy-devel
 BuildRequires: zlib-devel
 BuildRequires: bzip2-devel
 BuildRequires: lz4-devel
 BuildRequires: zstd-devel
-
 BuildRequires: boost-devel
 BuildRequires: pkgconfig(sqlite3)
+BuildRequires: thrift
 Requires: glog
 Requires: gflag
 Requires: rocksdb
@@ -32,6 +31,7 @@ Requires: lz4
 Requires: zstd
 Requires: boost-system boost-thread boost-filesystem
 Requires: sqlite3
+Requires: thrift
 
 %description
 Osquery exposes an operating system as a high-performance relational database.
@@ -78,3 +78,5 @@ Testcases for osquery
 %{_bindir}/osquery_test_util_tests
 %{_bindir}/osquery_text_tests
 %{_bindir}/osquery_logger_tests
+%{_bindir}/osquery_conversions_tests
+%{_bindir}/osquery_dispatcher_tests

@@ -38,3 +38,15 @@ RUN apt-get install -qq libsqlite3-dev
 
 # gflags
 RUN apt-get install -qq libgflags-dev
+
+# thrift
+RUN apt-get install -qq libevent-dev libtool flex bison pkg-config g++ libssl-dev
+
+RUN cd /usr/src && \
+    git clone https://github.com/apache/thrift.git
+
+RUN cd /usr/src/thrift && \
+    git checkout 0.9.3 && \
+    ./bootstrap.sh && \
+    ./configure && \
+    make && make install

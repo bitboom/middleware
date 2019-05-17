@@ -25,7 +25,8 @@ SET(${TARGET_OSQUERY_LIB}_DEP glog
 							  boost_system
 							  boost_thread
 							  boost_filesystem
-							  sqlite3)
+							  sqlite3
+							  libthrift.a)
 SET(${TARGET_OSQUERY_LIB}_SRCS "")
 
 MACRO(ADD_OSQUERY_LIBRARY TARGET)
@@ -52,6 +53,7 @@ ENDMACRO(ADD_OSQUERY_TEST)
 
 ADD_SUBDIRECTORY(core)
 ADD_SUBDIRECTORY(config)
+ADD_SUBDIRECTORY(dispatcher)
 ADD_SUBDIRECTORY(database)
 ADD_SUBDIRECTORY(registry)
 ADD_SUBDIRECTORY(filesystem)

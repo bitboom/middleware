@@ -1,0 +1,3 @@
+ADD_OSQUERY_LIBRARY(osquery_dispatcher dispatcher.cpp)
+
+ADD_OSQUERY_TEST(osquery_dispatcher_tests dispatcher_tests.cpp)
