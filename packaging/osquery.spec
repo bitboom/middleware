@@ -80,3 +80,6 @@ Testcases for osquery
 %{_bindir}/osquery_logger_tests
 %{_bindir}/osquery_conversions_tests
 %{_bindir}/osquery_dispatcher_tests
+%{_bindir}/osquery_events_tests
+%{_bindir}/osquery_events_database_tests
+%{_bindir}/osquery_inotify_tests

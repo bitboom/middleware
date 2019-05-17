@@ -247,6 +247,6 @@ class DBHandle {
 
   friend class DBHandleTests;
   friend class QueryTests;
-//  friend class EventsDatabaseTests;
+  friend class EventsDatabaseTests;
 };
 }
