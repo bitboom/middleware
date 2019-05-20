@@ -20,13 +20,16 @@ SET(${TARGET_OSQUERY_LIB}_DEP glog
 							  snappy
 							  z
 							  bz2
+							  dl
 							  lz4
 							  zstd
 							  boost_system
 							  boost_thread
 							  boost_filesystem
 							  sqlite3
-							  libthrift.a)
+							  libthrift.a
+							  procps
+							  systemd)
 SET(${TARGET_OSQUERY_LIB}_SRCS "")
 
 MACRO(ADD_OSQUERY_LIBRARY TARGET)
@@ -60,6 +63,41 @@ ADD_SUBDIRECTORY(filesystem)
 ADD_SUBDIRECTORY(logger)
 ADD_SUBDIRECTORY(registry)
 ADD_SUBDIRECTORY(scheduler)
+ADD_SUBDIRECTORY(tables)
 
-ADD_LIBRARY(${TARGET_OSQUERY_LIB} STATIC main/lib.cpp ${${TARGET_OSQUERY_LIB}_SRCS})
+## Table generation #############################################################
+FILE(GLOB TABLE_FILES "tables/specs/x/*.table")
+FILE(GLOB TABLE_FILES_LINUX "tables/specs/linux/*.table")
+LIST(APPEND TABLE_FILES ${TABLE_FILES_LINUX})
+
+SET(GENERATED_TABLES "")
+FOREACH(TABLE_FILE ${TABLE_FILES})
+	SET(TABLE_FILE_GEN ${TABLE_FILE})
+	STRING(REPLACE "${CMAKE_SOURCE_DIR}/osquery/tables/specs"
+				   "${CMAKE_BINARY_DIR}/generated/tables"
+				   TABLE_FILE_GEN
+				   ${TABLE_FILE_GEN})
+	STRING(REPLACE "linux/" "" TABLE_FILE_GEN ${TABLE_FILE_GEN})
+	STRING(REPLACE "x/" "" TABLE_FILE_GEN ${TABLE_FILE_GEN})
+	STRING(REPLACE ".table" ".cpp" TABLE_FILE_GEN ${TABLE_FILE_GEN})
+	ADD_CUSTOM_COMMAND(
+		OUTPUT ${TABLE_FILE_GEN}
+		COMMAND
+			python ${CMAKE_SOURCE_DIR}/tools/gentable.py ${TABLE_FILE} ${TABLE_FILE_GEN}
+		DEPENDS ${TABLE_FILE}
+		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+	LIST(APPEND GENERATED_TABLES ${TABLE_FILE_GEN})
+ENDFOREACH()
+
+## Library generation ###########################################################
+ADD_LIBRARY(osquery_generated_tables OBJECT ${GENERATED_TABLES})
+ADD_LIBRARY(osquery_static STATIC $<TARGET_OBJECTS:osquery_generated_tables>
+								  ${${TARGET_OSQUERY_LIB}_SRCS})
+SET_TARGET_PROPERTIES(osquery_static PROPERTIES OUTPUT_NAME osquery_static)
+
+# static_lib should include every object file in the archive in the link
+ADD_LIBRARY(${TARGET_OSQUERY_LIB} STATIC main/lib.cpp)
+TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_LIB} "-Wl,-whole-archive")
+TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_LIB} osquery_static)
+TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_LIB} "-Wl,-no-whole-archive")
 TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_LIB} ${${TARGET_OSQUERY_LIB}_DEP})

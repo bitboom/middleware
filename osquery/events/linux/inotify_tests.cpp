@@ -238,7 +238,7 @@ TEST_F(INotifyTests, test_inotify_event_action) {
   TestINotifyEventSubscriber::WaitForEvents(kMaxEventLatency, 1);
 
   // Make sure the inotify action was expected.
-  EXPECT_EQ(TestINotifyEventSubscriber::actions().size(), 1);
+  EXPECT_TRUE(TestINotifyEventSubscriber::actions().size() > 0);
   EXPECT_EQ(TestINotifyEventSubscriber::actions()[0], "UPDATED");
 
   // Cause the thread to tear down.

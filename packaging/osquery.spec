@@ -19,8 +19,11 @@ BuildRequires: bzip2-devel
 BuildRequires: lz4-devel
 BuildRequires: zstd-devel
 BuildRequires: boost-devel
-BuildRequires: pkgconfig(sqlite3)
 BuildRequires: thrift
+BuildRequires: pkgconfig(sqlite3)
+BuildRequires: pkgconfig(libprocps)
+BuildRequires: pkgconfig(libsystemd)
+BuildRequires: python-jinja2
 Requires: glog
 Requires: gflag
 Requires: rocksdb
@@ -30,8 +33,10 @@ Requires: bzip2
 Requires: lz4
 Requires: zstd
 Requires: boost-system boost-thread boost-filesystem
-Requires: sqlite3
 Requires: thrift
+Requires: sqlite3
+Requires: procps-ng
+Requires: libsystemd
 
 %description
 Osquery exposes an operating system as a high-performance relational database.
@@ -83,3 +88,4 @@ Testcases for osquery
 %{_bindir}/osquery_events_tests
 %{_bindir}/osquery_events_database_tests
 %{_bindir}/osquery_inotify_tests
+%{_bindir}/osquery_etc_hosts_tests
