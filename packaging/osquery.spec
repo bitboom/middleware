@@ -45,6 +45,7 @@ This allows you to write SQL-based queries to explore operating system data.
 %files
 %manifest %{name}.manifest
 %{_bindir}/osqueryi
+%{_bindir}/osqueryd
 
 %prep
 %setup -q
