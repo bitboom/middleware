@@ -20,7 +20,7 @@ BuildRequires: lz4-devel
 BuildRequires: zstd-devel
 BuildRequires: boost-devel
 BuildRequires: thrift
-BuildRequires: pkgconfig(sqlite3)
+BuildRequires: readline-devel
 BuildRequires: pkgconfig(libprocps)
 BuildRequires: pkgconfig(libsystemd)
 BuildRequires: python-jinja2
@@ -34,7 +34,7 @@ Requires: lz4
 Requires: zstd
 Requires: boost-system boost-thread boost-filesystem
 Requires: thrift
-Requires: sqlite3
+Requires: libreadline
 Requires: procps-ng
 Requires: libsystemd
 
@@ -44,6 +44,7 @@ This allows you to write SQL-based queries to explore operating system data.
 
 %files
 %manifest %{name}.manifest
+%{_bindir}/osqueryi
 
 %prep
 %setup -q
@@ -89,3 +90,4 @@ Testcases for osquery
 %{_bindir}/osquery_events_database_tests
 %{_bindir}/osquery_inotify_tests
 %{_bindir}/osquery_etc_hosts_tests
+%{_bindir}/osquery_printer_tests

@@ -13,10 +13,13 @@
 #  limitations under the License
 
 SET(TARGET_OSQUERY_LIB osquery)
+SET(TARGET_OSQUERY_SHELL osqueryi)
 SET(${TARGET_OSQUERY_LIB}_DEP glog
 							  gflags
-							  librocksdb.a
 							  pthread
+							  libthrift.a
+							# rocksdb deps
+							  librocksdb.a
 							  snappy
 							  z
 							  bz2
@@ -26,8 +29,9 @@ SET(${TARGET_OSQUERY_LIB}_DEP glog
 							  boost_system
 							  boost_thread
 							  boost_filesystem
-							  sqlite3
-							  libthrift.a
+							# shell deps
+							  readline
+							# build-in tables deps
 							  procps
 							  systemd)
 SET(${TARGET_OSQUERY_LIB}_SRCS "")
@@ -57,6 +61,7 @@ ENDMACRO(ADD_OSQUERY_TEST)
 ADD_SUBDIRECTORY(core)
 ADD_SUBDIRECTORY(config)
 ADD_SUBDIRECTORY(dispatcher)
+ADD_SUBDIRECTORY(devtools)
 ADD_SUBDIRECTORY(database)
 ADD_SUBDIRECTORY(events)
 ADD_SUBDIRECTORY(filesystem)
@@ -92,6 +97,7 @@ ENDFOREACH()
 ## Library generation ###########################################################
 ADD_LIBRARY(osquery_generated_tables OBJECT ${GENERATED_TABLES})
 ADD_LIBRARY(osquery_static STATIC $<TARGET_OBJECTS:osquery_generated_tables>
+								  $<TARGET_OBJECTS:osquery_sqlite>
 								  ${${TARGET_OSQUERY_LIB}_SRCS})
 SET_TARGET_PROPERTIES(osquery_static PROPERTIES OUTPUT_NAME osquery_static)
 
@@ -101,3 +107,16 @@ TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_LIB} "-Wl,-whole-archive")
 TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_LIB} osquery_static)
 TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_LIB} "-Wl,-no-whole-archive")
 TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_LIB} ${${TARGET_OSQUERY_LIB}_DEP})
+
+## osqueryi generation ##########################################################
+ADD_EXECUTABLE(${TARGET_OSQUERY_SHELL} main/shell.cpp)
+TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_SHELL} ${TARGET_OSQUERY_LIB})
+INSTALL(TARGETS ${TARGET_OSQUERY_SHELL}
+		DESTINATION ${CMAKE_INSTALL_BINDIR}
+		PERMISSIONS OWNER_READ
+					OWNER_WRITE
+					OWNER_EXECUTE
+					GROUP_READ
+					GROUP_EXECUTE
+					WORLD_READ
+					WORLD_EXECUTE)
