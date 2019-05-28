@@ -186,7 +186,7 @@ fi
 %package -n lib%{name}-sw-backend
 Summary: Authentication framework (sw-backend)
 Group: Security/Libraries
-BuildRequires: pkgconfig(openssl)
+BuildRequires: pkgconfig(openssl1.1)
 Requires: %{name} = %{version}
 Requires(post): %{sbin_dir}/ldconfig
 Requires(postun): %{sbin_dir}/ldconfig

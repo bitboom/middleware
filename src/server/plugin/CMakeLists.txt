@@ -1,7 +1,7 @@
 ### SW-BACKEND ############################################################################
 PKG_CHECK_MODULES(SW_BACKEND_DEP
     REQUIRED
-    openssl
+    openssl1.1
     )
 
 INCLUDE_DIRECTORIES(
