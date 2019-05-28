@@ -68,7 +68,6 @@ Authentication framework package (client-devel)
 
 %prep
 %setup -q
-cp -a %{SOURCE1001} %{SOURCE1002} %{SOURCE1003} %{SOURCE1004} %{SOURCE1005} .
 
 %build
 export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
@@ -107,6 +106,8 @@ make %{?jobs:-j%jobs}
 
 mkdir -p %{buildroot}/%{rw_data_dir}
 
+cp -a %{SOURCE1001} %{SOURCE1002} %{SOURCE1003} %{SOURCE1004} %{SOURCE1005} %{buildroot}%{_datadir}/
+
 %post
 %{sbin_dir}/ldconfig
 systemctl daemon-reload
@@ -143,7 +144,7 @@ fi
 %postun -n lib%{name}-client-admin -p %{sbin_dir}/ldconfig
 
 %files
-%manifest %{name}.manifest
+%manifest %{_datadir}/%{name}.manifest
 %license LICENSE
 %{bin_dir}/%{name}
 %{_libdir}/lib%{name}-commons.so.*
@@ -163,12 +164,12 @@ fi
 %dir %attr(770, %{user_name}, %{group_name}) %{rw_data_dir}
 
 %files -n lib%{name}-client
-%manifest lib%{name}-client.manifest
+%manifest %{_datadir}/lib%{name}-client.manifest
 %license LICENSE
 %{_libdir}/lib%{name}-client.so.*
 
 %files -n lib%{name}-client-admin
-%manifest lib%{name}-client-admin.manifest
+%manifest %{_datadir}/lib%{name}-client-admin.manifest
 %license LICENSE
 %{_libdir}/lib%{name}-client-admin.so.*
 
@@ -195,7 +196,7 @@ Requires(postun): %{sbin_dir}/ldconfig
 SW-Backend for authentication framework
 
 %files -n lib%{name}-sw-backend
-%manifest lib%{name}-sw-backend.manifest
+%manifest %{_datadir}/lib%{name}-sw-backend.manifest
 %license LICENSE
 %{plugin_dir}/lib%{name}-sw-backend.so
 %{plugin_dir}/lib%{name}-sw-backend.so.*
@@ -211,5 +212,5 @@ Requires: %{name} = %{version}
 Testcases for authentication framework
 
 %files test
-%manifest %{name}-test.manifest
+%manifest %{_datadir}/%{name}-test.manifest
 %{bin_dir}/%{name}-test
