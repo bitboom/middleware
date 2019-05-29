@@ -147,7 +147,7 @@ int SQLBackend::enroll(const std::string& name, uid_t domain)
 	stmt0.bind(1, name);
 	stmt0.bind(2, uid);
 	if (stmt0.step())
-		return -1;
+		return 0;
 
 	std::string key = "Not supported";
 
