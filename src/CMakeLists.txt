@@ -17,7 +17,7 @@
 # @breif       Make trust anchor library
 #
 PKG_CHECK_MODULES(${TARGET_TANCHOR_LIB}_DEP REQUIRED klay
-													 openssl)
+													 openssl1.1)
 
 SET(${TARGET_TANCHOR_LIB}_SRCS ${TANCHOR_SRC}/init-lib.cpp
 							   ${TANCHOR_SRC}/exception.cpp

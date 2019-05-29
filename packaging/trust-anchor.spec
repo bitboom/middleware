@@ -9,7 +9,7 @@ BuildRequires: gcc
 BuildRequires: cmake
 BuildRequires: coreutils
 BuildRequires: pkgconfig(klay)
-BuildRequires: pkgconfig(openssl)
+BuildRequires: pkgconfig(openssl1.1)
 BuildRequires: pkgconfig(libtzplatform-config)
 BuildRequires: ca-certificates
 BuildRequires: ca-certificates-devel
