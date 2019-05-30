@@ -1,22 +1,26 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
 #pragma once
 
 #include <map>
 
-#include <sqlite3.h>
 #include <stdio.h>
 
-#include <osquery/tables.h>
+#include <sqlite3.h>
+
 #include <osquery/registry.h>
+#include <osquery/tables.h>
 
 namespace osquery {
 namespace tables {
-
-/// Helper alias for TablePlugin names.
-typedef const std::string TableName;
-typedef const std::vector<std::pair<std::string, std::string> > TableColumns;
-typedef std::map<std::string, std::vector<std::string> > TableData;
 
 /**
  * @brief osquery cursor object.
@@ -42,38 +46,6 @@ struct x_vtab {
   /// To get custom functionality from SQLite virtual tables, add a struct.
   TABLE_PLUGIN *pContent;
 };
-
-/**
- * @brief The TablePlugin defines the name, types, and column information.
- *
- * To attach a virtual table create a TablePlugin subclass and register the
- * virtual table name as the plugin ID. osquery will enumerate all registered
- * TablePlugins and attempt to attach them to SQLite at instanciation.
- */
-class TablePlugin {
- public:
-  TableName name;
-  TableColumns columns;
-  /// Helper method to generate the virtual table CREATE statement.
-  std::string statement(TableName name, TableColumns columns);
-
- public:
-  /// Part of the query state, number of rows generated.
-  int n;
-  /// Part of the query state, column data returned from a query.
-  TableData data;
-  /// Part of the query state, parsed set of query predicate constraints.
-  ConstraintSet constraints;
-
- public:
-  virtual int attachVtable(sqlite3 *db) { return -1; }
-  virtual ~TablePlugin(){};
-
- protected:
-  TablePlugin(){};
-};
-
-typedef std::shared_ptr<TablePlugin> TablePluginRef;
 
 int xOpen(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor);
 
@@ -155,21 +127,26 @@ int xColumn(sqlite3_vtab_cursor *cur, sqlite3_context *ctx, int col) {
 template <typename T>
 static int xBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo) {
   auto *pContent = ((x_vtab<T> *)tab)->pContent;
+  pContent->constraints.clear();
 
   int expr_index = 0;
+  int cost = 0;
   for (size_t i = 0; i < pIdxInfo->nConstraint; ++i) {
     if (!pIdxInfo->aConstraint[i].usable) {
+      // A higher cost less priority, prefer more usable query constraints.
+      cost += 10;
       // TODO: OR is not usable.
       continue;
     }
 
-    const auto &name =
+    const auto& name =
         pContent->columns[pIdxInfo->aConstraint[i].iColumn].first;
     pContent->constraints.push_back(
         std::make_pair(name, Constraint(pIdxInfo->aConstraint[i].op)));
     pIdxInfo->aConstraintUsage[i].argvIndex = ++expr_index;
   }
 
+  pIdxInfo->estimatedCost = cost;
   return SQLITE_OK;
 }
 

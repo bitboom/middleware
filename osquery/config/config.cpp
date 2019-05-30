@@ -1,24 +1,25 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
-#include <algorithm>
-#include <future>
-#include <random>
+#include <mutex>
 #include <sstream>
-#include <string>
-#include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
-#include <glog/logging.h>
-
 #include <osquery/config.h>
 #include <osquery/config/plugin.h>
 #include <osquery/flags.h>
-#include <osquery/status.h>
-
-using osquery::Status;
+#include <osquery/hash.h>
+#include <osquery/logger.h>
 
 namespace pt = boost::property_tree;
 
@@ -29,25 +30,20 @@ DEFINE_osquery_flag(string,
                     "filesystem",
                     "Config type (plugin).");
 
-DEFINE_osquery_flag(int32,
-                    schedule_splay_percent,
-                    10,
-                    "Percent to splay config times.");
-
-boost::shared_mutex rw_lock;
+static boost::shared_mutex rw_lock;
 
 std::shared_ptr<Config> Config::getInstance() {
   static std::shared_ptr<Config> config = std::shared_ptr<Config>(new Config());
   return config;
 }
 
-Config::Config() {
+Status Config::load() {
   boost::unique_lock<boost::shared_mutex> lock(rw_lock);
   OsqueryConfig conf;
+
   auto s = Config::genConfig(conf);
   if (!s.ok()) {
-    LOG(ERROR) << "error retrieving config: " << s.toString();
-    return;
+    return Status(1, "Cannot generate config");
   }
 
   // Override default arguments with flag options from config.
@@ -60,35 +56,46 @@ Config::Config() {
     }
   }
 
-  // Iterate over scheduled queryies and add a splay to each.
-  for (auto& q : conf.scheduledQueries) {
-    auto old_interval = q.interval;
-    auto new_interval = splayValue(old_interval, FLAGS_schedule_splay_percent);
-    LOG(INFO) << "Changing the interval for " << q.name << " from  "
-              << old_interval << " to " << new_interval;
-    q.interval = new_interval;
-  }
   cfg_ = conf;
+  return Status(0, "OK");
 }
 
-Status Config::genConfig(OsqueryConfig& conf) {
-  std::stringstream json;
-  pt::ptree tree;
-
+Status Config::genConfig(std::string& conf) {
   if (REGISTERED_CONFIG_PLUGINS.find(FLAGS_config_retriever) ==
       REGISTERED_CONFIG_PLUGINS.end()) {
     LOG(ERROR) << "Config retriever " << FLAGS_config_retriever << " not found";
     return Status(1, "Config retriever not found");
   }
-  auto config_data =
-      REGISTERED_CONFIG_PLUGINS.at(FLAGS_config_retriever)->genConfig();
-  if (!config_data.first.ok()) {
-    return config_data.first;
-  }
-  json << config_data.second;
-  pt::read_json(json, tree);
 
   try {
+    auto config_data =
+        REGISTERED_CONFIG_PLUGINS.at(FLAGS_config_retriever)->genConfig();
+    if (!config_data.first.ok()) {
+      return config_data.first;
+    }
+    conf = config_data.second;
+  } catch (std::exception& e) {
+    LOG(ERROR) << "Could not load ConfigPlugin " << FLAGS_config_retriever
+               << ": " << e.what();
+    return Status(1, "Could not load config plugin");
+  }
+
+  return Status(0, "OK");
+}
+
+Status Config::genConfig(OsqueryConfig& conf) {
+  std::string config_string;
+  auto s = genConfig(config_string);
+  if (!s.ok()) {
+    return s;
+  }
+
+  std::stringstream json;
+  pt::ptree tree;
+  try {
+    json << config_string;
+    pt::read_json(json, tree);
+
     // Parse each scheduled query from the config.
     for (const pt::ptree::value_type& v : tree.get_child("scheduledQueries")) {
       OsqueryScheduledQuery q;
@@ -117,22 +124,21 @@ std::vector<OsqueryScheduledQuery> Config::getScheduledQueries() {
   return cfg_.scheduledQueries;
 }
 
-int Config::splayValue(int original, int splayPercent) {
-  if (splayPercent <= 0 || splayPercent > 100) {
-    return original;
+Status Config::getMD5(std::string& hash_string) {
+  std::string config_string;
+  auto s = genConfig(config_string);
+  if (!s.ok()) {
+    return s;
   }
 
-  float percent_to_modify_by = (float)splayPercent / 100;
-  int possible_difference = original * percent_to_modify_by;
-  int max_value = original + possible_difference;
-  int min_value = original - possible_difference;
+  hash_string = osquery::hashFromBuffer(
+      HASH_TYPE_MD5, (void*)config_string.c_str(), config_string.length());
 
-  if (max_value == min_value) {
-    return max_value;
-  }
+  return Status(0, "OK");
+}
 
-  std::default_random_engine generator;
-  std::uniform_int_distribution<int> distribution(min_value, max_value);
-  return distribution(generator);
+Status Config::checkConfig() {
+  OsqueryConfig c;
+  return genConfig(c);
 }
 }

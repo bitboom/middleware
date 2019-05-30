@@ -1,13 +1,20 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
 #include <sstream>
 
 #include <linux/limits.h>
 
-#include <glog/logging.h>
-
 #include <osquery/events.h>
 #include <osquery/filesystem.h>
+#include <osquery/logger.h>
 
 #include "osquery/events/linux/inotify.h"
 
@@ -97,7 +104,7 @@ Status INotifyEventPublisher::run() {
       // A file was moved to replace the watched path.
       removeMonitor(event->wd, false);
     } else {
-      auto ec = createEventContext(event);
+      auto ec = createEventContextFrom(event);
       fire(ec);
     }
     // Continue to iterate
@@ -108,7 +115,7 @@ Status INotifyEventPublisher::run() {
   return Status(0, "Continue");
 }
 
-INotifyEventContextRef INotifyEventPublisher::createEventContext(
+INotifyEventContextRef INotifyEventPublisher::createEventContextFrom(
     struct inotify_event* event) {
   auto shared_event = std::make_shared<struct inotify_event>(*event);
   auto ec = createEventContext();
@@ -132,8 +139,8 @@ INotifyEventContextRef INotifyEventPublisher::createEventContext(
   return ec;
 }
 
-bool INotifyEventPublisher::shouldFire(const INotifySubscriptionContextRef sc,
-                                       const INotifyEventContextRef ec) {
+bool INotifyEventPublisher::shouldFire(const INotifySubscriptionContextRef& sc,
+                                       const INotifyEventContextRef& ec) {
   if (!sc->recursive && sc->path != ec->path) {
     // Monitored path is not recursive and path is not an exact match.
     return false;

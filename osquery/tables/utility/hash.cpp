@@ -1,18 +1,24 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
-
-#include "osquery/core/md5.h"
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
 #include <boost/filesystem.hpp>
 
-#include <osquery/tables.h>
 #include <osquery/filesystem.h>
+#include <osquery/hash.h>
+#include <osquery/tables.h>
 
 namespace osquery {
 namespace tables {
 
 QueryData genHash(QueryContext& context) {
   QueryData results;
-  osquery::md5::MD5 digest;
 
   auto paths = context.constraints["path"].getAll(EQUALS);
   for (const auto& path_string : paths) {
@@ -20,10 +26,13 @@ QueryData genHash(QueryContext& context) {
     if (!boost::filesystem::is_regular_file(path)) {
       continue;
     }
+
     Row r;
     r["path"] = path.string();
-    r["md5"] = std::string(digest.digestFile(path.c_str()));
     r["directory"] = path.parent_path().string();
+    r["md5"] = osquery::hashFromFile(HASH_TYPE_MD5, path.string());
+    r["sha1"] = osquery::hashFromFile(HASH_TYPE_SHA1, path.string());
+    r["sha256"] = osquery::hashFromFile(HASH_TYPE_SHA256, path.string());
     results.push_back(r);
   }
 
@@ -41,7 +50,11 @@ QueryData genHash(QueryContext& context) {
       r["path"] = begin->path().string();
       r["directory"] = directory_string;
       if (boost::filesystem::is_regular_file(begin->status())) {
-        r["md5"] = digest.digestFile(begin->path().string().c_str());
+        r["md5"] = osquery::hashFromFile(HASH_TYPE_MD5, begin->path().string());
+        r["sha1"] =
+            osquery::hashFromFile(HASH_TYPE_SHA1, begin->path().string());
+        r["sha256"] =
+            osquery::hashFromFile(HASH_TYPE_SHA256, begin->path().string());
       }
       results.push_back(r);
     }

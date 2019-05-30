@@ -1,6 +1,15 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
 #include <osquery/logger.h>
+
 #include "osquery/core/virtual_table.h"
 
 namespace osquery {
@@ -67,7 +76,6 @@ std::string TablePlugin::statement(TableName name, TableColumns columns) {
 
 void attachVirtualTables(sqlite3 *db) {
   for (const auto &table : REGISTERED_TABLES) {
-    VLOG(1) << "Attaching virtual table: " << table.first;
     int s = table.second->attachVtable(db);
     if (s != SQLITE_OK) {
       LOG(ERROR) << "Error attaching virtual table: " << table.first << " ("

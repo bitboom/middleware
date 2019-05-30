@@ -1,15 +1,23 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
 #include <gtest/gtest.h>
-#include <glog/logging.h>
 
 #include <sqlite3.h>
 
 #include <osquery/core.h>
+#include <osquery/logger.h>
+
 #include "osquery/core/test_util.h"
 
 namespace osquery {
-namespace core {
 
 class TestUtilTests : public testing::Test {};
 
@@ -38,7 +46,6 @@ TEST_F(TestUtilTests, test_get_test_db_result_stream) {
     EXPECT_EQ(expected, r.second);
   }
   sqlite3_close(db);
-}
 }
 }
 

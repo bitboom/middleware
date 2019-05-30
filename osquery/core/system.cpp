@@ -1,4 +1,14 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
+
+#include <sstream>
 
 #include <sys/types.h>
 #include <signal.h>
@@ -10,11 +20,10 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-#include <glog/logging.h>
-
 #include <osquery/core.h>
 #include <osquery/database/db_handle.h>
 #include <osquery/filesystem.h>
+#include <osquery/logger.h>
 #include <osquery/sql.h>
 
 namespace fs = boost::filesystem;
@@ -29,8 +38,8 @@ DEFINE_osquery_flag(string,
 
 std::string getHostname() {
   char hostname[256]; // Linux max should be 64.
-  memset(hostname, 0, 256);
-  gethostname(hostname, 255);
+  memset(hostname, 0, sizeof(hostname));
+  gethostname(hostname, sizeof(hostname) - 1);
   std::string hostname_string = std::string(hostname);
   boost::algorithm::trim(hostname_string);
   return hostname_string;
@@ -45,7 +54,7 @@ std::string generateHostUuid() {
 #ifdef __APPLE__
   // Use the hardware uuid available on OSX to identify this machine
   char uuid[128];
-  memset(uuid, 0, 128);
+  memset(uuid, 0, sizeof(uuid));
   uuid_t id;
   // wait at most 5 seconds for gethostuuid to return
   const timespec wait = {5, 0};
@@ -92,51 +101,67 @@ std::vector<fs::path> getHomeDirectories() {
   return results;
 }
 
+Status checkStalePid(const std::string& pidfile_content) {
+  int pid;
+  try {
+    pid = stoi(pidfile_content);
+  } catch (const std::invalid_argument& e) {
+    return Status(1, std::string("Could not parse pidfile: ") + e.what());
+  }
+
+  int status = kill(pid, 0);
+  if (status != ESRCH) {
+    // The pid is running, check if it is an osqueryd process by name.
+    std::stringstream query_text;
+    query_text << "SELECT name FROM processes WHERE pid = " << pid << ";";
+    auto q = SQL(query_text.str());
+    if (!q.ok()) {
+      return Status(1, "Error querying processes: " + q.getMessageString());
+    }
+
+    if (q.rows().size() >= 1 && q.rows().front()["name"] == "osqueryd") {
+      // If the process really is osqueryd, return an "error" status.
+      return Status(1,
+                    std::string("osqueryd (") + pidfile_content +
+                        ") is already running");
+    } else {
+      LOG(INFO) << "Found stale process for osqueryd (" << pidfile_content
+                << ") removing pidfile.";
+    }
+  }
+
+  // Now the pidfile is either the wrong pid or the pid is not running.
+  try {
+    boost::filesystem::remove(FLAGS_pidfile);
+  } catch (boost::filesystem::filesystem_error& e) {
+    // Unable to remove old pidfile.
+    LOG(WARNING) << "Unable to remove the osqueryd pidfile.";
+  }
+
+  return Status(0, "OK");
+}
+
 Status createPidFile() {
   // check if pidfile exists
   auto exists = pathExists(FLAGS_pidfile);
   if (exists.ok()) {
-    // if it exists, check if that pid is running
+    // if it exists, check if that pid is running.
     std::string content;
     auto read_status = readFile(FLAGS_pidfile, content);
     if (!read_status.ok()) {
       return Status(1, "Could not read pidfile: " + read_status.toString());
     }
-    int osqueryd_pid;
-    try {
-      osqueryd_pid = stoi(content);
-    } catch (const std::invalid_argument& e) {
-      return Status(
-          1,
-          std::string("Could not convert pidfile content to an int: ") +
-              std::string(e.what()));
-    }
 
-    if (kill(osqueryd_pid, 0) == 0) {
-      // if the pid is running, return an "error" status
-      return Status(1, "osqueryd is already running");
-    } else if (errno == ESRCH) {
-      // if the pid isn't running, overwrite the pidfile
-      try {
-        boost::filesystem::remove(FLAGS_pidfile);
-      } catch (boost::filesystem::filesystem_error& e) {
-        // Unable to remove old pidfile.
-      }
-      goto write_new_pidfile;
-    } else {
-      return Status(
-          1,
-          std::string(
-              "An unknown error occured checking if the pid is running: ") +
-              std::string(strerror(errno)));
+    auto stale_status = checkStalePid(content);
+    if (!stale_status.ok()) {
+      return stale_status;
     }
-  } else {
-  // if it doesn't exist, write a pid file and return a "success" status
-  write_new_pidfile:
-    auto current_pid = boost::lexical_cast<std::string>(getpid());
-    LOG(INFO) << "Writing pid (" << current_pid << ") to " << FLAGS_pidfile;
-    auto write_status = writeTextFile(FLAGS_pidfile, current_pid, 0755);
-    return write_status;
   }
+
+  // If no pidfile exists or the existing pid was stale, write, log, and run.
+  auto pid = boost::lexical_cast<std::string>(getpid());
+  LOG(INFO) << "Writing osqueryd pid (" << pid << ") to " << FLAGS_pidfile;
+  auto status = writeTextFile(FLAGS_pidfile, pid, 0644);
+  return status;
 }
 }

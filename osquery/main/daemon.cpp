@@ -1,23 +1,60 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
 #include <boost/thread.hpp>
-
-#include <glog/logging.h>
 
 #include <osquery/config.h>
 #include <osquery/config/plugin.h>
 #include <osquery/core.h>
 #include <osquery/database.h>
 #include <osquery/events.h>
+#include <osquery/logger.h>
 #include <osquery/logger/plugin.h>
 #include <osquery/scheduler.h>
+
+#ifndef __APPLE__
+namespace osquery {
+DEFINE_osquery_flag(bool, daemonize, false, "Run as daemon (osqueryd only).");
+}
+#endif
+
+namespace osquery {
+DEFINE_osquery_flag(bool,
+                    config_check,
+                    false,
+                    "Check the format and accessibility of the daemon");
+}
 
 int main(int argc, char* argv[]) {
   osquery::initOsquery(argc, argv, osquery::OSQUERY_TOOL_DAEMON);
 
+  if (osquery::FLAGS_config_check) {
+    auto s = osquery::Config::checkConfig();
+    if (!s.ok()) {
+      std::cerr << "Error reading config: " << s.toString() << "\n";
+    }
+    return s.getCode();
+  }
+
+#ifndef __APPLE__
+  // OSX uses launchd to daemonize.
+  if (osquery::FLAGS_daemonize) {
+    if (daemon(0, 0) == -1) {
+      ::exit(EXIT_FAILURE);
+    }
+  }
+#endif
+
   auto pid_status = osquery::createPidFile();
   if (!pid_status.ok()) {
-    LOG(ERROR) << "Could not create osquery pidfile: " << pid_status.toString();
+    LOG(ERROR) << "Could not start osqueryd: " << pid_status.toString();
     ::exit(EXIT_FAILURE);
   }
 
@@ -25,7 +62,7 @@ int main(int argc, char* argv[]) {
     osquery::DBHandle::getInstance();
   } catch (std::exception& e) {
     LOG(ERROR) << "osqueryd failed to start: " << e.what();
-    ::exit(1);
+    ::exit(EXIT_FAILURE);
   }
 
   LOG(INFO) << "Listing all plugins";

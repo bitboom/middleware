@@ -1,10 +1,20 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
-#include <glog/logging.h>
+#include <syslog.h>
 
+#include <osquery/config.h>
 #include <osquery/core.h>
 #include <osquery/flags.h>
 #include <osquery/filesystem.h>
+#include <osquery/logger.h>
 #include <osquery/registry.h>
 
 namespace osquery {
@@ -31,41 +41,51 @@ DEFINE_osquery_flag(string,
                     "/var/log/osquery/",
                     "Directory to store ERROR/INFO and results logging.");
 
-static const char* basename(const char* filename) {
-  const char* sep = strrchr(filename, '/');
-  return sep ? sep + 1 : filename;
+namespace fs = boost::filesystem;
+
+void printUsage(const std::string& binary, int tool) {
+  // Parse help options before gflags. Only display osquery-related options.
+  fprintf(stdout, "osquery " OSQUERY_VERSION ", %s\n", kDescription.c_str());
+  if (tool == OSQUERY_TOOL_SHELL) {
+    // The shell allows a caller to run a single SQL statement and exit.
+    fprintf(
+        stdout, "Usage: %s [OPTION]... [SQL STATEMENT]\n\n", binary.c_str());
+  } else {
+    fprintf(stdout, "Usage: %s [OPTION]...\n\n", binary.c_str());
+  }
+  fprintf(stdout,
+          "The following options control the osquery "
+          "daemon and shell.\n\n");
+
+  Flag::printFlags(Flag::get().flags());
+
+  if (tool == OSQUERY_TOOL_SHELL) {
+    // Print shell flags.
+    fprintf(stdout, "\nThe following options control the osquery shell.\n\n");
+    Flag::printFlags(Flag::get().shellFlags());
+  }
+
+  fprintf(stdout, "\n%s\n", kEpilog.c_str());
+}
+
+void announce(const std::string& basename) {
+  syslog(LOG_NOTICE, "osqueryd started [version=" OSQUERY_VERSION "]");
 }
 
 void initOsquery(int argc, char* argv[], int tool) {
-  std::string binary(basename(argv[0]));
+  std::string binary(fs::path(std::string(argv[0])).filename().string());
   std::string first_arg = (argc > 1) ? std::string(argv[1]) : "";
 
+  // osquery implements a custom help/usage output.
   if ((first_arg == "--help" || first_arg == "-h" || first_arg == "-help") &&
       tool != OSQUERY_TOOL_TEST) {
-    // Parse help options before gflags. Only display osquery-related options.
-    fprintf(stdout, "osquery " OSQUERY_VERSION ", %s\n", kDescription.c_str());
-    if (tool == OSQUERY_TOOL_SHELL) {
-      // The shell allows a caller to run a single SQL statement and exit.
-      fprintf(
-          stdout, "Usage: %s [OPTION]... [SQL STATEMENT]\n\n", binary.c_str());
-    } else {
-      fprintf(stdout, "Usage: %s [OPTION]...\n\n", binary.c_str());
-    }
-    fprintf(stdout,
-            "The following options control the osquery "
-            "daemon and shell.\n\n");
-
-    Flag::printFlags(Flag::get().flags());
-
-    if (tool == OSQUERY_TOOL_SHELL) {
-      // Print shell flags.
-      fprintf(stdout, "\nThe following options control the osquery shell.\n\n");
-      Flag::printFlags(Flag::get().shellFlags());
-    }
-
-    fprintf(stdout, "\n%s\n", kEpilog.c_str());
-
+    printUsage(binary, tool);
     ::exit(0);
+  }
+
+  // Print the version to SYSLOG.
+  if (tool == OSQUERY_TOOL_DAEMON) {
+    announce(binary);
   }
 
   FLAGS_alsologtostderr = true;
@@ -107,6 +127,14 @@ void initOsquery(int argc, char* argv[], int tool) {
   }
 
   google::InitGoogleLogging(argv[0]);
+  VLOG(1) << "osquery starting [version=" OSQUERY_VERSION "]";
   osquery::InitRegistry::get().run();
+
+// Once command line arguments are parsed load the osquery config.
+#ifdef OSQUERY_DEFAULT_CONFIG_PLUGIN
+  FLAGS_config_retriever = STR(OSQUERY_DEFAULT_CONFIG_PLUGIN);
+#endif
+  auto config = Config::getInstance();
+  config->load();
 }
 }

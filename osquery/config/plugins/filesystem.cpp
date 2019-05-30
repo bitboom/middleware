@@ -1,4 +1,12 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
 #include <fstream>
 
@@ -6,6 +14,7 @@
 
 #include <osquery/config/plugin.h>
 #include <osquery/flags.h>
+#include <osquery/logger.h>
 
 namespace fs = boost::filesystem;
 using osquery::Status;
@@ -25,6 +34,7 @@ class FilesystemConfigPlugin : public ConfigPlugin {
       return std::make_pair(Status(1, "config file does not exist"), config);
     }
 
+    VLOG(1) << "Filesystem ConfigPlugin reading: " << FLAGS_config_path;
     std::ifstream config_stream(FLAGS_config_path);
 
     config_stream.seekg(0, std::ios::end);

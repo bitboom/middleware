@@ -1,5 +1,5 @@
 Name: osquery
-Version: 1.2.0
+Version: 1.3.1
 Release: 0
 License: Apache-2.0 and GPLv2
 Summary: A SQL powered operating system instrumentation, monitoring framework.
@@ -23,6 +23,7 @@ BuildRequires: thrift
 BuildRequires: readline-devel
 BuildRequires: pkgconfig(libprocps)
 BuildRequires: pkgconfig(libsystemd)
+BuildRequires: pkgconfig(openssl)
 BuildRequires: python-jinja2
 Requires: glog
 Requires: gflag
@@ -73,6 +74,7 @@ Testcases for osquery
 
 %files test
 %manifest %{name}.manifest
+%{_bindir}/osquery_hash_tests
 %{_bindir}/osquery_status_tests
 %{_bindir}/osquery_db_handle_tests
 %{_bindir}/osquery_results_tests
@@ -82,6 +84,7 @@ Testcases for osquery
 %{_bindir}/osquery_sql_tests
 %{_bindir}/osquery_sqlite_util_tests
 %{_bindir}/osquery_scheduler_tests
+%{_bindir}/osquery_tables_tests
 %{_bindir}/osquery_test_util_tests
 %{_bindir}/osquery_text_tests
 %{_bindir}/osquery_logger_tests

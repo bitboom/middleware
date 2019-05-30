@@ -32,6 +32,7 @@ SET(${TARGET_OSQUERY_LIB}_DEP glog
 							  boost_system
 							  boost_thread
 							  boost_filesystem
+							  crypto # openssl
 							# shell deps
 							  readline
 							# build-in tables deps
@@ -166,4 +167,3 @@ INSTALL(TARGETS ${TARGET_OSQUERY_DAEMON}
 					GROUP_EXECUTE
 					WORLD_READ
 					WORLD_EXECUTE)
-

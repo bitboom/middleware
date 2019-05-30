@@ -1,4 +1,12 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
 #pragma once
 
@@ -169,7 +177,7 @@ Status procProcesses(std::vector<std::string>& processes);
  * @return status of iteration, failure if the process path did not exist.
  */
 Status procDescriptors(const std::string& process,
-                       std::vector<std::string>& descriptors);
+                       std::map<std::string, std::string>& descriptors);
 
 /**
  * @brief Read a descriptor's virtual path.
@@ -183,5 +191,29 @@ Status procDescriptors(const std::string& process,
 Status procReadDescriptor(const std::string& process,
                           const std::string& descriptor,
                           std::string& result);
+
+/**
+ * @brief Read bytes from Linux's raw memory.
+ *
+ * Most Linux kernels include a device node /dev/mem that allows privileged
+ * users to map or seek/read pages of physical memory.
+ * osquery discourages the use of physical memory reads for security and
+ * performance reasons and must first try safer methods for data parsing
+ * such as /sys and /proc.
+ *
+ * A platform user may disable physical memory reads:
+ *   --disable_memory=true
+ * This flag/option will cause readRawMemory to forcefully fail.
+ *
+ * @param base The absolute memory address to read from. This does not need
+ * to be page aligned, readRawMem will take care of alignment and only
+ * return the requested start address and size.
+ * @param length The length of the buffer with a max of 0x10000.
+ * @param buffer The output buffer, caller is responsible for resources if
+ * readRawMem returns success.
+ * @return status The status of the read.
+ */
+Status readRawMem(size_t base, size_t length, void** buffer);
+
 #endif
 }

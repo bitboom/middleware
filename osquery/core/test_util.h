@@ -1,4 +1,12 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
 #pragma once
 
@@ -16,12 +24,12 @@
 #include <osquery/filesystem.h>
 
 namespace osquery {
-namespace core {
 
 // kTestQuery is a test query that can be executed against the database
 // returned from createTestDB() to result in the dataset returned from
 // getTestDBExpectedResults()
 extern const std::string kTestQuery;
+extern const std::string kTestDataPath;
 
 // createTestDB instantiates a sqlite3 struct and populates it with some test
 // data
@@ -87,14 +95,13 @@ std::string getEtcHostsContent();
 // generate the expected data that getEtcHostsContent() should parse into
 osquery::QueryData getEtcHostsExpectedResults();
 
-// the three items that you need to test osquery::core::splitString
+// the three items that you need to test osquery::splitString
 struct SplitStringTestData {
   std::string test_string;
   std::string delim;
   std::vector<std::string> test_vector;
 };
 
-// generate a set of test data to test osquery::core::splitString
+// generate a set of test data to test osquery::splitString
 std::vector<SplitStringTestData> generateSplitStringTestData();
-}
 }

@@ -1,4 +1,12 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
 #include <fstream>
 
@@ -19,15 +27,15 @@ QueryData genKernelModules(QueryContext& context) {
   QueryData results;
 
   if (!pathExists(kKernelModulePath).ok()) {
-    LOG(ERROR) << "Cannot find kernel modules proc file: " << kKernelModulePath;
-    return results;
+    VLOG(1) << "Cannot find kernel modules proc file: " << kKernelModulePath;
+    return {};
   }
 
   // Cannot seek to the end of procfs.
   std::ifstream fd(kKernelModulePath, std::ios::in);
   if (!fd) {
-    LOG(ERROR) << "Cannot read kernel modules from: " << kKernelModulePath;
-    return results;
+    VLOG(1) << "Cannot read kernel modules from: " << kKernelModulePath;
+    return {};
   }
 
   auto module_info = std::string(std::istreambuf_iterator<char>(fd),
@@ -36,7 +44,6 @@ QueryData genKernelModules(QueryContext& context) {
   for (const auto& module : split(module_info, "\n")) {
     Row r;
     auto module_info = split(module, " ");
-
     if (module_info.size() < 6) {
       // Interesting error case, this module line is not well formed.
       continue;

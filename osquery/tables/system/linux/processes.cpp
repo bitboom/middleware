@@ -1,4 +1,12 @@
-// Copyright 2004-present Facebook. All Rights Reserved.
+/*
+ *  Copyright (c) 2014, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
 #include <string>
 #include <fstream>
@@ -7,6 +15,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <proc/readproc.h>
+
+#include <boost/algorithm/string/trim.hpp>
 
 #include <osquery/core.h>
 #include <osquery/tables.h>
@@ -26,11 +36,7 @@ namespace tables {
 #endif
 
 std::string proc_name(const proc_t* proc_info) {
-  char cmd[17]; // cmd is a 16 char buffer
-
-  memset(cmd, 0, 17);
-  memcpy(cmd, proc_info->cmd, 16);
-  return std::string(cmd);
+  return std::string(proc_info->cmd);
 }
 
 std::string proc_attr(const std::string& attr, const proc_t* proc_info) {
@@ -142,7 +148,9 @@ QueryData genProcesses(QueryContext& context) {
     r["euid"] = BIGINT((unsigned int)proc_info->euid);
     r["egid"] = BIGINT((unsigned int)proc_info->egid);
     r["name"] = proc_name(proc_info);
-    r["cmdline"] = proc_cmdline(proc_info);
+    std::string cmdline = proc_cmdline(proc_info);
+    boost::algorithm::trim(cmdline);
+    r["cmdline"] = cmdline;
     r["path"] = proc_link(proc_info);
     r["on_disk"] = osquery::pathExists(r["path"]).toString();
 
@@ -187,11 +195,6 @@ QueryData genProcessEnvs(QueryContext& context) {
 
   closeproc(proc);
 
-  return results;
-}
-
-QueryData genProcessOpenFiles(QueryContext& context) {
-  QueryData results;
   return results;
 }
 }

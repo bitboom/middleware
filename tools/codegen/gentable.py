@@ -1,5 +1,11 @@
 #!/usr/bin/env python
-# Copyright 2004-present Facebook. All Rights Reserved.
+
+#  Copyright (c) 2014, Facebook, Inc.
+#  All rights reserved.
+#
+#  This source code is licensed under the BSD-style license found in the
+#  LICENSE file in the root directory of this source tree. An additional grant 
+#  of patent rights can be found in the PATENTS file in the same directory.
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,7 +28,7 @@ LOG_FORMAT = "%(levelname)s [Line %(lineno)d]: %(message)s"
 TEMPLATES = {}
 
 # Temporary reserved column names
-RESERVED = ["n"]
+RESERVED = ["n", "index"]
 
 # Supported SQL types for spec
 
@@ -159,7 +165,11 @@ class TableState(Singleton):
             for j in range(i):
                 dir_path += "%s/" % path_bits[j]
             if not os.path.exists(dir_path):
-                os.mkdir(dir_path)
+                try:
+                    os.mkdir(dir_path)
+                except:
+                    # May encounter a race when using a make jobserver.
+                    pass
         logging.debug("generating %s" % path)
         with open(path, "w+") as file_h:
             file_h.write(self.impl_content)
