@@ -1,4 +1,4 @@
-# Osquery for Tizen
+# Osquery for Tizen [![CircleCI](https://circleci.sec.samsung.net/gh/RS7-SECIOTSW/tizen-osquery.svg?style=svg)](https://circleci.sec.samsung.net/gh/RS7-SECIOTSW/tizen-osquery)
 > [Osquery](https://osquery.io/) is open-source project which means "Performant endpoint visibility".  
 > It can be used as security monitoring, audit, malware anaysis.
 
