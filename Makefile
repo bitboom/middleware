@@ -6,7 +6,7 @@ clean:
 	rm -rf build
 
 docker_run:
-	docker build --network=host --tag tizen-osquery ./docker
+	docker build --network=host --tag tizen-osquery ./.docker
 	docker run --rm -it --net=host --privileged -v $(shell pwd):/usr/src tizen-osquery
 
 %::
