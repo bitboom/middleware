@@ -97,3 +97,4 @@ Testcases for osquery
 %{_bindir}/osquery_etc_hosts_tests
 %{_bindir}/osquery_printer_tests
 %{_bindir}/osquery_extensions_test
+%{_bindir}/osquery_registry_tests

@@ -8,3 +8,7 @@ clean:
 docker_run:
 	docker build --network=host --tag tizen-osquery ./docker
 	docker run --rm -it --net=host --privileged -v $(shell pwd):/usr/src tizen-osquery
+
+%::
+	mkdir -p build
+	cd build && cmake .. && make --no-print-directory $@

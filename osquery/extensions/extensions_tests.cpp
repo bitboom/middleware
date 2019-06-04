@@ -10,6 +10,7 @@
 
 #include <stdexcept>
 
+#define GTEST_HAS_TR1_TUPLE 0
 // GTest must come before the Thrift includes.
 #include <gtest/gtest.h>
 

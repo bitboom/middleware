@@ -3,6 +3,7 @@ FIND_PROGRAM(THRIFT_COMPILER thrift /usr/local/bin
 									NO_DEFAULT_PATH)
 
 # Generate the thrift intermediate/interface code.
+FILE(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated")
 ADD_CUSTOM_COMMAND(
 	COMMAND
 		${THRIFT_COMPILER} --gen cpp:dense "${CMAKE_SOURCE_DIR}/osquery.thrift"
