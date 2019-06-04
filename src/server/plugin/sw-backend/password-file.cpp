@@ -34,8 +34,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <openssl/sha.h>
-
 #include <dpl/log/log.h>
 #include <dpl/fstream_accessors.h>
 
@@ -66,74 +64,6 @@ const unsigned int CURRENT_FILE_VERSION = 4;
 } // namespace anonymous
 
 namespace AuthPasswd {
-
-class NoPassword: public IPassword {
-public:
-	NoPassword(IStream &) {}
-	NoPassword() {}
-
-	void Serialize(IStream &stream) const {
-		Serialization::Serialize(stream, static_cast<unsigned int>(PasswordType::NONE));
-	}
-
-	bool match(const std::string &pass) const {
-		return pass.empty();
-	}
-};
-
-class SHA256Password: public IPassword {
-public:
-	SHA256Password(IStream &stream) {
-		Deserialization::Deserialize(stream, m_hash);
-	}
-
-	SHA256Password(const std::string &password) : m_hash(hash(password)) {}
-
-	SHA256Password(const RawHash &paramHash) : m_hash(paramHash) {}
-
-	void Serialize(IStream &stream) const {
-		Serialization::Serialize(stream, static_cast<unsigned int>(PasswordType::SHA256));
-		Serialization::Serialize(stream, m_hash);
-	}
-
-	bool match(const std::string &password) const {
-		return m_hash == hash(password);
-	}
-
-private:
-	RawHash m_hash;
-
-	static RawHash hash(const std::string &password) {
-		RawHash result(SHA256_DIGEST_LENGTH);
-		SHA256_CTX context;
-		SHA256_Init(&context);
-		SHA256_Update(&context, reinterpret_cast<const unsigned char *>(password.c_str()),
-					  password.size());
-		SHA256_Final(result.data(), &context);
-		return result;
-	}
-};
-
-template <>
-void Deserialization::Deserialize(IStream &stream, IPasswordPtr &ptr)
-{
-	unsigned int algorithm;
-	Deserialization::Deserialize(stream, algorithm);
-
-	switch (algorithm) {
-	case (unsigned int)IPassword::PasswordType::NONE:
-		ptr.reset(new NoPassword());
-		break;
-
-	case (unsigned int)IPassword::PasswordType::SHA256:
-		ptr.reset(new SHA256Password(stream));
-		break;
-
-	default:
-		Throw(PasswordException::FStreamReadError);
-	}
-}
-
 namespace SWBackend {
 
 PasswordFile::PasswordFile(unsigned int user) :
@@ -479,7 +409,7 @@ void PasswordFile::setPassword(unsigned int passwdType, const std::string &passw
 	}
 }
 
-bool PasswordFile::checkPassword(unsigned int passwdType, const std::string &password) const
+bool PasswordFile::checkPassword(unsigned int passwdType, const std::string &password)
 {
 	if (passwdType != AUTH_PWD_NORMAL)
 		return false;

@@ -16,16 +16,13 @@
 #ifndef _IPASSWORD_FILE_H_
 #define _IPASSWORD_FILE_H_
 
+#include <generic-backend/ipassword.h>
+
 #include <string>
-#include <memory>
 
 #include <time.h>
 
-#include <limits>
-
 namespace AuthPasswd {
-
-constexpr time_t PASSWORD_INFINITE_EXPIRATION_TIME = std::numeric_limits<time_t>::max();
 
 struct IPasswordFile {
 	IPasswordFile() = default;
@@ -42,7 +39,7 @@ struct IPasswordFile {
 
 	virtual void setPassword(unsigned int passwdType, const std::string &password) = 0;
 	virtual bool checkPassword(unsigned int passwdType,
-							   const std::string &password) const = 0;
+							   const std::string &password) = 0;
 
 	virtual bool isPasswordActive(unsigned int passwdType) const = 0;
 

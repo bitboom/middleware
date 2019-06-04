@@ -37,7 +37,7 @@ public:
 
 	void setPassword(unsigned int passwdType, const std::string &password) override;
 	bool checkPassword(unsigned int passwdType,
-					   const std::string &password) const override;
+					   const std::string &password) override;
 
 	void setMaxHistorySize(unsigned int history) override;
 	unsigned int getMaxHistorySize() const override;
