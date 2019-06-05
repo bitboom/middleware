@@ -29,7 +29,6 @@ BuildRequires: ca-certificates-tizen-devel
 Requires: ca-certificates
 Requires: ca-certificates-tizen
 Requires: security-config
-Requires: openssl
 # to prevent auto require lower version of libc including examples/resource/player/bin/player
 # https://fedoraproject.org/wiki/Packaging:AutoProvidesAndRequiresFiltering?rd=PackagingDrafts/AutoProvidesAndRequiresFiltering
 %global __requires_exclude_from examples/
