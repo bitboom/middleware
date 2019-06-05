@@ -12,7 +12,7 @@ BuildRequires: make
 BuildRequires: cmake
 BuildRequires: glog-devel
 BuildRequires: gflags-devel
-BuildRequires: rocksdb
+BuildRequires: rocksdb-devel
 BuildRequires: snappy-devel
 BuildRequires: zlib-devel
 BuildRequires: bzip2-devel
