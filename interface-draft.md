@@ -23,7 +23,7 @@
   auto manager = OsqueryManager::Load();
    
   // 3. Execute query by using OsqueryManager
-  auto rows = OsqueryManager::executeQuery(query);
+  auto rows = manager->execute(query);
    
   // 4. Get result
   for (const auto& row : rows) {
@@ -64,5 +64,5 @@
   auto manager = OsqueryManager::Load();
    
   // 3. Register callback with event_table by using OsqueryManager
-  OsqueryManager::subscribe("smack_deny_events", onDeny);
+  manager->subscribe("smack_deny_events", onDeny);
 ```

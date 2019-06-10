@@ -95,6 +95,9 @@ ADD_SUBDIRECTORY(registry)
 ADD_SUBDIRECTORY(sql)
 ADD_SUBDIRECTORY(tables)
 
+# tizen feature
+ADD_SUBDIRECTORY(manager)
+
 ## Table generation #############################################################
 FILE(GLOB TABLE_FILES "tables/specs/*.table")
 FILE(GLOB TABLE_FILES_LINUX "tables/specs/linux/*.table")

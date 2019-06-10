@@ -16,5 +16,5 @@ The supporting elements can be extended like security analyzer, network security
   - We focus the device security.
 
 # Branch info
-- devel: osquery for tizen
+- master: osquery for tizen
 - upstream: full osquery code (facebook/osquery)
