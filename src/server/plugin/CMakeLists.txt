@@ -15,6 +15,7 @@ INCLUDE_DIRECTORIES(
     )
 
 SET(SW_BACKEND_SOURCES
+    generic-backend/ipassword.cpp
     generic-backend/password-file-buffer.cpp
     sw-backend/password-file.cpp
     )
@@ -49,6 +50,8 @@ INCLUDE_DIRECTORIES(
     )
 
 SET(TZ_BACKEND_SOURCES
+    generic-backend/ipassword.cpp
+    generic-backend/password-file-buffer.cpp
     tz-backend/password-file.cpp
     )
 

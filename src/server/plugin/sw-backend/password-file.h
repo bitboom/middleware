@@ -40,21 +40,6 @@
 #include <generic-backend/ipassword-file.h>
 
 namespace AuthPasswd {
-
-struct IPassword: public ISerializable {
-	typedef std::vector<unsigned char> RawHash;
-
-	enum class PasswordType : unsigned int {
-		NONE = 0,
-		SHA256 = 1,
-	};
-
-	virtual bool match(const std::string &password) const = 0;
-};
-
-using IPasswordPtr = std::shared_ptr<IPassword>;
-using PasswordList = std::list<IPasswordPtr>;
-
 namespace SWBackend {
 
 class PasswordFile : public IPasswordFile {
@@ -73,7 +58,7 @@ public:
 
 	void setPassword(unsigned int passwdType, const std::string &password) override;
 	bool checkPassword(unsigned int passwdType,
-					   const std::string &password) const override;
+					   const std::string &password) override;
 
 	bool isPasswordActive(unsigned int passwdType) const override;
 

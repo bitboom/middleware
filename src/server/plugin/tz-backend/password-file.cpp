@@ -52,7 +52,7 @@ void PasswordFile::setPassword(unsigned int, const std::string &)
 }
 
 bool PasswordFile::checkPassword(unsigned int,
-								 const std::string &) const
+								 const std::string &)
 {
 	std::runtime_error("TZ-Backend is not implemented.");
 	return false;
