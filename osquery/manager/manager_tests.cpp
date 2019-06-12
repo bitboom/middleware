@@ -23,16 +23,9 @@ using namespace osquery;
 
 class ManagerTests : public testing::Test {};
 
-TEST_F(ManagerTests, test_manager_load) {
-	auto manager = OsqueryManager::Load();
-	EXPECT_TRUE(manager != nullptr);
-}
-
 TEST_F(ManagerTests, test_manager_execute) {
-	auto manager = OsqueryManager::Load();
-	
 	std::string query = "SELECT * FROM time";
-	auto rows = manager->execute(query);
+	auto rows = OsqueryManager::execute(query);
 	EXPECT_EQ(rows.size(), 1);
 
 	VLOG(1) << "[Test] time table rows:";
@@ -42,8 +35,7 @@ TEST_F(ManagerTests, test_manager_execute) {
 }
 
 TEST_F(ManagerTests, test_manager_tables) {
-	auto manager = OsqueryManager::Load();
-	auto tables = manager->tables();
+	auto tables = OsqueryManager::tables();
 	EXPECT_TRUE(tables.size() > 0);
 
 	VLOG(1) << "[Test] Enabled tables:";
@@ -52,8 +44,7 @@ TEST_F(ManagerTests, test_manager_tables) {
 }
 
 TEST_F(ManagerTests, test_manager_columns) {
-	auto manager = OsqueryManager::Load();
-	auto columns = manager->columns("time");
+	auto columns = OsqueryManager::columns("time");
 	EXPECT_TRUE(columns.size() > 0);
 
 	VLOG(1) << "[Test] Enabled columns of time table:";

@@ -36,22 +36,24 @@ using Rows = std::vector<Row>;
 
 class OsqueryManager final {
 public:
-	~OsqueryManager(void) noexcept;
+	OsqueryManager(const OsqueryManager&) = delete;
+	OsqueryManager& operator=(const OsqueryManager&) = delete;
 
-	OsqueryManager(const OsqueryManager &) = delete;
-	OsqueryManager(OsqueryManager &&) = delete;
-	OsqueryManager &operator=(const OsqueryManager &) = delete;
-	OsqueryManager &operator=(OsqueryManager &&) = delete;
-
-	static std::shared_ptr<OsqueryManager> Load();
-
-	Rows execute(const std::string& query) const;
-
-	std::vector<std::string> tables(void) const noexcept;
-	std::vector<std::string> columns(const std::string& table) const noexcept;
+	/// TBD: Consider error handling.
+	static Rows execute(const std::string& query);
+	static std::vector<std::string> tables(void) noexcept;
+	static std::vector<std::string> columns(const std::string& table) noexcept;
 
 private:
 	OsqueryManager();
+	~OsqueryManager() noexcept;
+
+	static OsqueryManager& instance();
+
+	/// TODO(Sangwan): Apply pimpl idiom.
+	Rows executeInternal(const std::string& query) const;
+	std::vector<std::string> tablesInternal(void) const noexcept;
+	std::vector<std::string> columnsInternal(const std::string& table) const noexcept;
 };
 
 } // namespace osquery

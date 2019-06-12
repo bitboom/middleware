@@ -19,13 +19,10 @@
   // 1. Write query as std::string
   std::string query = "SELECT subject_label, object_label FROM smack WHERE access_type = 'read'";
    
-  // 2. Load OsqueryManager
-  auto manager = OsqueryManager::Load();
+  // 2. Execute query by using OsqueryManager
+  auto rows = OsqueryManager::execute(query);
    
-  // 3. Execute query by using OsqueryManager
-  auto rows = manager->execute(query);
-   
-  // 4. Get result
+  // 3. Get result
   for (const auto& row : rows) {
       std::string slabel = row["subject_label"];
       std::string olabel = row["object_label];
@@ -51,7 +48,7 @@
   using namespace osquerypp;
   
   // 1. Write callback function
-  auto  onDeny = [&](const EventContext& ec, const Row& row)
+  auto onDeny = [&](const EventContext& ec, const Row& row)
     {
       // get data of event table
       std::cout << row["action"] << std::endl;
@@ -60,9 +57,6 @@
       std::cout << row["object_label"] << std::endl;
     }
     
-  // 2. Load OsqueryManager
-  auto manager = OsqueryManager::Load();
-   
-  // 3. Register callback with event_table by using OsqueryManager
-  manager->subscribe("smack_deny_events", onDeny);
+  // 2. Register callback with event_table by using OsqueryManager
+  OsqueryManager::subscribe("smack_deny_events", onDeny);
 ```

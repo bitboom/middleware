@@ -41,7 +41,7 @@ OsqueryManager::OsqueryManager()
 	if (!logDir.empty() && !(pathExists(logDir).ok()))
 		boost::filesystem::create_directories(logDir);
 
-	// TODO(sangwan.kwon): Get debug mode at build time
+	// TODO(Sangwan): Get debug mode at build time
 	Flag::updateValue("verbose_debug", "true");
 
 	const char* cargv[] = {"tizen-osquery"};
@@ -56,13 +56,20 @@ OsqueryManager::~OsqueryManager(void) noexcept
 	osquery::shutdownOsquery();
 }
 
-std::shared_ptr<OsqueryManager> OsqueryManager::Load()
+OsqueryManager& OsqueryManager::instance()
 {
-	static std::shared_ptr<OsqueryManager> manager(new OsqueryManager);
+	static OsqueryManager manager;
 	return manager;
 }
 
-Rows OsqueryManager::execute(const std::string& query) const
+Rows OsqueryManager::execute(const std::string& query)
+{
+	LOG(INFO) << "Execute query: " << query;
+
+	return instance().executeInternal(query);
+}
+
+Rows OsqueryManager::executeInternal(const std::string& query) const
 {
 	LOG(INFO) << "Execute query: " << query;
 
@@ -74,12 +81,22 @@ Rows OsqueryManager::execute(const std::string& query) const
 	return results;
 }
 
-std::vector<std::string> OsqueryManager::tables(void) const noexcept 
+std::vector<std::string> OsqueryManager::tables(void) noexcept 
+{
+	return instance().tablesInternal();
+}
+
+std::vector<std::string> OsqueryManager::columns(const std::string& table) noexcept
+{
+	return instance().columnsInternal(table);
+}
+
+std::vector<std::string> OsqueryManager::tablesInternal(void) const noexcept 
 {
 	return SQL::getTableNames();
 }
 
-std::vector<std::string> OsqueryManager::columns(const std::string& table) const noexcept
+std::vector<std::string> OsqueryManager::columnsInternal(const std::string& table) const noexcept
 {
 	std::stringstream query;
 	query << "SELECT * FROM " << table;
