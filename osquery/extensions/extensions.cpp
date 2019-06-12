@@ -103,7 +103,10 @@ Status startExtension(const std::string& name,
   }
 
   status = startExtension(
-      FLAGS_extensions_socket, name, version, min_sdk_version, kSDKVersion);
+// TODO(Sangwan): Sync with upstream code
+      FLAGS_extensions_socket, name, version, min_sdk_version, "1.4.1");
+// HotFix: Below upstream code makes undefined error.
+//   FLAGS_extensions_socket, name, version, min_sdk_version, kSDKVersion);
   if (!status.ok()) {
     // If the extension failed to start then the EM is most likely unavailable.
     return status;
