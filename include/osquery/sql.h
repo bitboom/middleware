@@ -176,7 +176,7 @@ Status getQueryColumns(const std::string& q, tables::TableColumns& columns);
  */
 class MockSQL : public SQL {
  public:
-  explicit MockSQL() : MockSQL({}) {}
+  explicit MockSQL() : MockSQL(results_) {}
   explicit MockSQL(const QueryData& results) : MockSQL(results, Status()) {}
   explicit MockSQL(const QueryData& results, const Status& status) {
     results_ = results;

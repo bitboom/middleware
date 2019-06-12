@@ -11,6 +11,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem/operations.hpp>
 
+#define GTEST_HAS_TR1_TUPLE 0
+
 #include <gtest/gtest.h>
 
 #include <osquery/events.h>
