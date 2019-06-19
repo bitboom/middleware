@@ -81,6 +81,20 @@ Rows OsqueryManager::executeInternal(const std::string& query) const
 	return results;
 }
 
+void OsqueryManager::subscribe(const std::string& table, const Callback& callback)
+{
+	LOG(INFO) << "Subscribe event: " << table;
+
+	return instance().subscribeInternal(table, callback);
+}
+
+void OsqueryManager::subscribeInternal(const std::string& table, const Callback& callback)
+{
+	auto status = Notification::instance().add(table, callback);
+	if (!status.ok())
+		LOG(ERROR) << "Subscribing event failed: " << status.getCode();
+}
+
 std::vector<std::string> OsqueryManager::tables(void) noexcept 
 {
 	return instance().tablesInternal();

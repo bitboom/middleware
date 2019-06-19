@@ -17,25 +17,41 @@
 #include <gtest/gtest.h>
 
 #include <osquery/notification.h>
-#include <osquery/manager.h>
 #include <osquery/logger.h>
 
 using namespace osquery;
 
-class ManagerTests : public testing::Test {};
+class NotificationTests : public testing::Test {};
 
-TEST_F(ManagerTests, test_manager_execute) {
-	std::string query = "SELECT * FROM time";
-	auto rows = OsqueryManager::execute(query);
-	EXPECT_EQ(rows.size(), 1);
+TEST_F(NotificationTests, test_add_positive) {
+	auto& notifier = Notification::instance();
 
-	VLOG(1) << "[Test] time table rows:";
-	VLOG(1) << "\t hour: " << rows[0]["hour"];
-	VLOG(1) << "\t minutes: " << rows[0]["minutes"];
-	VLOG(1) << "\t seconds: " << rows[0]["seconds"];
+	auto callback = [](const Row& row) {
+		VLOG(1) << "NotifyCallback called:";
+		for (const auto& r : row)
+			VLOG(1) << "\t" << r.first << " : " << r.second;
+	};
+
+	auto s = notifier.add("test", std::move(callback));
+	EXPECT_TRUE(s.ok());
 }
 
-TEST_F(ManagerTests, test_manager_subscribe) {
+TEST_F(NotificationTests, test_add_negative) {
+	auto& notifier = Notification::instance();
+
+	auto callback = [](const Row& row) {
+		VLOG(1) << "NotifyCallback called:";
+		for (const auto& r : row)
+			VLOG(1) << "\t" << r.first << " : " << r.second;
+	};
+
+	auto s = notifier.add("", std::move(callback));
+	EXPECT_FALSE(s.ok());
+}
+
+TEST_F(NotificationTests, test_emit_positive) {
+	auto& notifier = Notification::instance();
+
 	int called = 0;
 	auto callback = [&](const Row& row) {
 		VLOG(1) << "NotifyCallback called:";
@@ -44,36 +60,15 @@ TEST_F(ManagerTests, test_manager_subscribe) {
 		called++;
 	};
 
-	OsqueryManager::subscribe("manager_test", callback);
+	auto s = notifier.add("test2", std::move(callback));
+	EXPECT_TRUE(s.ok());
 
 	Row row;
 	row["foo"] = "bar";
-	row["foo2"] = "bar2";
-	row["foo3"] = "bar3";
-
-	/// Notification trigger
-	auto s = Notification::instance().emit("manager_test", row);
+	s = notifier.emit("test2", row);
 
 	EXPECT_TRUE(s.ok());
 	EXPECT_EQ(called, 1);
-}
-
-TEST_F(ManagerTests, test_manager_tables) {
-	auto tables = OsqueryManager::tables();
-	EXPECT_TRUE(tables.size() > 0);
-
-	VLOG(1) << "[Test] Enabled tables:";
-	for (const auto& t : tables)
-		VLOG(1) << "\t" << t;
-}
-
-TEST_F(ManagerTests, test_manager_columns) {
-	auto columns = OsqueryManager::columns("time");
-	EXPECT_TRUE(columns.size() > 0);
-
-	VLOG(1) << "[Test] Enabled columns of time table:";
-	for (const auto& c : columns)
-		VLOG(1) << "\t" << c;
 }
 
 int main(int argc, char* argv[]) {

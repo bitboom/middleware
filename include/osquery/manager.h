@@ -23,26 +23,36 @@
 
 #pragma once
 
-
 #include <string>
 #include <memory>
 #include <map>
 #include <vector>
+
+#include <osquery/notification.h>
 
 namespace osquery {
 
 using Row = std::map<std::string, std::string>;
 using Rows = std::vector<Row>;
 
+using Callback = NotifyCallback;
+
+/// TBD: Consider error handling.
 class OsqueryManager final {
+public:
+	/// Query Execution method
+	static Rows execute(const std::string& query);
+
+	/// Event Subscription method
+	static void subscribe(const std::string& table, const Callback& callback);
+
+	/// Table information
+	static std::vector<std::string> tables(void) noexcept;
+	static std::vector<std::string> columns(const std::string& table) noexcept;
+
 public:
 	OsqueryManager(const OsqueryManager&) = delete;
 	OsqueryManager& operator=(const OsqueryManager&) = delete;
-
-	/// TBD: Consider error handling.
-	static Rows execute(const std::string& query);
-	static std::vector<std::string> tables(void) noexcept;
-	static std::vector<std::string> columns(const std::string& table) noexcept;
 
 private:
 	OsqueryManager();
@@ -52,6 +62,8 @@ private:
 
 	/// TODO(Sangwan): Apply pimpl idiom.
 	Rows executeInternal(const std::string& query) const;
+	void subscribeInternal(const std::string& table, const Callback& callback);
+
 	std::vector<std::string> tablesInternal(void) const noexcept;
 	std::vector<std::string> columnsInternal(const std::string& table) const noexcept;
 };
