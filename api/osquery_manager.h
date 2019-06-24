@@ -24,18 +24,16 @@
 #pragma once
 
 #include <string>
-#include <memory>
 #include <map>
 #include <vector>
-
-#include <osquery/notification.h>
+#include <functional>
 
 namespace osquery {
 
 using Row = std::map<std::string, std::string>;
 using Rows = std::vector<Row>;
 
-using Callback = NotifyCallback;
+using Callback = std::function<void(const Row&)>;
 
 /// TBD: Consider error handling.
 class OsqueryManager final {

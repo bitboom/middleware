@@ -25,6 +25,7 @@
 #include <osquery/filesystem.h>
 #include <osquery/flags.h>
 #include <osquery/logger.h>
+#include <osquery/notification.h>
 #include <osquery/sql.h>
 #include <osquery/status.h>
 

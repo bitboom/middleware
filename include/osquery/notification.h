@@ -25,7 +25,8 @@
 
 #include <map>
 #include <vector>
-#include <functional>
+
+#include <osquery_manager.h>
 
 #include <osquery/database.h>
 #include <osquery/status.h>
@@ -33,7 +34,7 @@
 
 namespace osquery {
 
-using NotifyCallback = std::function<void(const Row&)>;
+using NotifyCallback = Callback;
 
 class Notification final {
 public:
