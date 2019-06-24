@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LIBRARY(TRUE osquery_manager manager.cpp)
+ADD_OSQUERY_LIBRARY(TRUE osquery_manager manager.cpp
+										 manager_impl.cpp)
 
 ADD_OSQUERY_TEST(TRUE osquery_manager_tests manager_tests.cpp)

@@ -14,35 +14,38 @@
  *  limitations under the License
  */
 /*
- * @file manager.cpp
+ * @file manager_impl.h
  * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief Implementation of osquery manager
+ * @brief Implementation interface of osquery manager
  */
 
 #include <osquery_manager.h>
 
-#include "manager_impl.h"
+#include <string>
+#include <vector>
 
 namespace osquery {
 
-Rows OsqueryManager::execute(const std::string& query)
-{
-	return ManagerImpl::instance().execute(query);
-}
+/// Singleton class
+class ManagerImpl final {
+public:
+	ManagerImpl(const ManagerImpl&) = delete;
+	ManagerImpl& operator=(const ManagerImpl&) = delete;
 
-void OsqueryManager::subscribe(const std::string& table, const Callback& callback)
-{
-	return ManagerImpl::instance().subscribe(table, callback);
-}
+	ManagerImpl(ManagerImpl&&) noexcept = default;
+	ManagerImpl& operator=(ManagerImpl&&) noexcept = default;
 
-std::vector<std::string> OsqueryManager::tables(void) noexcept
-{
-	return ManagerImpl::instance().tables();
-}
+	static ManagerImpl& instance();
 
-std::vector<std::string> OsqueryManager::columns(const std::string& table) noexcept
-{
-	return ManagerImpl::instance().columns(table);
-}
+	Rows execute(const std::string& query);
+	void subscribe(const std::string& table, const Callback& callback);
+
+	std::vector<std::string> tables(void) noexcept;
+	std::vector<std::string> columns(const std::string& table) noexcept;
+
+private:
+	ManagerImpl();
+	~ManagerImpl() noexcept;
+};
 
 } // namespace osquery

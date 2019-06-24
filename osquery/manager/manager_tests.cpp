@@ -16,8 +16,9 @@
 
 #include <gtest/gtest.h>
 
+#include <osquery_manager.h>
+
 #include <osquery/notification.h>
-#include <osquery/manager.h>
 #include <osquery/logger.h>
 
 using namespace osquery;

@@ -16,7 +16,7 @@
 
 
 /**
- * @file osquery-manager.h
+ * @file osquery_manager.h
  * @brief Osquery manager C++ API header
  */
 
@@ -49,23 +49,6 @@ public:
 	/// Table information
 	static std::vector<std::string> tables(void) noexcept;
 	static std::vector<std::string> columns(const std::string& table) noexcept;
-
-public:
-	OsqueryManager(const OsqueryManager&) = delete;
-	OsqueryManager& operator=(const OsqueryManager&) = delete;
-
-private:
-	OsqueryManager();
-	~OsqueryManager() noexcept;
-
-	static OsqueryManager& instance();
-
-	/// TODO(Sangwan): Apply pimpl idiom.
-	Rows executeInternal(const std::string& query) const;
-	void subscribeInternal(const std::string& table, const Callback& callback);
-
-	std::vector<std::string> tablesInternal(void) const noexcept;
-	std::vector<std::string> columnsInternal(const std::string& table) const noexcept;
 };
 
 } // namespace osquery
