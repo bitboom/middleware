@@ -56,3 +56,4 @@ EXECUTE_PROCESS(COMMAND mkdir -p "${CMAKE_BINARY_DIR}/generated")
 
 ADD_SUBDIRECTORY(osquery)
 ADD_SUBDIRECTORY(sqlite3)
+ADD_SUBDIRECTORY(tsqb) # Type-safe query builder
