@@ -40,6 +40,7 @@ class Database {
 public:
 	using Self = Database<Tables...>;
 
+	// TODO(Sangwan): Use Crud class
 	template<typename... ColumnTypes>
 	Self& select(ColumnTypes&&... cts);
 

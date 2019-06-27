@@ -69,9 +69,9 @@ template<typename Front, typename... Rest>
 std::vector<std::string> ColumnPack<Front, Rest...>::getNames(void) const noexcept
 {
 	auto names = Base::getNames();
-	names.emplace_back(this->column.name);
+	names.push_back(this->column.name);
 
-	return names;
+	return std::move(names);
 }
 
 template<typename Front, typename... Rest>

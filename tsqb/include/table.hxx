@@ -21,10 +21,10 @@
 
 #pragma once
 
+#include "crud.hxx"
 #include "column.hxx"
 #include "column-pack.hxx"
 #include "tuple-helper.hxx"
-#include "expression.hxx"
 #include "util.hxx"
 
 #include <vector>
@@ -34,57 +34,34 @@
 namespace tsqb {
 
 template<typename... Columns>
-class Table {
+class Table : public Crud<Table<Columns...>> {
 public:
 	using Self = Table<Columns...>;
 	using ColumnPackType = internal::ColumnPack<Columns...>;
 	using TableType = typename ColumnPackType::TableType;
 
-	template<typename... ColumnTypes>
-	Self& select(ColumnTypes&&... cts);
+	template<typename ColumnType>
+	std::string getColumnName(ColumnType&& type) const noexcept;
 
-	template<typename Type>
-	Self& select(Distinct<Type> distinct);
-
-	Self& selectAll(void);
-
-	template<typename... ColumnTypes>
-	Self& update(ColumnTypes&&... cts);
-
-	template<typename... ColumnTypes>
-	Self& insert(ColumnTypes&&... cts);
-
-	template<typename... ColumnTypes>
-	Self& remove(ColumnTypes&&... cts);
-
-	template<typename Expr>
-	Self& where(Expr expr);
+	template<typename Cs>
+	std::vector<std::string> getColumnNames(Cs&& tuple) const noexcept;
+	std::vector<std::string> getColumnNames(void) const noexcept;
 
 	template<typename That>
 	bool compare(const That& that) const noexcept;
 
+	int size() const noexcept;
+
 	operator std::string();
 
-	template<typename ColumnType>
-	std::string getColumnName(ColumnType&& type) const noexcept;
-
 	std::string name;
+	std::vector<std::string> cache;
 
 private:
 	explicit Table(const std::string& name, ColumnPackType&& columnPack);
 
 	template<typename ...Cs>
 	friend Table<Cs...> make_table(const std::string& name, Cs&& ...columns);
-
-	template<typename ColumnTuple>
-	Self& selectInternal(ColumnTuple&& ct, bool distinct = false);
-
-	template<typename Cs>
-	std::vector<std::string> getColumnNames(Cs&& tuple);
-
-	int size() const noexcept;
-
-	std::vector<std::string> getColumnNames(void) const noexcept;
 
 	struct GetColumnNames {
 		ColumnPackType columnPack;
@@ -101,17 +78,7 @@ private:
 		}
 	};
 
-	template<typename L, typename R>
-	std::string processWhere(condition::And<L,R>& expr);
-
-	template<typename L, typename R>
-	std::string processWhere(condition::Or<L,R>& expr);
-
-	template<typename Expr>
-	std::string processWhere(Expr expr);
-
 	ColumnPackType columnPack;
-	std::vector<std::string> cache;
 };
 
 template<typename ...Columns>
@@ -126,150 +93,34 @@ Table<Columns...>::Table(const std::string& name, ColumnPackType&& columnPack)
 	: name(name), columnPack(std::move(columnPack)) {}
 
 template<typename... Columns>
-template<typename... ColumnTypes>
-Table<Columns...>& Table<Columns...>::select(ColumnTypes&&... cts)
+template<typename Cs>
+std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& tuple) const noexcept
 {
-	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
+	GetColumnNames closure(this->columnPack);
+	tuple_helper::for_each(std::forward<Cs>(tuple), closure);
 
-	return this->selectInternal(std::move(columnTuple));
+	return closure.names;
 }
 
 template<typename... Columns>
-template<typename Type>
-Table<Columns...>& Table<Columns...>::select(Distinct<Type> distinct)
+template<typename ColumnType>
+std::string Table<Columns...>::getColumnName(ColumnType&& type) const noexcept
 {
-	return this->selectInternal(std::move(distinct.value), true);
+	return this->columnPack.getName(std::forward<ColumnType>(type));
 }
 
 template<typename... Columns>
-template<typename ColumnTuple>
-Table<Columns...>& Table<Columns...>::selectInternal(ColumnTuple&& ct, bool distinct)
+std::vector<std::string> Table<Columns...>::getColumnNames(void) const noexcept
 {
-	this->cache.clear();
-
-	auto columnNames = this->getColumnNames(std::move(ct));
-
-	std::stringstream ss;
-	ss << "SELECT ";
-
-	if (distinct)
-		ss << "DISTINCT ";
-
-	int i = 0;
-	for (const auto& c : columnNames) {
-		ss << c;
-
-		if (i++ < columnNames.size() - 1)
-			ss << ", ";
-	}
-
-	ss << " FROM " << this->name;
-
-	cache.emplace_back(ss.str());
-
-	return *this;
-}
-
-template<typename ...Columns>
-Table<Columns...>& Table<Columns...>::selectAll(void)
-{
-	this->cache.clear();
-
-	std::stringstream ss;
-	ss << "SELECT * FROM " << this->name;
-
-	cache.emplace_back(ss.str());
-
-	return *this;
+	return this->columnPack.getNames();
 }
 
 template<typename... Columns>
-template<typename... ColumnTypes>
-Table<Columns...>& Table<Columns...>::update(ColumnTypes&&... cts)
+template<typename That>
+bool Table<Columns...>::compare(const That& that) const noexcept
 {
-	this->cache.clear();
-
-	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
-	auto columnNames = this->getColumnNames(std::move(columnTuple));
-
-	std::stringstream ss;
-	ss << "UPDATE " << this->name << " ";
-	ss << "SET ";
-
-	int i = 0;
-	for (const auto& c : columnNames) {
-		ss << c << " = ?";
-
-		if (i++ < columnNames.size() - 1)
-			ss << ", ";
-	}
-
-	cache.emplace_back(ss.str());
-
-	return *this;
-}
-
-template<typename... Columns>
-template<typename... ColumnTypes>
-Table<Columns...>& Table<Columns...>::insert(ColumnTypes&&... cts)
-{
-	this->cache.clear();
-
-	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
-	auto columnNames = this->getColumnNames(std::move(columnTuple));
-
-	std::stringstream ss;
-	ss << "INSERT INTO " << this->name << " (";
-
-	const int columnCount = columnNames.size();
-	for (int i = 0; i < columnCount; i++) {
-		ss << columnNames[i];
-		if (i < columnCount - 1)
-			ss << ", ";
-	}
-
-	ss << ") VALUES (";
-
-	for (int i = 0; i < columnCount; i++) {
-		ss << "?";
-		if (i < columnCount - 1)
-			ss << ", ";
-	}
-
-	ss << ")";
-
-	cache.emplace_back(ss.str());
-
-	return *this;
-}
-
-template<typename... Columns>
-template<typename... ColumnTypes>
-Table<Columns...>& Table<Columns...>::remove(ColumnTypes&&... cts)
-{
-	this->cache.clear();
-
-	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
-	auto columnNames = this->getColumnNames(std::move(columnTuple));
-
-	std::stringstream ss;
-	ss << "DELETE FROM " << this->name;
-
-	cache.emplace_back(ss.str());
-
-	return *this;
-}
-
-template<typename... Columns>
-template<typename Expr>
-Table<Columns...>& Table<Columns...>::where(Expr expr)
-{
-	std::stringstream ss;
-	ss << "WHERE " << this->processWhere(expr);
-
-	this->cache.emplace_back(ss.str());
-
-	return *this;
+	using This = TableType;
+	return type::compare(This(), that);
 }
 
 template<typename... Columns>
@@ -284,75 +135,9 @@ Table<Columns...>::operator std::string()
 }
 
 template<typename... Columns>
-template<typename That>
-bool Table<Columns...>::compare(const That& that) const noexcept
-{
-	using This = TableType;
-	return type::compare(This(), that);
-}
-
-template<typename... Columns>
-template<typename Cs>
-std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& tuple)
-{
-	GetColumnNames closure(this->columnPack);
-	tuple_helper::for_each(std::forward<Cs>(tuple), closure);
-
-	return closure.names;
-}
-
-template<typename... Columns>
 int Table<Columns...>::size() const noexcept
 {
 	return this->columnPack.size();
-}
-
-template<typename... Columns>
-std::vector<std::string> Table<Columns...>::getColumnNames(void) const noexcept
-{
-	return this->columnPack.getNames();
-}
-
-template<typename... Columns>
-template<typename ColumnType>
-std::string Table<Columns...>::getColumnName(ColumnType&& type) const noexcept
-{
-	return this->columnPack.getName(std::forward<ColumnType>(type));
-}
-
-template<typename... Columns>
-template<typename L, typename R>
-std::string Table<Columns...>::processWhere(condition::And<L,R>& expr)
-{
-	std::stringstream ss;
-	ss << this->processWhere(expr.l) << " ";
-	ss << static_cast<std::string>(expr) << " ";
-	ss << this->processWhere(expr.r);
-
-	return ss.str();
-}
-
-template<typename... Columns>
-template<typename L, typename R>
-std::string Table<Columns...>::processWhere(condition::Or<L,R>& expr)
-{
-	std::stringstream ss;
-	ss << this->processWhere(expr.l) << " ";
-	ss << static_cast<std::string>(expr) << " ";
-	ss << this->processWhere(expr.r);
-
-	return ss.str();
-}
-
-template<typename... Columns>
-template<typename Expr>
-std::string Table<Columns...>::processWhere(Expr expr)
-{
-	std::stringstream ss;
-	ss << this->columnPack.getName(expr.l.type);
-	ss << " " << std::string(expr) << " ?";
-
-	return ss.str();
 }
 
 } // namespace tsqb
