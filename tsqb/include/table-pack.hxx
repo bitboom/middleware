@@ -31,6 +31,8 @@ namespace internal {
 template<typename... Base>
 class TablePack {
 public:
+	virtual ~TablePack() = default;
+
 	template<typename TableType>
 	std::string getName(TableType&&) const noexcept { return std::string(); }
 
@@ -43,7 +45,14 @@ class TablePack<Front, Rest...> : public TablePack<Rest...> {
 public:
 	using Table = Front;
 
-	TablePack(Front&& front, Rest&& ...rest);
+	explicit TablePack(Front&& front, Rest&& ...rest);
+	virtual ~TablePack() = default;
+
+	TablePack(const TablePack&) = delete;
+	TablePack& operator=(const TablePack&) = delete;
+
+	TablePack(TablePack&&) = default;
+	TablePack& operator=(TablePack&&) = default;
 
 	template<typename TableType>
 	std::string getName(TableType&& table) const noexcept;

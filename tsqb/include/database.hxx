@@ -41,6 +41,14 @@ class Database : public Crud<Database<Tables...>> {
 public:
 	using Self = Database<Tables...>;
 
+	virtual ~Database() = default;
+
+	Database(const Database&) = delete;
+	Database& operator=(const Database&) = delete;
+
+	Database(Database&&) = default;
+	Database& operator=(Database&&) = default;
+
 	// Functions for Crud
 	template<typename Cs>
 	std::set<std::string> getTableNames(Cs&& tuple) const noexcept;
@@ -71,7 +79,7 @@ private:
 	friend Database<Ts...> make_database(const std::string& name, Ts&& ...tables);
 
 	struct GetTableNames {
-		TablePackType tablePack;
+		const TablePackType& tablePack;
 		std::set<std::string> names;
 		GetTableNames(const TablePackType& tablePack) : tablePack(tablePack) {}
 
@@ -87,7 +95,7 @@ private:
 	};
 
 	struct GetColumnNames {
-		TablePackType tablePack;
+		const TablePackType& tablePack;
 		std::vector<std::string> names;
 
 		GetColumnNames(const TablePackType& tablePack) : tablePack(tablePack) {}

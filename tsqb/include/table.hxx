@@ -36,9 +36,13 @@ namespace tsqb {
 template<typename... Columns>
 class Table : public Crud<Table<Columns...>> {
 public:
-	using Self = Table<Columns...>;
-	using ColumnPackType = internal::ColumnPack<Columns...>;
-	using TableType = typename ColumnPackType::TableType;
+	virtual ~Table() = default;
+
+	Table(const Table&) = delete;
+	Table& operator=(const Table&) = delete;
+
+	Table(Table&&) = default;
+	Table& operator=(Table&&) = default;
 
 	// Functions for Crud
 	template<typename Cs>
@@ -61,13 +65,16 @@ public:
 	std::vector<std::string> cache;
 
 private:
+	using ColumnPackType = internal::ColumnPack<Columns...>;
+	using TableType = typename ColumnPackType::TableType;
+
 	explicit Table(const std::string& name, ColumnPackType&& columnPack);
 
 	template<typename ...Cs>
 	friend Table<Cs...> make_table(const std::string& name, Cs&& ...columns);
 
 	struct GetColumnNames {
-		ColumnPackType columnPack;
+		const ColumnPackType& columnPack;
 		std::vector<std::string> names;
 
 		GetColumnNames(const ColumnPackType& columnPack) : columnPack(columnPack) {}

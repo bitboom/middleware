@@ -32,6 +32,8 @@ namespace internal {
 template<typename... Base>
 class ColumnPack {
 public:
+	virtual ~ColumnPack() = default;
+
 	template<typename ColumnType>
 	std::string getName(ColumnType&&) const noexcept { return std::string(); }
 	std::vector<std::string> getNames(void) const noexcept { return {}; }
@@ -46,6 +48,13 @@ public:
 	using TableType = typename Column::TableType;
 
 	explicit ColumnPack(Front&& front, Rest&& ...rest);
+	virtual ~ColumnPack() = default;
+
+	ColumnPack(const ColumnPack&) = delete;
+	ColumnPack& operator=(const ColumnPack&) = delete;
+
+	ColumnPack(ColumnPack&&) = default;
+	ColumnPack& operator=(ColumnPack&&) = default;
 
 	template<typename ColumnType>
 	std::string getName(ColumnType&& type) const noexcept;
