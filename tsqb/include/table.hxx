@@ -40,11 +40,14 @@ public:
 	using ColumnPackType = internal::ColumnPack<Columns...>;
 	using TableType = typename ColumnPackType::TableType;
 
+	// Functions for Crud
+	template<typename Cs>
+	std::vector<std::string> getColumnNames(Cs&& tuple) const noexcept;
+	template<typename Cs>
+	std::set<std::string> getTableNames(Cs&& tuple) const noexcept;
 	template<typename ColumnType>
 	std::string getColumnName(ColumnType&& type) const noexcept;
 
-	template<typename Cs>
-	std::vector<std::string> getColumnNames(Cs&& tuple) const noexcept;
 	std::vector<std::string> getColumnNames(void) const noexcept;
 
 	template<typename That>
@@ -91,6 +94,13 @@ Table<Columns...> make_table(const std::string& name, Columns&& ...cs)
 template<typename... Columns>
 Table<Columns...>::Table(const std::string& name, ColumnPackType&& columnPack)
 	: name(name), columnPack(std::move(columnPack)) {}
+
+template<typename... Columns>
+template<typename Cs>
+std::set<std::string> Table<Columns...>::getTableNames(Cs&& tuple) const noexcept
+{
+	return {this->name};
+}
 
 template<typename... Columns>
 template<typename Cs>

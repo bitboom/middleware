@@ -104,6 +104,8 @@ Table& Crud<Table>::selectInternal(ColumnTuple&& ct, bool distinct)
 	static_cast<Table*>(this)->cache.clear();
 
 	auto columnNames = static_cast<Table*>(this)->getColumnNames(std::move(ct));
+	auto tableNames = static_cast<Table*>(this)->getTableNames(std::move(ct));
+
 	std::stringstream ss;
 	ss << "SELECT ";
 
@@ -118,7 +120,16 @@ Table& Crud<Table>::selectInternal(ColumnTuple&& ct, bool distinct)
 			ss << ", ";
 	}
 
-	ss << " FROM " << static_cast<Table*>(this)->name;
+	ss << " FROM ";
+
+	i = 0;
+	for (const auto& t : tableNames) {
+		ss << t;
+
+		if (i++ < tableNames.size() - 1)
+			ss << ", ";
+	}
+
 	static_cast<Table*>(this)->cache.emplace_back(ss.str());
 
 	return *(static_cast<Table*>(this));

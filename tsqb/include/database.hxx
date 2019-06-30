@@ -21,31 +21,33 @@
 
 #pragma once
 
+#include "crud.hxx"
+#include "condition.hxx"
+#include "expression.hxx"
+#include "table-pack.hxx"
+#include "tuple-helper.hxx"
+#include "util.hxx"
+
 #include <vector>
 #include <set>
 #include <string>
 #include <sstream>
 #include <algorithm>
 
-#include "table-pack.hxx"
-#include "tuple-helper.hxx"
-#include "condition.hxx"
-#include "expression.hxx"
-#include "util.hxx"
-
 namespace tsqb {
 
 template<typename... Tables>
-class Database {
+class Database : public Crud<Database<Tables...>> {
 public:
 	using Self = Database<Tables...>;
 
-	// TODO(Sangwan): Use Crud class
-	template<typename... ColumnTypes>
-	Self& select(ColumnTypes&&... cts);
-
-	template<typename Expr>
-	Self& where(Expr expr);
+	// Functions for Crud
+	template<typename Cs>
+	std::set<std::string> getTableNames(Cs&& tuple) const noexcept;
+	template<typename Cs>
+	std::vector<std::string> getColumnNames(Cs&& tuple) const noexcept;
+	template<typename ColumnType>
+	std::string getColumnName(ColumnType&& type) const noexcept;
 
 	template<typename Table>
 	Self& join(condition::Join type = condition::Join::INNER);
@@ -56,6 +58,7 @@ public:
 	operator std::string();
 
 	std::string name;
+	std::vector<std::string> cache;
 
 private:
 	using TablePackType = internal::TablePack<Tables...>;
@@ -66,12 +69,6 @@ private:
 
 	template<typename ...Ts>
 	friend Database<Ts...> make_database(const std::string& name, Ts&& ...tables);
-
-	template<typename Cs>
-	std::set<std::string> getTableNames(Cs&& tuple);
-
-	template<typename Cs>
-	std::vector<std::string> getColumnNames(Cs&& tuple);
 
 	struct GetTableNames {
 		TablePackType tablePack;
@@ -105,17 +102,7 @@ private:
 		}
 	};
 
-	template<typename L, typename R>
-	std::string processWhere(condition::And<L,R>& expr);
-
-	template<typename L, typename R>
-	std::string processWhere(condition::Or<L,R>& expr);
-
-	template<typename Expr>
-	std::string processWhere(Expr expr);
-
 	TablePackType tablePack;
-	std::vector<std::string> cache;
 };
 
 template<typename ...Tables>
@@ -128,54 +115,6 @@ Database<Tables...> make_database(const std::string& name, Tables&& ...tables)
 template<typename ...Tables>
 Database<Tables...>::Database(const std::string& name, TablePackType&& tablePack)
 	: name(name), tablePack(std::move(tablePack)) {}
-
-template<typename... Tables>
-template<typename... ColumnTypes>
-Database<Tables...>& Database<Tables...>::select(ColumnTypes&&... cts)
-{
-	this->cache.clear();
-
-	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
-	auto columnNames = this->getColumnNames(std::move(columnTuple));
-	auto tableNames = this->getTableNames(std::move(columnTuple));
-
-	std::stringstream ss;
-	ss << "SELECT ";
-
-	int i = 0;
-	for (const auto& c : columnNames) {
-		ss << c;
-
-		if (i++ < columnNames.size() - 1)
-			ss << ", ";
-	}
-
-	ss << " FROM ";
-
-	i = 0;
-	for (const auto& t : tableNames) {
-		ss << t;
-
-		if (i++ < tableNames.size() - 1)
-			ss << ", ";
-	}
-
-	cache.emplace_back(ss.str());
-
-	return *this;
-}
-
-template<typename... Tables>
-template<typename Expr>
-Database<Tables...>& Database<Tables...>::where(Expr expr)
-{
-	std::stringstream ss;
-	ss << "WHERE " << this->processWhere(expr);
-
-	this->cache.emplace_back(ss.str());
-
-	return *this;
-}
 
 template<typename... Tables>
 template<typename Table>
@@ -222,7 +161,7 @@ Database<Tables...>::operator std::string()
 
 template<typename... Tables>
 template<typename Cs>
-std::set<std::string> Database<Tables...>::getTableNames(Cs&& tuple)
+std::set<std::string> Database<Tables...>::getTableNames(Cs&& tuple) const noexcept
 {
 	GetTableNames closure(this->tablePack);
 	tuple_helper::for_each(std::forward<Cs>(tuple), closure);
@@ -232,7 +171,7 @@ std::set<std::string> Database<Tables...>::getTableNames(Cs&& tuple)
 
 template<typename... Tables>
 template<typename Cs>
-std::vector<std::string> Database<Tables...>::getColumnNames(Cs&& tuple)
+std::vector<std::string> Database<Tables...>::getColumnNames(Cs&& tuple) const noexcept
 {
 	GetColumnNames closure(this->tablePack);
 	tuple_helper::for_each(std::forward<Cs>(tuple), closure);
@@ -241,38 +180,11 @@ std::vector<std::string> Database<Tables...>::getColumnNames(Cs&& tuple)
 }
 
 template<typename... Tables>
-template<typename L, typename R>
-std::string Database<Tables...>::processWhere(condition::And<L,R>& expr)
+template<typename ColumnType>
+std::string Database<Tables...>::getColumnName(ColumnType&& type) const noexcept
 {
-	std::stringstream ss;
-	ss << this->processWhere(expr.l) << " ";
-	ss << static_cast<std::string>(expr) << " ";
-	ss << this->processWhere(expr.r);
-
-	return ss.str();
-}
-
-template<typename... Tables>
-template<typename L, typename R>
-std::string Database<Tables...>::processWhere(condition::Or<L,R>& expr)
-{
-	std::stringstream ss;
-	ss << this->processWhere(expr.l) << " ";
-	ss << static_cast<std::string>(expr) << " ";
-	ss << this->processWhere(expr.r);
-
-	return ss.str();
-}
-
-template<typename... Tables>
-template<typename Expr>
-std::string Database<Tables...>::processWhere(Expr expr)
-{
-	std::stringstream ss;
-	ss << this->tablePack.getColumnName(expr.l);
-	ss << " " << std::string(expr) << " ?";
-
-	return ss.str();
+	auto column = make_column("anonymous", type);
+	return this->tablePack.getColumnName(std::move(column));
 }
 
 } // namespace tsqb
