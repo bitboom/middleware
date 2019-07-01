@@ -29,34 +29,35 @@
 
 namespace tsqb {
 
-template<typename Table>
+template<typename T>
 class Crud {
 public:
-	using Self = Table;
-
 	template<typename... ColumnTypes>
-	Self& select(ColumnTypes&&... cts);
+	T& select(ColumnTypes&&... cts);
 
 	template<typename Type>
-	Self& select(Distinct<Type> distinct);
+	T& select(Distinct<Type> distinct);
 
-	Self& selectAll(void);
+	template<typename TableType>
+	T& selectAll(void);
 
-	template<typename... ColumnTypes>
-	Self& update(ColumnTypes&&... cts);
-
-	template<typename... ColumnTypes>
-	Self& insert(ColumnTypes&&... cts);
+	T& selectAll(void);
 
 	template<typename... ColumnTypes>
-	Self& remove(ColumnTypes&&... cts);
+	T& update(ColumnTypes&&... cts);
+
+	template<typename... ColumnTypes>
+	T& insert(ColumnTypes&&... cts);
+
+	template<typename... ColumnTypes>
+	T& remove(ColumnTypes&&... cts);
 
 	template<typename Expr>
-	Self& where(Expr expr);
+	T& where(Expr expr);
 
 private:
 	template<typename ColumnTuple>
-	Self& selectInternal(ColumnTuple&& ct, bool distinct = false);
+	T& selectInternal(ColumnTuple&& ct, bool distinct = false);
 
 	template<typename L, typename R>
 	std::string processWhere(condition::And<L,R>& expr);
@@ -68,43 +69,58 @@ private:
 	std::string processWhere(Expr expr);
 };
 
-template<typename Table>
+template<typename T>
 template<typename... ColumnTypes>
-Table& Crud<Table>::select(ColumnTypes&&... cts)
+T& Crud<T>::select(ColumnTypes&&... cts)
 {
 	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
 
 	return this->selectInternal(std::move(columnTuple));
 }
 
-template<typename Table>
+template<typename T>
 template<typename Type>
-Table& Crud<Table>::select(Distinct<Type> distinct)
+T& Crud<T>::select(Distinct<Type> distinct)
 {
 	return this->selectInternal(std::move(distinct.value), true);
 }
 
-template<typename Table>
-Table& Crud<Table>::selectAll(void)
+template<typename T>
+T& Crud<T>::selectAll(void)
 {
-	static_cast<Table*>(this)->cache.clear();
+	static_cast<T*>(this)->cache.clear();
 
 	std::stringstream ss;
-	ss << "SELECT * FROM " << static_cast<Table*>(this)->name;
+	ss << "SELECT * FROM " << static_cast<T*>(this)->name;
 
-	static_cast<Table*>(this)->cache.emplace_back(ss.str());
+	static_cast<T*>(this)->cache.emplace_back(ss.str());
 
-	return *(static_cast<Table*>(this));
+	return *(static_cast<T*>(this));
 }
 
-template<typename Table>
-template<typename ColumnTuple>
-Table& Crud<Table>::selectInternal(ColumnTuple&& ct, bool distinct)
+template<typename T>
+template<typename TableType>
+T& Crud<T>::selectAll(void)
 {
-	static_cast<Table*>(this)->cache.clear();
+	static_cast<T*>(this)->cache.clear();
 
-	auto columnNames = static_cast<Table*>(this)->getColumnNames(std::move(ct));
-	auto tableNames = static_cast<Table*>(this)->getTableNames(std::move(ct));
+	std::stringstream ss;
+	auto tableName = static_cast<T*>(this)->getTableName(TableType());
+	ss << "SELECT * FROM " << tableName;
+
+	static_cast<T*>(this)->cache.emplace_back(ss.str());
+
+	return *(static_cast<T*>(this));
+}
+
+template<typename T>
+template<typename ColumnTuple>
+T& Crud<T>::selectInternal(ColumnTuple&& ct, bool distinct)
+{
+	static_cast<T*>(this)->cache.clear();
+
+	auto columnNames = static_cast<T*>(this)->getColumnNames(std::move(ct));
+	auto tableNames = static_cast<T*>(this)->getTableNames(std::move(ct));
 
 	std::stringstream ss;
 	ss << "SELECT ";
@@ -130,22 +146,22 @@ Table& Crud<Table>::selectInternal(ColumnTuple&& ct, bool distinct)
 			ss << ", ";
 	}
 
-	static_cast<Table*>(this)->cache.emplace_back(ss.str());
+	static_cast<T*>(this)->cache.emplace_back(ss.str());
 
-	return *(static_cast<Table*>(this));
+	return *(static_cast<T*>(this));
 }
 
-template<typename Table>
+template<typename T>
 template<typename... ColumnTypes>
-Table& Crud<Table>::update(ColumnTypes&&... cts)
+T& Crud<T>::update(ColumnTypes&&... cts)
 {
-	static_cast<Table*>(this)->cache.clear();
+	static_cast<T*>(this)->cache.clear();
 
 	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
-	auto columnNames = static_cast<Table*>(this)->getColumnNames(std::move(columnTuple));
+	auto columnNames = static_cast<T*>(this)->getColumnNames(std::move(columnTuple));
 
 	std::stringstream ss;
-	ss << "UPDATE " << static_cast<Table*>(this)->name << " ";
+	ss << "UPDATE " << static_cast<T*>(this)->name << " ";
 	ss << "SET ";
 
 	int i = 0;
@@ -156,22 +172,22 @@ Table& Crud<Table>::update(ColumnTypes&&... cts)
 			ss << ", ";
 	}
 
-	static_cast<Table*>(this)->cache.emplace_back(ss.str());
+	static_cast<T*>(this)->cache.emplace_back(ss.str());
 
-	return *(static_cast<Table*>(this));
+	return *(static_cast<T*>(this));
 }
 
-template<typename Table>
+template<typename T>
 template<typename... ColumnTypes>
-Table& Crud<Table>::insert(ColumnTypes&&... cts)
+T& Crud<T>::insert(ColumnTypes&&... cts)
 {
-	static_cast<Table*>(this)->cache.clear();
+	static_cast<T*>(this)->cache.clear();
 
 	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
-	auto columnNames = static_cast<Table*>(this)->getColumnNames(std::move(columnTuple));
+	auto columnNames = static_cast<T*>(this)->getColumnNames(std::move(columnTuple));
 
 	std::stringstream ss;
-	ss << "INSERT INTO " << static_cast<Table*>(this)->name << " (";
+	ss << "INSERT INTO " << static_cast<T*>(this)->name << " (";
 
 	const int columnCount = columnNames.size();
 	for (int i = 0; i < columnCount; i++) {
@@ -190,43 +206,43 @@ Table& Crud<Table>::insert(ColumnTypes&&... cts)
 
 	ss << ")";
 
-	static_cast<Table*>(this)->cache.emplace_back(ss.str());
+	static_cast<T*>(this)->cache.emplace_back(ss.str());
 
-	return *(static_cast<Table*>(this));
+	return *(static_cast<T*>(this));
 }
 
-template<typename Table>
+template<typename T>
 template<typename... ColumnTypes>
-Table& Crud<Table>::remove(ColumnTypes&&... cts)
+T& Crud<T>::remove(ColumnTypes&&... cts)
 {
-	static_cast<Table*>(this)->cache.clear();
+	static_cast<T*>(this)->cache.clear();
 
 	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
-	auto columnNames = static_cast<Table*>(this)->getColumnNames(std::move(columnTuple));
+	auto columnNames = static_cast<T*>(this)->getColumnNames(std::move(columnTuple));
 
 	std::stringstream ss;
-	ss << "DELETE FROM " << static_cast<Table*>(this)->name;
+	ss << "DELETE FROM " << static_cast<T*>(this)->name;
 
-	static_cast<Table*>(this)->cache.emplace_back(ss.str());
+	static_cast<T*>(this)->cache.emplace_back(ss.str());
 
-	return *(static_cast<Table*>(this));
+	return *(static_cast<T*>(this));
 }
 
-template<typename Table>
+template<typename T>
 template<typename Expr>
-Table& Crud<Table>::where(Expr expr)
+T& Crud<T>::where(Expr expr)
 {
 	std::stringstream ss;
 	ss << "WHERE " << this->processWhere(expr);
 
-	static_cast<Table*>(this)->cache.emplace_back(ss.str());
+	static_cast<T*>(this)->cache.emplace_back(ss.str());
 
-	return *(static_cast<Table*>(this));
+	return *(static_cast<T*>(this));
 }
 
-template<typename Table>
+template<typename T>
 template<typename L, typename R>
-std::string Crud<Table>::processWhere(condition::And<L,R>& expr)
+std::string Crud<T>::processWhere(condition::And<L,R>& expr)
 {
 	std::stringstream ss;
 	ss << this->processWhere(expr.l) << " ";
@@ -236,9 +252,9 @@ std::string Crud<Table>::processWhere(condition::And<L,R>& expr)
 	return ss.str();
 }
 
-template<typename Table>
+template<typename T>
 template<typename L, typename R>
-std::string Crud<Table>::processWhere(condition::Or<L,R>& expr)
+std::string Crud<T>::processWhere(condition::Or<L,R>& expr)
 {
 	std::stringstream ss;
 	ss << this->processWhere(expr.l) << " ";
@@ -248,12 +264,12 @@ std::string Crud<Table>::processWhere(condition::Or<L,R>& expr)
 	return ss.str();
 }
 
-template<typename Table>
+template<typename T>
 template<typename Expr>
-std::string Crud<Table>::processWhere(Expr expr)
+std::string Crud<T>::processWhere(Expr expr)
 {
 	std::stringstream ss;
-	ss << static_cast<Table*>(this)->getColumnName(expr.l.type);
+	ss << static_cast<T*>(this)->getColumnName(expr.l.type);
 	ss << " " << std::string(expr) << " ?";
 
 	return ss.str();

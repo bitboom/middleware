@@ -46,9 +46,11 @@ public:
 
 	// Functions for Crud
 	template<typename Cs>
-	std::vector<std::string> getColumnNames(Cs&& tuple) const noexcept;
-	template<typename Cs>
 	std::set<std::string> getTableNames(Cs&& tuple) const noexcept;
+	template<typename Cs>
+	std::vector<std::string> getColumnNames(Cs&& tuple) const noexcept;
+	template<typename That>
+	std::string getTableName(That&& type) const noexcept;
 	template<typename ColumnType>
 	std::string getColumnName(ColumnType&& type) const noexcept;
 
@@ -117,6 +119,13 @@ std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& tuple) const noe
 	tuple_helper::for_each(std::forward<Cs>(tuple), closure);
 
 	return closure.names;
+}
+
+template<typename... Columns>
+template<typename That>
+std::string Table<Columns...>::getTableName(That&& type) const noexcept
+{
+	return this->name;
 }
 
 template<typename... Columns>

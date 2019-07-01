@@ -54,6 +54,8 @@ public:
 	std::set<std::string> getTableNames(Cs&& tuple) const noexcept;
 	template<typename Cs>
 	std::vector<std::string> getColumnNames(Cs&& tuple) const noexcept;
+	template<typename TableType>
+	std::string getTableName(TableType&& type) const noexcept;
 	template<typename ColumnType>
 	std::string getColumnName(ColumnType&& type) const noexcept;
 
@@ -185,6 +187,13 @@ std::vector<std::string> Database<Tables...>::getColumnNames(Cs&& tuple) const n
 	tuple_helper::for_each(std::forward<Cs>(tuple), closure);
 
 	return closure.names;
+}
+
+template<typename... Tables>
+template<typename TableType>
+std::string Database<Tables...>::getTableName(TableType&& type) const noexcept
+{
+	return this->tablePack.getName(std::forward<TableType>(type));
 }
 
 template<typename... Tables>
