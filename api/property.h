@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017-present Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,17 +13,33 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file tsqb.hxx
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief TSQB is type-safe query builder
+
+
+/**
+ * @file property.h
+ * @brief Provides type-safe getter method
  */
+
 
 #pragma once
 
-#include "include/database.hxx"
-#include "include/table.hxx"
-#include "include/column.hxx"
-#include "include/expression.hxx"
-#include "include/condition.hxx"
-#include "include/util.hxx"
+#include <string>
+#include <map>
+#include <stdexcept>
+
+namespace osquery {
+
+/// TBD: Consider error handling.
+template <typename T>
+class Property {
+public:
+	explicit Property();
+
+	template<typename Struct, typename Member>
+	Member get(Member Struct::*);
+
+private:
+	std::map<std::string, std::string> data;
+};
+
+} // namespace osquery

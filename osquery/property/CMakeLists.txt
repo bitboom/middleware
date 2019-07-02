@@ -12,4 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_TEST(FALSE tsqb_tests tsqb-tests.cpp)
+ADD_OSQUERY_LIBRARY(TRUE osquery_property property.cpp)
+
+ADD_OSQUERY_TEST(TRUE osquery_property_tests property_tests.cpp)

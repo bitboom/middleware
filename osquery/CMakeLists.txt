@@ -98,6 +98,7 @@ ADD_SUBDIRECTORY(tables)
 # tizen feature
 ADD_SUBDIRECTORY(manager)
 ADD_SUBDIRECTORY(notification)
+ADD_SUBDIRECTORY(property)
 
 ## Table generation #############################################################
 FILE(GLOB TABLE_FILES "tables/specs/*.table")
