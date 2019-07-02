@@ -4,7 +4,6 @@ Wants=lbs-server.service net-config.service pulseaudio.service
 After=lbs-server.service net-config.service pulseaudio.service
 
 [Service]
-Type=simple
 User=${USER_NAME}
 Group=${GROUP_NAME}
 SmackProcessLabel=${SMACK_LABEL}
