@@ -21,7 +21,11 @@
 
 #include <osquery_manager.h>
 #include <property.h>
+
 #include <schema/time.h>
+#include <schema/processes.h>
+
+#include <osquery/logger.h>
 
 #include <tsqb.hxx>
 
@@ -35,7 +39,26 @@ auto time = make_table("time",
 					   make_column("minutes", &Time::minutes),
 					   make_column("seconds", &Time::seconds));
 
-auto db = make_database("db", time);
+auto processes = make_table("processes",
+							make_column("pid", &Processes::pid),
+							make_column("name", &Processes::name),
+							make_column("path", &Processes::path),
+							make_column("cmdline", &Processes::cmdline),
+							make_column("uid", &Processes::uid),
+							make_column("gid", &Processes::gid),
+							make_column("euid", &Processes::euid),
+							make_column("egid", &Processes::egid),
+							make_column("on_disk", &Processes::on_disk),
+//							make_column("wired_size", &Processes::wired_size),
+							make_column("resident_size", &Processes::resident_size),
+							make_column("phys_footprint", &Processes::phys_footprint),
+							make_column("user_time", &Processes::user_time),
+							make_column("system_time", &Processes::system_time),
+							make_column("start_time", &Processes::start_time),
+							make_column("parent", &Processes::parent));
+
+
+auto db = make_database("db", time, processes);
 
 } // anonymous namespace
 
@@ -50,8 +73,13 @@ Property<T>::Property()
 }
 
 template <typename T>
+Property<T>::Property(KeyValuePair&& kvp) : data(std::move(kvp))
+{
+}
+
+template <typename T>
 template<typename Struct, typename Member>
-Member Property<T>::get(Member Struct::* field)
+Member Property<T>::at(Member Struct::* field) const
 {
 	if (this->data.size() == 0)
 		throw std::runtime_error("Data is not exist.");
@@ -65,16 +93,44 @@ Member Property<T>::get(Member Struct::* field)
 	if (pos != std::string::npos && pos != key.size() - 1)
 		key = key.substr(pos + 1);
 
-	std::string value = this->data[key];
-	if (value.empty())
-		throw std::runtime_error("Value is not exist.");
+	std::string value = this->data.at(key);
+	if (value.empty()) {
+		LOG(ERROR) << "Key: " << key << "is not exist.";
+		return Member();
+	} else {
+		/// TODO(Sangwan): Catch boost::bad_lexical_cast
+		return boost::lexical_cast<Member>(value);
+	}
+}
 
-	/// TODO(Sangwan): Catch boost::bad_lexical_cast
-	return boost::lexical_cast<Member>(value);
+template <typename T>
+template<typename Struct, typename Member>
+Member Property<T>::operator[](Member Struct::*field) const
+{
+	return this->at(field);
+}
+
+template <typename T>
+Properties<T>::Properties()
+{
+	auto results = OsqueryManager::execute(db.selectAll<T>());
+	for (auto& r : results)
+		this->datas.emplace_back(Property<T>(std::move(r)));
 }
 
 /// Explicit instantiation
 template class Property<Time>;
-template int Property<Time>::get(int Time::*);
+template class Properties<Time>;
+template int Property<Time>::at(int Time::*) const;
+template int Property<Time>::operator[](int Time::*) const;
+
+template class Property<Processes>;
+template class Properties<Processes>;
+template int Property<Processes>::at(int Processes::*) const;
+template int Property<Processes>::operator[](int Processes::*) const;
+template long long int Property<Processes>::at(long long int Processes::*) const;
+template long long int Property<Processes>::operator[](long long int Processes::*) const;
+template std::string Property<Processes>::at(std::string Processes::*) const;
+template std::string Property<Processes>::operator[](std::string Processes::*) const;
 
 } // namespace osquery

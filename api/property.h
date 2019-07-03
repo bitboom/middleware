@@ -33,13 +33,38 @@ namespace osquery {
 template <typename T>
 class Property {
 public:
+	using KeyValuePair = std::map<std::string, std::string>;
+
 	explicit Property();
+	explicit Property(KeyValuePair&&);
 
 	template<typename Struct, typename Member>
-	Member get(Member Struct::*);
+	Member at(Member Struct::*) const;
+
+	template<typename Struct, typename Member>
+	Member operator[](Member Struct::*) const;
 
 private:
-	std::map<std::string, std::string> data;
+	KeyValuePair data;
+};
+
+
+template <typename T>
+class Properties {
+public:
+	explicit Properties();
+
+	/// Make iteratable
+	using Iter = typename std::vector<Property<T>>::iterator;
+	using CIter = typename std::vector<Property<T>>::const_iterator;
+
+	inline Iter begin() { return datas.begin(); }
+	inline CIter begin() const { return datas.cbegin(); }
+	inline Iter end() { return datas.end(); }
+	inline CIter end() const { return datas.end(); }
+
+private:
+	std::vector<Property<T>> datas;
 };
 
 } // namespace osquery
