@@ -450,3 +450,42 @@ TESTCASE(T00205_pattern)
 	ret = auth_passwd_set_policy(policy);
 	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
 }
+
+TESTCASE(T00206_max_num_seq)
+{
+	int max_num_seq = 2;
+	const char* allowed_pass = "124589";
+	const char* not_allowed_pass1 = "123568";
+	const char* not_allowed_pass2 = "12567";
+
+	test::ScopedPolicy sp(test::create_policy_h(), auth_passwd_free_policy);
+	policy_h *policy = sp.get();
+	TEST_EXPECT(true, policy != nullptr);
+
+	int ret = auth_passwd_set_user(policy, getuid());
+	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
+
+	ret = auth_passwd_set_max_num_seq_len(policy, max_num_seq);
+	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
+
+	ret = auth_passwd_set_policy(policy);
+	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
+
+	ret = auth_passwd_reset_passwd(AUTH_PWD_NORMAL, getuid(), default_pass);
+	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
+	sleep(1);
+
+	ret = auth_passwd_set_passwd(AUTH_PWD_NORMAL, default_pass, not_allowed_pass1);
+	TEST_EXPECT(AUTH_PASSWD_API_ERROR_INVALID_MAX_NUM_SEQ_LENGTH, ret);
+	sleep(1);
+
+	ret = auth_passwd_set_passwd(AUTH_PWD_NORMAL, default_pass, not_allowed_pass2);
+	TEST_EXPECT(AUTH_PASSWD_API_ERROR_INVALID_MAX_NUM_SEQ_LENGTH, ret);
+	sleep(1);
+
+	ret = auth_passwd_set_passwd(AUTH_PWD_NORMAL, default_pass, allowed_pass);
+	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
+
+	ret = auth_passwd_disable_policy(getuid());
+	TEST_EXPECT(AUTH_PASSWD_API_SUCCESS, ret);
+}

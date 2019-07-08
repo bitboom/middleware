@@ -294,21 +294,18 @@ bool PolicyFile::checkMaxNumSeqLength(const std::string &password) const
 					order = 1;
 					curr_num_seq_len = 2;
 				} else { // order restarts again
-					if (max_num_seq_len < curr_num_seq_len)
-						max_num_seq_len = curr_num_seq_len;
-
 					order = -2;
 					curr_num_seq_len = 1;
 				}
 			} else if (curr_ch == prev_num + order) { // order is still working
 				curr_num_seq_len++;
 			} else { // order changed
-				if (max_num_seq_len < curr_num_seq_len)
-					max_num_seq_len = curr_num_seq_len;
-
 				order = -2;
 				curr_num_seq_len = 1;
 			}
+
+			if (max_num_seq_len < curr_num_seq_len)
+				max_num_seq_len = curr_num_seq_len;
 
 			prev_num = curr_ch;
 		} else { // order reset
