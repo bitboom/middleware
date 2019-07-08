@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2017 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -279,8 +279,7 @@ std::string Certificate::getField(FieldType type, int fieldNid) const
 	int entryCount = X509_NAME_entry_count(subjectName);
 
 	for (int i = 0; i < entryCount; ++i) {
-		subjectEntry = X509_NAME_get_entry(subjectName,
-										   i);
+		subjectEntry = X509_NAME_get_entry(subjectName, i);
 
 		if (!subjectEntry) {
 			continue;
@@ -294,14 +293,12 @@ std::string Certificate::getField(FieldType type, int fieldNid) const
 			continue;
 		}
 
-		ASN1_STRING *pASN1Str = subjectEntry->value;
+		ASN1_STRING *pASN1Str = X509_NAME_ENTRY_get_data(subjectEntry);
 		unsigned char *pData = NULL;
-		int nLength = ASN1_STRING_to_UTF8(&pData,
-										  pASN1Str);
+		int nLength = ASN1_STRING_to_UTF8(&pData, pASN1Str);
 
 		if (nLength < 0)
-			VcoreThrowMsg(Certificate::Exception::OpensslInternalError,
-						  "Reading field error.");
+			VcoreThrowMsg(Certificate::Exception::OpensslInternalError, "Reading field error.");
 
 		if (!pData) {
 			output = std::string();
@@ -365,12 +362,11 @@ std::string Certificate::getNameHash(FieldType type) const
 
 std::string Certificate::getUID(FieldType type) const
 {
-	ASN1_BIT_STRING *uid = NULL;
+	const ASN1_BIT_STRING *uid = NULL;
+	const ASN1_BIT_STRING *subjectUID, *issuerUID;
 
-	if (type == FIELD_SUBJECT)
-		uid = m_x509->cert_info->subjectUID;
-	else
-		uid = m_x509->cert_info->issuerUID;
+	X509_get0_uids(m_x509, &issuerUID, &subjectUID);
+	uid = (type == FIELD_SUBJECT) ? subjectUID : issuerUID;
 
 	if (uid->data == NULL)
 		return std::string();
@@ -411,12 +407,12 @@ std::string Certificate::getOCSPURL() const
 
 		if (OBJ_obj2nid(ad->method) == NID_ad_OCSP &&
 				ad->location->type == GEN_URI) {
-			void *data = ASN1_STRING_data(ad->location->d.ia5);
+			const unsigned char *data = ASN1_STRING_get0_data(ad->location->d.ia5);
 
 			if (!data)
 				retValue = std::string();
 			else
-				retValue = std::string(static_cast<char *>(data));
+				retValue = std::string(reinterpret_cast<const char *>(data));
 
 			break;
 		}
@@ -440,15 +436,15 @@ Certificate::AltNameSet Certificate::getAlternativeName(int type) const
 						  "openssl sk_GENERAL_NAME_pop err.");
 
 		if (type == namePart->type) {
-			char *temp;
+			const char *temp;
 
 			switch (type) {
 			case GEN_DNS:
-				temp = reinterpret_cast<char *>(ASN1_STRING_data(namePart->d.dNSName));
+				temp = reinterpret_cast<const char *>(ASN1_STRING_get0_data(namePart->d.dNSName));
 				break;
 
 			case GEN_URI:
-				temp = reinterpret_cast<char *>(ASN1_STRING_data(namePart->d.uniformResourceIdentifier));
+				temp = reinterpret_cast<const char *>(ASN1_STRING_get0_data(namePart->d.uniformResourceIdentifier));
 				break;
 
 			default:
@@ -613,7 +609,7 @@ std::string Certificate::getSignatureAlgorithmString() const
 		VcoreThrowMsg(Certificate::Exception::OpensslInternalError,
 					  "Error in BIO_new");
 
-	if (i2a_ASN1_OBJECT(b.get(), m_x509->cert_info->signature->algorithm) < 0)
+	if (i2a_ASN1_OBJECT(b.get(), X509_get0_tbs_sigalg(m_x509)->algorithm) < 0)
 		VcoreThrowMsg(Certificate::Exception::OpensslInternalError,
 					  "Error in i2a_ASN1_OBJECT");
 
@@ -676,8 +672,16 @@ void Certificate::getPublicKeyDER(unsigned char **pubkey, size_t *len) const
 
 std::string Certificate::getPublicKeyAlgoString() const
 {
-	return std::string(static_cast<const char *>(
-						   OBJ_nid2ln(OBJ_obj2nid(m_x509->cert_info->key->algor->algorithm))));
+	X509_PUBKEY *pkey = X509_get_X509_PUBKEY(m_x509);
+	if (!pkey)
+		return std::string();
+
+	ASN1_OBJECT *algor_obj;
+	int ret = X509_PUBKEY_get0_param(&algor_obj, NULL, NULL, NULL, pkey);
+	if (ret == 0 || !algor_obj)
+		return std::string();
+
+	return std::string(static_cast<const char *>(OBJ_nid2ln(OBJ_obj2nid(algor_obj))));
 }
 
 int Certificate::isCA() const

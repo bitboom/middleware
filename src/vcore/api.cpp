@@ -600,7 +600,7 @@ public:
 		}
 
 		if (algorithm == NULL) {
-			md = EVP_get_digestbyobj(cert->cert_info->signature->algorithm);
+			md = EVP_get_digestbynid(X509_get_signature_nid(cert));
 		} else {
 			md = EVP_get_digestbyname(algorithm);
 		}
@@ -790,16 +790,23 @@ err:
 				break;
 		}
 
-		X509_STORE_CTX context;
-		if(!X509_STORE_CTX_init(&context, store, cert, ustore)) {
+		X509_STORE_CTX *context;
+		context = X509_STORE_CTX_new();
+		if(!context) {
 			X509_STORE_free(store);
 			sk_X509_free(ustore);
 			return CERTSVC_FAIL;
 		}
-		int result = X509_verify_cert(&context);
+		if(!X509_STORE_CTX_init(context, store, cert, ustore)) {
+			X509_STORE_free(store);
+			sk_X509_free(ustore);
+			X509_STORE_CTX_free(context);
+			return CERTSVC_FAIL;
+		}
+		int result = X509_verify_cert(context);
 
 		if (result == 1 && checkCaFlag) { // check strictly
-			STACK_OF(X509) *resultChain = X509_STORE_CTX_get1_chain(&context);
+			STACK_OF(X509) *resultChain = X509_STORE_CTX_get1_chain(context);
 
 			// the last one is not a CA.
 			while (sk_X509_num(resultChain) > 1) {
@@ -815,9 +822,10 @@ err:
 			sk_X509_pop_free(resultChain, X509_free);
 		}
 
-		X509_STORE_CTX_cleanup(&context);
+		X509_STORE_CTX_cleanup(context);
 		X509_STORE_free(store);
 		sk_X509_free(ustore);
+		X509_STORE_CTX_free(context);
 
 		if (result == 1) {
 			*status = CERTSVC_SUCCESS;

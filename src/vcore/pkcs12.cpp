@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -242,7 +242,7 @@ std::string getCommonName(CertType type, const std::string &cert)
 	}
 
 	X509UniquePtr x509Ptr(x509, X509_free);
-	const char *subject_c = X509_NAME_oneline(x509->cert_info->subject, NULL, 0);
+	const char *subject_c = X509_NAME_oneline(X509_get_subject_name(x509), NULL, 0);
 
 	if (subject_c == NULL) {
 		LogError("Failed to parse x509 structure");
@@ -402,7 +402,7 @@ int verify_cert_details(X509 *cert, STACK_OF(X509) *certv)
 #ifdef _CERT_SVC_VERIFY_PKCS12
 
 	if (certv == NULL) {
-		pSubject = X509_NAME_oneline(cert->cert_info->subject, NULL, 0);
+		pSubject = X509_NAME_oneline(X509_get_subject_name(cert), NULL, 0);
 
 		if (!pSubject) {
 			LogError("Failed to get subject name");
@@ -410,7 +410,7 @@ int verify_cert_details(X509 *cert, STACK_OF(X509) *certv)
 			goto free_memory;
 		}
 
-		pIssuerName = X509_NAME_oneline(cert->cert_info->issuer, NULL, 0);
+		pIssuerName = X509_NAME_oneline(X509_get_issuer_name(cert), NULL, 0);
 
 		if (!pIssuerName) {
 			LogError("Failed to get issuer name");

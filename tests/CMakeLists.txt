@@ -21,7 +21,7 @@ SET(TARGET_PLUGIN_SAMPLE "cert-svc-validator-plugin")
 PKG_CHECK_MODULES(TEST_DEP
     REQUIRED
     libpcrecpp
-    openssl
+    openssl1.1
     )
 
 SET(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})

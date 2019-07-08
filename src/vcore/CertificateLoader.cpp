@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -78,8 +78,8 @@ CertificateLoader::CertificateLoaderResult CertificateLoader::loadCertificateFro
 	EVP_PKEY *pKey = X509_get_pubkey(m_certificatePtr->getX509());
 
 	if (pKey != NULL) {
-		if (pKey->type == EVP_PKEY_RSA) {
-			RSA *pRSA = pKey->pkey.rsa;
+		if (EVP_PKEY_type(EVP_PKEY_base_id(pKey)) == EVP_PKEY_RSA) {
+			RSA *pRSA = EVP_PKEY_get0_RSA(pKey);
 
 			if (pRSA) {
 				int keyLength = RSA_size(pRSA);

@@ -10,10 +10,10 @@ Source0: %{name}-%{version}.tar.gz
 BuildRequires: cmake
 BuildRequires: coreutils
 BuildRequires: findutils
-BuildRequires: openssl
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(klay)
-BuildRequires: pkgconfig(openssl)
+BuildRequires: openssl1.1
+BuildRequires: pkgconfig(openssl1.1)
 BuildRequires: pkgconfig(libpcrecpp)
 BuildRequires: pkgconfig(xmlsec1)
 BuildRequires: pkgconfig(libxml-2.0)

@@ -22,7 +22,7 @@ PKG_CHECK_MODULES(VCORE_DEPS
     REQUIRED
     libxml-2.0
     libpcrecpp
-    openssl
+    openssl1.1
     xmlsec1
     dlog
     libsystemd-journal

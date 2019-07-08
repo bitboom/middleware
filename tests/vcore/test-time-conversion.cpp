@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -94,9 +94,10 @@ RUNNER_TEST(T004203_utctime_negative_invalid_format_too_long)
 
 
 
-RUNNER_TEST(T004301_gentime_positive_full_local_only)
+RUNNER_TEST(T004301_gentime_negative_full_local_only)
 {
-	UnitWrapper("20001231235959.999", V_ASN1_GENERALIZEDTIME, 1);
+	// ASN1_TIME_check() says that time format is syntactically incorrect
+	UnitWrapper("20001231235959.999", V_ASN1_GENERALIZEDTIME, 0);
 }
 
 RUNNER_TEST(T004302_gentime_positive_full_utc_only)
@@ -114,9 +115,10 @@ RUNNER_TEST(T004304_gentime_positive_full_local_and_utc_minus)
 	UnitWrapper("20001231235959.999-1259", V_ASN1_GENERALIZEDTIME, 1);
 }
 
-RUNNER_TEST(T004305_gentime_positive_no_fff_local_only)
+RUNNER_TEST(T004305_gentime_negative_no_fff_local_only)
 {
-	UnitWrapper("20001231235959", V_ASN1_GENERALIZEDTIME, 1);
+	// ASN1_TIME_check() says that time format is syntactically incorrect
+	UnitWrapper("20001231235959", V_ASN1_GENERALIZEDTIME, 0);
 }
 
 RUNNER_TEST(T004306_gentime_positive_no_fff_utc_only)

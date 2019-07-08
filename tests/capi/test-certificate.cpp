@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -239,7 +239,7 @@ RUNNER_TEST(T01053_cert_get_field_other)
 	_get_string_field_and_check(
 		cert,
 		CERTSVC_KEY,
-		"                Public-Key: (1024 bit)\n"
+		"                RSA Public-Key: (1024 bit)\n"
 		"                Modulus:\n"
 		"                    00:d8:08:a3:a3:05:fb:e2:df:36:cd:e3:48:2f:3b:\n"
 		"                    59:17:ce:e3:32:bf:9f:ef:f1:7c:fb:27:f9:7c:32:\n"
