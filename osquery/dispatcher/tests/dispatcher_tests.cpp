@@ -10,8 +10,6 @@
 
 #include <boost/make_shared.hpp>
 
-#define GTEST_HAS_TR1_TUPLE 0
-
 #include <gtest/gtest.h>
 
 #include "osquery/dispatcher/dispatcher.h"

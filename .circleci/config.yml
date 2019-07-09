@@ -13,7 +13,10 @@ jobs:
       # basis toolchain
       - run: sudo apt-get update && sudo apt-get install -qq build-essential git cmake automake
       # osquery core dependencies
-      - run: sudo apt-get install -qq libboost-all-dev libreadline-dev libgflags-dev
+      - run: sudo apt-get install -qq libboost-all-dev libreadline-dev
+      - run: cd /usr/src && sudo git clone https://github.com/gflags/gflags.git
+      - run: cd /usr/src/gflags && sudo git checkout v2.2.1 && sudo cmake . && sudo make && sudo make install
+
       # thrift
       - run: sudo apt-get install -qq libevent-dev libtool flex bison pkg-config g++ libssl-dev
       - run: sudo apt-get install -qq libssl1.0-dev

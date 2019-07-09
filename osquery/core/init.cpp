@@ -13,6 +13,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <iostream>
+
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
 

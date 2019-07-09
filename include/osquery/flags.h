@@ -200,7 +200,7 @@ class FlagAlias {
   FlagAlias<t> FLAGS_##a(#a, #t, #n, &FLAGS_##n);                  \
   namespace flags {                                                \
   static GFLAGS_NAMESPACE::FlagRegisterer oflag_##a(               \
-      #a, #t, #a, #a, &FLAGS_##n, &FLAGS_##n);                     \
+      #a, #t, #a, &FLAGS_##n, &FLAGS_##n);                         \
   const int flag_alias_##a = Flag::createAlias(#a, {#n, s, e, 0}); \
   }
 

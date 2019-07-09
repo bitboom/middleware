@@ -37,7 +37,12 @@ RUN apt-get install -qq libboost-all-dev
 RUN apt-get install -qq libreadline-dev
 
 # gflags
-RUN apt-get install -qq libgflags-dev
+RUN cd /usr/src && \
+    git clone https://github.com/gflags/gflags.git
+
+RUN cd /usr/src/gflags && \
+    git checkout v2.2.1 && \
+    cmake . && make && make install
 
 # thrift
 RUN apt-get install -qq libevent-dev libtool flex bison pkg-config g++ libssl-dev

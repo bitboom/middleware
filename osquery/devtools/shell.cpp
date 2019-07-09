@@ -18,6 +18,8 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#include <iostream>
+
 #include <readline/readline.h>
 #include <readline/history.h>
 
