@@ -5,7 +5,5 @@ Description=Cert-checker popup socket
 ListenStream=@POPUP_STREAM@
 SocketMode=0777
 
-Service=@SERVICE_NAME@-popup.service
-
 [Install]
 WantedBy=sockets.target
