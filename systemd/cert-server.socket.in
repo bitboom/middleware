@@ -1,13 +1,8 @@
-[Unit]
-Wants=cert-server.service
-Before=cert-server.service
-
 [Socket]
 ListenStream=@SERVER_STREAM@
 SocketUser=@USER_NAME@
 SocketGroup=@GROUP_NAME@
 SocketMode=0777
-Service=cert-server.service
 
 [Install]
 WantedBy=sockets.target

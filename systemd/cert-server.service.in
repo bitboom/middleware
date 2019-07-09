@@ -1,10 +1,8 @@
 [Unit]
 Description=cert server for cert-svc managing root ssl certs
-Wants=cert-server.socket
 
 [Service]
 ExecStart=@BIN_DIR@/cert-server
 User=@USER_NAME@
 Group=@GROUP_NAME@
 SmackProcessLabel=@SMACK_DOMAIN_NAME@
-Sockets=cert-server.socket
