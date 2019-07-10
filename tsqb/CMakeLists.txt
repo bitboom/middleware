@@ -12,4 +12,5 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_TEST(FALSE tsqb_tests tsqb-tests.cpp)
+FILE(GLOB TSQB_TESTS "tests/*.cpp")
+ADD_OSQUERY_TEST(TRUE ${TSQB_TESTS})

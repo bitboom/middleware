@@ -14,4 +14,5 @@
 
 ADD_OSQUERY_LIBRARY(TRUE osquery_property property.cpp)
 
-ADD_OSQUERY_TEST(TRUE osquery_property_tests property_tests.cpp)
+FILE(GLOB OSQUERY_PROPERTY_TESTS "tests/*.cpp")
+ADD_OSQUERY_TEST(TRUE ${OSQUERY_PROPERTY_TESTS})

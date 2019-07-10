@@ -195,8 +195,3 @@ TEST_F(TsqbTests, JOIN)
 					 "INNER JOIN admin ON managed_policy.aid = admin.id "
 					 "WHERE managed_policy.pid = ?");
 }
-
-int main(int argc, char* argv[]) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

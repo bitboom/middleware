@@ -15,4 +15,5 @@
 ADD_OSQUERY_LIBRARY(TRUE osquery_manager manager.cpp
 										 manager_impl.cpp)
 
-ADD_OSQUERY_TEST(TRUE osquery_manager_tests manager_tests.cpp)
+FILE(GLOB OSQUERY_MANAGER_TESTS "tests/*.cpp")
+ADD_OSQUERY_TEST(TRUE ${OSQUERY_MANAGER_TESTS})

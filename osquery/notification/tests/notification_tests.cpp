@@ -70,8 +70,3 @@ TEST_F(NotificationTests, test_emit_positive) {
 	EXPECT_TRUE(s.ok());
 	EXPECT_EQ(called, 1);
 }
-
-int main(int argc, char* argv[]) {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
-}

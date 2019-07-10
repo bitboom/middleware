@@ -26,6 +26,7 @@ DECLARE_string(extensions_socket);
 DECLARE_string(modules_autoload);
 DECLARE_string(extensions_autoload);
 DECLARE_bool(disable_logging);
+DECLARE_bool(verbose);
 
 void initTesting() {
   // Seed the random number generator, some tests generate temporary files
@@ -44,6 +45,7 @@ void initTesting() {
   FLAGS_extensions_autoload = kTestWorkingDirectory + "unittests-ext.load";
   FLAGS_modules_autoload = kTestWorkingDirectory + "unittests-mod.load";
   FLAGS_disable_logging = true;
+  FLAGS_verbose = true;
 
   // Create a default DBHandle instance before unittests.
   (void)DBHandle::getInstance();

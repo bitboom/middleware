@@ -14,4 +14,5 @@
 
 ADD_OSQUERY_LIBRARY(TRUE osquery_notification notification.cpp)
 
-ADD_OSQUERY_TEST(TRUE osquery_notification_tests notification_tests.cpp)
+FILE(GLOB OSQUERY_NOTIFICATION_TESTS "tests/*.cpp")
+ADD_OSQUERY_TEST(TRUE ${OSQUERY_NOTIFICATION_TESTS})

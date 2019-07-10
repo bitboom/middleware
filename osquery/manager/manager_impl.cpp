@@ -33,21 +33,16 @@
 
 #include <boost/filesystem/operations.hpp>
 
+#include <functional>
 #include <sstream>
 
 namespace osquery {
 
 ManagerImpl::ManagerImpl()
 {
-	auto logDir = Flag::get().getValue("osquery_log_dir");
+	auto logDir = Flag::getValue("osquery_log_dir");
 	if (!logDir.empty() && !(pathExists(logDir).ok()))
 		boost::filesystem::create_directories(logDir);
-
-	// TODO(Sangwan): Get debug mode at build time
-	Flag::updateValue("verbose_debug", "true");
-
-	const char* cargv[] = {"tizen-osquery"};
-	osquery::initOsquery(1, const_cast<char**>(cargv));
 
 	LOG(INFO) << "Initalize osquery manager. ";
 }
@@ -55,7 +50,6 @@ ManagerImpl::ManagerImpl()
 ManagerImpl::~ManagerImpl() noexcept
 {
 	LOG(INFO) << "Shutdown osquery manager.";
-	osquery::shutdownOsquery();
 }
 
 ManagerImpl& ManagerImpl::instance()

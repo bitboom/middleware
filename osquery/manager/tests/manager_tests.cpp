@@ -76,8 +76,3 @@ TEST_F(ManagerTests, test_manager_columns) {
 	for (const auto& c : columns)
 		VLOG(1) << "\t" << c;
 }
-
-int main(int argc, char* argv[]) {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
-}
