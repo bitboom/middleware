@@ -418,7 +418,8 @@ bool RegistryFactory::usingModule() {
 }
 
 void RegistryFactory::shutdownModule() {
-  instance().locked(true);
+  // TODO: [temporarily disable] should be check.
+  //instance().locked(true);
   instance().module_uuid_ = 0;
 }
 

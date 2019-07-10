@@ -35,6 +35,7 @@ jobs:
       - run: sudo apt-get install -qq python-pip && sudo pip install Jinja2
       - run: sudo apt-get install -qq libprocps-dev libsystemd-dev libudev-dev 
 
-      - run:
-          name: Tizen osquery build & test 
-          command: cd /home/circleci/project && sudo make && sudo make test
+      # Tizen osquery build & test
+      - run: cd /home/circleci/project && sudo make
+      - run: cd /home/circleci/project/build/osquery && sudo ./osquery-test
+      - run: cd /home/circleci/project && sudo make test

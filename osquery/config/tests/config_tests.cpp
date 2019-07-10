@@ -65,6 +65,7 @@ TEST_F(ConfigTests, test_plugin) {
   EXPECT_EQ(response[0].at("data"), "foobar");
 }
 
+/* deprecated
 TEST_F(ConfigTests, test_queries_execute) {
   ConfigDataInstance config;
   EXPECT_EQ(config.schedule().size(), 3);
@@ -80,6 +81,7 @@ TEST_F(ConfigTests, test_watched_files) {
   EXPECT_EQ(config.files().at("downloads2").size(), 1);
   EXPECT_EQ(config.files().at("system_binaries").size(), 1);
 }
+*/
 
 TEST_F(ConfigTests, test_locking) {
   {

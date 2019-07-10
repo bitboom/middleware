@@ -49,12 +49,8 @@ class TestTablePlugin : public tables::TablePlugin {
   }
 };
 
-/*
-/// TODO: Check below
-/// This makes SEGFAULT - But, single test is OK
 TEST_F(SQLTests, test_raw_access_context) {
-	auto s = Registry::add<TestTablePlugin>("table", "test");
-	EXPECT_TRUE(false) << s.what();
+  Registry::add<TestTablePlugin>("table", "test");
   auto results = SQL::selectAllFrom("test");
 
   EXPECT_EQ(results.size(), 1);
@@ -67,5 +63,4 @@ TEST_F(SQLTests, test_raw_access_context) {
   EXPECT_EQ(results.size(), 2);
   EXPECT_EQ(results[0]["test_int"], "0");
 }
-*/
 }

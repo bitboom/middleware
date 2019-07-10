@@ -36,7 +36,6 @@ TEST_F(VirtualTableTests, test_tableplugin_columndefinition) {
   EXPECT_EQ("(foo INTEGER, bar TEXT)", table->columnDefinition());
 }
 
-/*
 TEST_F(VirtualTableTests, test_sqlite3_attach_vtable) {
   auto table = std::make_shared<sampleTablePlugin>();
   table->setName("sample");
@@ -62,14 +61,11 @@ TEST_F(VirtualTableTests, test_sqlite3_attach_vtable) {
       "sample", tables::columnDefinition(response), dbc.db());
   EXPECT_EQ(status.getCode(), SQLITE_OK);
 
-/// TODO: Check below
-/// This makes SEGFAULT - But, single test is OK
   std::string q = "SELECT sql FROM sqlite_temp_master WHERE tbl_name='sample';";
   QueryData results;
   status = queryInternal(q, results, dbc.db());
   EXPECT_EQ("CREATE VIRTUAL TABLE sample USING sample(foo INTEGER, bar TEXT)",
             results[0]["sql"]);
 }
-*/
 }
 }
