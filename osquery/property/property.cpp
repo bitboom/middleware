@@ -24,6 +24,9 @@
 
 #include <schema/time.h>
 #include <schema/processes.h>
+#include <schema/users.h>
+#include <schema/groups.h>
+#include <schema/memory-map.h>
 
 #include <osquery/logger.h>
 
@@ -57,8 +60,28 @@ auto processes = make_table("processes",
 							make_column("start_time", &Processes::start_time),
 							make_column("parent", &Processes::parent));
 
+auto users = make_table("users",
+						make_column("uid", &Users::uid),
+						make_column("gid", &Users::gid),
+						make_column("uid_signed", &Users::uid_signed),
+						make_column("gid_signed", &Users::gid_signed),
+						make_column("username", &Users::username),
+						make_column("description", &Users::description),
+						make_column("directory", &Users::directory),
+						make_column("shell", &Users::shell));
 
-auto db = make_database("db", time, processes);
+auto groups = make_table("groups",
+						 make_column("gid", &Groups::gid),
+						 make_column("gid_signed", &Groups::gid_signed),
+						 make_column("groupname", &Groups::groupname));
+
+auto memoryMap = make_table("memory_map",
+						 make_column("region", &MemoryMap::region),
+						 make_column("type", &MemoryMap::type),
+						 make_column("start", &MemoryMap::start),
+						 make_column("end", &MemoryMap::end));
+
+auto db = make_database("db", time, processes, users, groups, memoryMap);
 
 } // anonymous namespace
 
@@ -132,5 +155,30 @@ template long long int Property<Processes>::at(long long int Processes::*) const
 template long long int Property<Processes>::operator[](long long int Processes::*) const;
 template std::string Property<Processes>::at(std::string Processes::*) const;
 template std::string Property<Processes>::operator[](std::string Processes::*) const;
+
+template class Property<Users>;
+template class Properties<Users>;
+template long long int Property<Users>::at(long long int Users::*) const;
+template long long int Property<Users>::operator[](long long int Users::*) const;
+template unsigned long long int Property<Users>::at(unsigned long long int Users::*) const;
+template unsigned long long int Property<Users>::operator[](unsigned long long int Users::*) const;
+template std::string Property<Users>::at(std::string Users::*) const;
+template std::string Property<Users>::operator[](std::string Users::*) const;
+
+template class Property<Groups>;
+template class Properties<Groups>;
+template long long int Property<Groups>::at(long long int Groups::*) const;
+template long long int Property<Groups>::operator[](long long int Groups::*) const;
+template unsigned long long int Property<Groups>::at(unsigned long long int Groups::*) const;
+template unsigned long long int Property<Groups>::operator[](unsigned long long int Groups::*) const;
+template std::string Property<Groups>::at(std::string Groups::*) const;
+template std::string Property<Groups>::operator[](std::string Groups::*) const;
+
+template class Property<MemoryMap>;
+template class Properties<MemoryMap>;
+template int Property<MemoryMap>::at(int MemoryMap::*) const;
+template int Property<MemoryMap>::operator[](int MemoryMap::*) const;
+template std::string Property<MemoryMap>::at(std::string MemoryMap::*) const;
+template std::string Property<MemoryMap>::operator[](std::string MemoryMap::*) const;
 
 } // namespace osquery

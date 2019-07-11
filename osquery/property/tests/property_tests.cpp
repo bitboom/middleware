@@ -22,6 +22,9 @@
 
 #include <schema/time.h>
 #include <schema/processes.h>
+#include <schema/users.h>
+#include <schema/groups.h>
+#include <schema/memory-map.h>
 
 using namespace osquery;
 
@@ -71,7 +74,7 @@ TEST_F(PropertyTests, propertyArrayOp) {
 	EXPECT_NE(result.seconds, -1);
 }
 
-TEST_F(PropertyTests, properties) {
+TEST_F(PropertyTests, propertiesProcesses) {
 	Processes result = {
 		-1, /// pid
 		"", /// name
@@ -129,6 +132,40 @@ TEST_F(PropertyTests, properties) {
 		VLOG(1) << "\t start_time: " << result.start_time;
 		VLOG(1) << "\t parent: " << result.parent;
 	}
+}
 
-//	EXPECT_NE(result.hour, -1);
+TEST_F(PropertyTests, propertiesUsers) {
+	Properties<Users> users;
+	for(const auto& user : users) {
+		VLOG(1) << "[Test] User table:";
+		VLOG(1) << "\t uid: " << user[&Users::uid];
+		VLOG(1) << "\t gid: " << user[&Users::gid];
+		VLOG(1) << "\t uid_signed: " << user[&Users::uid_signed];
+		VLOG(1) << "\t gid_signed: " << user[&Users::gid_signed];
+		VLOG(1) << "\t username: " << user[&Users::username];
+		VLOG(1) << "\t description: " << user[&Users::description];
+		VLOG(1) << "\t directory: " << user[&Users::directory];
+		VLOG(1) << "\t shell: " << user[&Users::shell];
+	}
+}
+
+TEST_F(PropertyTests, propertiesGroups) {
+	Properties<Groups> groups;
+	for(const auto& group : groups) {
+		VLOG(1) << "[Test] Group table:";
+		VLOG(1) << "\t gid: " << group[&Groups::gid];
+		VLOG(1) << "\t gid_signed: " << group[&Groups::gid_signed];
+		VLOG(1) << "\t groupname: " << group[&Groups::groupname];
+	}
+}
+
+TEST_F(PropertyTests, propertiesMemoryMap) {
+	Properties<MemoryMap> memoryMap;
+	for(const auto& mm : memoryMap) {
+		VLOG(1) << "[Test] memory_map table:";
+		VLOG(1) << "\t region: " << mm[&MemoryMap::region];
+		VLOG(1) << "\t type: " << mm[&MemoryMap::type];
+		VLOG(1) << "\t start: " << mm[&MemoryMap::start];
+		VLOG(1) << "\t end: " << mm[&MemoryMap::end];
+	}
 }
