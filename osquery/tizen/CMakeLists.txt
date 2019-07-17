@@ -12,7 +12,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LIBRARY(TRUE osquery_notification notification.cpp)
+ADD_OSQUERY_LIBRARY(TRUE osquery_property property/property.cpp)
 
-FILE(GLOB OSQUERY_NOTIFICATION_TESTS "tests/*.cpp")
-ADD_OSQUERY_TEST(TRUE ${OSQUERY_NOTIFICATION_TESTS})
+ADD_OSQUERY_LIBRARY(TRUE osquery_manager manager/manager.cpp
+										 manager/manager_impl.cpp)
+
+ADD_OSQUERY_LIBRARY(TRUE osquery_notification notification/notification.cpp)
+
+FILE(GLOB OSQUERY_TIZEN_TESTS "*/tests/*.cpp")
+ADD_OSQUERY_TEST(TRUE ${OSQUERY_TIZEN_TESTS})
