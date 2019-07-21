@@ -57,7 +57,9 @@ cp %SOURCE1 .
 %build
 %{!?build_type:%define build_type "RELEASE"}
 %cmake . -DCMAKE_BUILD_TYPE=%{build_type} \
-		 -DOSQUERY_BUILD_VERSION=%{version}
+		 -DOSQUERY_BUILD_VERSION=%{version} \
+		 -DGBS_BUILD="TRUE"
+
 
 make %{?jobs:-j%jobs}
 

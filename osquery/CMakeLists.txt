@@ -19,32 +19,34 @@ SET(TARGET_OSQUERY_SHELL osqueryi)
 SET(TARGET_OSQUERY_DAEMON osqueryd)
 
 SET(${TARGET_OSQUERY_LIB}_SRCS "")
-SET(${TARGET_OSQUERY_LIB_ADDITIONAL}_SRCS "")
-SET(${TARGET_OSQUERY_TEST}_SRCS "")
+SET(${TARGET_OSQUERY_LIB}_DEPS "")
+SET(${TARGET_OSQUERY_LIB}_TESTS "")
 
-SET(${TARGET_OSQUERY_LIB}_DEP glog
-							  gflags
-							  pthread
-							  libthrift.a
-							# rocksdb deps
-							  librocksdb.a
-							  snappy
-							  z
-							  bz2
-							  dl
-							  lz4
-							  zstd
-							  boost_regex
-							  boost_system
-							  boost_thread
-							  boost_filesystem
-							  crypto # openssl
-							# shell deps
-							  readline
-							# build-in tables deps
-							  systemd
-							  udev
-							  ip4tc)
+SET(${TARGET_OSQUERY_LIB_ONLY_GBS}_SRCS "")
+SET(${TARGET_OSQUERY_LIB_ONLY_GBS}_DEPS "")
+SET(${TARGET_OSQUERY_LIB_ONLY_GBS}_TESTS "")
+
+ADD_OSQUERY_LINK(TRUE glog
+					  gflags
+					  pthread
+					  libthrift.a
+					# rocksdb deps
+					  librocksdb.a
+					  snappy
+					  z
+					  bz2
+					  dl
+					  lz4
+					  zstd
+					  boost_regex
+					  boost_system
+					  boost_thread
+					  boost_filesystem
+					  crypto # openssl
+					# shell deps
+					  readline
+					# build-in tables deps
+					  systemd)
 
 SET(OSQUERY_CODEGEN_PATH "${CMAKE_SOURCE_DIR}/tools/codegen")
 SET(OSQUERY_TABLES_PATH "${CMAKE_SOURCE_DIR}")
@@ -117,13 +119,23 @@ ADD_SUBDIRECTORY(tizen)
 # static_lib should include every object file in the archive in the link
 # ref: TARGET_OSQUERY_LINK_WHOLE
 ADD_LIBRARY(osquery_generated_tables OBJECT "${AMALGAMATION_FILE_GEN}")
-ADD_LIBRARY(${TARGET_OSQUERY_LIB}
-				STATIC main/lib.cpp
-					   $<TARGET_OBJECTS:osquery_generated_tables>
-					   $<TARGET_OBJECTS:osquery_sqlite>
-					   ${${TARGET_OSQUERY_LIB}_SRCS}
-					   ${${TARGET_OSQUERY_LIB_ADDITIONAL}_SRCS})
-TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_LIB} ${${TARGET_OSQUERY_LIB}_DEP})
+IF(DEFINED GBS_BUILD)
+	ADD_LIBRARY(${TARGET_OSQUERY_LIB}
+					STATIC main/lib.cpp
+						   $<TARGET_OBJECTS:osquery_generated_tables>
+						   $<TARGET_OBJECTS:osquery_sqlite>
+						   ${${TARGET_OSQUERY_LIB}_SRCS}
+						   ${${TARGET_OSQUERY_LIB_ONLY_GBS}_SRCS})
+	TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_LIB} ${${TARGET_OSQUERY_LIB}_DEPS})
+ELSE()
+	ADD_LIBRARY(${TARGET_OSQUERY_LIB}
+					STATIC main/lib.cpp
+						   $<TARGET_OBJECTS:osquery_generated_tables>
+						   $<TARGET_OBJECTS:osquery_sqlite>
+						   ${${TARGET_OSQUERY_LIB}_SRCS})
+	TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_LIB} ${${TARGET_OSQUERY_LIB}_DEPS}
+												${${TARGET_OSQUERY_LIB_ONLY_GBS}_DEPS})
+ENDIF()
 SET_TARGET_PROPERTIES(${TARGET_OSQUERY_LIB} PROPERTIES OUTPUT_NAME ${TARGET_OSQUERY_LIB})
 
 #INSTALL(TARGETS ${TARGET_OSQUERY_LIB}
@@ -158,7 +170,15 @@ INSTALL(TARGETS ${TARGET_OSQUERY_DAEMON}
 					WORLD_EXECUTE)
 
 ## osquery-test generation ##########################################################
-ADD_EXECUTABLE(${TARGET_OSQUERY_TEST} ${${TARGET_OSQUERY_TEST}_SRCS} main/tests.cpp)
+
+IF(DEFINED GBS_BUILD)
+	ADD_EXECUTABLE(${TARGET_OSQUERY_TEST} main/tests.cpp
+										  ${${TARGET_OSQUERY_LIB}_TESTS}
+										  ${${TARGET_OSQUERY_LIB_ONLY_GBS}_TESTS})
+ELSE()
+	ADD_EXECUTABLE(${TARGET_OSQUERY_TEST} main/tests.cpp
+										  ${${TARGET_OSQUERY_LIB}_TESTS})
+ENDIF()
 TARGET_OSQUERY_LINK_WHOLE(${TARGET_OSQUERY_TEST} ${TARGET_OSQUERY_LIB})
 TARGET_LINK_LIBRARIES(${TARGET_OSQUERY_TEST} gtest)
 SET_TARGET_PROPERTIES(${TARGET_OSQUERY_TEST}
