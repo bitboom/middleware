@@ -1,8 +1,22 @@
+#  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License
+
 FILE(GLOB OSQUERY_LINUX_TABLES "*/linux/*.cpp")
-ADD_OSQUERY_LIBRARY(TRUE osquery_linux_tables ${OSQUERY_LINUX_TABLES})
+ADD_OSQUERY_LIBRARY(osquery_linux_tables ${OSQUERY_LINUX_TABLES})
 
 FILE(GLOB OSQUERY_CROSS_TABLES "*/*.cpp")
-ADD_OSQUERY_LIBRARY(TRUE osquery_tables ${OSQUERY_CROSS_TABLES})
+ADD_OSQUERY_LIBRARY(osquery_tables ${OSQUERY_CROSS_TABLES})
 
 FILE(GLOB OSQUERY_CROSS_TABLES_TESTS "[!uo]*/tests/*.cpp")
-ADD_OSQUERY_TEST(TRUE ${OSQUERY_CROSS_TABLES_TESTS})
+ADD_OSQUERY_TEST(${OSQUERY_CROSS_TABLES_TESTS})
