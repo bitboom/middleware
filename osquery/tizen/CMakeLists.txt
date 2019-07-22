@@ -21,3 +21,19 @@ ADD_OSQUERY_LIBRARY(TRUE osquery_notification notification/notification.cpp)
 
 FILE(GLOB OSQUERY_TIZEN_TESTS "*/tests/*.cpp")
 ADD_OSQUERY_TEST(TRUE ${OSQUERY_TIZEN_TESTS})
+
+IF(DEFINED GBS_BUILD)
+	SET(GBS_ONLY_PACKAGES klay
+						  dpm-pil
+						  capi-base-common
+						  capi-system-info
+						  capi-network-wifi-manager)
+
+	INCLUDE(FindPkgConfig)
+	PKG_CHECK_MODULES(GBS_DEPS REQUIRED ${GBS_ONLY_PACKAGES})
+	INCLUDE_DIRECTORIES(SYSTEM ${GBS_DEPS_INCLUDE_DIRS})
+
+	ADD_OSQUERY_LINK(FALSE ${GBS_DEPS_LIBRARIES})
+	ADD_OSQUERY_LIBRARY(FALSE tizen-dpm-wifi device-policy/wifi/wifi.cpp
+											 device-policy/wifi/wifi-impl.cpp)
+ENDIF(DEFINED GBS_BUILD)

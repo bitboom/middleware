@@ -7,6 +7,7 @@ Url: https://github.com/facebook/osquery
 Group: Security/Libraries
 Source0: file://%{name}-%{version}.tar.gz
 Source1: %name.manifest
+### Core dependencies
 BuildRequires: gcc-c++
 BuildRequires: make
 BuildRequires: cmake
@@ -40,6 +41,14 @@ Requires: libreadline
 Requires: procps-ng
 Requires: libsystemd
 Requires: iptables
+### Tizen dependencies
+BuildRequires: pkgconfig(buxton2)
+BuildRequires: pkgconfig(klay)
+BuildRequires: pkgconfig(dpm-pil)
+BuildRequires: pkgconfig(capi-network-wifi-manager)
+BuildRequires: pkgconfig(capi-network-connection)
+BuildRequires: pkgconfig(capi-system-info)
+BuildRequires: pkgconfig(capi-base-common)
 
 %description
 Osquery exposes an operating system as a high-performance relational database.
