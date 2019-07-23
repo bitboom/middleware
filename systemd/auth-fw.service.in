@@ -1,5 +1,6 @@
 [Unit]
 Description=Start @SERVICE_NAME@ server
+Requires=@SOCK_PASSWD_CHECK@ @SOCK_PASSWD_SET@ @SOCK_PASSWD_RESET@ @SOCK_PASSWD_POLICY@
 
 [Service]
 Type=notify
@@ -7,10 +8,6 @@ ExecStart=@BIN_DIR@/@SERVICE_NAME@
 User=security_fw
 Group=security_fw
 SmackProcessLabel=System
-Sockets=@SOCK_PASSWD_CHECK@
-Sockets=@SOCK_PASSWD_SET@
-Sockets=@SOCK_PASSWD_RESET@
-Sockets=@SOCK_PASSWD_POLICY@
 
 [Install]
 WantedBy=multi-user.target

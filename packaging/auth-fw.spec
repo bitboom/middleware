@@ -148,7 +148,6 @@ fi
 %license LICENSE
 %{bin_dir}/%{name}
 %{_libdir}/lib%{name}-commons.so.*
-%{_unitdir}/%{name}.target
 %{_unitdir}/%{name}.service
 %{_unitdir}/multi-user.target.wants/%{name}.service
 %{_unitdir}/%{sock_passwd_check}
