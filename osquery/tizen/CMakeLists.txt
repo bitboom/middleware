@@ -17,7 +17,7 @@ ADD_OSQUERY_LIBRARY(osquery_tizen property/property.cpp
 								  manager/manager_impl.cpp
 								  notification/notification.cpp)
 
-FILE(GLOB OSQUERY_TIZEN_TESTS "*/tests/*.cpp")
+FILE(GLOB OSQUERY_TIZEN_TESTS "[!d]*/tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_TIZEN_TESTS})
 
 IF(DEFINED GBS_BUILD)
@@ -34,4 +34,7 @@ IF(DEFINED GBS_BUILD)
 	ADD_OSQUERY_LINK(${GBS_DEPS_LIBRARIES})
 	ADD_OSQUERY_LIBRARY(device_policy_wifi device-policy/wifi/wifi.cpp
 										   device-policy/wifi/wifi-impl.cpp)
+
+	FILE(GLOB OSQUERY_GBS_TESTS "device-policy/*/tests/*.cpp")
+	ADD_OSQUERY_TEST(${OSQUERY_GBS_TESTS})
 ENDIF(DEFINED GBS_BUILD)

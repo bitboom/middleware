@@ -14,6 +14,8 @@
  *  limitations under the License
  */
 
+/// These APIs would be deprecated.
+
 #ifndef __CAPI_DPM_WIFI_POLICY_H__
 #define __CAPI_DPM_WIFI_POLICY_H__
 
@@ -26,9 +28,6 @@
  * @brief This file provides APIs to control wifi policy
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * @addtogroup  CAPI_DPM_WIFI_POLICY_MODULE
@@ -164,9 +163,5 @@ int dpm_wifi_is_profile_change_restricted(device_policy_manager_h handle, bool *
 /**
  * @}
  */
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif //! __CAPI_DPM_WIFI_POLICY_H__

@@ -74,7 +74,7 @@ EXPORT_API int dpm_wifi_set_hotspot_state(device_policy_manager_h handle, bool a
 	}
 }
 
-EXPORT_API int dpm_wifi_get_wifi_hotspot_state(device_policy_manager_h handle, bool *is_allowed)
+EXPORT_API int dpm_wifi_get_hotspot_state(device_policy_manager_h handle, bool *is_allowed)
 {
 	RET_ON_FAILURE(handle, DPM_ERROR_INVALID_PARAMETER);
 	RET_ON_FAILURE(is_allowed, DPM_ERROR_INVALID_PARAMETER);
