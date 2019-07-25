@@ -21,6 +21,7 @@
 #include <string>
 #include <memory>
 #include <atomic>
+#include <vector>
 
 #include <klay/klay.h>
 #include <klay/serialize.h>
@@ -209,9 +210,9 @@ void Message::encode(const T& device) const
 	device.write(&header, sizeof(header));
 	device.write(buffer.begin(), header.length);
 
-	int i = 0, fds[fileDescriptors.size()];
+	std::vector<int> fds;
 	for (const klay::FileDescriptor& fd : fileDescriptors) {
-		fds[i++] = fd.fileDescriptor;
+		fds.push_back(fd.fileDescriptor);
 	}
 
 	device.sendFileDescriptors(fds, fileDescriptors.size());
@@ -225,12 +226,10 @@ void Message::decode(const T& device)
 	buffer.reserve(header.length);
 	device.read(buffer.begin(), header.length);
 
-	int fds[header.ancillary];
-
+	std::vector<int> fds;
 	device.receiveFileDescriptors(fds, header.ancillary);
-	for (unsigned int i = 0; i < header.ancillary; i++) {
-		fileDescriptors.emplace_back(klay::FileDescriptor(fds[i]));
-	}
+	for (const auto& fd : fds)
+		fileDescriptors.emplace_back(klay::FileDescriptor(fd));
 
 	disclose(signature);
 }

@@ -135,7 +135,7 @@ void Socket::write(const void *buffer, const size_t size) const
 	}
 }
 
-void Socket::sendFileDescriptors(const int* fds, const size_t nr) const
+void Socket::sendFileDescriptors(const std::vector<int>& fds, const size_t nr) const
 {
 	if (nr == 0) return;
 
@@ -156,13 +156,14 @@ void Socket::sendFileDescriptors(const int* fds, const size_t nr) const
 	msgh.msg_control = buffer;
 	msgh.msg_controllen = sizeof(buffer);
 
-	struct cmsghdr *cmhp;
-	cmhp = CMSG_FIRSTHDR(&msgh);
+	struct cmsghdr *cmhp = CMSG_FIRSTHDR(&msgh);
+	if (cmhp == nullptr)
+		throw SocketException("There isn't enough space for a cmsghdr.");
 	cmhp->cmsg_level = SOL_SOCKET;
 	cmhp->cmsg_type = SCM_RIGHTS;
 	cmhp->cmsg_len = CMSG_LEN(sizeof(int) * nr);
 
-	::memcpy(CMSG_DATA(cmhp), fds, sizeof(int) * nr);
+	::memcpy(CMSG_DATA(cmhp), fds.data(), sizeof(int) * nr);
 
 	int written = 0;
 	while (written < 1) {
@@ -175,7 +176,7 @@ void Socket::sendFileDescriptors(const int* fds, const size_t nr) const
 	}
 }
 
-void Socket::receiveFileDescriptors(int* fds, const size_t nr) const
+void Socket::receiveFileDescriptors(std::vector<int>& fds, const size_t nr) const
 {
 	if (nr == 0) return;
 
@@ -208,14 +209,13 @@ void Socket::receiveFileDescriptors(int* fds, const size_t nr) const
 		}
 	}
 
-	int i = 0;
 	for (struct cmsghdr *cmhp = CMSG_FIRSTHDR(&msgh); cmhp != NULL; cmhp = CMSG_NXTHDR(&msgh, cmhp)) {
 		if ((cmhp->cmsg_level == SOL_SOCKET) && (cmhp->cmsg_type == SCM_RIGHTS)) {
 			if (cmhp->cmsg_len != CMSG_LEN(sizeof(int) * nr)) {
 				std::cout << "Invalid File Descriptor Table" << std::endl;
 			}
 
-			fds[i++] = *(reinterpret_cast<int*>(CMSG_DATA(cmhp)));
+			fds.push_back(*(reinterpret_cast<int*>(CMSG_DATA(cmhp))));
 		}
 	}
 }

@@ -20,6 +20,8 @@
 #include <klay/klay.h>
 #include <klay/exception.h>
 
+#include <vector>
+
 namespace klay {
 namespace rmi {
 
@@ -52,8 +54,8 @@ public:
 	void write(const void* buffer, const size_t size) const;
 	void read(void* buffer, const size_t size) const;
 
-	void sendFileDescriptors(const int* fds, const size_t nr) const;
-	void receiveFileDescriptors(int* fds, const size_t nr) const;
+	void sendFileDescriptors(const std::vector<int>& fds, const size_t nr) const;
+	void receiveFileDescriptors(std::vector<int>& fds, const size_t nr) const;
 
 	static Socket create(const std::string& path, bool activation = false);
 	static Socket connect(const std::string& path);
