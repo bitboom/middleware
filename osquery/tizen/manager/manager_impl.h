@@ -19,6 +19,8 @@
  * @brief Implementation interface of osquery manager
  */
 
+#pragma once
+
 #include <osquery_manager.h>
 
 #include <string>

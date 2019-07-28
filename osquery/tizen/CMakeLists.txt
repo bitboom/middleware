@@ -21,20 +21,13 @@ FILE(GLOB OSQUERY_TIZEN_TESTS "[!d]*/tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_TIZEN_TESTS})
 
 IF(DEFINED GBS_BUILD)
-	SET(GBS_ONLY_PACKAGES klay
-						  dpm-pil
-						  capi-base-common
-						  capi-system-info
-						  capi-network-wifi-manager)
+	ADD_OSQUERY_LIBRARY(wifi_policy device_policy/wifi_policy.cpp)
 
-	INCLUDE(FindPkgConfig)
-	PKG_CHECK_MODULES(GBS_DEPS REQUIRED ${GBS_ONLY_PACKAGES})
-	INCLUDE_DIRECTORIES(SYSTEM ${GBS_DEPS_INCLUDE_DIRS})
+	# tables
+	FILE(GLOB TIZEN_TABLES "tables/*.cpp")
+	ADD_OSQUERY_LIBRARY(tizen_tables ${TIZEN_TABLES})
 
-	ADD_OSQUERY_LINK(${GBS_DEPS_LIBRARIES})
-	ADD_OSQUERY_LIBRARY(device_policy_wifi device-policy/wifi/wifi.cpp
-										   device-policy/wifi/wifi-impl.cpp)
-
-	FILE(GLOB OSQUERY_GBS_TESTS "device-policy/*/tests/*.cpp")
-	ADD_OSQUERY_TEST(${OSQUERY_GBS_TESTS})
+# Verification can be done with full-DPM
+#	FILE(GLOB OSQUERY_GBS_TESTS "device_policy/tests/*.cpp")
+#	ADD_OSQUERY_TEST(${OSQUERY_GBS_TESTS})
 ENDIF(DEFINED GBS_BUILD)

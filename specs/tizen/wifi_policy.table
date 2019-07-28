@@ -1,0 +1,8 @@
+table_name("wifi_policy")
+description("A single row containing the wifi policy.")
+schema([
+  Column("wifi", INTEGER, "Wi-Fi policy state"),
+  Column("profile", INTEGER, "Profile policy state"),
+  Column("hotspot", INTEGER, "Hotspot policy state"),
+])
+implementation("wifi_policy@genWifiPolicy")
