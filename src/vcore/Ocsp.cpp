@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016 Samsung Electronics Co.
+ *  Copyright (c) 2016-2019 Samsung Electronics Co., Ltd. All rights reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -225,8 +225,61 @@ Ocsp::Result checkInternal(
 		VcoreThrowMsg(Ocsp::Exception::UnknownError, "Failed to OCSP_request_add0_id");
 	}
 
-	OCSP_RESPONSE_PTR resp =
-		create_OCSP_RESPONSE(OCSP_sendreq_bio(cbio.get(), path.get(), req.get()));
+	OCSP_RESPONSE_PTR resp;
+	std::unique_ptr<OCSP_REQ_CTX, decltype(OCSP_REQ_CTX_free)*> ctx(
+			OCSP_sendreq_new(cbio.get(), _path, NULL, -1), OCSP_REQ_CTX_free);
+	if (!ctx) {
+		ERR_print_errors(bioLogger.get());
+		VcoreThrowMsg(Ocsp::Exception::UnknownError, "Error creating OCSP_REQ_CTX");
+	}
+
+	if (!OCSP_REQ_CTX_add1_header(ctx.get(), "host", _host)) {
+		ERR_print_errors(bioLogger.get());
+		VcoreThrowMsg(Ocsp::Exception::UnknownError, "Error adding header");
+	}
+
+	if (!OCSP_REQ_CTX_set1_req(ctx.get(), req.get())) {
+		ERR_print_errors(bioLogger.get());
+		VcoreThrowMsg(Ocsp::Exception::UnknownError, "Error setting ocsp request");
+	}
+
+	int fd;
+	if (BIO_get_fd(cbio.get(), &fd) < 0) {
+		ERR_print_errors(bioLogger.get());
+		VcoreThrowMsg(Ocsp::Exception::UnknownError, "Error extracting fd from bio");
+	}
+
+	for (;;) {
+		fd_set confds;
+		int req_timeout = 30;
+		struct timeval tv;
+		OCSP_RESPONSE *resp_ptr = NULL;
+		int rv = OCSP_sendreq_nbio(&resp_ptr, ctx.get());
+		resp = create_OCSP_RESPONSE(resp_ptr);
+		if (rv != -1)
+			break;
+		FD_ZERO(&confds);
+		FD_SET(fd, &confds);
+		tv.tv_usec = 0;
+		tv.tv_sec = req_timeout;
+		if (BIO_should_read(cbio.get())) {
+			rv = select(fd + 1, &confds, NULL, NULL, &tv);
+		} else if (BIO_should_write(cbio.get())) {
+			rv = select(fd + 1, NULL, &confds, NULL, &tv);
+		} else {
+			ERR_print_errors(bioLogger.get());
+			VcoreThrowMsg(Ocsp::Exception::UnknownError, "Unexpected retry condition");
+		}
+
+		if (rv == 0) {
+			ERR_print_errors(bioLogger.get());
+			VcoreThrowMsg(Ocsp::Exception::UnknownError, "Timeout on request");
+		}
+		if (rv == -1) {
+			ERR_print_errors(bioLogger.get());
+			VcoreThrowMsg(Ocsp::Exception::UnknownError, "Select error");
+		}
+	}
 
 	if (resp.get() == NULL) {
 		ERR_print_errors(bioLogger.get());
