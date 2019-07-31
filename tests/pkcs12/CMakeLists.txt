@@ -60,7 +60,11 @@ INSTALL(
         Testing.crt
         test.pfx
         wifi-server.pem
+
+        # generated using openssl 1.1 in a fresh bash in a fresh dir, then copying wifiserver.ptx over:
+        # CONSTANTS="-set_serial 0 -days $((($(date -d 9999/12/31 +%s) - $(date +%s) + 86399) / 86400))"; openssl req -x509 -subj '/CN=WiFi-Root-CA' -addext 'authorityInfoAccess=caIssuers;URI:http://server.wifilabs.local/ca/ca/wifirootca.crt' $CONSTANTS -newkey rsa:1024 -nodes -out root.pem -keyout root.key && openssl req -new -subj '/CN=WiFi-Intermediate-CA-srv' -newkey rsa:1024 -nodes -out intermediate.csr -keyout intermediate.key && openssl x509 -req -extfile <(echo 'authorityInfoAccess=caIssuers;URI:http://server.wifilabs.local/ca/ca/wifirootca.crt'; echo 'basicConstraints=critical,CA:true') $CONSTANTS -in intermediate.csr -CA root.pem -CAkey root.key -out intermediate.pem && openssl req -new -subj '/CN=wifi-server' -newkey rsa:1024 -nodes -out leaf.csr -keyout leaf.key && openssl x509 -req -extfile <(echo 'authorityInfoAccess=caIssuers;URI:http://server.wifilabs.local/ca/ca/wifiimcasrv.crt'; echo 'basicConstraints=CA:false') $CONSTANTS -in leaf.csr -CA intermediate.pem -CAkey intermediate.key -out leaf.pem && openssl pkcs12 -export -in <(cat leaf.pem intermediate.pem root.pem) -password pass:wifi -out wifiserver.pfx -inkey leaf.key
         wifiserver.pfx
+
         wifiuser.p12
     DESTINATION ${CERT_SVC_TESTS}/p12
 )
