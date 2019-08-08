@@ -1,7 +1,7 @@
 [Unit]
 Description=Device Policy Manager
-Wants=lbs-server.service net-config.service pulseaudio.service
-After=lbs-server.service net-config.service pulseaudio.service
+Wants=pulseaudio.service
+After=pulseaudio.service
 
 [Service]
 User=${USER_NAME}
