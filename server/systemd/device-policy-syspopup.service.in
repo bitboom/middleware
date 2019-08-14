@@ -1,7 +1,5 @@
 [Unit]
 Description=Device Policy Manager Syspopup
-After=dbus.socket
-Requires=dbus.socket
 
 [Service]
 Type=dbus
