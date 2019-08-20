@@ -14,6 +14,7 @@
 
 #include <osquery/events.h>
 #include <osquery/tables.h>
+#include <osquery/status.h>
 
 namespace osquery {
 
@@ -21,10 +22,16 @@ namespace osquery {
 namespace tables {
 {% if class_name == "" %}\
 osquery::QueryData {{function}}(QueryContext& request);
+{% if function_update != "" %}\
+osquery::Status {{function_update}}(Row& row);
+{% endif %}\
 {% else %}
 class {{class_name}} {
  public:
   osquery::QueryData {{function}}(QueryContext& request);
+{% if function_update != "" %}\
+  osquery::Status {{function_update}}(Row& row);
+{% endif %}\
 };
 {% endif %}\
 }
@@ -52,7 +59,14 @@ class {{table_name_cc}}TablePlugin : public TablePlugin {
     return tables::{{function}}(request);
 {% endif %}\
   }
+
+{% if function_update != "" %}\
+  Status update(Row& row) {
+    return tables::{{function_update}}(row);
+  }
+{% endif %}\
 };
+
 
 {% if attributes.utility %}
 REGISTER_INTERNAL({{table_name_cc}}TablePlugin, "table", "{{table_name}}");

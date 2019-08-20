@@ -318,6 +318,10 @@ class TablePlugin : public Plugin {
     return data;
   }
 
+  virtual Status update(Row& row) {
+    return Status(0, "OK");
+  }
+
  protected:
   std::string columnDefinition() const;
   PluginResponse routeInfo() const;

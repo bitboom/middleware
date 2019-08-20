@@ -141,6 +141,7 @@ class TableState(Singleton):
         self.header = ""
         self.impl = ""
         self.function = ""
+        self.function_update = ""
         self.class_name = ""
         self.description = ""
         self.attributes = {}
@@ -162,6 +163,7 @@ class TableState(Singleton):
             header=self.header,
             impl=self.impl,
             function=self.function,
+            function_update=self.function_update,
             class_name=self.class_name,
             attributes=self.attributes,
             examples=self.examples,
@@ -309,6 +311,15 @@ def implementation(impl_string):
                 "Event subscriber: %s, 'time' column must be a %s type" % (
                     table.table_name, BIGINT)))
             sys.exit(1)
+
+
+def implementation_update(impl_string=None):
+    if impl_string is None:
+        table.function_update = ""
+    else:
+        filename, function = impl_string.split("@")
+        class_parts = function.split("::")[::-1]
+        table.function_update = class_parts[0]
 
 
 def main(argc, argv):

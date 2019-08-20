@@ -77,4 +77,24 @@ TEST_F(VirtualTableTests, test_sqlite3_table_joins) {
   EXPECT_TRUE(status.ok());
   EXPECT_EQ(results.size(), 1);
 }
+
+TEST_F(VirtualTableTests, test_sqlite3_table_update_where) {
+  // Get a database connection.
+  auto dbc = SQLiteDBManager::get();
+
+  QueryData results;
+  std::string statement = "UPDATE users SET uid = 1234, gid = 232 WHERE uid = 0";
+  auto status = queryInternal(statement, results, dbc.db());
+  EXPECT_TRUE(status.ok());
+}
+
+TEST_F(VirtualTableTests, test_sqlite3_table_update) {
+  // Get a database connection.
+  auto dbc = SQLiteDBManager::get();
+
+  QueryData results;
+  std::string statement = "UPDATE users SET uid = 1234, gid = 232";
+  auto status = queryInternal(statement, results, dbc.db());
+  EXPECT_TRUE(status.ok());
+}
 }

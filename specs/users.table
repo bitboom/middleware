@@ -11,6 +11,7 @@ schema([
     Column("shell", TEXT, "User's configured default shell"),
 ])
 implementation("users@genUsers")
+implementation_update("users@updateUsers")
 examples([
   "select * from users where uid = 1000",
   "select * from users where username = 'root'",

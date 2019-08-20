@@ -62,6 +62,35 @@ int xRowid(sqlite3_vtab_cursor *cur, sqlite_int64 *pRowid) {
   return SQLITE_OK;
 }
 
+int xUpdate(sqlite3_vtab *pVTab,
+            int argc,
+            sqlite3_value **argv,
+            sqlite3_int64 *pRowid)
+{
+  auto * pVtab = (VirtualTable *)pVTab;
+  if (argc <= 1 || argc - 2 !=  pVtab->content->columns.size()) {
+    LOG(ERROR) << "Invalid arguments: " << argc;
+    return SQLITE_ERROR;
+  }
+
+  PluginRequest request = {{"action", "update"}};
+  const auto& columns = pVtab->content->columns;
+  for (size_t i = 2; i < static_cast<size_t>(argc); ++i) {
+    auto expr = (const char *)sqlite3_value_text(argv[i]);
+    if (expr == nullptr) {
+      // SQLite did not expose the expression value.
+      continue;
+    } else {
+       request.insert(std::make_pair(columns[i - 2].first, std::string(expr)));
+    }
+  }
+
+  PluginResponse response;
+  Registry::call("table", pVtab->content->name, request, response);
+
+  return SQLITE_OK;
+}
+
 int xCreate(sqlite3 *db,
             void *pAux,
             int argc,
@@ -278,13 +307,7 @@ Status attachTableInternal(const std::string &name,
       tables::xEof,
       tables::xColumn,
       tables::xRowid,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
+      tables::xUpdate,
   };
   // clang-format on
 

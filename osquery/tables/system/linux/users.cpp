@@ -17,6 +17,8 @@
 
 #include <osquery/core.h>
 #include <osquery/tables.h>
+#include <osquery/status.h>
+#include <osquery/logger.h>
 
 namespace osquery {
 namespace tables {
@@ -49,6 +51,14 @@ QueryData genUsers(QueryContext& context) {
   users_in.clear();
 
   return results;
+}
+
+/// Example of update feature
+Status updateUsers(Row& row) {
+  for (auto& r : row)
+    LOG(ERROR) << "DEBUG: " << r.first << ", " << r.second;
+
+  return Status(0, "OK");
 }
 }
 }

@@ -116,6 +116,10 @@ Status TablePlugin::call(const PluginRequest& request,
     }
   } else if (request.at("action") == "definition") {
     response.push_back({{"definition", columnDefinition()}});
+  } else if (request.at("action") == "update") {
+    Row row = request;
+    row.erase("action");
+    return update(row);
   } else {
     return Status(1, "Unknown table plugin action: " + request.at("action"));
   }

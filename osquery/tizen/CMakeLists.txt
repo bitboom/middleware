@@ -17,13 +17,13 @@ ADD_OSQUERY_LIBRARY(osquery_tizen property/property.cpp
 								  manager/manager_impl.cpp
 								  notification/notification.cpp)
 
-FILE(GLOB OSQUERY_TIZEN_TESTS "[!d]*/tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_TIZEN_TESTS})
 
 IF(DEFINED GBS_BUILD)
 	# tables
 	FILE(GLOB TIZEN_TABLES "tables/*.cpp")
 	ADD_OSQUERY_LIBRARY(tizen_tables ${TIZEN_TABLES})
+	FILE(GLOB OSQUERY_TIZEN_TESTS "[!d]*/tests/*.cpp")
 
 # Verification can be done with full-DPM
 #	FILE(GLOB OSQUERY_GBS_TESTS "device_policy/tests/*.cpp")
