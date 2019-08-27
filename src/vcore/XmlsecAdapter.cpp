@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016-2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -226,11 +226,14 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 	fileExtractPrefix(context);
 	LogDebug("Prefix path : " << s_prefixPath);
 	xmlSecIOCleanupCallbacks();
-	xmlSecIORegisterCallbacks(
+	if (xmlSecIORegisterCallbacks(
 		fileMatchCallback,
 		fileOpenCallback,
 		fileReadCallback,
-		fileCloseCallback);
+		fileCloseCallback) < 0)
+		ThrowMsg(Exception::InternalError,
+				 "Error in xmlSecIORegisterCallbacks");
+
 	std::unique_ptr<xmlDoc, std::function<void(xmlDocPtr)>> docPtr(
 		xmlParseFile(context.signatureFile.c_str()), xmlFreeDoc);
 
