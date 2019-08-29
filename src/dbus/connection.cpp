@@ -183,17 +183,18 @@ Connection::ObjectId Connection::registerObject(const std::string& object,
 {
 	Error error;
 	GDBusNodeInfo* node = g_dbus_node_info_new_for_xml(manifest.c_str(), &error);
-	if (node != NULL && (node->interfaces == NULL ||
-						 node->interfaces[0] == NULL ||
-						 node->interfaces[1] != NULL)) {
+	if (node == NULL) {
+		throw klay::Exception("Failed to create gdbus node");
+	} else if (node->interfaces == NULL ||
+			   node->interfaces[0] == NULL ||
+			   node->interfaces[1] != NULL) {
 		g_dbus_node_info_unref(node);
 		g_set_error(&error, G_MARKUP_ERROR, G_MARKUP_ERROR_INVALID_CONTENT,
 							"Unexpected interface");
 	}
 
-	if (error) {
+	if (error)
 		throw klay::Exception(error->message);
-	}
 
 	GDBusInterfaceInfo* inf = node->interfaces[0];
 	GDBusInterfaceVTable vtable;
