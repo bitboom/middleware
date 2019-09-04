@@ -21,8 +21,6 @@ FILE(GLOB OSQUERY_TIZEN_TESTS "[!d]*/tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_TIZEN_TESTS})
 
 IF(DEFINED GBS_BUILD)
-	ADD_OSQUERY_LIBRARY(wifi_policy device_policy/wifi_policy.cpp)
-
 	# tables
 	FILE(GLOB TIZEN_TABLES "tables/*.cpp")
 	ADD_OSQUERY_LIBRARY(tizen_tables ${TIZEN_TABLES})

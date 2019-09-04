@@ -41,14 +41,6 @@ Requires: libreadline
 Requires: procps-ng
 Requires: libsystemd
 Requires: iptables
-### Tizen dependencies
-BuildRequires: pkgconfig(buxton2)
-BuildRequires: pkgconfig(klay)
-BuildRequires: pkgconfig(dpm-pil)
-BuildRequires: pkgconfig(capi-network-wifi-manager)
-BuildRequires: pkgconfig(capi-network-connection)
-BuildRequires: pkgconfig(capi-system-info)
-BuildRequires: pkgconfig(capi-base-common)
 
 %description
 Osquery exposes an operating system as a high-performance relational database.
@@ -67,7 +59,8 @@ cp %SOURCE1 .
 %{!?build_type:%define build_type "RELEASE"}
 %cmake . -DCMAKE_BUILD_TYPE=%{build_type} \
 		 -DOSQUERY_BUILD_VERSION=%{version} \
-		 -DGBS_BUILD="TRUE"
+		 -DGBS_BUILD="TRUE" \
+		 -DPLUGIN_INSTALL_DIR=%{_libdir}/dpm/plugins
 
 
 make %{?jobs:-j%jobs}
@@ -88,3 +81,32 @@ Testcases for osquery
 %files test
 %manifest %{name}.manifest
 %{_bindir}/osquery-test
+
+## DPM Plugins - ############################################################
+%package plugins
+Summary: DPM plugins
+Group: Security/Other
+## Common
+BuildRequires: pkgconfig(buxton2)
+BuildRequires: pkgconfig(dlog)
+BuildRequires: pkgconfig(klay)
+BuildRequires: pkgconfig(dpm-pil)
+BuildRequires: pkgconfig(capi-system-info)
+BuildRequires: pkgconfig(capi-base-common)
+
+## Bluetooth
+BuildRequires: pkgconfig(bluetooth-api)
+BuildRequires: pkgconfig(capi-network-bluetooth)
+
+## Wifi
+BuildRequires: pkgconfig(capi-network-wifi-manager)
+BuildRequires: pkgconfig(capi-network-connection)
+
+%description plugins
+Provides plugins for device policy manager
+
+%files plugins
+%manifest packaging/%{name}-plugins.manifest
+%{_libdir}/dpm/plugins/bluetooth
+%{_libdir}/dpm/plugins/usb
+%{_libdir}/dpm/plugins/wifi

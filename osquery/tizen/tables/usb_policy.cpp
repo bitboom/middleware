@@ -14,9 +14,9 @@
  *  limitations under the License
  */
 /*
- * @file wifi_policy.cpp
+ * @file usb_policy.cpp
  * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief Implementation of wifi_policy table
+ * @brief Implementation of usb_policy table
  */
 
 #include <string>
@@ -33,7 +33,7 @@
 namespace osquery {
 namespace tables {
 
-QueryData genWifiPolicy(QueryContext& context) try {
+QueryData genUsbPolicy(QueryContext& context) try {
 	std::shared_ptr<void> handle(dpm_manager_create(), dpm_manager_destroy);
 	if (handle == nullptr)
 		throw std::runtime_error("Cannot create dpm-client handle.");
@@ -43,14 +43,14 @@ QueryData genWifiPolicy(QueryContext& context) try {
 	Row r;
 
 	DevicePolicyClient &client = GetDevicePolicyClient(handle.get());
-	status = client.methodCall<bool>("Wifi::getState");
-	r["wifi"] =  INTEGER(status.get());
+	status = client.methodCall<bool>("Usb::getDebuggingState");
+	r["usb_debugging"] =  INTEGER(status.get());
 
-	status = client.methodCall<bool>("Wifi::isProfileChangeRestricted");
-	r["wifi_profile_change"] =  INTEGER(status.get());
+	status = client.methodCall<bool>("Usb::getTetheringState");
+	r["usb_tethering"] =  INTEGER(status.get());
 
-	status = client.methodCall<bool>("Wifi::getHotspotState");
-	r["wifi_hotspot"] =  INTEGER(status.get());
+	status = client.methodCall<bool>("Usb::getClientState");
+	r["usb_client"] =  INTEGER(status.get());
 
 	return { r };
 } catch (...) {

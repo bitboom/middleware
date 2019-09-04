@@ -14,9 +14,9 @@
  *  limitations under the License
  */
 /*
- * @file wifi_policy.cpp
+ * @file bluetooth_policy.cpp
  * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief Implementation of wifi_policy table
+ * @brief Implementation of bluetooth_policy table
  */
 
 #include <string>
@@ -33,7 +33,7 @@
 namespace osquery {
 namespace tables {
 
-QueryData genWifiPolicy(QueryContext& context) try {
+QueryData genBluetoothPolicy(QueryContext& context) try {
 	std::shared_ptr<void> handle(dpm_manager_create(), dpm_manager_destroy);
 	if (handle == nullptr)
 		throw std::runtime_error("Cannot create dpm-client handle.");
@@ -43,18 +43,22 @@ QueryData genWifiPolicy(QueryContext& context) try {
 	Row r;
 
 	DevicePolicyClient &client = GetDevicePolicyClient(handle.get());
-	status = client.methodCall<bool>("Wifi::getState");
-	r["wifi"] =  INTEGER(status.get());
+	status = client.methodCall<bool>("Bluetooth::getModeChangeState");
+	r["mode_change_state"] =  INTEGER(status.get());
 
-	status = client.methodCall<bool>("Wifi::isProfileChangeRestricted");
-	r["wifi_profile_change"] =  INTEGER(status.get());
+	status = client.methodCall<bool>("Bluetooth::getDesktopConnectivityState");
+	r["desktop_connectivity_state"] =  INTEGER(status.get());
 
-	status = client.methodCall<bool>("Wifi::getHotspotState");
-	r["wifi_hotspot"] =  INTEGER(status.get());
+	status = client.methodCall<bool>("Bluetooth::getTetheringState");
+	r["tethering_state"] =  INTEGER(status.get());
+
+	status = client.methodCall<bool>("Bluetooth::getPairingState");
+	r["paring_state"] =  INTEGER(status.get());
 
 	return { r };
 } catch (...) {
 // TODO(Sangwan): Resolve duplicated "ERROR" macro with DPM
+//    LOG(ERROR) << "Exception occured";
 	Row r;
 	return { r };
 }
