@@ -49,7 +49,6 @@ This allows you to write SQL-based queries to explore operating system data.
 %files
 %manifest %{name}.manifest
 %{_bindir}/osqueryi
-%{_bindir}/osqueryd
 
 %prep
 %setup -q
@@ -81,6 +80,7 @@ Testcases for osquery
 %files test
 %manifest %{name}.manifest
 %{_bindir}/osquery-test
+%{_bindir}/apix-test
 
 ## DPM Plugins - ############################################################
 %package plugins

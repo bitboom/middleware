@@ -12,11 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-FILE(GLOB OSQUERY_LINUX_TABLES "*/linux/*.cpp")
-ADD_OSQUERY_LIBRARY(osquery_linux_tables ${OSQUERY_LINUX_TABLES})
+ADD_APIX_LIBRARY(notification notification.cpp)
 
-FILE(GLOB OSQUERY_CROSS_TABLES "*/*.cpp")
-ADD_OSQUERY_LIBRARY(osquery_tables ${OSQUERY_CROSS_TABLES})
-
-FILE(GLOB OSQUERY_CROSS_TABLES_TESTS "[!uo]*/tests/*.cpp")
-ADD_OSQUERY_TEST(${OSQUERY_CROSS_TABLES_TESTS})
+FILE(GLOB NOTIFICATION_TESTS "tests/*.cpp")
+ADD_APIX_TEST(${NOTIFICATION_TESTS})

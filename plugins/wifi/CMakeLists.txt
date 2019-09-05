@@ -21,13 +21,19 @@ SET(DEPENDENCY klay
 			   capi-network-wifi-manager
 			   capi-network-connection)
 
+
+	SET(GBS_ONLY_PACKAGES klay
+						  dpm-pil
+						  capi-base-common
+						  capi-system-info
+						  capi-network-wifi-manager)
+
 PKG_CHECK_MODULES(PLUGIN_DEPS REQUIRED ${DEPENDENCY})
 
-SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,noexecstack")
+INCLUDE_DIRECTORIES(SYSTEM ${PLUGIN_DEPS_INCLUDE_DIRS})
 
 ADD_LIBRARY(${TARGET} SHARED ${PLUGIN_SOURCES})
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES COMPILE_FLAGS "-fvisibility=default")
-INCLUDE_DIRECTORIES(SYSTEM ${PLUGIN_DEPS_INCLUDE_DIRS})
 TARGET_LINK_LIBRARIES(${TARGET} ${PLUGIN_DEPS_LIBRARIES})
 
 INSTALL(FILES libdpm-plugin-wifi.so

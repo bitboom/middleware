@@ -12,20 +12,5 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LIBRARY(osquery_tizen property/property.cpp
-								  manager/manager.cpp
-								  manager/manager_impl.cpp
-								  notification/notification.cpp)
-
-ADD_OSQUERY_TEST(${OSQUERY_TIZEN_TESTS})
-
-IF(DEFINED GBS_BUILD)
-	# tables
-	FILE(GLOB TIZEN_TABLES "tables/*.cpp")
-	ADD_OSQUERY_LIBRARY(tizen_tables ${TIZEN_TABLES})
-	FILE(GLOB OSQUERY_TIZEN_TESTS "[!d]*/tests/*.cpp")
-
-# Verification can be done with full-DPM
-#	FILE(GLOB OSQUERY_GBS_TESTS "device_policy/tests/*.cpp")
-#	ADD_OSQUERY_TEST(${OSQUERY_GBS_TESTS})
-ENDIF(DEFINED GBS_BUILD)
+FILE(GLOB TSQB_TESTS "tests/*.cpp")
+ADD_APIX_TEST(${TSQB_TESTS})

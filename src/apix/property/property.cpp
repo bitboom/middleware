@@ -118,7 +118,7 @@ Member Property<T>::at(Member Struct::* field) const
 
 	std::string value = this->data.at(key);
 	if (value.empty()) {
-		LOG(ERROR) << "Key: " << key << "is not exist.";
+		LOG(ERROR) << "The value of key[" << key << "] is not exist.";
 		return Member();
 	} else {
 		/// TODO(Sangwan): Catch boost::bad_lexical_cast
