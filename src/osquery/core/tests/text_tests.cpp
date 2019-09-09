@@ -19,12 +19,6 @@ namespace osquery {
 
 class TextTests : public testing::Test {};
 
-TEST_F(TextTests, test_split) {
-  for (const auto& i : generateSplitStringTestData()) {
-    EXPECT_EQ(split(i.test_string), i.test_vector);
-  }
-}
-
 TEST_F(TextTests, test_join) {
   std::vector<std::string> content = {
       "one", "two", "three",
@@ -32,11 +26,4 @@ TEST_F(TextTests, test_join) {
   EXPECT_EQ(join(content, ", "), "one, two, three");
 }
 
-TEST_F(TextTests, test_split_occurences) {
-  std::string content = "T: 'S:S'";
-  std::vector<std::string> expected = {
-      "T", "'S:S'",
-  };
-  EXPECT_EQ(split(content, ":", 1), expected);
-}
 }

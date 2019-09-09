@@ -1,7 +1,7 @@
 Name: osquery
 Version: 1.5.0
 Release: 0
-License: Apache-2.0 and GPLv2
+License: Apache-2.0 and GPLv2 and MIT
 Summary: A SQL powered operating system instrumentation, monitoring framework.
 Url: https://github.com/facebook/osquery
 Group: Security/Libraries
@@ -48,6 +48,7 @@ This allows you to write SQL-based queries to explore operating system data.
 
 %files
 %manifest %{name}.manifest
+%license MIT-LICENSE
 %{_bindir}/osqueryi
 
 %prep

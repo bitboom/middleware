@@ -12,6 +12,7 @@
 
 #include <osquery/flags.h>
 #include <osquery/logger.h>
+#include <osquery/utils/conversions/split.h>
 
 namespace osquery {
 

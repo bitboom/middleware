@@ -12,10 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-INCLUDE_DIRECTORIES(SYSTEM .)
-
 SET(TARGET_OSQUERY_LIB osquery)
 SET(TARGET_APIX_LIB apix)
 
 ADD_SUBDIRECTORY(osquery)
 ADD_SUBDIRECTORY(apix)
+
+# Rapidjson v1.0.0

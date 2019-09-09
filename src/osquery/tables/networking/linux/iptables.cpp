@@ -13,12 +13,12 @@
 #include <arpa/inet.h>
 #include "libiptc.h"
 
-#include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
 #include <osquery/filesystem.h>
 #include <osquery/logger.h>
 #include <osquery/tables.h>
+#include <osquery/utils/conversions/split.h>
 
 #include "osquery/tables/networking/utils.h"
 
@@ -134,7 +134,7 @@ QueryData genIptables(QueryContext& context) {
   std::string content;
   auto s = osquery::readFile(kLinuxIpTablesNames, content);
   if (s.ok()) {
-    for (auto &line : split(content, "\n")) {
+    for (auto &line : osquery::split(content, "\n")) {
       boost::trim(line);
       if (line.size() > 0) {
         genIPTablesRules(line, results);

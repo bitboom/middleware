@@ -19,6 +19,7 @@
 #include <osquery/core.h>
 #include <osquery/tables.h>
 #include <osquery/filesystem.h>
+#include <osquery/utils/conversions/split.h>
 
 namespace osquery {
 namespace tables {
@@ -166,7 +167,7 @@ SimpleProcStat getProcStat(const std::string& pid) {
   if (readFile(getProcAttr("status", pid), content).ok()) {
     for (const auto& line : osquery::split(content, "\n")) {
       // Status lines are formatted: Key: Value....\n.
-      auto detail = osquery::split(line, ":", 1);
+      auto detail = osquery::split(line, ':', 1);
       if (detail.size() != 2) {
         continue;
       }

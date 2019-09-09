@@ -170,22 +170,6 @@ std::pair<std::string, QueryLogItem> getSerializedQueryLogItemJSON() {
   return std::make_pair(ss.str(), results.second);
 }
 
-std::vector<SplitStringTestData> generateSplitStringTestData() {
-  SplitStringTestData s1;
-  s1.test_string = "a b\tc";
-  s1.test_vector = {"a", "b", "c"};
-
-  SplitStringTestData s2;
-  s2.test_string = " a b   c";
-  s2.test_vector = {"a", "b", "c"};
-
-  SplitStringTestData s3;
-  s3.test_string = "  a     b   c";
-  s3.test_vector = {"a", "b", "c"};
-
-  return {s1, s2, s3};
-}
-
 std::string getCACertificateContent() {
   std::string content;
   readFile(kTestDataPath + "test_cert.pem", content);
@@ -225,10 +209,6 @@ QueryData getEtcHostsExpectedResults() {
   row6["address"] = "127.0.0.1";
   row6["hostnames"] = "example.net";
   return {row1, row2, row3, row4, row5, row6};
-}
-
-::std::ostream& operator<<(::std::ostream& os, const Status& s) {
-  return os << "Status(" << s.getCode() << ", \"" << s.getMessage() << "\")";
 }
 
 QueryData getEtcProtocolsExpectedResults() {

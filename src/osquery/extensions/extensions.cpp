@@ -17,6 +17,7 @@
 #include <osquery/logger.h>
 #include <osquery/registry.h>
 #include <osquery/sql.h>
+#include <osquery/utils/conversions/split.h>
 
 #include "osquery/extensions/interface.h"
 #include "osquery/core/watcher.h"

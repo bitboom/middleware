@@ -12,6 +12,7 @@
 #include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/sql.h>
+#include <osquery/utils/conversions/split.h>
 
 #include "osquery/sql/sqlite_util.h"
 #include "osquery/sql/virtual_table.h"

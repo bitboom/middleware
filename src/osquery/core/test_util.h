@@ -86,16 +86,6 @@ QueryData getEtcHostsExpectedResults();
 // generate the expected data that getEtcProtocolsContent() should parse into
 QueryData getEtcProtocolsExpectedResults();
 
-// the three items that you need to test osquery::splitString
-struct SplitStringTestData {
-  std::string test_string;
-  std::string delim;
-  std::vector<std::string> test_vector;
-};
-
-// generate a set of test data to test osquery::splitString
-std::vector<SplitStringTestData> generateSplitStringTestData();
-
 // generate a small directory structure for testing
 void createMockFileStructure();
 // remove the small directory structure used for testing

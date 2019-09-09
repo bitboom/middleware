@@ -15,6 +15,7 @@
 #include <osquery/core.h>
 #include <osquery/filesystem.h>
 #include <osquery/logger.h>
+#include <osquery/utils/conversions/split.h>
 
 namespace pt = boost::property_tree;
 

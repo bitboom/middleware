@@ -18,6 +18,7 @@
 #include <osquery/filesystem.h>
 #include <osquery/logger.h>
 #include <osquery/tables.h>
+#include <osquery/utils/conversions/split.h>
 
 namespace osquery {
 namespace tables {
