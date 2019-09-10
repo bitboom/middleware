@@ -49,11 +49,6 @@ TEST_F(VirtualTableTests, test_tableplugin_columndefinition) {
   EXPECT_EQ("(`foo` INTEGER, `bar` TEXT)", table->columnDefinition(false));
 }
 
-TEST_F(VirtualTableTests, test_extension_tableplugin_columndefinition) {
-  auto table = std::make_shared<sampleTablePlugin>();
-  EXPECT_EQ("(`foo` INTEGER, `bar` TEXT)", table->columnDefinition(true));
-}
-
 class optionsTablePlugin : public TablePlugin {
  private:
   TableColumns columns() const override {

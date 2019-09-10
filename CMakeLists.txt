@@ -61,7 +61,6 @@ INCLUDE_DIRECTORIES("/usr/local/include")
 ENABLE_TESTING()
 
 INCLUDE(CMake/Macro.cmake)
-INCLUDE(CMake/Thrift.cmake)
 
 # Make sure the generated paths exist
 EXECUTE_PROCESS(COMMAND mkdir -p "${CMAKE_BINARY_DIR}/generated")

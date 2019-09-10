@@ -22,7 +22,6 @@ SET(${TARGET_OSQUERY_LIB}_TESTS "")
 ADD_OSQUERY_LINK(glog
 				 gflags
 				 pthread
-				 libthrift.a
 				#rocksdb deps
 				 librocksdb.a
 				 snappy
@@ -60,7 +59,6 @@ ADD_SUBDIRECTORY(database)
 ADD_SUBDIRECTORY(devtools)
 ADD_SUBDIRECTORY(dispatcher)
 ADD_SUBDIRECTORY(events)
-ADD_SUBDIRECTORY(extensions)
 ADD_SUBDIRECTORY(filesystem)
 ADD_SUBDIRECTORY(hashing)
 ADD_SUBDIRECTORY(killswitch)

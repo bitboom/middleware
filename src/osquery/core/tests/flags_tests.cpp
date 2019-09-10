@@ -82,15 +82,12 @@ TEST_F(FlagsTests, test_details) {
 }
 
 SHELL_FLAG(bool, shell_only, true, "TEST SHELL DESCRIPTION");
-EXTENSION_FLAG(bool, extension_only, true, "TEST EXTENSION DESCRIPTION");
 
 TEST_F(FlagsTests, test_flag_detail_types) {
   EXPECT_TRUE(FLAGS_shell_only);
-  EXPECT_TRUE(FLAGS_extension_only);
 
   auto all_flags = Flag::flags();
   EXPECT_TRUE(all_flags["shell_only"].detail.shell);
-  EXPECT_TRUE(all_flags["extension_only"].detail.external);
 }
 
 FLAG_ALIAS(bool, shell_only_alias, shell_only);

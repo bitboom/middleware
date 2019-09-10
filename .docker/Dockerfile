@@ -44,27 +44,14 @@ RUN cd /usr/src/gflags && \
     git checkout v2.2.1 && \
     cmake . && make && make install
 
-# thrift
-RUN apt-get update --fix-missing && \
-    apt-get install -qq libevent-dev libtool flex bison pkg-config g++ libssl-dev
-
-RUN cd /usr/src && \
-    git clone https://github.com/apache/thrift.git
-
-RUN cd /usr/src/thrift && \
-    git checkout 0.11.0 && \
-    ./bootstrap.sh && \
-    ./configure --with-boost=/usr --without-ruby --disable-tests \
-                --without-php_extension --with-cpp --with-libevent=no \
-                --with-python --enable-tutorial=no && \
-    make && make install
-
 # table gen dependencies
 RUN apt-get install -qq python-pip && \
     pip install Jinja2
 
 # table dependencies
-RUN apt-get install -qq libprocps-dev libsystemd-dev libudev-dev iptables-dev uuid-dev
+RUN apt-get update --fix-missing
+RUN apt-get install -qq libprocps-dev libsystemd-dev \
+                        libudev-dev iptables-dev uuid-dev libssl-dev
 
 # linenoise
 RUN cd /usr/src && \

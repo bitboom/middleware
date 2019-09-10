@@ -120,61 +120,6 @@ std::shared_ptr<PlatformProcess> PlatformProcess::launchWorker(
   return std::make_shared<PlatformProcess>(worker_pid);
 }
 
-std::shared_ptr<PlatformProcess> PlatformProcess::launchExtension(
-    const std::string& exec_path,
-    const std::string& extensions_socket,
-    const std::string& extensions_timeout,
-    const std::string& extensions_interval,
-    bool verbose) {
-  auto ext_pid = ::fork();
-  if (ext_pid < 0) {
-    return std::shared_ptr<PlatformProcess>();
-  } else if (ext_pid == 0) {
-    setEnvVar("OSQUERY_EXTENSION", std::to_string(::getpid()).c_str());
-
-    struct sigaction sig_action;
-    sig_action.sa_handler = SIG_DFL;
-    sig_action.sa_flags = 0;
-    sigemptyset(&sig_action.sa_mask);
-
-    for (auto i = NSIG; i >= 0; i--) {
-      sigaction(i, &sig_action, nullptr);
-    }
-
-    std::vector<const char*> arguments;
-    arguments.push_back(exec_path.c_str());
-    arguments.push_back(exec_path.c_str());
-
-    std::string arg_verbose("--verbose");
-    if (verbose) {
-      arguments.push_back(arg_verbose.c_str());
-    }
-
-    std::string arg_socket("--socket");
-    arguments.push_back(arg_socket.c_str());
-    arguments.push_back(extensions_socket.c_str());
-
-    std::string arg_timeout("--timeout");
-    arguments.push_back(arg_timeout.c_str());
-    arguments.push_back(extensions_timeout.c_str());
-
-    std::string arg_interval("--interval");
-    arguments.push_back(arg_interval.c_str());
-    arguments.push_back(extensions_interval.c_str());
-    arguments.push_back(nullptr);
-
-    char* const* argv = const_cast<char* const*>(&arguments[1]);
-    ::execve(arguments[0], argv, ::environ);
-
-    // Code should never reach this point
-    LOG(ERROR) << "Could not start extension process: " << exec_path;
-    ::exit(EXIT_FAILURE);
-    return std::shared_ptr<PlatformProcess>();
-  }
-
-  return std::make_shared<PlatformProcess>(ext_pid);
-}
-
 std::shared_ptr<PlatformProcess> PlatformProcess::launchTestPythonScript(
     const std::string& args) {
   std::string osquery_path;

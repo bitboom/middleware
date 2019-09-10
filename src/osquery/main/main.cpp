@@ -15,11 +15,9 @@
 #include <boost/algorithm/string/predicate.hpp>
 
 #include <osquery/core.h>
-#include <osquery/core/watcher.h>
 #include <osquery/database.h>
 #include <osquery/devtools/devtools.h>
 #include <osquery/dispatcher/scheduler.h>
-#include <osquery/extensions.h>
 #include <osquery/filesystem/fileops.h>
 #include <osquery/flags.h>
 #include <osquery/logger.h>
@@ -46,8 +44,6 @@ HIDDEN_FLAG(int32,
             "Sleep a number of seconds before and after the profiling");
 
 DECLARE_bool(disable_caching);
-
-const std::string kWatcherWorkerName{"osqueryd: worker"};
 
 int profile(int argc, char* argv[]) {
   std::string query;
@@ -110,11 +106,6 @@ int startShell(osquery::Initializer& runner, int argc, char* argv[]) {
     // A query was set as a positional argument, via stdin, or profiling is on.
     osquery::FLAGS_disable_events = true;
     osquery::FLAGS_disable_caching = true;
-    // The shell may have loaded table extensions, if not, disable the manager.
-    if (!osquery::Watcher::get().hasManagedExtensions() &&
-        Flag::isDefault("disable_extensions")) {
-      osquery::FLAGS_disable_extensions = true;
-    }
   }
 
   int retcode = 0;
@@ -137,10 +128,6 @@ int startOsquery(int argc, char* argv[], std::function<void()> shutdown) {
 
   runner.installShutdown(shutdown);
   runner.initDaemon();
-
-  // When a watchdog is used, the current daemon will fork/exec into a worker.
-  // In either case the watcher may start optionally loaded extensions.
-  runner.initWorkerWatcher(kWatcherWorkerName);
 
   if (runner.isDaemon()) {
     return startDaemon(runner);

@@ -74,27 +74,6 @@ static inline std::string opString(unsigned char op) {
 }
 
 namespace {
-/// A list of tables that come from extensions; it is used to determine which
-/// table can be read/write
-class TableList final {
-  std::unordered_set<std::string> table_list;
-  mutable Mutex mutex;
-
- public:
-  void insert(const std::string& table) {
-    WriteLock write_lock(mutex);
-    table_list.insert(table);
-  }
-
-  bool contains(const std::string& table_name) const {
-    ReadLock lock(mutex);
-
-    return (std::find(table_list.begin(), table_list.end(), table_name) !=
-            table_list.end());
-  }
-};
-
-TableList extension_table_list;
 
 // A map containing an sqlite module object for each virtual table
 std::unordered_map<std::string, struct sqlite3_module> sqlite_module_map;
@@ -545,9 +524,7 @@ int xCreate(sqlite3* db,
     return SQLITE_ERROR;
   }
 
-  // Tables implemented from extensions can be made read/write if they implement
-  // the correct methods
-  bool is_extension = extension_table_list.contains(name);
+  bool is_extension = false;
 
   // Generate an SQL create table statement from the retrieved column details.
   // This call to columnDefinition requests column aliases (as HIDDEN columns).
@@ -971,10 +948,6 @@ struct sqlite3_module* getVirtualTableModule(const std::string& table_name,
   // Allow the table to receive INSERT/UPDATE/DROP events if it is
   // implemented from an extension and is overwriting the right methods
   // in the TablePlugin class
-  if (extension) {
-    extension_table_list.insert(table_name);
-    sqlite_module_map[table_name].xUpdate = tables::sqlite::xUpdate;
-  }
 
   return &sqlite_module_map[table_name];
 }

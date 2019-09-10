@@ -18,9 +18,6 @@
 
 namespace osquery {
 
-/// An extension or core's broadcast includes routes from every Registry.
-using RegistryBroadcast = std::map<std::string, RegistryRoutes>;
-
 class RegistryFactory : private boost::noncopyable {
  public:
   /// Singleton accessor.
@@ -85,16 +82,6 @@ class RegistryFactory : private boost::noncopyable {
   PluginRef plugin(const std::string& registry_name,
                    const std::string& item_name) const;
 
-  /// Serialize this core or extension's registry.
-  RegistryBroadcast getBroadcast();
-
-  /// Add external registry items identified by a Route UUID.
-  Status addBroadcast(const RouteUUID& uuid,
-                      const RegistryBroadcast& broadcast);
-
-  /// Given an extension UUID remove all external registry items.
-  Status removeBroadcast(const RouteUUID& uuid);
-
   /// Adds an alias for an internal registry item. This registry will only
   /// broadcast the alias name.
   Status addAlias(const std::string& registry_name,
@@ -127,9 +114,6 @@ class RegistryFactory : private boost::noncopyable {
   /// Get a list of the registry item names for a given registry.
   std::vector<std::string> names(const std::string& registry_name) const;
 
-  /// Get a list of the registered extension UUIDs.
-  std::vector<RouteUUID> routeUUIDs() const;
-
   /// Return the number of registries.
   size_t count() const {
     return registries_.size();
@@ -146,17 +130,6 @@ class RegistryFactory : private boost::noncopyable {
   /// Check if duplicate registry items using registry aliasing are allowed.
   bool allowDuplicates() {
     return allow_duplicates_;
-  }
-
-  /// Set the registry external (such that internal events are forwarded).
-  /// Once set external, it should not be unset.
-  void setExternal() {
-    external_ = true;
-  }
-
-  /// Get the registry external status.
-  bool external() {
-    return external_;
   }
 
  private:
@@ -183,20 +156,6 @@ class RegistryFactory : private boost::noncopyable {
 
   /// The primary storage for constructed registries.
   std::map<std::string, RegistryInterfaceRef> registries_;
-
-  /**
-   * @brief The registry tracks the set of active extension routes.
-   *
-   * If an extension dies (the process ends or does not respond to a ping),
-   * the registry will be notified via the extension watcher.
-   * When an operation requests to use that extension route the extension
-   * manager will lazily check the registry for changes.
-   */
-  std::set<RouteUUID> extensions_;
-
-  /// Calling startExtension should declare the registry external.
-  /// This will cause extension-internal events to forward to osquery core.
-  bool external_{false};
 
   /// Protector for broadcast lookups and external registry mutations.
   mutable Mutex mutex_;

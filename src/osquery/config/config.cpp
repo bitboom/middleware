@@ -305,10 +305,6 @@ void saveScheduleBlacklist(const std::map<std::string, size_t>& blacklist) {
 }
 
 Schedule::Schedule() {
-  if (RegistryFactory::get().external()) {
-    // Extensions should not restore or save schedule details.
-    return;
-  }
   // Parse the schedule's query blacklist from backing storage.
   restoreScheduleBlacklist(blacklist_);
 
@@ -633,7 +629,7 @@ Status Config::updateSource(const std::string& source,
 
   // extract the "schedule" key and store it as the main pack
   auto& rf = RegistryFactory::get();
-  if (doc.doc().HasMember("schedule") && !rf.external()) {
+  if (doc.doc().HasMember("schedule")) {
     auto& schedule = doc.doc()["schedule"];
     if (schedule.IsObject()) {
       auto main_doc = JSON::newObject();
@@ -645,7 +641,7 @@ Status Config::updateSource(const std::string& source,
   }
 
   // extract the "packs" key into additional pack objects
-  if (doc.doc().HasMember("packs") && !rf.external()) {
+  if (doc.doc().HasMember("packs")) {
     auto& packs = doc.doc()["packs"];
     if (packs.IsObject()) {
       for (const auto& pack : packs.GetObject()) {
@@ -735,27 +731,6 @@ void Config::applyParsers(const std::string& source,
 }
 
 Status Config::update(const ConfigMap& config) {
-  // A config plugin may call update from an extension. This will update
-  // the config instance within the extension process and the update must be
-  // reflected in the core.
-  if (RegistryFactory::get().external()) {
-    for (const auto& source : config) {
-      PluginRequest request = {
-          {"action", "update"},
-          {"source", source.first},
-          {"data", source.second},
-      };
-      // A "update" registry item within core should call the core's update
-      // method. The config plugin call action handling must also know to
-      // update.
-      auto status = Registry::call("config", "update", request);
-      if (!status.ok()) {
-        // If something goes wrong, do not go with update further
-        return status;
-      }
-    }
-  }
-
   // Iterate though each source and overwrite config data.
   // This will add/overwrite pack data, append to the schedule, change watched
   // files, set options, etc.

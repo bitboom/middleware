@@ -25,16 +25,6 @@ namespace osquery {
 
 class Status;
 
-using AddExternalCallback =
-    std::function<Status(const std::string&, const PluginResponse&)>;
-
-using RemoveExternalCallback = std::function<void(const std::string&)>;
-
-/// Registry routes are a map of item name to each optional PluginReponse.
-using RegistryRoutes = std::map<std::string, PluginResponse>;
-
-using RouteUUID = uint64_t;
-
 /**
  * @brief This is the registry interface.
  */
@@ -71,9 +61,6 @@ class RegistryInterface : private boost::noncopyable {
   /// Check if a given plugin name is considered internal.
   bool isInternal(const std::string& item_name) const;
 
-  /// Allow others to introspect into the routes from extensions.
-  std::map<std::string, RouteUUID> getExternal() const;
-
   /// Get the 'active' plugin, return success with the active plugin name.
   std::string getActive() const;
 
@@ -107,19 +94,6 @@ class RegistryInterface : private boost::noncopyable {
   /// Construct and return a map of plugin names to their implementation.
   std::map<std::string, PluginRef> plugins();
 
-  /**
-   * @brief Create a routes table for this registry.
-   *
-   * This is called by the extensions API to allow an extension process to
-   * broadcast each registry and the set of plugins (and their optional) route
-   * information.
-   *
-   * The "table" registry and table plugins are the primary user of the route
-   * information. Each plugin will include the SQL statement used to attach
-   * an equivalent virtual table.
-   */
-  RegistryRoutes getRoutes() const;
-
  protected:
   /**
    * @brief The only method a plugin user should call.
@@ -140,44 +114,6 @@ class RegistryInterface : private boost::noncopyable {
   virtual Status call(const std::string& item_name,
                       const PluginRequest& request,
                       PluginResponse& response);
-
-  /**
-   * @brief Add a set of item names broadcasted by an extension uuid.
-   *
-   * When an extension is registered the RegistryFactory will receive a
-   * RegistryBroadcast containing a all of the extension's registry names and
-   * the set of items with their optional route info. The factory depends on
-   * each registry to manage calls/requests to these external plugins.
-   *
-   * @param uuid The uuid chosen for the extension.
-   * @param routes The plugin name and optional route info list.
-   * @return Success if all routes were added, failure if any failed.
-   */
-  Status addExternal(const RouteUUID& uuid, const RegistryRoutes& routes);
-
-  /**
-   * @brief Each RegistryType will include a trampoline into the PluginType.
-   *
-   * A PluginType may act on registry modifications. Each specialized registry
-   * will include a trampoline method to call the plugin type's addExternal.
-   *
-   * @param name Plugin name (not the extension UUID).
-   * @param info The route information broadcasted.
-   */
-  virtual Status addExternalPlugin(const std::string& name,
-                                   const PluginResponse& info) const = 0;
-
-  /// Remove all the routes for a given uuid.
-  void removeExternal(const RouteUUID& uuid);
-
-  /**
-   * @brief Each RegistryType will include a trampoline into the PluginType.
-   *
-   * A PluginType may act on registry modifications. Each specialized registry
-   * will include a trampoline method to call the plugin type's removeExternal.
-   * @param name Plugin name (not the extension UUID).
-   */
-  virtual void removeExternalPlugin(const std::string& name) const = 0;
 
   /// Allow the registry to introspect into the registered name (for logging).
   void setname(const std::string& name);
@@ -215,13 +151,6 @@ class RegistryInterface : private boost::noncopyable {
   /// If aliases are used, a map of alias to item name.
   std::map<std::string, std::string> aliases_;
 
-  /// Keep a lookup of the external item name to assigned extension UUID.
-  std::map<std::string, RouteUUID> external_;
-
-  /// Keep a lookup of optional route info. The plugin may handle calls
-  /// to external items differently.
-  std::map<std::string, PluginResponse> routes_;
-
   /// Keep a lookup of registry items that are blacklisted from broadcast.
   std::vector<std::string> internal_;
 
@@ -254,9 +183,7 @@ class RegistryType : public RegistryInterface {
 
  public:
   explicit RegistryType(const std::string& name, bool auto_setup = false)
-      : RegistryInterface(name, auto_setup),
-        add_(&PluginType::addExternal),
-        remove_(&PluginType::removeExternal) {}
+      : RegistryInterface(name, auto_setup) {}
   ~RegistryType() override = default;
 
   Status add(const std::string& plugin_name,
@@ -286,21 +213,6 @@ class RegistryType : public RegistryInterface {
     }
     return items_.at(plugin_name);
   }
-
-  /// Trampoline function for calling the PluginType's addExternal.
-  Status addExternalPlugin(const std::string& name,
-                           const PluginResponse& info) const override {
-    return add_(name, info);
-  }
-
-  /// Trampoline function for calling the PluginType's removeExternal.
-  void removeExternalPlugin(const std::string& name) const override {
-    remove_(name);
-  }
-
- private:
-  AddExternalCallback add_;
-  RemoveExternalCallback remove_;
 
  private:
   FRIEND_TEST(EventsTests, test_event_subscriber_configure);

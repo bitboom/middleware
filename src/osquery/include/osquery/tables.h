@@ -874,7 +874,6 @@ class TablePlugin : public Plugin {
   UsedColumnsBitset usedColumnsToBitset(const UsedColumns usedColumns) const;
   friend class RegistryFactory;
   FRIEND_TEST(VirtualTableTests, test_tableplugin_columndefinition);
-  FRIEND_TEST(VirtualTableTests, test_extension_tableplugin_columndefinition);
   FRIEND_TEST(VirtualTableTests, test_tableplugin_statement);
   FRIEND_TEST(VirtualTableTests, test_indexing_costs);
   FRIEND_TEST(VirtualTableTests, test_table_results_cache);

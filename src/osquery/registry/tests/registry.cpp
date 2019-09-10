@@ -212,16 +212,6 @@ TEST_F(RegistryTests, test_registry_api) {
   auto ri = TestCoreRegistry::get().plugin("widgets", "special")->routeInfo();
   EXPECT_EQ(ri[0].at("name"), "special");
 
-  auto rr = TestCoreRegistry::get().registry("widgets")->getRoutes();
-  EXPECT_EQ(rr.size(), 1U);
-  EXPECT_EQ(rr.at("special")[0].at("name"), "special");
-
-  // Broadcast will include all registries, and all their items.
-  auto broadcast_info = TestCoreRegistry::get().getBroadcast();
-  EXPECT_TRUE(broadcast_info.size() >= 3U);
-  EXPECT_EQ(broadcast_info.at("widgets").at("special")[0].at("name"),
-            "special");
-
   PluginResponse response;
   PluginRequest request;
   auto status = TestCoreRegistry::call("widgets", "special", request, response);

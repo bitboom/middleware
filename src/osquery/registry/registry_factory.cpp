@@ -12,9 +12,9 @@
 #include <cstdlib>
 #include <sstream>
 
-#include <osquery/extensions.h>
 #include <osquery/logger.h>
 #include <osquery/process/process.h>
+#include <osquery/flags.h>
 #include <osquery/registry.h>
 #include <osquery/utils/conversions/split.h>
 #include <osquery/utils/json/json.h>
@@ -54,89 +54,6 @@ std::map<std::string, PluginRef> RegistryFactory::plugins(
 PluginRef RegistryFactory::plugin(const std::string& registry_name,
                                   const std::string& item_name) const {
   return registry(registry_name)->plugin(item_name);
-}
-
-RegistryBroadcast RegistryFactory::getBroadcast() {
-  RegistryBroadcast broadcast;
-  for (const auto& registry : registries_) {
-    broadcast[registry.first] = registry.second->getRoutes();
-  }
-  return broadcast;
-}
-
-Status RegistryFactory::addBroadcast(const RouteUUID& uuid,
-                                     const RegistryBroadcast& broadcast) {
-  {
-    ReadLock lock(mutex_);
-    if (extensions_.count(uuid) > 0) {
-      return Status(1, "Duplicate extension UUID: " + std::to_string(uuid));
-    }
-  }
-
-  // Make sure the extension does not broadcast conflicting registry items.
-  if (!allowDuplicates()) {
-    for (const auto& registry : broadcast) {
-      for (const auto& item : registry.second) {
-        if (exists(registry.first, item.first)) {
-          VLOG(1) << "Extension " << uuid
-                  << " has duplicate plugin name: " << item.first
-                  << " in registry: " << registry.first;
-          return Status(1, "Duplicate registry item: " + item.first);
-        }
-      }
-    }
-  }
-
-  // Once duplication is satisfied call each registry's addExternal.
-  Status status;
-  for (const auto& registry : broadcast) {
-    if (!exists(registry.first)) {
-      VLOG(1) << "Extension " << uuid
-              << "contains unknown registry: " << registry.first;
-      return Status(1, "Unknown registry: " + registry.first);
-    }
-
-    status = this->registry(registry.first)->addExternal(uuid, registry.second);
-    if (!status.ok()) {
-      // If any registry fails to add the set of external routes, stop.
-      break;
-    }
-
-    for (const auto& plugin : registry.second) {
-      VLOG(1) << "Extension " << uuid << " registered " << registry.first
-              << " plugin " << plugin.first;
-    }
-  }
-
-  // If any registry failed, remove each (assume a broadcast is atomic).
-  {
-    if (!status.ok()) {
-      for (const auto& registry : broadcast) {
-        this->registry(registry.first)->removeExternal(uuid);
-      }
-    }
-
-    WriteLock lock(mutex_);
-    extensions_.insert(uuid);
-  }
-  return status;
-}
-
-Status RegistryFactory::removeBroadcast(const RouteUUID& uuid) {
-  {
-    ReadLock lock(mutex_);
-    if (extensions_.count(uuid) == 0) {
-      return Status(1, "Unknown extension UUID: " + std::to_string(uuid));
-    }
-  }
-
-  for (const auto& registry : registries_) {
-    registry.second->removeExternal(uuid);
-  }
-
-  WriteLock lock(mutex_);
-  extensions_.erase(uuid);
-  return Status::success();
 }
 
 /// Adds an alias for an internal registry item. This registry will only
@@ -254,15 +171,6 @@ std::vector<std::string> RegistryFactory::names(
     return names;
   }
   return registry(registry_name)->names();
-}
-
-std::vector<RouteUUID> RegistryFactory::routeUUIDs() const {
-  ReadLock lock(mutex_);
-  std::vector<RouteUUID> uuids;
-  for (const auto& extension : extensions_) {
-    uuids.push_back(extension);
-  }
-  return uuids;
 }
 
 size_t RegistryFactory::count(const std::string& registry_name) const {

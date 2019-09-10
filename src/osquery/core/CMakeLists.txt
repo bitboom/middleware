@@ -17,7 +17,6 @@ ADD_OSQUERY_LIBRARY(osquery_core flags.cpp
 								 init.cpp
 								 query.cpp
 								 system.cpp
-								 watcher.cpp
 								 database/database.cpp
 								 database/in_memory_database.cpp
 								 plugins/logger.cpp

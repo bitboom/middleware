@@ -283,22 +283,6 @@ Status getDatabaseValue(const std::string& domain,
     return Status(1, "Missing domain");
   }
 
-  if (RegistryFactory::get().external()) {
-    // External registries (extensions) do not have databases active.
-    // It is not possible to use an extension-based database.
-    PluginRequest request = {
-        {"action", "get"}, {"domain", domain}, {"key", key}};
-    PluginResponse response;
-    auto status = Registry::call("database", request, response);
-    if (status.ok()) {
-      // Set value from the internally-known "v" key.
-      if (response.size() > 0 && response[0].count("v") > 0) {
-        value = response[0].at("v");
-      }
-    }
-    return status;
-  }
-
   ReadLock lock(kDatabaseReset);
   if (!DatabasePlugin::kDBInitialized) {
     throw std::runtime_error("Cannot get database value: " + key);
@@ -331,16 +315,6 @@ Status setDatabaseBatch(const std::string& domain,
     return Status(1, "Missing domain");
   }
 
-  // External registries (extensions) do not have databases active.
-  // It is not possible to use an extension-based database.
-  if (RegistryFactory::get().external()) {
-    if (data.size() > 1) {
-      return sendPutBatchDatabaseRequest(domain, data);
-    } else {
-      return sendPutDatabaseRequest(domain, data);
-    }
-  }
-
   ReadLock lock(kDatabaseReset);
   if (!DatabasePlugin::kDBInitialized) {
     throw std::runtime_error("Cannot set database values");
@@ -361,14 +335,6 @@ Status deleteDatabaseValue(const std::string& domain, const std::string& key) {
     return Status(1, "Missing domain");
   }
 
-  if (RegistryFactory::get().external()) {
-    // External registries (extensions) do not have databases active.
-    // It is not possible to use an extension-based database.
-    PluginRequest request = {
-        {"action", "remove"}, {"domain", domain}, {"key", key}};
-    return Registry::call("database", request);
-  }
-
   ReadLock lock(kDatabaseReset);
   if (!DatabasePlugin::kDBInitialized) {
     throw std::runtime_error("Cannot delete database value: " + key);
@@ -383,16 +349,6 @@ Status deleteDatabaseRange(const std::string& domain,
                            const std::string& high) {
   if (domain.empty()) {
     return Status(1, "Missing domain");
-  }
-
-  if (RegistryFactory::get().external()) {
-    // External registries (extensions) do not have databases active.
-    // It is not possible to use an extension-based database.
-    PluginRequest request = {{"action", "remove_range"},
-                             {"domain", domain},
-                             {"key", low},
-                             {"key_high", high}};
-    return Registry::call("database", request);
   }
 
   ReadLock lock(kDatabaseReset);
@@ -418,24 +374,6 @@ Status scanDatabaseKeys(const std::string& domain,
                         size_t max) {
   if (domain.empty()) {
     return Status(1, "Missing domain");
-  }
-
-  if (RegistryFactory::get().external()) {
-    // External registries (extensions) do not have databases active.
-    // It is not possible to use an extension-based database.
-    PluginRequest request = {{"action", "scan"},
-                             {"domain", domain},
-                             {"prefix", prefix},
-                             {"max", std::to_string(max)}};
-    PluginResponse response;
-    auto status = Registry::call("database", request, response);
-
-    for (const auto& item : response) {
-      if (item.count("k") > 0) {
-        keys.push_back(item.at("k"));
-      }
-    }
-    return status;
   }
 
   ReadLock lock(kDatabaseReset);

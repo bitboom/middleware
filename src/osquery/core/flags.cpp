@@ -76,18 +76,6 @@ std::string Flag::getValue(const std::string& name) {
   std::string current_value;
   auto found = flags::GetCommandLineOption(name.c_str(), &current_value);
 
-  // If this is an extension and the flag was not found, forward the request.
-  if (Registry::get().external() && !found) {
-    PluginResponse resp;
-    Registry::call("config", {{"name", name}, {"action", "option"}}, resp);
-    if (resp.size() != 0) {
-      auto value = resp[0].find("value");
-      if (value != resp[0].end()) {
-        return value->second;
-      }
-    }
-  }
-
   return current_value;
 }
 

@@ -144,19 +144,6 @@ class PlatformProcess : private boost::noncopyable {
       const std::string& exec_path, int argc, char** argv);
 
   /**
-   * @brief Creates a new extension process.
-   *
-   * Launches a new extension with various options. Any double quotes in the
-   * extension name will be stripped away.
-   */
-  static std::shared_ptr<PlatformProcess> launchExtension(
-      const std::string& exec_path,
-      const std::string& extensions_socket,
-      const std::string& extensions_timeout,
-      const std::string& extensions_interval,
-      bool verbose = false);
-
-  /**
    * @brief Launches a new test Python script.
    *
    * This will launch a new Python process to run the specified script and

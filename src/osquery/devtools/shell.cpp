@@ -71,7 +71,6 @@ SHELL_FLAG(bool, L, false, "List all table names");
 SHELL_FLAG(string, A, "", "Select all from a table");
 
 DECLARE_string(nullvalue);
-DECLARE_string(extensions_socket);
 DECLARE_string(logger_plugin);
 DECLARE_string(logger_path);
 DECLARE_string(config_plugin);
@@ -101,7 +100,6 @@ static char zHelp[] =
     ".quit            Exit this program\n"
     ".schema [TABLE]  Show the CREATE statements\n"
     ".separator STR   Change separator used by output mode\n"
-    ".socket          Show the osquery extensions socket path\n"
     ".show            Show the current values for various settings\n"
     ".summary         Alias for the show meta command\n"
     ".tables [TABLE]  List names of tables\n"
@@ -1174,23 +1172,6 @@ inline void meta_show(struct callback_data* p) {
     fprintf(p->out, "\n");
   }
 
-  {
-    auto results = osquery::SQL::selectAllFrom("osquery_extensions");
-    std::vector<std::string> extensions;
-    for (const auto& extension : results) {
-      extensions.push_back(extension.at("name"));
-    }
-    fprintf(p->out,
-            "%13.13s: %s\n",
-            "Extensions",
-            osquery::join(extensions, ", ").c_str());
-
-    fprintf(p->out,
-            "%13.13s: %s\n",
-            "Socket",
-            osquery::FLAGS_extensions_socket.c_str());
-  }
-
   fprintf(p->out, "\nShell settings:\n");
   fprintf(p->out, "%13.13s: %s\n", "echo", p->echoOn != 0 ? "on" : "off");
   fprintf(
@@ -1289,11 +1270,6 @@ static int do_meta_command(char* zLine, struct callback_data* p) {
     if (rc != SQLITE_OK) {
       fprintf(stderr, "Error querying table: %s\n", azArg[1]);
     }
-    return rc;
-  }
-
-  if (c == 's' && strncmp(azArg[0], "socket", n) == 0 && nArg == 1) {
-    fprintf(p->out, "%s\n", osquery::FLAGS_extensions_socket.c_str());
     return rc;
   }
 

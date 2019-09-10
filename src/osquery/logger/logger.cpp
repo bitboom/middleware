@@ -20,7 +20,6 @@
 #include <osquery/data_logger.h>
 #include <osquery/database.h>
 #include <osquery/events.h>
-#include <osquery/extensions.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
 #include <osquery/killswitch.h>
