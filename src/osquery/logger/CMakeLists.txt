@@ -13,11 +13,6 @@
 #  limitations under the License
 
 ADD_OSQUERY_LIBRARY(osquery_logger logger.cpp)
-ADD_OSQUERY_LIBRARY(osquery_logger_plugins plugins/filesystem.cpp
-										   plugins/syslog.cpp)
 
 FILE(GLOB OSQUERY_LOGGER_TESTS "tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_LOGGER_TESTS})
-
-file(GLOB OSQUERY_LOGGER_PLUGIN_TESTS "plugins/tests/*.cpp")
-ADD_OSQUERY_TEST(${OSQUERY_LOGGER_PLUGIN_TESTS})

@@ -12,27 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-FIND_PROGRAM(THRIFT_COMPILER thrift /usr/local/bin
-									/usr/bin
-									NO_DEFAULT_PATH)
-
-# Generate the thrift intermediate/interface code.
-FILE(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated")
-ADD_CUSTOM_COMMAND(
-	COMMAND
-		${THRIFT_COMPILER} --gen cpp:dense "${CMAKE_SOURCE_DIR}/osquery.thrift"
-	DEPENDS
-		"${CMAKE_SOURCE_DIR}/osquery.thrift"
-	WORKING_DIRECTORY
-		"${CMAKE_BINARY_DIR}/generated"
-	OUTPUT
-		${OSQUERY_THRIFT_GENERATED_FILES})
-
-ADD_OSQUERY_LIBRARY(osquery_extensions ${OSQUERY_THRIFT_GENERATED_FILES}
-									   extensions.cpp
+ADD_OSQUERY_LIBRARY(osquery_extensions extensions.cpp
+									   impl_thrift.cpp
 									   interface.cpp)
 
+ADD_OSQUERY_LIBRARY(osquery_thrift thrift/gen/Extension.cpp
+								   thrift/gen/ExtensionManager.cpp
+								   thrift/gen/osquery_constants.cpp
+								   thrift/gen/osquery_types.cpp)
+ 
 FILE(GLOB OSQUERY_EXTENSIONS_TESTS "tests/*.cpp")
-
-# TODO: Resolve failed cases
-#ADD_OSQUERY_TEST(${OSQUERY_EXTENSIONS_TESTS})
+ADD_OSQUERY_TEST(${OSQUERY_EXTENSIONS_TESTS})

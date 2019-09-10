@@ -12,10 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LIBRARY(osquery_database database.cpp)
-
-ADD_OSQUERY_LIBRARY(osquery_database_internal db_handle.cpp
-											  query.cpp)
+ADD_OSQUERY_LIBRARY(osquery_database database.cpp) 
 
 FILE(GLOB OSQUERY_DATABASE_TESTS "tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_DATABASE_TESTS})

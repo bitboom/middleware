@@ -1,18 +1,30 @@
-/*
- *  Copyright (c) 2014, Facebook, Inc.
+/**
+ *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
+ *  This source code is licensed in accordance with the terms specified in
+ *  the LICENSE file found in the root directory of this source tree.
  */
 
+#ifdef WIN32
+/// Suppress a C4244 warning in gtest-printers.h (double -> BiggestInt
+/// conversion)
+#pragma warning(push, 3)
+#pragma warning(disable : 4244)
+#endif
+
 #include <gtest/gtest.h>
+
+#ifdef WIN32
+#pragma warning(pop)
+#endif
 
 #include <osquery/core.h>
 #include <osquery/flags.h>
 #include <osquery/logger.h>
+#include <osquery/utils/info/platform_type.h>
+
+#include "osquery/flagalias.h"
 
 namespace osquery {
 
@@ -33,7 +45,7 @@ TEST_F(FlagsTests, test_set_get) {
 
   // Check that the gflags flag name was recorded in the osquery flag tracker.
   auto all_flags = Flag::flags();
-  EXPECT_EQ(all_flags.count("test_string_flag"), 1);
+  EXPECT_EQ(all_flags.count("test_string_flag"), 1U);
 
   // Update the value of the flag, and access through the osquery wrapper.
   FLAGS_test_string_flag = "NEW TEST STRING";
@@ -136,5 +148,23 @@ TEST_F(FlagsTests, test_alias_types) {
   value = FLAGS_test_string_alias;
   auto value2 = (std::string)FLAGS_test_string_alias;
   EXPECT_EQ(value, "test3");
+}
+
+TEST_F(FlagsTests, test_platform) {
+  PlatformType mPlatformType = PlatformType::TYPE_POSIX;
+  EXPECT_TRUE(isPlatform(PlatformType::TYPE_POSIX, mPlatformType));
+
+  mPlatformType = PlatformType::TYPE_OSX | PlatformType::TYPE_POSIX;
+  EXPECT_TRUE(isPlatform(PlatformType::TYPE_POSIX, mPlatformType));
+  EXPECT_TRUE(isPlatform(PlatformType::TYPE_OSX, mPlatformType));
+
+  // Now set and check a valid casting.
+  mPlatformType = static_cast<PlatformType>(8);
+  EXPECT_EQ(PlatformType::TYPE_LINUX, mPlatformType);
+
+  // Set something that doesn't make sense
+  mPlatformType = PlatformType::TYPE_WINDOWS | PlatformType::TYPE_BSD;
+  EXPECT_FALSE(isPlatform(PlatformType::TYPE_LINUX, mPlatformType));
+  EXPECT_FALSE(isPlatform(PlatformType::TYPE_OSX, mPlatformType));
 }
 }

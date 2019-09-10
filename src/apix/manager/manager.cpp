@@ -35,11 +35,6 @@ void OsqueryManager::subscribe(const std::string& table, const Callback& callbac
 	return ManagerImpl::instance().subscribe(table, callback);
 }
 
-std::vector<std::string> OsqueryManager::tables(void) noexcept
-{
-	return ManagerImpl::instance().tables();
-}
-
 std::vector<std::string> OsqueryManager::columns(const std::string& table) noexcept
 {
 	return ManagerImpl::instance().columns(table);

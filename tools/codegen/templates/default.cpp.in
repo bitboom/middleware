@@ -15,6 +15,7 @@
 #include <osquery/events.h>
 #include <osquery/tables.h>
 #include <osquery/status.h>
+#include <osquery/registry_factory.h>
 
 namespace osquery {
 
@@ -41,13 +42,14 @@ class {{table_name_cc}}TablePlugin : public TablePlugin {
   TableColumns columns() const {
     return {
 {% for column in schema %}\
-      {"{{column.name}}", "{{column.type.affinity}}"}\
+     std::make_tuple("{{column.name}}", {{column.type.affinity}}_TYPE,\
+     ColumnOptions::DEFAULT)\
 {% if not loop.last %}, {% endif %}
 {% endfor %}\
     };
   }
 
-  QueryData generate(QueryContext& request) {
+  TableRows generate(QueryContext& context) override {
 {% if class_name != "" %}\
     if (EventFactory::exists("{{class_name}}")) {
       auto subscriber = EventFactory::getEventSubscriber("{{class_name}}");
@@ -56,8 +58,9 @@ class {{table_name_cc}}TablePlugin : public TablePlugin {
       return {};
     }
 {% else %}\
-    return tables::{{function}}(request);
+    TableRows results = osquery::tableRowsFromQueryData(tables::{{function}}(context));
 {% endif %}\
+    return results;
   }
 
 {% if function_update != "" %}\

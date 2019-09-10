@@ -12,9 +12,22 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LIBRARY(osquery_utils status/status.cpp
+ADD_OSQUERY_LIBRARY(osquery_utils base64.cpp
+								  chars.cpp
+								  only_movable.cpp
+								  status/status.cpp
 								  system/system.cpp
+								  system/time.cpp
+								  system/uptime.cpp
+								  system/posix/env.cpp
+								  system/posix/errno.cpp
+								  system/posix/filepath.cpp
+								  system/posix/system.cpp
+								  system/posix/time.cpp
+								  info/platform_type.cpp
 								  info/tool_type.cpp
+								  info/version.cpp
+								  config/default_paths.cpp
 								  conversions/tryto.cpp
 								  conversions/split.cpp
 								  json/json.cpp)
@@ -36,3 +49,8 @@ ADD_OSQUERY_TEST(${OSQUERY_UTILS_CONVERSION_TESTS})
 
 FILE(GLOB OSQUERY_UTILS_JSON_TESTS "json/tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_UTILS_JSON_TESTS})
+
+FILE(GLOB OSQUERY_UTILS_SYSTEM_TESTS "system/tests/*.cpp")
+FILE(GLOB OSQUERY_UTILS_SYSTEM_POSIXE_TESTS "system/posix/tests/*.cpp")
+ADD_OSQUERY_TEST(${OSQUERY_UTILS_SYSTEM_TESTS}
+				 ${OSQUERY_UTILS_SYSTEM_POSIXE_TESTS})

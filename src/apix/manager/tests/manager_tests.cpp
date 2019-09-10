@@ -59,15 +59,6 @@ TEST_F(ManagerTests, test_manager_subscribe) {
 	EXPECT_EQ(called, 1);
 }
 
-TEST_F(ManagerTests, test_manager_tables) {
-	auto tables = OsqueryManager::tables();
-	EXPECT_TRUE(tables.size() > 0);
-
-	VLOG(1) << "[Test] Enabled tables:";
-	for (const auto& t : tables)
-		VLOG(1) << "\t" << t;
-}
-
 TEST_F(ManagerTests, test_manager_columns) {
 	auto columns = OsqueryManager::columns("time");
 	EXPECT_TRUE(columns.size() > 0);

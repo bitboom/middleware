@@ -1,42 +1,65 @@
-/*
- *  Copyright (c) 2014, Facebook, Inc.
+/**
+ *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
+ *  This source code is licensed in accordance with the terms specified in
+ *  the LICENSE file found in the root directory of this source tree.
  */
 
 #pragma once
 
-#include "osquery/dispatcher/dispatcher.h"
+#include <chrono>
+#include <map>
+
+#include <osquery/dispatcher.h>
+
+#include "osquery/sql/sqlite_util.h"
 
 namespace osquery {
 
 /// A Dispatcher service thread that watches an ExtensionManagerHandler.
 class SchedulerRunner : public InternalRunnable {
  public:
-  virtual ~SchedulerRunner() {}
-  SchedulerRunner(unsigned long int timeout, size_t interval)
-      : interval_(interval), timeout_(timeout) {}
+  SchedulerRunner(
+      unsigned long int timeout,
+      size_t interval,
+      std::chrono::milliseconds max_time_drift = std::chrono::seconds::zero())
+      : InternalRunnable("SchedulerRunner"),
+        interval_{std::chrono::seconds{interval}},
+        timeout_(timeout),
+        time_drift_{std::chrono::milliseconds::zero()},
+        max_time_drift_{max_time_drift} {}
 
  public:
   /// The Dispatcher thread entry point.
-  void start();
+  void start() override;
 
- protected:
-  /// The UNIX domain socket path for the ExtensionManager.
-  std::map<std::string, size_t> splay_;
+  /// The Dispatcher interrupt point.
+  void stop() override {}
+
+  /// Accumulated for some time time drift to compensate.
+  std::chrono::milliseconds getCurrentTimeDrift() const noexcept;
+
+ private:
   /// Interval in seconds between schedule steps.
-  size_t interval_;
+  const std::chrono::milliseconds interval_;
+
   /// Maximum number of steps.
-  unsigned long int timeout_;
+  const unsigned long int timeout_;
+
+  /// Accumulated for some time time drift to compensate.
+  /// It will be either reduced during compensation process or
+  /// after exceding the limit @see max_time_drift_
+  std::chrono::milliseconds time_drift_;
+
+  const std::chrono::milliseconds max_time_drift_;
 };
 
-/// Start quering according to the config's schedule
-Status startScheduler();
+SQLInternal monitor(const std::string& name, const ScheduledQuery& query);
+
+/// Start querying according to the config's schedule
+void startScheduler();
 
 /// Helper scheduler start with variable settings for testing.
-Status startScheduler(unsigned long int timeout, size_t interval);
+void startScheduler(unsigned long int timeout, size_t interval);
 }

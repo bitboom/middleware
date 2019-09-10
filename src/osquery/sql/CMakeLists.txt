@@ -12,10 +12,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LIBRARY(osquery_sql sql.cpp)
+ADD_OSQUERY_LINK(linenoise)
 
-ADD_OSQUERY_LIBRARY(osquery_sql_internal sqlite_util.cpp
-										 virtual_table.cpp)
+ADD_OSQUERY_LIBRARY(osquery_sql dynamic_table_row.cpp
+								sqlite_encoding.cpp
+								sqlite_hashing.cpp
+								sqlite_util.cpp
+								sql.cpp
+								sqlite_filesystem.cpp
+								sqlite_math.cpp
+								sqlite_string.cpp
+								virtual_table.cpp
+								virtual_sqlite_table.cpp)
 
 FILE(GLOB OSQUERY_SQL_TESTS "tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_SQL_TESTS})

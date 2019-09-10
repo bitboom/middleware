@@ -1,401 +1,126 @@
-/*
- *  Copyright (c) 2014, Facebook, Inc.
+/**
+ *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
+ *  This source code is licensed in accordance with the terms specified in
+ *  the LICENSE file found in the root directory of this source tree.
  */
 
-#include <algorithm>
-#include <iostream>
-#include <sstream>
-#include <set>
-#include <string>
-#include <vector>
-
-#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/io/detail/quoted_manip.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
 #include <osquery/database.h>
+#include <osquery/flagalias.h>
+#include <osquery/flags.h>
 #include <osquery/logger.h>
+#include <osquery/registry.h>
+#include <osquery/utils/config/default_paths.h>
+#include <osquery/utils/conversions/tryto.h>
+#include <osquery/utils/json/json.h>
 
 namespace pt = boost::property_tree;
+namespace rj = rapidjson;
 
 namespace osquery {
 
-typedef unsigned char byte;
+/// Generate a specific-use registry for database access abstraction.
+CREATE_REGISTRY(DatabasePlugin, "database");
 
-/////////////////////////////////////////////////////////////////////////////
-// Row - the representation of a row in a set of database results. Row is a
-// simple map where individual column names are keys, which map to the Row's
-// respective value
-/////////////////////////////////////////////////////////////////////////////
+CLI_FLAG(bool, database_dump, false, "Dump the contents of the backing store");
 
-std::string escapeNonPrintableBytes(const std::string& data) {
-  std::string escaped;
-  // clang-format off
-  char const hex_chars[16] = {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-    'A', 'B', 'C', 'D', 'E', 'F',
-  };
-  // clang-format on
-  for (int i = 0; i < data.length(); i++) {
-    if (((byte)data[i]) < 0x20 || ((byte)data[i]) >= 0x80) {
-      escaped += "\\x";
-      escaped += hex_chars[(((byte)data[i])) >> 4];
-      escaped += hex_chars[((byte)data[i] & 0x0F) >> 0];
-    } else {
-      escaped += data[i];
+CLI_FLAG(string,
+         database_path,
+         OSQUERY_DB_HOME "osquery.db",
+         "If using a disk-based backing store, specify a path");
+FLAG_ALIAS(std::string, db_path, database_path);
+
+FLAG(bool, disable_database, false, "Disable the persistent RocksDB storage");
+
+const std::string kInternalDatabase = "rocksdb";
+const std::string kPersistentSettings = "configurations";
+const std::string kQueries = "queries";
+const std::string kEvents = "events";
+const std::string kCarves = "carves";
+const std::string kLogs = "logs";
+
+const std::string kDbEpochSuffix = "epoch";
+const std::string kDbCounterSuffix = "counter";
+
+const std::string kDbVersionKey = "results_version";
+
+const std::vector<std::string> kDomains = {
+    kPersistentSettings, kQueries, kEvents, kLogs, kCarves};
+
+std::atomic<bool> DatabasePlugin::kDBAllowOpen(false);
+std::atomic<bool> DatabasePlugin::kDBRequireWrite(false);
+std::atomic<bool> DatabasePlugin::kDBInitialized(false);
+std::atomic<bool> DatabasePlugin::kDBChecking(false);
+
+/**
+ * @brief A reader/writer mutex protecting database resets.
+ *
+ * A write is locked while using reset flows. A read is locked when calling
+ * database plugin APIs.
+ */
+Mutex kDatabaseReset;
+
+Status DatabasePlugin::initPlugin() {
+  // Initialize the database plugin using the flag.
+  auto plugin = (FLAGS_disable_database) ? "ephemeral" : kInternalDatabase;
+  {
+    auto const status = RegistryFactory::get().setActive("database", plugin);
+    if (status.ok()) {
+      kDBInitialized = true;
+      return status;
     }
+    LOG(WARNING) << "Failed to activate database plugin " << boost::io::quoted(plugin) << ": " << status.what();
   }
-  return escaped;
+  // If the database did not setUp override the active plugin.
+  auto const status = RegistryFactory::get().setActive("database", "ephemeral");
+  if (!status.ok()) {
+    LOG(ERROR) << "Failed to activate database plugin \"ephemeral\": " << status.what();
+  }
+  kDBInitialized = status.ok();
+  return status;
 }
 
-void escapeQueryData(const QueryData& oldData, QueryData& newData) {
-  for (const auto& r : oldData) {
-    Row newRow;
-    for (auto& i : r) {
-      newRow[i.first] = escapeNonPrintableBytes(i.second);
-    }
-    newData.push_back(newRow);
+void DatabasePlugin::shutdown() {
+  auto database_registry = RegistryFactory::get().registry("database");
+  for (auto& plugin : RegistryFactory::get().names("database")) {
+    database_registry->remove(plugin);
   }
 }
 
-Status serializeRow(const Row& r, pt::ptree& tree) {
+Status DatabasePlugin::reset() {
+  // Keep this simple, scope the critical section to the broader methods.
+  tearDown();
+  return setUp();
+}
+
+bool DatabasePlugin::checkDB() {
+  kDBChecking = true;
+  bool result = true;
   try {
-    for (auto& i : r) {
-      tree.put<std::string>(i.first, i.second);
+    auto status = setUp();
+    if (kDBRequireWrite && read_only_) {
+      result = false;
     }
+    tearDown();
+    result = status.ok();
   } catch (const std::exception& e) {
-    return Status(1, e.what());
+    VLOG(1) << "Database plugin check failed: " << e.what();
+    result = false;
   }
-  return Status(0, "OK");
+  kDBChecking = false;
+  return result;
 }
 
-Status serializeRowJSON(const Row& r, std::string& json) {
-  pt::ptree tree;
-  auto status = serializeRow(r, tree);
-  if (!status.ok()) {
-    return status;
-  }
-
-  std::ostringstream output;
-  try {
-    pt::write_json(output, tree, false);
-  } catch (const pt::json_parser::json_parser_error& e) {
-    // The content could not be represented as JSON.
-    return Status(1, e.what());
-  }
-  json = output.str();
-  return Status(0, "OK");
-}
-
-Status deserializeRow(const pt::ptree& tree, Row& r) {
-  for (const auto& i : tree) {
-    if (i.first.length() > 0) {
-      r[i.first] = i.second.data();
-    }
-  }
-  return Status(0, "OK");
-}
-
-Status deserializeRowJSON(const std::string& json, Row& r) {
-  pt::ptree tree;
-  try {
-    std::stringstream input;
-    input << json;
-    pt::read_json(input, tree);
-  } catch (const pt::json_parser::json_parser_error& e) {
-    return Status(1, e.what());
-  }
-  return deserializeRow(tree, r);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// QueryData - the representation of a database query result set. It's a
-// vector of rows
-/////////////////////////////////////////////////////////////////////////////
-
-Status serializeQueryData(const QueryData& q, pt::ptree& tree) {
-  for (const auto& r : q) {
-    pt::ptree serialized;
-    auto s = serializeRow(r, serialized);
-    if (!s.ok()) {
-      return s;
-    }
-    tree.push_back(std::make_pair("", serialized));
-  }
-  return Status(0, "OK");
-}
-
-Status serializeQueryDataJSON(const QueryData& q, std::string& json) {
-  pt::ptree tree;
-  auto status = serializeQueryData(q, tree);
-  if (!status.ok()) {
-    return status;
-  }
-
-  std::ostringstream output;
-  try {
-    pt::write_json(output, tree, false);
-  } catch (const pt::json_parser::json_parser_error& e) {
-    // The content could not be represented as JSON.
-    return Status(1, e.what());
-  }
-  json = output.str();
-  return Status(0, "OK");
-}
-
-Status deserializeQueryData(const pt::ptree& tree, QueryData& qd) {
-  for (const auto& i : tree) {
-    Row r;
-    auto status = deserializeRow(i.second, r);
-    if (!status.ok()) {
-      return status;
-    }
-    qd.push_back(r);
-  }
-  return Status(0, "OK");
-}
-
-Status deserializeQueryDataJSON(const std::string& json, QueryData& qd) {
-  pt::ptree tree;
-  try {
-    std::stringstream input;
-    input << json;
-    pt::read_json(input, tree);
-  } catch (const pt::json_parser::json_parser_error& e) {
-    return Status(1, e.what());
-  }
-  return deserializeQueryData(tree, qd);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DiffResults - the representation of two diffed QueryData result sets.
-// Given and old and new QueryData, DiffResults indicates the "added" subset
-// of rows and the "removed" subset of Rows
-/////////////////////////////////////////////////////////////////////////////
-
-Status serializeDiffResults(const DiffResults& d, pt::ptree& tree) {
-  pt::ptree added;
-  auto status = serializeQueryData(d.added, added);
-  if (!status.ok()) {
-    return status;
-  }
-  tree.add_child("added", added);
-
-  pt::ptree removed;
-  status = serializeQueryData(d.removed, removed);
-  if (!status.ok()) {
-    return status;
-  }
-  tree.add_child("removed", removed);
-  return Status(0, "OK");
-}
-
-Status deserializeDiffResults(const pt::ptree& tree, DiffResults& dr) {
-  if (tree.count("added") > 0) {
-    auto status = deserializeQueryData(tree.get_child("added"), dr.added);
-    if (!status.ok()) {
-      return status;
-    }
-  }
-
-  if (tree.count("removed") > 0) {
-    auto status = deserializeQueryData(tree.get_child("removed"), dr.removed);
-    if (!status.ok()) {
-      return status;
-    }
-  }
-  return Status(0, "OK");
-}
-
-Status serializeDiffResultsJSON(const DiffResults& d, std::string& json) {
-  pt::ptree tree;
-  auto status = serializeDiffResults(d, tree);
-  if (!status.ok()) {
-    return status;
-  }
-
-  std::ostringstream output;
-  try {
-    pt::write_json(output, tree, false);
-  } catch (const pt::json_parser::json_parser_error& e) {
-    // The content could not be represented as JSON.
-    return Status(1, e.what());
-  }
-  json = output.str();
-  return Status(0, "OK");
-}
-
-DiffResults diff(const QueryData& old, const QueryData& current) {
-  DiffResults r;
-  QueryData overlap;
-
-  for (const auto& i : current) {
-    auto item = std::find(old.begin(), old.end(), i);
-    if (item != old.end()) {
-      overlap.push_back(i);
-    } else {
-      r.added.push_back(i);
-    }
-  }
-
-  std::multiset<Row> overlap_set(overlap.begin(), overlap.end());
-  std::multiset<Row> old_set(old.begin(), old.end());
-  std::set_difference(old_set.begin(),
-                      old_set.end(),
-                      overlap_set.begin(),
-                      overlap_set.end(),
-                      std::back_inserter(r.removed));
-  return r;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// QueryLogItem - the representation of a log result occuring when a
-// scheduled query yields operating system state change.
-/////////////////////////////////////////////////////////////////////////////
-
-Status serializeQueryLogItem(const QueryLogItem& i, pt::ptree& tree) {
-  pt::ptree results_tree;
-  if (i.results.added.size() > 0 || i.results.removed.size() > 0) {
-    auto status = serializeDiffResults(i.results, results_tree);
-    if (!status.ok()) {
-      return status;
-    }
-    tree.add_child("diffResults", results_tree);
-  } else {
-    auto status = serializeQueryData(i.snapshot_results, results_tree);
-    if (!status.ok()) {
-      return status;
-    }
-    tree.add_child("snapshot", results_tree);
-  }
-
-  tree.put<std::string>("name", i.name);
-  tree.put<std::string>("hostIdentifier", i.identifier);
-  tree.put<std::string>("calendarTime", i.calendar_time);
-  tree.put<int>("unixTime", i.time);
-  return Status(0, "OK");
-}
-
-Status serializeQueryLogItemJSON(const QueryLogItem& i, std::string& json) {
-  pt::ptree tree;
-  auto status = serializeQueryLogItem(i, tree);
-  if (!status.ok()) {
-    return status;
-  }
-
-  std::ostringstream output;
-  try {
-    pt::write_json(output, tree, false);
-  } catch (const pt::json_parser::json_parser_error& e) {
-    // The content could not be represented as JSON.
-    return Status(1, e.what());
-  }
-  json = output.str();
-  return Status(0, "OK");
-}
-
-Status deserializeQueryLogItem(const pt::ptree& tree, QueryLogItem& item) {
-  if (tree.count("diffResults") > 0) {
-    auto status =
-        deserializeDiffResults(tree.get_child("diffResults"), item.results);
-    if (!status.ok()) {
-      return status;
-    }
-  } else if (tree.count("snapshot") > 0) {
-    auto status =
-        deserializeQueryData(tree.get_child("snapshot"), item.snapshot_results);
-    if (!status.ok()) {
-      return status;
-    }
-  }
-
-  item.name = tree.get<std::string>("name", "");
-  item.identifier = tree.get<std::string>("hostIdentifier", "");
-  item.calendar_time = tree.get<std::string>("calendarTime", "");
-  item.time = tree.get<int>("unixTime", 0);
-  return Status(0, "OK");
-}
-
-Status deserializeQueryLogItemJSON(const std::string& json,
-                                   QueryLogItem& item) {
-  pt::ptree tree;
-  try {
-    std::stringstream input;
-    input << json;
-    pt::read_json(input, tree);
-  } catch (const pt::json_parser::json_parser_error& e) {
-    return Status(1, e.what());
-  }
-  return deserializeQueryLogItem(tree, item);
-}
-
-Status serializeEvent(const QueryLogItem& item,
-                      const pt::ptree& event,
-                      pt::ptree& tree) {
-  tree.put<std::string>("name", item.name);
-  tree.put<std::string>("hostIdentifier", item.identifier);
-  tree.put<std::string>("calendarTime", item.calendar_time);
-  tree.put<int>("unixTime", item.time);
-
-  pt::ptree columns;
-  for (auto& i : event) {
-    // Yield results as a "columns." map to avoid namespace collisions.
-    columns.put<std::string>(i.first, i.second.get_value<std::string>());
-  }
-
-  tree.add_child("columns", columns);
-  return Status(0, "OK");
-}
-
-Status serializeQueryLogItemAsEvents(const QueryLogItem& i, pt::ptree& tree) {
-  pt::ptree diff_results;
-  auto status = serializeDiffResults(i.results, diff_results);
-  if (!status.ok()) {
-    return status;
-  }
-
-  for (auto& action : diff_results) {
-    for (auto& row : action.second) {
-      pt::ptree event;
-      serializeEvent(i, row.second, event);
-      event.put<std::string>("action", action.first);
-      tree.push_back(std::make_pair("", event));
-    }
-  }
-  return Status(0, "OK");
-}
-
-Status serializeQueryLogItemAsEventsJSON(const QueryLogItem& i,
-                                         std::string& json) {
-  pt::ptree tree;
-  auto status = serializeQueryLogItemAsEvents(i, tree);
-  if (!status.ok()) {
-    return status;
-  }
-
-  std::ostringstream output;
-  for (auto& event : tree) {
-    try {
-      pt::write_json(output, event.second, false);
-    } catch (const pt::json_parser::json_parser_error& e) {
-      return Status(1, e.what());
-    }
-  }
-  json = output.str();
-  return Status(0, "OK");
-}
-
-bool addUniqueRowToQueryData(QueryData& q, const Row& r) {
-  if (std::find(q.begin(), q.end(), r) != q.end()) {
-    return false;
-  }
-  q.push_back(r);
-  return true;
+Status DatabasePlugin::scan(const std::string& domain,
+                            std::vector<std::string>& results,
+                            const std::string& prefix,
+                            size_t max) const {
+  return Status::success();
 }
 
 Status DatabasePlugin::call(const PluginRequest& request,
@@ -408,7 +133,23 @@ Status DatabasePlugin::call(const PluginRequest& request,
   auto domain = (request.count("domain") > 0) ? request.at("domain") : "";
   auto key = (request.count("key") > 0) ? request.at("key") : "";
 
+  if (request.at("action") == "reset") {
+    WriteLock lock(kDatabaseReset);
+    DatabasePlugin::kDBInitialized = false;
+    // Prevent RocksDB reentrancy by logger plugins during plugin setup.
+    VLOG(1) << "Resetting the database plugin: " << getName();
+    auto status = this->reset();
+    if (!status.ok()) {
+      // The active database could not be reset, fallback to an ephemeral.
+      Registry::get().setActive("database", "ephemeral");
+      LOG(WARNING) << "Unable to reset database plugin: " << getName();
+    }
+    DatabasePlugin::kDBInitialized = true;
+    return status;
+  }
+
   // Switch over the possible database plugin actions.
+  ReadLock lock(kDatabaseReset);
   if (request.at("action") == "get") {
     std::string value;
     auto status = this->get(domain, key, value);
@@ -419,13 +160,58 @@ Status DatabasePlugin::call(const PluginRequest& request,
       return Status(1, "Database plugin put action requires a value");
     }
     return this->put(domain, key, request.at("value"));
+  } else if (request.at("action") == "putBatch") {
+    if (request.count("json") == 0) {
+      return Status(
+          1,
+          "Database plugin putBatch action requires a json-encoded value list");
+    }
+
+    auto json_object = JSON::newObject();
+
+    auto status = json_object.fromString(request.at("json"));
+    if (!status.ok()) {
+      VLOG(1) << status.getMessage();
+      return status;
+    }
+
+    const auto& json_object_list = json_object.doc().GetObject();
+
+    DatabaseStringValueList data;
+    data.reserve(json_object_list.MemberCount());
+
+    for (auto& item : json_object_list) {
+      if (!item.value.IsString()) {
+        return Status(1,
+                      "Database plugin putBatch action with an invalid json "
+                      "received. Only string values are supported");
+      }
+
+      data.push_back(
+          std::make_pair(item.name.GetString(), item.value.GetString()));
+    }
+
+    return this->putBatch(domain, data);
   } else if (request.at("action") == "remove") {
     return this->remove(domain, key);
+  } else if (request.at("action") == "remove_range") {
+    auto key_high =
+        (request.count("key_high") > 0) ? request.at("key_high") : "";
+    if (!key_high.empty() && !key.empty()) {
+      return this->removeRange(domain, key, key_high);
+    }
+    return Status(1, "Missing range");
   } else if (request.at("action") == "scan") {
+    // Accumulate scanned keys into a vector.
     std::vector<std::string> keys;
-    auto status = this->scan(domain, keys);
-    for (const auto& key : keys) {
-      response.push_back({{"k", key}});
+    // Optionally allow the caller to request a max number of keys.
+    size_t max = 0;
+    if (request.count("max") > 0) {
+      max = std::stoul(request.at("max"));
+    }
+    auto status = this->scan(domain, keys, request.at("prefix"), max);
+    for (const auto& k : keys) {
+      response.push_back({{"k", k}});
     }
     return status;
   }
@@ -433,50 +219,416 @@ Status DatabasePlugin::call(const PluginRequest& request,
   return Status(1, "Unknown database plugin action");
 }
 
-Status getDatabaseValue(const std::string& domain,
-                        const std::string& key,
-                        std::string& value) {
-  PluginRequest request = {{"action", "get"}, {"domain", domain}, {"key", key}};
-  PluginResponse response;
-  auto status = Registry::call("database", "rocks", request, response);
+static inline std::shared_ptr<DatabasePlugin> getDatabasePlugin() {
+  auto& rf = RegistryFactory::get();
+  if (!rf.exists("database", rf.getActive("database"), true)) {
+    return nullptr;
+  }
+
+  auto plugin = rf.plugin("database", rf.getActive("database"));
+  return std::dynamic_pointer_cast<DatabasePlugin>(plugin);
+}
+
+namespace {
+Status sendPutBatchDatabaseRequest(const std::string& domain,
+                                   const DatabaseStringValueList& data) {
+  auto json_object = JSON::newObject();
+  for (const auto& p : data) {
+    const auto& key = p.first;
+    const auto& value = p.second;
+
+    json_object.addRef(key, value);
+  }
+
+  std::string serialized_data;
+  auto status = json_object.toString(serialized_data);
   if (!status.ok()) {
-    VLOG(1) << "Cannot get database " << domain << "/" << key << ": "
-            << status.getMessage();
+    VLOG(1) << status.getMessage();
     return status;
   }
 
-  // Set value from the internally-known "v" key.
-  if (response.size() > 0 && response[0].count("v") > 0) {
-    value = response[0].at("v");
+  PluginRequest request = {{"action", "putBatch"},
+                           {"domain", domain},
+                           {"json", std::move(serialized_data)}};
+
+  status = Registry::call("database", request);
+  if (!status.ok()) {
+    VLOG(1) << status.getMessage();
   }
+
   return status;
+}
+
+Status sendPutDatabaseRequest(const std::string& domain,
+                              const DatabaseStringValueList& data) {
+  const auto& key = data[0].first;
+  const auto& value = data[0].second;
+
+  PluginRequest request = {
+      {"action", "put"}, {"domain", domain}, {"key", key}, {"value", value}};
+
+  auto status = Registry::call("database", request);
+  if (!status.ok()) {
+    VLOG(1) << status.getMessage();
+  }
+
+  return status;
+}
+} // namespace
+
+Status getDatabaseValue(const std::string& domain,
+                        const std::string& key,
+                        std::string& value) {
+  if (domain.empty()) {
+    return Status(1, "Missing domain");
+  }
+
+  if (RegistryFactory::get().external()) {
+    // External registries (extensions) do not have databases active.
+    // It is not possible to use an extension-based database.
+    PluginRequest request = {
+        {"action", "get"}, {"domain", domain}, {"key", key}};
+    PluginResponse response;
+    auto status = Registry::call("database", request, response);
+    if (status.ok()) {
+      // Set value from the internally-known "v" key.
+      if (response.size() > 0 && response[0].count("v") > 0) {
+        value = response[0].at("v");
+      }
+    }
+    return status;
+  }
+
+  ReadLock lock(kDatabaseReset);
+  if (!DatabasePlugin::kDBInitialized) {
+    throw std::runtime_error("Cannot get database value: " + key);
+  } else {
+    auto plugin = getDatabasePlugin();
+    return plugin->get(domain, key, value);
+  }
+}
+
+Status getDatabaseValue(const std::string& domain,
+                        const std::string& key,
+                        int& value) {
+  std::string result;
+  auto s = getDatabaseValue(domain, key, result);
+  if (s.ok()) {
+    value = std::stoi(result);
+  }
+  return s;
 }
 
 Status setDatabaseValue(const std::string& domain,
                         const std::string& key,
                         const std::string& value) {
-  PluginRequest request = {
-      {"action", "put"}, {"domain", domain}, {"key", key}, {"value", value}};
-  return Registry::call("database", "rocks", request);
+  return setDatabaseBatch(domain, {std::make_pair(key, value)});
+}
+
+Status setDatabaseBatch(const std::string& domain,
+                        const DatabaseStringValueList& data) {
+  if (domain.empty()) {
+    return Status(1, "Missing domain");
+  }
+
+  // External registries (extensions) do not have databases active.
+  // It is not possible to use an extension-based database.
+  if (RegistryFactory::get().external()) {
+    if (data.size() > 1) {
+      return sendPutBatchDatabaseRequest(domain, data);
+    } else {
+      return sendPutDatabaseRequest(domain, data);
+    }
+  }
+
+  ReadLock lock(kDatabaseReset);
+  if (!DatabasePlugin::kDBInitialized) {
+    throw std::runtime_error("Cannot set database values");
+  }
+
+  auto plugin = getDatabasePlugin();
+  return plugin->putBatch(domain, data);
+}
+
+Status setDatabaseValue(const std::string& domain,
+                        const std::string& key,
+                        int value) {
+  return setDatabaseBatch(domain, {std::make_pair(key, std::to_string(value))});
 }
 
 Status deleteDatabaseValue(const std::string& domain, const std::string& key) {
-  PluginRequest request = {
-      {"action", "remove"}, {"domain", domain}, {"key", key}};
-  return Registry::call("database", "rocks", request);
+  if (domain.empty()) {
+    return Status(1, "Missing domain");
+  }
+
+  if (RegistryFactory::get().external()) {
+    // External registries (extensions) do not have databases active.
+    // It is not possible to use an extension-based database.
+    PluginRequest request = {
+        {"action", "remove"}, {"domain", domain}, {"key", key}};
+    return Registry::call("database", request);
+  }
+
+  ReadLock lock(kDatabaseReset);
+  if (!DatabasePlugin::kDBInitialized) {
+    throw std::runtime_error("Cannot delete database value: " + key);
+  } else {
+    auto plugin = getDatabasePlugin();
+    return plugin->remove(domain, key);
+  }
+}
+
+Status deleteDatabaseRange(const std::string& domain,
+                           const std::string& low,
+                           const std::string& high) {
+  if (domain.empty()) {
+    return Status(1, "Missing domain");
+  }
+
+  if (RegistryFactory::get().external()) {
+    // External registries (extensions) do not have databases active.
+    // It is not possible to use an extension-based database.
+    PluginRequest request = {{"action", "remove_range"},
+                             {"domain", domain},
+                             {"key", low},
+                             {"key_high", high}};
+    return Registry::call("database", request);
+  }
+
+  ReadLock lock(kDatabaseReset);
+  if (!DatabasePlugin::kDBInitialized) {
+    throw std::runtime_error("Cannot delete database values: " + low + " - " +
+                             high);
+  } else {
+    auto plugin = getDatabasePlugin();
+    return plugin->removeRange(domain, low, high);
+  }
 }
 
 Status scanDatabaseKeys(const std::string& domain,
-                        std::vector<std::string>& keys) {
-  PluginRequest request = {{"action", "scan"}, {"domain", domain}};
-  PluginResponse response;
-  auto status = Registry::call("database", "rocks", request, response);
+                        std::vector<std::string>& keys,
+                        size_t max) {
+  return scanDatabaseKeys(domain, keys, "", max);
+}
 
-  for (const auto& item : response) {
-    if (item.count("k") > 0) {
-      keys.push_back(item.at("k"));
+/// Get a list of keys for a given domain.
+Status scanDatabaseKeys(const std::string& domain,
+                        std::vector<std::string>& keys,
+                        const std::string& prefix,
+                        size_t max) {
+  if (domain.empty()) {
+    return Status(1, "Missing domain");
+  }
+
+  if (RegistryFactory::get().external()) {
+    // External registries (extensions) do not have databases active.
+    // It is not possible to use an extension-based database.
+    PluginRequest request = {{"action", "scan"},
+                             {"domain", domain},
+                             {"prefix", prefix},
+                             {"max", std::to_string(max)}};
+    PluginResponse response;
+    auto status = Registry::call("database", request, response);
+
+    for (const auto& item : response) {
+      if (item.count("k") > 0) {
+        keys.push_back(item.at("k"));
+      }
+    }
+    return status;
+  }
+
+  ReadLock lock(kDatabaseReset);
+  if (!DatabasePlugin::kDBInitialized) {
+    throw std::runtime_error("Cannot scan database values: " + prefix);
+  } else {
+    auto plugin = getDatabasePlugin();
+    return plugin->scan(domain, keys, prefix, max);
+  }
+}
+
+void resetDatabase() {
+  PluginRequest request = {{"action", "reset"}};
+  Registry::call("database", request);
+}
+
+void dumpDatabase() {
+  auto plugin = getDatabasePlugin();
+  plugin->dumpDatabase();
+}
+
+Status ptreeToRapidJSON(const std::string& in, std::string& out) {
+  pt::ptree tree;
+  try {
+    std::stringstream ss;
+    ss << in;
+    pt::read_json(ss, tree);
+  } catch (const pt::json_parser::json_parser_error& /* e */) {
+    return Status(1, "Failed to parse JSON");
+  }
+
+  auto json = JSON::newArray();
+  for (const auto& t : tree) {
+    std::stringstream ss;
+    pt::write_json(ss, t.second);
+
+    rj::Document row;
+    if (row.Parse(ss.str().c_str()).HasParseError()) {
+      return Status(1, "Failed to serialize JSON");
+    }
+    json.push(row);
+  }
+
+  json.toString(out);
+
+  return Status::success();
+}
+
+static Status migrateV0V1(void) {
+  std::vector<std::string> keys;
+  auto s = scanDatabaseKeys(kQueries, keys);
+  if (!s.ok()) {
+    return Status(1, "Failed to lookup legacy query data from database");
+  }
+
+  for (const auto& key : keys) {
+    // Skip over epoch and counter entries, as 0 is parsed by ptree
+    if (boost::algorithm::ends_with(key, kDbEpochSuffix) ||
+        boost::algorithm::ends_with(key, kDbCounterSuffix) ||
+        boost::algorithm::starts_with(key, "query.")) {
+      continue;
+    }
+
+    std::string value{""};
+    if (!getDatabaseValue(kQueries, key, value)) {
+      LOG(WARNING) << "Failed to get value from database " << key;
+      continue;
+    }
+
+    std::string out;
+    s = ptreeToRapidJSON(value, out);
+    if (!s.ok()) {
+      LOG(WARNING) << "Conversion from ptree to RapidJSON failed for '" << key
+                   << ": " << value << "': " << s.what() << ". Dropping key!";
+      continue;
+    }
+
+    if (!setDatabaseValue(kQueries, key, out)) {
+      LOG(WARNING) << "Failed to update value in database " << key << ": "
+                   << value;
     }
   }
-  return status;
+
+  return Status::success();
 }
+
+static Status migrateV1V2(void) {
+  std::vector<std::string> keys;
+  const std::string audit_str(".audit.");
+
+  Status s = scanDatabaseKeys(kEvents, keys);
+  if (!s.ok()) {
+    return Status::failure(
+        1, "Failed to scan event keys from database: " + s.what());
+  }
+
+  for (const auto& key : keys) {
+    const auto pos = key.find(audit_str);
+    if (pos != std::string::npos) {
+      std::string value;
+      std::string new_key = key;
+      new_key.replace(pos, audit_str.length(), ".auditeventpublisher.");
+
+      s = getDatabaseValue(kEvents, key, value);
+      if (!s.ok()) {
+        LOG(ERROR) << "Failed to read value for key '" << key
+                   << "'. Key will be kept but won't be migrated!";
+        continue;
+      }
+
+      s = setDatabaseValue(kEvents, new_key, value);
+      if (!s.ok()) {
+        LOG(ERROR) << "Failed to set value for key '" << new_key
+                   << "' migrated from '" << key
+                   << "'. Original key will be kept but won't be migrated!";
+        continue;
+      }
+
+      s = deleteDatabaseValue(kEvents, key);
+      if (!s.ok()) {
+        LOG(WARNING) << "Failed to delete key '" << key
+                     << "' after migration to new key '" << new_key
+                     << "'. Original key will be kept but data was migrated!";
+      }
+    }
+  }
+
+  return Status::success();
 }
+
+Status upgradeDatabase(int to_version) {
+  LOG(INFO) << "Checking database version for migration";
+
+  std::string value;
+  Status st = getDatabaseValue(kPersistentSettings, kDbVersionKey, value);
+
+  int db_version = 0;
+  /* Since there isn't a reliable way to determined what happen when the read
+   * fails we just assume the key doesn't exist which indicates database
+   * version 0.
+   */
+  if (st.ok()) {
+    auto ret = tryTo<int>(value);
+    if (ret.isError()) {
+      LOG(ERROR) << "Invalid value '" << value << "'for " << kDbVersionKey
+                 << " key. Database is corrupted.";
+      return Status(1, "Invalid value for database version.");
+    } else {
+      db_version = ret.get();
+    }
+  }
+
+  while (db_version != to_version) {
+    Status migrate_status;
+
+    LOG(INFO) << "Performing migration: " << db_version << " -> "
+              << (db_version + 1);
+
+    switch (db_version) {
+    case 0:
+      migrate_status = migrateV0V1();
+      break;
+
+    case 1:
+      migrate_status = migrateV1V2();
+      break;
+
+    default:
+      LOG(ERROR) << "Logic error: the migration code is broken!";
+      migrate_status = Status(1);
+      break;
+    }
+
+    if (!migrate_status.ok()) {
+      return Status(1, "Database migration failed.");
+    }
+
+    st = setDatabaseValue(
+        kPersistentSettings, kDbVersionKey, std::to_string(db_version + 1));
+    if (!st.ok()) {
+      LOG(ERROR) << "Failed to set new database version after migration. "
+                 << "The DB was correctly migrated from version " << db_version
+                 << " to version " << (db_version + 1)
+                 << " but persisting the new version failed.";
+      return Status(1, "Database migration failed.");
+    }
+
+    LOG(INFO) << "Migration " << db_version << " -> " << (db_version + 1)
+              << " successfully completed!";
+
+    db_version++;
+  }
+
+  return Status::success();
+}
+} // namespace osquery

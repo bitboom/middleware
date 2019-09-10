@@ -22,7 +22,7 @@
 #include "manager_impl.h"
 
 #include <osquery/core.h>
-#include <osquery/filesystem.h>
+#include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/notification.h>
@@ -35,6 +35,7 @@
 
 #include <functional>
 #include <sstream>
+#include <tuple>
 
 namespace osquery {
 
@@ -79,11 +80,6 @@ void ManagerImpl::subscribe(const std::string& table, const Callback& callback)
 		LOG(ERROR) << "Subscribing event failed: " << status.getCode();
 }
 
-std::vector<std::string> ManagerImpl::tables(void) noexcept
-{
-	return SQL::getTableNames();
-}
-
 std::vector<std::string> ManagerImpl::columns(const std::string& table) noexcept
 {
 	std::stringstream query;
@@ -95,7 +91,7 @@ std::vector<std::string> ManagerImpl::columns(const std::string& table) noexcept
 	// Extract column names
 	std::vector<std::string> names;
 	for (auto& c : columns)
-		names.emplace_back(std::move(c.first));
+		names.emplace_back(std::move(std::get<0>(c)));
 
 	return names;
 }

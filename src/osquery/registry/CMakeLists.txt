@@ -12,7 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LIBRARY(osquery_registry registry.cpp)
+ADD_OSQUERY_LIBRARY(osquery_registry registry_factory.cpp
+									 registry_interface.cpp)
 
-FILE(GLOB OSQUERY_REGISTRY_TESTS "tests/*.cpp")
-ADD_OSQUERY_TEST(${OSQUERY_REGISTRY_TESTS})
+FILE(GLOB OSQUERY_SQL_TESTS "tests/*.cpp")
+ADD_OSQUERY_TEST(${OSQUERY_SQL_TESTS})

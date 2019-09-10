@@ -1,83 +1,103 @@
-/*
- *  Copyright (c) 2014, Facebook, Inc.
+/**
+ *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant 
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
+ *  This source code is licensed in accordance with the terms specified in
+ *  the LICENSE file found in the root directory of this source tree.
  */
 
+#include <poll.h>
+
 #include <osquery/events.h>
-#include <osquery/filesystem.h>
+#include <osquery/filesystem/filesystem.h>
 #include <osquery/logger.h>
+#include <osquery/registry_factory.h>
 
 #include "osquery/events/linux/udev.h"
 
 namespace osquery {
 
-int kUdevMLatency = 200;
+static const int kUdevMLatency = 200;
 
 REGISTER(UdevEventPublisher, "event_publisher", "udev");
 
 Status UdevEventPublisher::setUp() {
+  // The Setup and Teardown workflows should be protected against races.
+  // Just in case let's protect the publisher's resources.
+  WriteLock lock(mutex_);
+
   // Create the udev object.
   handle_ = udev_new();
-  if (!handle_) {
+  if (handle_ == nullptr) {
     return Status(1, "Could not create udev object.");
   }
 
   // Set up the udev monitor before scanning/polling.
   monitor_ = udev_monitor_new_from_netlink(handle_, "udev");
-  udev_monitor_enable_receiving(monitor_);
+  if (monitor_ == nullptr) {
+    udev_unref(handle_);
+    handle_ = nullptr;
+    return Status(1, "Could not create udev monitor.");
+  }
 
-  return Status(0, "OK");
+  udev_monitor_enable_receiving(monitor_);
+  return Status::success();
 }
 
-void UdevEventPublisher::configure() {}
-
 void UdevEventPublisher::tearDown() {
+  WriteLock lock(mutex_);
   if (monitor_ != nullptr) {
     udev_monitor_unref(monitor_);
+    monitor_ = nullptr;
   }
 
   if (handle_ != nullptr) {
     udev_unref(handle_);
+    handle_ = nullptr;
   }
 }
 
 Status UdevEventPublisher::run() {
-  int fd = udev_monitor_get_fd(monitor_);
-  fd_set set;
+  {
+    WriteLock lock(mutex_);
+    if (monitor_ == nullptr) {
+      return Status(1);
+    }
+    int fd = udev_monitor_get_fd(monitor_);
+    if (fd < 0) {
+      LOG(ERROR) << "Could not get udev monitor fd";
+      return Status::failure("udev monitor failed");
+    }
 
-  FD_ZERO(&set);
-  FD_SET(fd, &set);
+    struct pollfd fds[1];
+    fds[0].fd = fd;
+    fds[0].events = POLLIN;
 
-  struct timeval timeout = {3, 3000};
-  int selector = ::select(fd + 1, &set, nullptr, nullptr, &timeout);
-  if (selector == -1) {
-    LOG(ERROR) << "Could not read udev monitor";
-    return Status(1, "udev monitor failed.");
+    int selector = ::poll(fds, 1, 1000);
+    if (selector == -1 && errno != EINTR && errno != EAGAIN) {
+      LOG(ERROR) << "Could not read udev monitor";
+      return Status(1, "udev monitor failed.");
+    }
+
+    if (selector == 0 || !(fds[0].revents & POLLIN)) {
+      // Read timeout.
+      return Status::success();
+    }
+
+    struct udev_device* device = udev_monitor_receive_device(monitor_);
+    if (device == nullptr) {
+      LOG(ERROR) << "udev monitor returned invalid device";
+      return Status(1, "udev monitor failed.");
+    }
+
+    auto ec = createEventContextFrom(device);
+    fire(ec);
+
+    udev_device_unref(device);
   }
 
-  if (selector == 0 || !FD_ISSET(fd, &set)) {
-    // Read timeout.
-    return Status(0, "Timeout");
-  }
-
-  struct udev_device *device = udev_monitor_receive_device(monitor_);
-  if (device == nullptr) {
-    LOG(ERROR) << "udev monitor returned invalid device.";
-    return Status(1, "udev monitor failed.");
-  }
-
-  auto ec = createEventContextFrom(device);
-  fire(ec);
-
-  udev_device_unref(device);
-
-  osquery::publisherSleep(kUdevMLatency);
-  return Status(0, "Continue");
+  pause(std::chrono::milliseconds(kUdevMLatency));
+  return Status::success();
 }
 
 std::string UdevEventPublisher::getValue(struct udev_device* device,
@@ -157,4 +177,4 @@ bool UdevEventPublisher::shouldFire(const UdevSubscriptionContextRef& sc,
 
   return true;
 }
-}
+} // namespace osquery

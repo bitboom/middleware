@@ -337,7 +337,7 @@ class ConfigPlugin : public Plugin {
    * @return A failure status will prevent the source map from merging.
    */
   virtual Status genConfig(ConfigSourceMap& config) = 0;
-  Status call(const PluginRequest& request, PluginResponse& response);
+  Status call(const PluginRequest& request, PluginResponse& response) override;
 };
 
 /// Helper merged and parsed property tree.

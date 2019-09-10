@@ -45,7 +45,6 @@ public:
 	static void subscribe(const std::string& table, const Callback& callback);
 
 	/// Table information
-	static std::vector<std::string> tables(void) noexcept;
 	static std::vector<std::string> columns(const std::string& table) noexcept;
 };
 

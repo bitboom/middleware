@@ -1,18 +1,15 @@
-/*
- *  Copyright (c) 2014, Facebook, Inc.
+/**
+ *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
+ *  This source code is licensed in accordance with the terms specified in
+ *  the LICENSE file found in the root directory of this source tree.
  */
 
 #include <gtest/gtest.h>
 
+#include <osquery/devtools/devtools.h>
 #include <osquery/logger.h>
-
-#include "osquery/devtools/devtools.h"
 
 namespace osquery {
 
@@ -24,22 +21,22 @@ class PrinterTests : public testing::Test {
     order = {"name", "age", "food", "number"};
     q = {
         {
-         {"name", "Mike Jones"},
-         {"age", "39"},
-         {"food", "mac and cheese"},
-         {"number", "1"},
+            {"name", "Mike Jones"},
+            {"age", "39"},
+            {"food", "mac and cheese"},
+            {"number", "1"},
         },
         {
-         {"name", "John Smith"},
-         {"age", "44"},
-         {"food", "peanut butter and jelly"},
-         {"number", "2"},
+            {"name", "John Smith"},
+            {"age", "44"},
+            {"food", "peanut butter and jelly"},
+            {"number", "2"},
         },
         {
-         {"name", "Doctor Who"},
-         {"age", "2000"},
-         {"food", "fish sticks and custard"},
-         {"number", "11"},
+            {"name", "Doctor Who"},
+            {"age", "2000"},
+            {"food", "fish sticks and custard"},
+            {"number", "11"},
         },
     };
   }
@@ -103,4 +100,4 @@ TEST_F(PrinterTests, test_unicode) {
   std::map<std::string, size_t> expected = {{"name", 10}};
   EXPECT_EQ(lengths, expected);
 }
-}
+} // namespace osquery

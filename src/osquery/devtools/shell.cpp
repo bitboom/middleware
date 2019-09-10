@@ -13,26 +13,47 @@
 ** utility for accessing SQLite databases.
 */
 
-#include <signal.h>
-#include <stdio.h>
-#include <sys/time.h>
+#include <csignal>
+#include <cstdio>
+#include <cstring>
+#include <sstream>
+
+#ifdef WIN32
+
+#include <osquery/utils/system/system.h>
+
+#include <io.h>
+#else
 #include <sys/resource.h>
+#include <sys/time.h>
+#endif
 
-#include <iostream>
-
-#include <readline/readline.h>
-#include <readline/history.h>
-
+#include <linenoise.h>
 #include <sqlite3.h>
 
 #include <boost/algorithm/string/predicate.hpp>
 
+#include <osquery/config/config.h>
 #include <osquery/database.h>
-#include <osquery/filesystem.h>
+#include <osquery/devtools/devtools.h>
+#include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
+#include <osquery/packs.h>
+#include <osquery/process/process.h>
+#include <osquery/registry_factory.h>
+#include <osquery/sql/virtual_table.h>
+#include <osquery/utils/chars.h>
+#include <osquery/utils/conversions/join.h>
+#include <osquery/utils/conversions/tryto.h>
+#include <osquery/utils/info/version.h>
 
-#include "osquery/devtools/devtools.h"
-#include "osquery/sql/virtual_table.h"
+#if defined(SQLITE_ENABLE_WHERETRACE)
+extern int sqlite3WhereTrace;
+#endif
+
+namespace fs = boost::filesystem;
+
+DECLARE_string(flagfile);
 
 namespace osquery {
 
@@ -41,116 +62,157 @@ SHELL_FLAG(bool, csv, false, "Set output mode to 'csv'");
 SHELL_FLAG(bool, json, false, "Set output mode to 'json'");
 SHELL_FLAG(bool, line, false, "Set output mode to 'line'");
 SHELL_FLAG(bool, list, false, "Set output mode to 'list'");
-SHELL_FLAG(string, nullvalue, "", "Set string for NULL values, default ''");
 SHELL_FLAG(string, separator, "|", "Set output field separator, default '|'");
+SHELL_FLAG(bool, header, true, "Toggle column headers true/false");
+SHELL_FLAG(string, pack, "", "Run all queries in a pack");
 
 /// Define short-hand shell switches.
 SHELL_FLAG(bool, L, false, "List all table names");
 SHELL_FLAG(string, A, "", "Select all from a table");
-}
 
-/*
-** Text of a help message
-*/
+DECLARE_string(nullvalue);
+DECLARE_string(extensions_socket);
+DECLARE_string(logger_plugin);
+DECLARE_string(logger_path);
+DECLARE_string(config_plugin);
+DECLARE_string(config_path);
+DECLARE_string(database_path);
+} // namespace osquery
+
 static char zHelp[] =
     "Welcome to the osquery shell. Please explore your OS!\n"
     "You are connected to a transient 'in-memory' virtual database.\n"
     "\n"
-    ".all [TABLE]       Select all from a table\n"
-    ".bail ON|OFF       Stop after hitting an error; default OFF\n"
-    ".echo ON|OFF       Turn command echo on or off\n"
-    ".exit              Exit this program\n"
-    ".header(s) ON|OFF  Turn display of headers on or off\n"
-    ".help              Show this message\n"
-    ".mode MODE         Set output mode where MODE is one of:\n"
-    "                     csv      Comma-separated values\n"
-    "                     column   Left-aligned columns.  (See .width)\n"
-    "                     line     One value per line\n"
-    "                     list     Values delimited by .separator string\n"
-    "                     pretty   Pretty printed SQL results\n"
-    ".nullvalue STR     Use STRING in place of NULL values\n"
-    ".print STR...      Print literal STRING\n"
-    ".quit              Exit this program\n"
-    ".schema [TABLE]    Show the CREATE statements\n"
-    ".separator STR     Change separator used by output mode and .import\n"
-    ".show              Show the current values for various settings\n"
-    ".tables [TABLE]    List names of tables\n"
-    ".trace FILE|off    Output each SQL statement as it is run\n"
-    ".width [NUM1]+     Set column widths for \"column\" mode\n";
+    ".all [TABLE]     Select all from a table\n"
+    ".bail ON|OFF     Stop after hitting an error\n"
+    ".echo ON|OFF     Turn command echo on or off\n"
+    ".exit            Exit this program\n"
+    ".features        List osquery's features and their statuses\n"
+    ".headers ON|OFF  Turn display of headers on or off\n"
+    ".help            Show this message\n"
+    ".mode MODE       Set output mode where MODE is one of:\n"
+    "                   csv      Comma-separated values\n"
+    "                   column   Left-aligned columns see .width\n"
+    "                   line     One value per line\n"
+    "                   list     Values delimited by .separator string\n"
+    "                   pretty   Pretty printed SQL results (default)\n"
+    ".nullvalue STR   Use STRING in place of NULL values\n"
+    ".print STR...    Print literal STRING\n"
+    ".quit            Exit this program\n"
+    ".schema [TABLE]  Show the CREATE statements\n"
+    ".separator STR   Change separator used by output mode\n"
+    ".socket          Show the osquery extensions socket path\n"
+    ".show            Show the current values for various settings\n"
+    ".summary         Alias for the show meta command\n"
+    ".tables [TABLE]  List names of tables\n"
+    ".types [SQL]     Show result of getQueryColumns for the given query\n"
+    ".width [NUM1]+   Set column widths for \"column\" mode\n";
 
 static char zTimerHelp[] =
     ".timer ON|OFF      Turn the CPU timer measurement on or off\n";
 
-/*
-** These are the allowed modes.
-*/
-#define MODE_Line 0 /* One column per line.  Blank line between records */
-#define MODE_Column 1 /* One record per line in neat columns */
-#define MODE_List 2 /* One record per line with a separator */
-#define MODE_Semi 3 /* Same as MODE_List but append ";" to each line */
-#define MODE_Csv 4 /* Quote strings, numbers are plain */
-#define MODE_Pretty 5 /* Pretty print the SQL results */
+// Allowed modes
+#define MODE_Line 0 // One column per line.  Blank line between records
+#define MODE_Column 1 // One record per line in neat columns
+#define MODE_List 2 // One record per line with a separator
+#define MODE_Semi 3 // Same as MODE_List but append ";" to each line
+#define MODE_Csv 4 // Quote strings, numbers are plain
+#define MODE_Pretty 5 // Pretty print the SQL results
 
-static const char *modeDescr[] = {
+static const char* modeDescr[] = {
     "line", "column", "list", "semi", "csv", "pretty",
 };
 
-/* Make sure isatty() has a prototype.
-*/
-extern int isatty(int);
+// ctype macros that work with signed characters
+#define IsSpace(X) isspace((unsigned char)(X))
+#define IsDigit(X) isdigit((unsigned char)(X))
 
-/* ctype macros that work with signed characters */
-#define IsSpace(X) isspace((unsigned char)X)
-#define IsDigit(X) isdigit((unsigned char)X)
-#define ToLower(X) (char) tolower((unsigned char)X)
-
-/* True if the timer is enabled */
+// True if the timer is enabled
 static int enableTimer = 0;
 
-/* Return the current wall-clock time */
-static sqlite3_int64 timeOfDay(void) {
-  static sqlite3_vfs *clockVfs = 0;
+// Return the current wall-clock time
+static sqlite3_int64 timeOfDay() {
+  static sqlite3_vfs* clockVfs = nullptr;
   sqlite3_int64 t;
-  if (clockVfs == 0)
-    clockVfs = sqlite3_vfs_find(0);
-  if (clockVfs->iVersion >= 1 && clockVfs->xCurrentTimeInt64 != 0) {
+  if (clockVfs == nullptr) {
+    clockVfs = sqlite3_vfs_find(nullptr);
+  }
+  if (clockVfs->iVersion >= 1 && clockVfs->xCurrentTimeInt64 != nullptr) {
     clockVfs->xCurrentTimeInt64(clockVfs, &t);
   } else {
     double r;
     clockVfs->xCurrentTime(clockVfs, &r);
-    t = (sqlite3_int64)(r * 86400000.0);
+    t = static_cast<sqlite3_int64>(r * 86400000.0);
   }
   return t;
 }
 
-/* Saved resource information for the beginning of an operation */
-static struct rusage sBegin; /* CPU time at start */
-static sqlite3_int64 iBegin; /* Wall-clock time at start */
+// Saved resource information for the beginning of an operation
+#ifdef WIN32
+struct rusage {
+  FILETIME ru_utime;
+  FILETIME ru_stime;
+};
+#endif
 
-/*
-** Begin timing an operation
-*/
-static void beginTimer(void) {
-  if (enableTimer) {
+static struct rusage sBegin; // CPU time at start
+static sqlite3_int64 iBegin; // Wall-clock time at start
+
+static void beginTimer() {
+  if (enableTimer != 0) {
+#ifdef WIN32
+    FILETIME ftCreation, ftExit;
+    ::GetProcessTimes(::GetCurrentProcess(),
+                      &ftCreation,
+                      &ftExit,
+                      &sBegin.ru_stime,
+                      &sBegin.ru_utime);
+#else
     getrusage(RUSAGE_SELF, &sBegin);
+#endif
+
     iBegin = timeOfDay();
   }
 }
 
-/* Return the difference of two time_structs in seconds */
-static double timeDiff(struct timeval *pStart, struct timeval *pEnd) {
-  return (pEnd->tv_usec - pStart->tv_usec) * 0.000001 +
-         (double)(pEnd->tv_sec - pStart->tv_sec);
-}
+// Return the difference of two time_structs in seconds
+#ifdef WIN32
+static double timeDiff(FILETIME* pStart, FILETIME* pEnd) {
+  ULARGE_INTEGER start, end;
 
-/*
-** Print the timing results.
-*/
-static void endTimer(void) {
-  if (enableTimer) {
-    struct rusage sEnd;
+  start.HighPart = pStart->dwHighDateTime;
+  start.LowPart = pStart->dwLowDateTime;
+
+  end.HighPart = pEnd->dwHighDateTime;
+  end.LowPart = pEnd->dwLowDateTime;
+
+  // start, end are in units of 100 nanoseconds
+  return (end.QuadPart - start.QuadPart) * 0.0000001;
+}
+#else
+static double timeDiff(struct timeval* pStart, struct timeval* pEnd) {
+  return (pEnd->tv_usec - pStart->tv_usec) * 0.000001 +
+         static_cast<double>(pEnd->tv_sec - pStart->tv_sec);
+}
+#endif
+
+// End the timer and print the results.
+static void endTimer() {
+  if (enableTimer != 0) {
     sqlite3_int64 iEnd = timeOfDay();
+    struct rusage sEnd {};
+
+#ifdef WIN32
+    FILETIME ftCreation, ftExit;
+    ::GetProcessTimes(::GetCurrentProcess(),
+                      &ftCreation,
+                      &ftExit,
+                      &sEnd.ru_stime,
+                      &sEnd.ru_utime);
+#else
     getrusage(RUSAGE_SELF, &sEnd);
+#endif
+
     printf("Run Time: real %.3f user %f sys %f\n",
            (iEnd - iBegin) * 0.001,
            timeDiff(&sBegin.ru_utime, &sEnd.ru_utime),
@@ -162,58 +224,47 @@ static void endTimer(void) {
 #define END_TIMER endTimer()
 #define HAS_TIMER 1
 
-/*
-** Used to prevent warnings about unused parameters
-*/
-#define UNUSED_PARAMETER(x) (void)(x)
-
-/*
-** If the following flag is set, then command execution stops
-** at an error if we are not interactive.
-*/
+// If the following flag is set, then command execution stops
+// at an error if we are not interactive.
 static int bail_on_error = 0;
 
-/*
-** Threat stdin as an interactive input if the following variable
-** is true.  Otherwise, assume stdin is connected to a file or pipe.
-*/
-static int stdin_is_interactive = 1;
+// Treat stdin as an interactive input if the following variable
+// is true.  Otherwise, assume stdin is connected to a file or pipe.
+static bool stdin_is_interactive = true;
 
-/*
-** True if an interrupt (Control-C) has been received.
-*/
+// True if an interrupt (Control-C) has been received.
 static volatile int seenInterrupt = 0;
 
-/*
-** This is the name of our program. It is set in main(), used
-** in a number of other places, mostly for error messages.
-*/
-static char *Argv0;
+static char mainPrompt[26]; // First line prompt. default: "sqlite> "
+static char continuePrompt[26]; // Continuation prompt. default: "   ...> "
 
-/*
-** Prompt strings. Initialized in main. Settable with
-**   .prompt main continue
-*/
-static char mainPrompt[20]; /* First line prompt. default: "sqlite> "*/
-static char continuePrompt[20]; /* Continuation prompt. default: "   ...> " */
-
-/*
-** A global char* and an SQL function to access its current value
-** from within an SQL statement. This program used to use the
-** sqlite_exec_printf() API to substitue a string into an SQL statement.
-** The correct way to do this with sqlite3 is to use the bind API, but
-** since the shell is built around the callback paradigm it would be a lot
-** of work. Instead just use this hack, which is quite harmless.
-*/
-static const char *zShellStatic = 0;
-static void shellstaticFunc(sqlite3_context *context,
-                            int argc,
-                            sqlite3_value **argv) {
+// A global char* and an SQL function to access its current value
+// from within an SQL statement. This program used to use the
+// sqlite_exec_printf() API to substitute a string into an SQL statement.
+// The correct way to do this with sqlite3 is to use the bind API, but
+// since the shell is built around the callback paradigm it would be a lot
+// of work. Instead just use this hack, which is quite harmless.
+static const char* zShellStatic = nullptr;
+void shellstaticFunc(sqlite3_context* context,
+                     int argc,
+                     sqlite3_value** /* argv */) {
+  (void)argc;
   assert(0 == argc);
   assert(zShellStatic);
-  UNUSED_PARAMETER(argc);
-  UNUSED_PARAMETER(argv);
   sqlite3_result_text(context, zShellStatic, -1, SQLITE_STATIC);
+}
+
+/*
+** Output text to the console in a font that attracts extra attention.
+*/
+static void print_bold(const char* zText) {
+  if (stdin_is_interactive) {
+    printf("\033[1m");
+  }
+  printf("%s", zText);
+  if (stdin_is_interactive) {
+    printf("\033[0m");
+  }
 }
 
 /*
@@ -225,31 +276,36 @@ static void shellstaticFunc(sqlite3_context *context,
 ** If zLine is not NULL then it is a malloced buffer returned from
 ** a previous call to this routine that may be reused.
 */
-static char *local_getline(char *zLine, FILE *in) {
-  int nLine = zLine == 0 ? 0 : 100;
+static char* local_getline(char* zLine, FILE* in) {
+  int nLine = ((zLine == nullptr) ? 0 : 100);
   int n = 0;
 
-  while (1) {
+  while (true) {
     if (n + 100 > nLine) {
       nLine = nLine * 2 + 100;
-      zLine = (char *)realloc(zLine, nLine);
-      if (zLine == 0)
-        return 0;
+      auto zLine_new = reinterpret_cast<char*>(realloc(zLine, nLine));
+      if (zLine_new == nullptr) {
+        free(zLine);
+        return nullptr;
+      }
+      zLine = zLine_new;
     }
-    if (fgets(&zLine[n], nLine - n, in) == 0) {
+    if (fgets(&zLine[n], nLine - n, in) == nullptr) {
       if (n == 0) {
         free(zLine);
-        return 0;
+        return nullptr;
       }
       zLine[n] = 0;
       break;
     }
-    while (zLine[n])
+    while (zLine[n] != 0) {
       n++;
+    }
     if (n > 0 && zLine[n - 1] == '\n') {
       n--;
-      if (n > 0 && zLine[n - 1] == '\r')
+      if (n > 0 && zLine[n - 1] == '\r') {
         n--;
+      }
       zLine[n] = 0;
       break;
     }
@@ -271,31 +327,24 @@ static char *local_getline(char *zLine, FILE *in) {
 ** be freed by the caller or else passed back into this routine via the
 ** zPrior argument for reuse.
 */
-static char *one_input_line(FILE *in, char *zPrior, int isContinuation) {
-  char *zPrompt;
-  char *zResult;
-  if (in != 0) {
+static char* one_input_line(FILE* in, char* zPrior, int isContinuation) {
+  char* zResult;
+  if (in != nullptr) {
     zResult = local_getline(zPrior, in);
   } else {
-    zPrompt = isContinuation ? continuePrompt : mainPrompt;
+    char* zPrompt = isContinuation != 0 ? continuePrompt : mainPrompt;
     free(zPrior);
-    zResult = readline(zPrompt);
-    if (zResult && *zResult)
-      add_history(zResult);
+    zResult = linenoise(zPrompt);
+    if ((zResult != nullptr) && (*zResult != 0)) {
+      linenoiseHistoryAdd(zResult);
+    }
   }
   return zResult;
 }
 
-struct previous_mode_data {
-  int valid; /* Is there legit data in here? */
-  int mode;
-  int showHeader;
-  int colWidth[100];
-};
-
 /*
 ** Pretty print structure
- */
+*/
 struct prettyprint_data {
   osquery::QueryData results;
   std::vector<std::string> columns;
@@ -309,61 +358,52 @@ struct prettyprint_data {
 */
 struct callback_data {
   int echoOn; /* True to echo input commands */
-  int autoEQP; /* Run EXPLAIN QUERY PLAN prior to seach SQL statement */
   int cnt; /* Number of records displayed so far */
-  FILE *out; /* Write results here */
-  FILE *traceOut; /* Output for sqlite3_trace() */
-  int nErr; /* Number of errors seen */
+  FILE* out; /* Write results here */
+  FILE* traceOut; /* Output for sqlite3_trace() */
   int mode; /* An output mode setting */
-  int writableSchema; /* True if PRAGMA writable_schema=ON */
   int showHeader; /* True to show column names in List or Column mode */
-  char *zDestTable; /* Name of destination table when MODE_Insert */
+  char* zDestTable; /* Name of destination table when MODE_Insert */
   char separator[20]; /* Separator character for MODE_List */
   int colWidth[100]; /* Requested width of each column when in column mode*/
   int actualWidth[100]; /* Actual width of each column */
   char nullvalue[20]; /* The text to print when a NULL comes back from
                       ** the database */
-  struct previous_mode_data explainPrev;
-  /* Holds the mode information just before
-  ** .explain ON */
   char outfile[FILENAME_MAX]; /* Filename for *out */
-  const char *zDbFilename; /* name of the database file */
-  char *zFreeOnClose; /* Filename to free when closing */
-  const char *zVfs; /* Name of VFS to use */
-  sqlite3_stmt *pStmt; /* Current statement if any. */
-  FILE *pLog; /* Write log output here */
-  int *aiIndent; /* Array of indents used in MODE_Explain */
+  char* zFreeOnClose; /* Filename to free when closing */
+  sqlite3_stmt* pStmt; /* Current statement if any. */
+  FILE* pLog; /* Write log output here */
+  int* aiIndent; /* Array of indents used in MODE_Explain */
   int nIndent; /* Size of array aiIndent[] */
   int iIndent; /* Index of current op in aiIndent[] */
 
   /* Additional attributes to be used in pretty mode */
-  struct prettyprint_data *prettyPrint;
+  struct prettyprint_data* prettyPrint;
 };
 
-/*
-** Number of elements in an array
-*/
-#define ArraySize(X) (int)(sizeof(X) / sizeof(X[0]))
+// Number of elements in an array
+#define ArraySize(X) (int)(sizeof(X) / sizeof((X)[0]))
 
 /*
 ** Compute a string length that is limited to what can be stored in
 ** lower 30 bits of a 32-bit signed integer.
 */
-static int strlen30(const char *z) {
-  const char *z2 = z;
-  while (*z2) {
+static int strlen30(const char* z) {
+  const char* z2 = z;
+  while (*z2 != 0) {
     z2++;
   }
-  return 0x3fffffff & (int)(z2 - z);
+  return 0x3fffffff & static_cast<int>(z2 - z);
 }
 
 /*
 ** A callback for the sqlite3_log() interface.
 */
-static void shellLog(void *pArg, int iErrCode, const char *zMsg) {
-  struct callback_data *p = (struct callback_data *)pArg;
-  if (p->pLog == 0)
+static void shellLog(void* pArg, int iErrCode, const char* zMsg) {
+  auto* p = reinterpret_cast<struct callback_data*>(pArg);
+  if (p->pLog == nullptr) {
     return;
+  }
   fprintf(p->pLog, "(%d) %s\n", iErrCode, zMsg);
   fflush(p->pLog);
 }
@@ -371,7 +411,7 @@ static void shellLog(void *pArg, int iErrCode, const char *zMsg) {
 /*
 ** Output the given string as a quoted according to C or TCL quoting rules.
 */
-static void output_c_string(FILE *out, const char *z) {
+static void output_c_string(FILE* out, const char* z) {
   unsigned int c;
   fputc('"', out);
   while ((c = *(z++)) != 0) {
@@ -390,8 +430,8 @@ static void output_c_string(FILE *out, const char *z) {
     } else if (c == '\r') {
       fputc('\\', out);
       fputc('r', out);
-    } else if (!isprint(c & 0xff)) {
-      fprintf(out, "\\%03o", c & 0xff);
+    } else if (isprint(c & 0xff) == 0) {
+      fprintf(out, R"(\%03o)", c & 0xff);
     } else {
       fputc(c, out);
     }
@@ -403,36 +443,34 @@ static void output_c_string(FILE *out, const char *z) {
 ** If a field contains any character identified by a 1 in the following
 ** array, then the string must be quoted for CSV.
 */
-// clang-format off
 static const char needCsvQuote[] = {
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 };
-// clang-format on
 
 /*
 ** Output a single term of CSV.  Actually, p->separator is used for
 ** the separator, which may or may not be a comma.  p->nullvalue is
 ** the null value.  Strings are quoted if necessary.
 */
-static void output_csv(struct callback_data *p, const char *z, int bSep) {
-  FILE *out = p->out;
-  if (z == 0) {
+static void output_csv(struct callback_data* p, const char* z, int bSep) {
+  FILE* out = p->out;
+  if (z == nullptr) {
     fprintf(out, "%s", p->nullvalue);
   } else {
     int i;
     int nSep = strlen30(p->separator);
-    for (i = 0; z[i]; i++) {
-      if (needCsvQuote[((unsigned char *)z)[i]] ||
+    for (i = 0; z[i] != 0; i++) {
+      if ((needCsvQuote[((unsigned char*)z)[i]] != 0) ||
           (z[i] == p->separator[0] &&
            (nSep == 1 || memcmp(z, p->separator, nSep) == 0))) {
         i = 0;
@@ -441,9 +479,10 @@ static void output_csv(struct callback_data *p, const char *z, int bSep) {
     }
     if (i == 0) {
       putc('"', out);
-      for (i = 0; z[i]; i++) {
-        if (z[i] == '"')
+      for (i = 0; z[i] != 0; i++) {
+        if (z[i] == '"') {
           putc('"', out);
+        }
         putc(z[i], out);
       }
       putc('"', out);
@@ -451,7 +490,7 @@ static void output_csv(struct callback_data *p, const char *z, int bSep) {
       fprintf(out, "%s", z);
     }
   }
-  if (bSep) {
+  if (bSep != 0) {
     fprintf(p->out, "%s", p->separator);
   }
 }
@@ -460,9 +499,10 @@ static void output_csv(struct callback_data *p, const char *z, int bSep) {
 /*
 ** This routine runs when the user presses Ctrl-C
 */
-static void interrupt_handler(int NotUsed) {
-  UNUSED_PARAMETER(NotUsed);
-  seenInterrupt = 1;
+static void interrupt_handler(int signal) {
+  if (signal == SIGINT) {
+    seenInterrupt = 1;
+  }
 }
 #endif
 
@@ -470,23 +510,28 @@ static void interrupt_handler(int NotUsed) {
 ** This is the callback routine that the shell
 ** invokes for each row of a query result.
 */
-static int shell_callback(
-    void *pArg, int nArg, char **azArg, char **azCol, int *aiType) {
+static int shell_callback(void* pArg,
+                          int nArg,
+                          const char** azArg,
+                          const char** azCol,
+                          int* /*aiType*/) {
   int i;
-  struct callback_data *p = (struct callback_data *)pArg;
+  auto* p = reinterpret_cast<struct callback_data*>(pArg);
 
   switch (p->mode) {
   case MODE_Pretty: {
-    if (p->prettyPrint->columns.size() == 0) {
+    if (p->prettyPrint->columns.empty()) {
       for (i = 0; i < nArg; i++) {
         p->prettyPrint->columns.push_back(std::string(azCol[i]));
       }
     }
 
     osquery::Row r;
-    for (int i = 0; i < nArg; ++i) {
-      if (azCol[i] != nullptr && azArg[i] != nullptr) {
-        r[std::string(azCol[i])] = std::string(azArg[i]);
+    for (i = 0; i < nArg; ++i) {
+      if (azCol[i] != nullptr) {
+        r[std::string(azCol[i])] = (azArg[i] == nullptr)
+                                       ? osquery::FLAGS_nullvalue
+                                       : std::string(azArg[i]);
       }
     }
     osquery::computeRowLengths(r, p->prettyPrint->lengths);
@@ -495,45 +540,52 @@ static int shell_callback(
   }
   case MODE_Line: {
     int w = 5;
-    if (azArg == 0)
+    if (azArg == nullptr) {
       break;
-    for (i = 0; i < nArg; i++) {
-      int len = strlen30(azCol[i] ? azCol[i] : "");
-      if (len > w)
-        w = len;
     }
-    if (p->cnt++ > 0)
+    for (i = 0; i < nArg; i++) {
+      int len = strlen30(azCol[i] != nullptr ? azCol[i] : "");
+      if (len > w) {
+        w = len;
+      }
+    }
+    if (p->cnt++ > 0) {
       fprintf(p->out, "\n");
+    }
     for (i = 0; i < nArg; i++) {
       fprintf(p->out,
               "%*s = %s\n",
               w,
               azCol[i],
-              azArg[i] ? azArg[i] : p->nullvalue);
+              azArg[i] != nullptr ? azArg[i] : p->nullvalue);
     }
     break;
   }
   case MODE_Column: {
     if (p->cnt++ == 0) {
       for (i = 0; i < nArg; i++) {
-        int w, n;
+        int w;
         if (i < ArraySize(p->colWidth)) {
           w = p->colWidth[i];
         } else {
           w = 0;
         }
         if (w == 0) {
-          w = strlen30(azCol[i] ? azCol[i] : "");
-          if (w < 10)
+          w = strlen30(azCol[i] != nullptr ? azCol[i] : "");
+          if (w < 10) {
             w = 10;
-          n = strlen30(azArg && azArg[i] ? azArg[i] : p->nullvalue);
-          if (w < n)
+          }
+          int n = strlen30((azArg != nullptr) && (azArg[i] != nullptr)
+                               ? azArg[i]
+                               : p->nullvalue);
+          if (w < n) {
             w = n;
+          }
         }
         if (i < ArraySize(p->actualWidth)) {
           p->actualWidth[i] = w;
         }
-        if (p->showHeader) {
+        if (p->showHeader != 0) {
           if (w < 0) {
             fprintf(p->out,
                     "%*.*s%s",
@@ -551,13 +603,14 @@ static int shell_callback(
           }
         }
       }
-      if (p->showHeader) {
+      if (p->showHeader != 0) {
         for (i = 0; i < nArg; i++) {
           int w;
           if (i < ArraySize(p->actualWidth)) {
             w = p->actualWidth[i];
-            if (w < 0)
+            if (w < 0) {
               w = -w;
+            }
           } else {
             w = 10;
           }
@@ -571,8 +624,9 @@ static int shell_callback(
         }
       }
     }
-    if (azArg == 0)
+    if (azArg == nullptr) {
       break;
+    }
     for (i = 0; i < nArg; i++) {
       int w;
       if (i < ArraySize(p->actualWidth)) {
@@ -580,7 +634,7 @@ static int shell_callback(
       } else {
         w = 10;
       }
-      if (i == 1 && p->aiIndent && p->pStmt) {
+      if (i == 1 && (p->aiIndent != nullptr) && (p->pStmt != nullptr)) {
         if (p->iIndent < p->nIndent) {
           fprintf(p->out, "%*.s", p->aiIndent[p->iIndent], "");
         }
@@ -591,14 +645,14 @@ static int shell_callback(
                 "%*.*s%s",
                 -w,
                 -w,
-                azArg[i] ? azArg[i] : p->nullvalue,
+                azArg[i] != nullptr ? azArg[i] : p->nullvalue,
                 i == nArg - 1 ? "\n" : "  ");
       } else {
         fprintf(p->out,
                 "%-*.*s%s",
                 w,
                 w,
-                azArg[i] ? azArg[i] : p->nullvalue,
+                azArg[i] != nullptr ? azArg[i] : p->nullvalue,
                 i == nArg - 1 ? "\n" : "  ");
       }
     }
@@ -606,17 +660,19 @@ static int shell_callback(
   }
   case MODE_Semi:
   case MODE_List: {
-    if (p->cnt++ == 0 && p->showHeader) {
+    if (p->cnt++ == 0 && (p->showHeader != 0)) {
       for (i = 0; i < nArg; i++) {
         fprintf(p->out, "%s%s", azCol[i], i == nArg - 1 ? "\n" : p->separator);
       }
     }
-    if (azArg == 0)
+    if (azArg == nullptr) {
       break;
+    }
     for (i = 0; i < nArg; i++) {
-      char *z = azArg[i];
-      if (z == 0)
+      const char* z = azArg[i];
+      if (z == nullptr) {
         z = p->nullvalue;
+      }
       fprintf(p->out, "%s", z);
       if (i < nArg - 1) {
         fprintf(p->out, "%s", p->separator);
@@ -629,16 +685,19 @@ static int shell_callback(
     break;
   }
   case MODE_Csv: {
-    if (p->cnt++ == 0 && p->showHeader) {
+    if (p->cnt++ == 0 && (p->showHeader != 0)) {
       for (i = 0; i < nArg; i++) {
-        output_csv(p, azCol[i] ? azCol[i] : "", i < nArg - 1);
+        output_csv(p,
+                   azCol[i] != nullptr ? azCol[i] : "",
+                   static_cast<int>(i < nArg - 1));
       }
       fprintf(p->out, "\n");
     }
-    if (azArg == 0)
+    if (azArg == nullptr) {
       break;
+    }
     for (i = 0; i < nArg; i++) {
-      output_csv(p, azArg[i], i < nArg - 1);
+      output_csv(p, azArg[i], static_cast<int>(i < nArg - 1));
     }
     fprintf(p->out, "\n");
     break;
@@ -652,53 +711,77 @@ static int shell_callback(
 ** the name of the table given.  Escape any quote characters in the
 ** table name.
 */
-static void set_table_name(struct callback_data *p, const char *zName) {
+static void set_table_name(struct callback_data* p, const char* zName) {
   int i, n;
   int needQuote;
-  char *z;
+  char* z;
 
-  if (p->zDestTable) {
+  if (p->zDestTable != nullptr) {
     free(p->zDestTable);
-    p->zDestTable = 0;
+    p->zDestTable = nullptr;
   }
-  if (zName == 0)
+
+  if (zName == nullptr) {
     return;
-  needQuote = !isalpha((unsigned char)*zName) && *zName != '_';
-  for (i = n = 0; zName[i]; i++, n++) {
-    if (!isalnum((unsigned char)zName[i]) && zName[i] != '_') {
+  }
+
+  needQuote = static_cast<int>(
+      (isalpha(static_cast<unsigned char>(*zName)) == 0) && *zName != '_');
+  for (i = n = 0; zName[i] != 0; i++, n++) {
+    if ((isalnum(static_cast<unsigned char>(zName[i])) == 0) &&
+        zName[i] != '_') {
       needQuote = 1;
-      if (zName[i] == '\'')
+      if (zName[i] == '\'') {
         n++;
+      }
     }
   }
-  if (needQuote)
+  if (needQuote != 0) {
     n += 2;
-  z = p->zDestTable = (char *)malloc(n + 1);
-  if (z == 0) {
+  }
+  z = p->zDestTable = reinterpret_cast<char*>(malloc(n + 1));
+  if (z == nullptr) {
     fprintf(stderr, "Error: out of memory\n");
     exit(1);
   }
   n = 0;
-  if (needQuote)
+  if (needQuote != 0) {
     z[n++] = '\'';
-  for (i = 0; zName[i]; i++) {
-    z[n++] = zName[i];
-    if (zName[i] == '\'')
-      z[n++] = '\'';
   }
-  if (needQuote)
+  for (i = 0; zName[i] != 0; i++) {
+    z[n++] = zName[i];
+    if (zName[i] == '\'') {
+      z[n++] = '\'';
+    }
+  }
+  if (needQuote != 0) {
     z[n++] = '\'';
+  }
   z[n] = 0;
+}
+
+static void pretty_print_if_needed(struct callback_data* pArg) {
+  if ((pArg != nullptr) && pArg->mode == MODE_Pretty) {
+    if (osquery::FLAGS_json) {
+      osquery::jsonPrint(pArg->prettyPrint->results);
+    } else {
+      osquery::prettyPrint(pArg->prettyPrint->results,
+                           pArg->prettyPrint->columns,
+                           pArg->prettyPrint->lengths);
+    }
+    pArg->prettyPrint->results.clear();
+    pArg->prettyPrint->columns.clear();
+    pArg->prettyPrint->lengths.clear();
+  }
 }
 
 /*
 ** Allocate space and save off current error string.
 */
-static char *save_err_msg(sqlite3 *db /* Database to query */
-                          ) {
+static char* save_err_msg(sqlite3* db) {
   int nErrMsg = 1 + strlen30(sqlite3_errmsg(db));
-  char *zErrMsg = (char *)sqlite3_malloc(nErrMsg);
-  if (zErrMsg) {
+  auto* zErrMsg = reinterpret_cast<char*>(sqlite3_malloc(nErrMsg));
+  if (zErrMsg != nullptr) {
     memcpy(zErrMsg, sqlite3_errmsg(db), nErrMsg);
   }
   return zErrMsg;
@@ -714,51 +797,55 @@ static char *save_err_msg(sqlite3 *db /* Database to query */
 ** and callback data argument.
 */
 static int shell_exec(
-    const char *zSql, /* SQL to be evaluated */
+    const char* zSql, /* SQL to be evaluated */
     int (*xCallback)(
-        void *, int, char **, char **, int *), /* Callback function */
+        void*, int, const char**, const char**, int*), /* Callback function */
     /* (not the same as sqlite3_exec) */
-    struct callback_data *pArg, /* Pointer to struct callback_data */
-    char **pzErrMsg /* Error msg written here */
-    ) {
+    struct callback_data* pArg, /* Pointer to struct callback_data */
+    char** pzErrMsg /* Error msg written here */
+) {
   // Grab a lock on the managed DB instance.
   auto dbc = osquery::SQLiteDBManager::get();
-  auto db = dbc.db();
+  auto db = dbc->db();
 
-  sqlite3_stmt *pStmt = nullptr; /* Statement to execute. */
+  sqlite3_stmt* pStmt = nullptr; /* Statement to execute. */
   int rc = SQLITE_OK; /* Return Code */
   int rc2;
-  const char *zLeftover; /* Tail of unprocessed SQL */
+  const char* zLeftover; /* Tail of unprocessed SQL */
 
-  if (pzErrMsg) {
+  if (pzErrMsg != nullptr) {
     *pzErrMsg = nullptr;
   }
 
-  while (zSql[0] && (SQLITE_OK == rc)) {
+  while ((zSql[0] != 0) && (SQLITE_OK == rc)) {
+    auto lock(dbc->attachLock());
+
+    /* A lock for attaching virtual tables, but also the SQL object states. */
     rc = sqlite3_prepare_v2(db, zSql, -1, &pStmt, &zLeftover);
     if (SQLITE_OK != rc) {
-      if (pzErrMsg) {
+      if (pzErrMsg != nullptr) {
         *pzErrMsg = save_err_msg(db);
       }
     } else {
-      if (!pStmt) {
+      if (pStmt == nullptr) {
         /* this happens for a comment or white-space */
         zSql = zLeftover;
-        while (IsSpace(zSql[0]))
+        while (IsSpace(zSql[0])) {
           zSql++;
+        }
         continue;
       }
 
-      /* save off the prepared statment handle and reset row count */
-      if (pArg) {
+      /* save off the prepared statement handle and reset row count */
+      if (pArg != nullptr) {
         pArg->pStmt = pStmt;
         pArg->cnt = 0;
       }
 
       /* echo the sql statement if echo on */
-      if (pArg && pArg->echoOn) {
-        const char *zStmtSql = sqlite3_sql(pStmt);
-        fprintf(pArg->out, "%s\n", zStmtSql ? zStmtSql : zSql);
+      if ((pArg != nullptr) && (pArg->echoOn != 0)) {
+        const char* zStmtSql = sqlite3_sql(pStmt);
+        fprintf(pArg->out, "%s\n", zStmtSql != nullptr ? zStmtSql : zSql);
       }
 
       /* perform the first step.  this will tell us if we
@@ -768,28 +855,30 @@ static int shell_exec(
       /* if we have a result set... */
       if (SQLITE_ROW == rc) {
         /* if we have a callback... */
-        if (xCallback) {
+        if (xCallback != nullptr) {
           /* allocate space for col name ptr, value ptr, and type */
           int nCol = sqlite3_column_count(pStmt);
-          void *pData = sqlite3_malloc(3 * nCol * sizeof(const char *) + 1);
-          if (!pData) {
+          void* pData = sqlite3_malloc(3 * nCol * sizeof(const char*) + 1);
+          if (pData == nullptr) {
             rc = SQLITE_NOMEM;
           } else {
-            char **azCols = (char **)pData; /* Names of result columns */
-            char **azVals = &azCols[nCol]; /* Results */
-            int *aiTypes = (int *)&azVals[nCol]; /* Result types */
-            int i, x;
-            assert(sizeof(int) <= sizeof(char *));
+            const auto** azCols = reinterpret_cast<const char**>(
+                pData); /* Names of result columns */
+            const char** azVals = &azCols[nCol]; /* Results */
+            auto* aiTypes =
+                reinterpret_cast<int*>(&azVals[nCol]); /* Result types */
+            int i;
+            assert(sizeof(int) <= sizeof(char*));
             /* save off ptrs to column names */
             for (i = 0; i < nCol; i++) {
-              azCols[i] = (char *)sqlite3_column_name(pStmt, i);
+              azCols[i] = const_cast<char*>(sqlite3_column_name(pStmt, i));
             }
             do {
               /* extract the data and data types */
               for (i = 0; i < nCol; i++) {
-                aiTypes[i] = x = sqlite3_column_type(pStmt, i);
-                azVals[i] = (char *)sqlite3_column_text(pStmt, i);
-                if (!azVals[i] && (aiTypes[i] != SQLITE_NULL)) {
+                aiTypes[i] = sqlite3_column_type(pStmt, i);
+                azVals[i] = (char*)sqlite3_column_text(pStmt, i);
+                if ((azVals[i] == nullptr) && (aiTypes[i] != SQLITE_NULL)) {
                   rc = SQLITE_NOMEM;
                   break; /* from for */
                 }
@@ -798,7 +887,7 @@ static int shell_exec(
               /* if data and types extracted successfully... */
               if (SQLITE_ROW == rc) {
                 /* call the supplied callback with the result row data */
-                if (xCallback(pArg, nCol, azVals, azCols, aiTypes)) {
+                if (xCallback(pArg, nCol, azVals, azCols, aiTypes) != 0) {
                   rc = SQLITE_ABORT;
                 } else {
                   rc = sqlite3_step(pStmt);
@@ -818,41 +907,33 @@ static int shell_exec(
       ** copy of the error message. Otherwise, set zSql to point to the
       ** next statement to execute. */
       rc2 = sqlite3_finalize(pStmt);
-      if (rc != SQLITE_NOMEM)
+      if (rc != SQLITE_NOMEM) {
         rc = rc2;
+      }
       if (rc == SQLITE_OK) {
         zSql = zLeftover;
-        while (IsSpace(zSql[0]))
+        while (IsSpace(zSql[0])) {
           zSql++;
-      } else if (pzErrMsg) {
+        }
+      } else if (pzErrMsg != nullptr) {
         *pzErrMsg = save_err_msg(db);
       }
 
       /* clear saved stmt handle */
-      if (pArg) {
+      if (pArg != nullptr) {
         pArg->pStmt = nullptr;
       }
     }
   } /* end while */
+  dbc->clearAffectedTables();
 
-  if (pArg && pArg->mode == MODE_Pretty) {
-    if (osquery::FLAGS_json) {
-      osquery::jsonPrint(pArg->prettyPrint->results);
-    } else {
-      osquery::prettyPrint(pArg->prettyPrint->results,
-                           pArg->prettyPrint->columns,
-                           pArg->prettyPrint->lengths);
-    }
-    pArg->prettyPrint->results.clear();
-    pArg->prettyPrint->columns.clear();
-    pArg->prettyPrint->lengths.clear();
-  }
+  pretty_print_if_needed(pArg);
 
   return rc;
 }
 
 /* Forward reference */
-static int process_input(struct callback_data *p, FILE *in);
+static int process_input(struct callback_data* p, FILE* in);
 
 /*
 ** Do C-language style dequoting.
@@ -864,7 +945,7 @@ static int process_input(struct callback_data *p, FILE *in);
 **    \NNN  -> ascii character NNN in octal
 **    \\    -> backslash
 */
-static void resolve_backslashes(char *z) {
+static void resolve_backslashes(char* z) {
   int i, j;
   char c;
   for (i = j = 0; (c = z[i]) != 0; i++, j++) {
@@ -900,34 +981,37 @@ static void resolve_backslashes(char *z) {
 ** is not a hex digit.
 */
 static int hexDigitValue(char c) {
-  if (c >= '0' && c <= '9')
+  if (c >= '0' && c <= '9') {
     return c - '0';
-  if (c >= 'a' && c <= 'f')
+  }
+  if (c >= 'a' && c <= 'f') {
     return c - 'a' + 10;
-  if (c >= 'A' && c <= 'F')
+  }
+  if (c >= 'A' && c <= 'F') {
     return c - 'A' + 10;
+  }
   return -1;
 }
 
 /*
 ** Interpret zArg as an integer value, possibly with suffixes.
 */
-static sqlite3_int64 integerValue(const char *zArg) {
+static sqlite3_int64 integerValue(const char* zArg) {
   sqlite3_int64 v = 0;
   static const struct {
-    char *zSuffix;
+    char* zSuffix;
     int iMult;
   } aMult[] = {
-        {(char *)"KiB", 1024},
-        {(char *)"MiB", 1024 * 1024},
-        {(char *)"GiB", 1024 * 1024 * 1024},
-        {(char *)"KB", 1000},
-        {(char *)"MB", 1000000},
-        {(char *)"GB", 1000000000},
-        {(char *)"K", 1000},
-        {(char *)"M", 1000000},
-        {(char *)"G", 1000000000},
-    };
+      {(char*)"KiB", 1024},
+      {(char*)"MiB", 1024 * 1024},
+      {(char*)"GiB", 1024 * 1024 * 1024},
+      {(char*)"KB", 1000},
+      {(char*)"MB", 1000000},
+      {(char*)"GB", 1000000000},
+      {(char*)"K", 1000},
+      {(char*)"M", 1000000},
+      {(char*)"G", 1000000000},
+  };
   int i;
   int isNeg = 0;
   if (zArg[0] == '-') {
@@ -955,14 +1039,14 @@ static sqlite3_int64 integerValue(const char *zArg) {
       break;
     }
   }
-  return isNeg ? -v : v;
+  return isNeg != 0 ? -v : v;
 }
 
 /*
 ** Interpret zArg as either an integer or a boolean value.  Return 1 or 0
 ** for TRUE and FALSE.  Return the integer value if appropriate.
 */
-static int booleanValue(char *zArg) {
+static int booleanValue(char* zArg) {
   int i;
   if (zArg[0] == '0' && zArg[1] == 'x') {
     for (i = 2; hexDigitValue(zArg[i]) >= 0; i++) {
@@ -971,77 +1055,173 @@ static int booleanValue(char *zArg) {
     for (i = 0; zArg[i] >= '0' && zArg[i] <= '9'; i++) {
     }
   }
-  if (i > 0 && zArg[i] == 0)
-    return (int)(integerValue(zArg) & 0xffffffff);
-  if (sqlite3_stricmp(zArg, "on") == 0 || sqlite3_stricmp(zArg, "yes") == 0) {
-    return 1;
+  if (i > 0 && zArg[i] == 0) {
+    return static_cast<int>(integerValue(zArg) & 0xffffffff);
   }
-  if (sqlite3_stricmp(zArg, "off") == 0 || sqlite3_stricmp(zArg, "no") == 0) {
-    return 0;
+  auto expected = osquery::tryTo<bool>(std::string{zArg});
+  if (expected.isError()) {
+    fprintf(
+        stderr, "ERROR: Not a boolean value: \"%s\". Assuming \"no\".\n", zArg);
   }
-  fprintf(
-      stderr, "ERROR: Not a boolean value: \"%s\". Assuming \"no\".\n", zArg);
-  return 0;
+  return expected.takeOr(false) ? 1 : 0;
 }
 
-/*
-** Close an output file, assuming it is not stderr or stdout
-*/
-static void output_file_close(FILE *f) {
-  if (f && f != stdout && f != stderr)
-    fclose(f);
-}
-
-/*
-** Try to open an output file.   The names "stdout" and "stderr" are
-** recognized and do the right thing.  NULL is returned if the output
-** filename is "off".
-*/
-static FILE *output_file_open(const char *zFile) {
-  FILE *f;
-  if (strcmp(zFile, "stdout") == 0) {
-    f = stdout;
-  } else if (strcmp(zFile, "stderr") == 0) {
-    f = stderr;
-  } else if (strcmp(zFile, "off") == 0) {
-    f = 0;
-  } else {
-    f = fopen(zFile, "wb");
-    if (f == 0) {
-      fprintf(stderr, "Error: cannot open \"%s\"\n", zFile);
-    }
-  }
-  return f;
-}
-
-inline void meta_tables(int nArg, char **azArg) {
-  auto tables = osquery::Registry::names("table");
+inline void meta_tables(int nArg, char** azArg) {
+  auto tables = osquery::RegistryFactory::get().names("table");
   std::sort(tables.begin(), tables.end());
-  for (const auto &table_name : tables) {
+  for (const auto& table_name : tables) {
     if (nArg == 1 || table_name.find(azArg[1]) == 0) {
       printf("  => %s\n", table_name.c_str());
     }
   }
 }
 
-inline void meta_schema(int nArg, char **azArg) {
-  for (const auto &table_name : osquery::Registry::names("table")) {
-    if (nArg > 1 && table_name.find(azArg[1]) != 0) {
+inline void meta_types(struct callback_data* pArg, char* zSql) {
+  const char* COLUMN_NAMES[] = {"name", "type"};
+
+  auto dbc = osquery::SQLiteDBManager::get();
+  osquery::TableColumns columns;
+  auto status = getQueryColumnsInternal(zSql, columns, dbc);
+
+  if (status.ok()) {
+    for (const auto& column_info : columns) {
+      const auto& name = std::get<0>(column_info);
+      const auto& type = columnTypeName(std::get<1>(column_info));
+
+      std::vector<const char*> row{{name.c_str(), type.c_str()}};
+
+      shell_callback(pArg, 2, &row[0], COLUMN_NAMES, nullptr);
+    }
+    pretty_print_if_needed(pArg);
+  } else {
+    fprintf(
+        stdout, "Error %d: %s\n", status.getCode(), status.toString().c_str());
+  }
+}
+
+inline void meta_schema(int nArg, char** azArg) {
+  for (const auto& table : osquery::RegistryFactory::get().names("table")) {
+    if (nArg > 1 && table.find(azArg[1]) != 0) {
       continue;
     }
 
-    osquery::PluginRequest request = {{"action", "columns"}};
     osquery::PluginResponse response;
+    auto status = osquery::Registry::call(
+        "table", table, {{"action", "columns"}}, response);
+    if (status.ok()) {
+      auto const aliases = true;
+      auto const is_extension = false;
 
-    osquery::Registry::call("table", table_name, request, response);
-    std::vector<std::string> columns;
-    for (const auto &column : response) {
-      columns.push_back(column.at("name") + " " + column.at("type"));
+      fprintf(
+          stdout,
+          "CREATE TABLE %s%s;\n",
+          table.c_str(),
+          osquery::columnDefinition(response, aliases, is_extension).c_str());
     }
+  }
+}
 
-    printf("CREATE TABLE %s(%s);\n",
-           table_name.c_str(),
-           osquery::join(columns, ", ").c_str());
+inline void meta_features(struct callback_data* p) {
+  auto results = osquery::SQL(
+      "select * from osquery_flags where (name like 'disable_%' or name like "
+      "'enable_%') and type = 'bool'");
+  for (const auto& flag : results.rows()) {
+    fprintf(
+        p->out, "%s: %s\n", flag.at("name").c_str(), flag.at("value").c_str());
+  }
+}
+
+inline void meta_version(struct callback_data* p) {
+  fprintf(p->out, "osquery %s\n", osquery::kVersion.c_str());
+  fprintf(p->out, "using SQLite %s\n", sqlite3_libversion());
+}
+
+inline void meta_show(struct callback_data* p) {
+  // The show/summary meta command is provided to help with general debugging.
+  // All of this information is 'duplicate', and can be found with better
+  // detail within osquery virtual tables.
+  print_bold("osquery");
+  printf(
+      " - being built, with love, at Facebook\n"
+      "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+  meta_version(p);
+
+  fprintf(p->out, "\nGeneral settings:\n");
+  fprintf(p->out, "%13.13s: %s\n", "Flagfile", FLAGS_flagfile.c_str());
+  // Show helpful config-related settings.
+  fprintf(
+      p->out, "%13.13s: %s", "Config", osquery::FLAGS_config_plugin.c_str());
+  if (std::strcmp(osquery::FLAGS_config_plugin.c_str(), "filesystem") == 0) {
+    fprintf(p->out, " (%s)\n", osquery::FLAGS_config_path.c_str());
+  } else {
+    fprintf(p->out, "\n");
+  }
+
+  // Show helpful logger-related settings.
+  fprintf(
+      p->out, "%13.13s: %s", "Logger", osquery::FLAGS_logger_plugin.c_str());
+  if (osquery::FLAGS_logger_plugin == "filesystem") {
+    fprintf(p->out, " (%s)\n", osquery::FLAGS_logger_path.c_str());
+  } else {
+    fprintf(p->out, "\n");
+  }
+
+  auto database = osquery::RegistryFactory::get().getActive("database");
+  fprintf(p->out, "%13.13s: %s", "Database", database.c_str());
+  if (database == "rocksdb") {
+    fprintf(p->out, " (%s)\n", osquery::FLAGS_database_path.c_str());
+  } else {
+    fprintf(p->out, "\n");
+  }
+
+  {
+    auto results = osquery::SQL::selectAllFrom("osquery_extensions");
+    std::vector<std::string> extensions;
+    for (const auto& extension : results) {
+      extensions.push_back(extension.at("name"));
+    }
+    fprintf(p->out,
+            "%13.13s: %s\n",
+            "Extensions",
+            osquery::join(extensions, ", ").c_str());
+
+    fprintf(p->out,
+            "%13.13s: %s\n",
+            "Socket",
+            osquery::FLAGS_extensions_socket.c_str());
+  }
+
+  fprintf(p->out, "\nShell settings:\n");
+  fprintf(p->out, "%13.13s: %s\n", "echo", p->echoOn != 0 ? "on" : "off");
+  fprintf(
+      p->out, "%13.13s: %s\n", "headers", p->showHeader != 0 ? "on" : "off");
+  fprintf(p->out, "%13.13s: %s\n", "mode", modeDescr[p->mode]);
+  fprintf(p->out, "%13.13s: ", "nullvalue");
+  output_c_string(p->out, p->nullvalue);
+  fprintf(p->out, "\n");
+  fprintf(p->out,
+          "%13.13s: %s\n",
+          "output",
+          strlen30(p->outfile) != 0 ? p->outfile : "stdout");
+  fprintf(p->out, "%13.13s: ", "separator");
+  output_c_string(p->out, p->separator);
+  fprintf(p->out, "\n");
+  fprintf(p->out, "%13.13s: ", "width");
+  for (int i = 0; i < ArraySize(p->colWidth) && p->colWidth[i] != 0; i++) {
+    fprintf(p->out, "%d ", p->colWidth[i]);
+  }
+  fprintf(p->out, "\n");
+
+  {
+    fprintf(p->out, "\nNon-default flags/options:\n");
+    auto results = osquery::SQL(
+        "select * from osquery_flags where default_value <> value");
+    for (const auto& flag : results.rows()) {
+      fprintf(p->out,
+              "  %s: %s\n",
+              flag.at("name").c_str(),
+              flag.at("value").c_str());
+    }
   }
 }
 
@@ -1051,75 +1231,92 @@ inline void meta_schema(int nArg, char **azArg) {
 **
 ** Return 1 on error, 2 to exit, and 0 otherwise.
 */
-static int do_meta_command(char *zLine, struct callback_data *p) {
+static int do_meta_command(char* zLine, struct callback_data* p) {
   int i = 1;
   int nArg = 0;
   int n, c;
   int rc = 0;
-  char *azArg[50];
-
-  // A meta command may act on the database, grab a lock and instance.
-  auto dbc = osquery::SQLiteDBManager::get();
-  auto db = dbc.db();
+  char* azArg[50];
 
   /* Parse the input line into tokens.
-  */
-  while (zLine[i] && nArg < ArraySize(azArg)) {
+   */
+  while ((zLine[i] != 0) && nArg < ArraySize(azArg)) {
     while (IsSpace(zLine[i])) {
       i++;
     }
-    if (zLine[i] == 0)
+    if (zLine[i] == 0) {
       break;
+    }
     if (zLine[i] == '\'' || zLine[i] == '"') {
       int delim = zLine[i++];
       azArg[nArg++] = &zLine[i];
-      while (zLine[i] && zLine[i] != delim) {
-        if (zLine[i] == '\\' && delim == '"' && zLine[i + 1] != 0)
+      while ((zLine[i] != 0) && zLine[i] != delim) {
+        if (zLine[i] == '\\' && delim == '"' && zLine[i + 1] != 0) {
           i++;
+        }
         i++;
       }
       if (zLine[i] == delim) {
         zLine[i++] = 0;
       }
-      if (delim == '"')
+      if (delim == '"') {
         resolve_backslashes(azArg[nArg - 1]);
+      }
     } else {
       azArg[nArg++] = &zLine[i];
-      while (zLine[i] && !IsSpace(zLine[i])) {
+      while ((zLine[i] != 0) && !IsSpace(zLine[i])) {
         i++;
       }
-      if (zLine[i])
+      if (zLine[i] != 0) {
         zLine[i++] = 0;
+      }
       resolve_backslashes(azArg[nArg - 1]);
     }
   }
 
   /* Process the input line.
-  */
-  if (nArg == 0)
+   */
+  if (nArg == 0) {
     return 0; /* no tokens, no error */
+  }
   n = strlen30(azArg[0]);
   c = azArg[0][0];
   if (c == 'a' && strncmp(azArg[0], "all", n) == 0 && nArg == 2) {
-    struct callback_data data;
+    struct callback_data data {};
     memcpy(&data, p, sizeof(data));
     auto query = std::string("SELECT * FROM ") + azArg[1];
     rc = shell_exec(query.c_str(), shell_callback, &data, nullptr);
     if (rc != SQLITE_OK) {
       fprintf(stderr, "Error querying table: %s\n", azArg[1]);
     }
-  } else if (c == 'b' && n >= 3 && strncmp(azArg[0], "bail", n) == 0 &&
-             nArg > 1 && nArg < 3) {
+    return rc;
+  }
+
+  if (c == 's' && strncmp(azArg[0], "socket", n) == 0 && nArg == 1) {
+    fprintf(p->out, "%s\n", osquery::FLAGS_extensions_socket.c_str());
+    return rc;
+  }
+
+  // A meta command may act on the database, grab a lock and instance.
+  auto dbc = osquery::SQLiteDBManager::get();
+  auto db = dbc->db();
+
+  if (c == 'b' && n >= 3 && strncmp(azArg[0], "bail", n) == 0 && nArg > 1 &&
+      nArg < 3) {
     bail_on_error = booleanValue(azArg[1]);
   } else if (c == 'e' && strncmp(azArg[0], "echo", n) == 0 && nArg > 1 &&
              nArg < 3) {
     p->echoOn = booleanValue(azArg[1]);
   } else if (c == 'e' && strncmp(azArg[0], "exit", n) == 0) {
-    if (nArg > 1 && (rc = (int)integerValue(azArg[1])) != 0)
+    if (nArg > 1 && (rc = static_cast<int>(integerValue(azArg[1]))) != 0) {
       exit(rc);
+    }
     rc = 2;
-  } else if (c == 'h' && (strncmp(azArg[0], "header", n) == 0 ||
-                          strncmp(azArg[0], "headers", n) == 0) &&
+  } else if (c == 'f' && strncmp(azArg[0], "features", n) == 0 && nArg == 1) {
+    meta_features(p);
+  } else if (c == 'h' &&
+             (strncmp(azArg[0], "header", n) == 0 ||
+              strncmp(azArg[0], "headers", n) == 0) &&
              nArg > 1 && nArg < 3) {
     p->showHeader = booleanValue(azArg[1]);
   } else if (c == 'h' && strncmp(azArg[0], "help", n) == 0) {
@@ -1127,18 +1324,11 @@ static int do_meta_command(char *zLine, struct callback_data *p) {
     if (HAS_TIMER) {
       fprintf(stderr, "%s", zTimerHelp);
     }
-  } else if (c == 'l' && strncmp(azArg[0], "log", n) == 0 && nArg >= 2) {
-    const char *zFile = azArg[1];
-    output_file_close(p->pLog);
-    p->pLog = output_file_open(zFile);
   } else if (c == 'm' && strncmp(azArg[0], "mode", n) == 0 && nArg == 2) {
     int n2 = strlen30(azArg[1]);
     if ((n2 == 4 && strncmp(azArg[1], "line", n2) == 0) ||
         (n2 == 5 && strncmp(azArg[1], "lines", n2) == 0)) {
       p->mode = MODE_Line;
-    } else if ((n2 == 6 && strncmp(azArg[1], "column", n2) == 0) ||
-               (n2 == 7 && strncmp(azArg[1], "columns", n2) == 0)) {
-      p->mode = MODE_Column;
     } else if ((n2 == 6 && strncmp(azArg[1], "column", n2) == 0) ||
                (n2 == 7 && strncmp(azArg[1], "columns", n2) == 0)) {
       p->mode = MODE_Column;
@@ -1152,21 +1342,22 @@ static int do_meta_command(char *zLine, struct callback_data *p) {
     } else {
       fprintf(stderr,
               "Error: mode should be one of: "
-              "column csv html insert line list tabs tcl pretty\n");
+              "column csv line list pretty\n");
       rc = 1;
     }
   } else if (c == 'n' && strncmp(azArg[0], "nullvalue", n) == 0 && nArg == 2) {
     sqlite3_snprintf(sizeof(p->nullvalue),
                      p->nullvalue,
                      "%.*s",
-                     (int)ArraySize(p->nullvalue) - 1,
+                     ArraySize(p->nullvalue) - 1,
                      azArg[1]);
   } else if (c == 'p' && n >= 3 && strncmp(azArg[0], "print", n) == 0) {
-    int i;
-    for (i = 1; i < nArg; i++) {
-      if (i > 1)
+    int j;
+    for (j = 1; j < nArg; j++) {
+      if (j > 1) {
         fprintf(p->out, " ");
-      fprintf(p->out, "%s", azArg[i]);
+      }
+      fprintf(p->out, "%s", azArg[j]);
     }
     fprintf(p->out, "\n");
   } else if (c == 'q' && strncmp(azArg[0], "quit", n) == 0 && nArg == 1) {
@@ -1177,48 +1368,32 @@ static int do_meta_command(char *zLine, struct callback_data *p) {
     sqlite3_snprintf(sizeof(p->separator),
                      p->separator,
                      "%.*s",
-                     (int)sizeof(p->separator) - 1,
+                     static_cast<int>(sizeof(p->separator)) - 1,
                      azArg[1]);
-  } else if (c == 's' && strncmp(azArg[0], "show", n) == 0 && nArg == 1) {
-    int i;
-    fprintf(p->out, "%9.9s: %s\n", "echo", p->echoOn ? "on" : "off");
-    fprintf(p->out, "%9.9s: %s\n", "headers", p->showHeader ? "on" : "off");
-    fprintf(p->out, "%9.9s: %s\n", "mode", modeDescr[p->mode]);
-    fprintf(p->out, "%9.9s: ", "nullvalue");
-    output_c_string(p->out, p->nullvalue);
-    fprintf(p->out, "\n");
-    fprintf(p->out,
-            "%9.9s: %s\n",
-            "output",
-            strlen30(p->outfile) ? p->outfile : "stdout");
-    fprintf(p->out, "%9.9s: ", "separator");
-    output_c_string(p->out, p->separator);
-    fprintf(p->out, "\n");
-    fprintf(p->out, "%9.9s: ", "width");
-    for (i = 0; i < (int)ArraySize(p->colWidth) && p->colWidth[i] != 0; i++) {
-      fprintf(p->out, "%d ", p->colWidth[i]);
-    }
-    fprintf(p->out, "\n");
+  } else if (c == 's' &&
+             (strncmp(azArg[0], "show", n) == 0 ||
+              strncmp(azArg[0], "summary", n) == 0) &&
+             nArg == 1) {
+    meta_show(p);
   } else if (c == 't' && n > 1 && strncmp(azArg[0], "tables", n) == 0 &&
+             nArg < 3) {
+    meta_tables(nArg, azArg);
+  } else if (c == 'l' && n > 1 && strncmp(azArg[0], "list", n) == 0 &&
              nArg < 3) {
     meta_tables(nArg, azArg);
   } else if (c == 't' && n > 4 && strncmp(azArg[0], "timeout", n) == 0 &&
              nArg == 2) {
-    sqlite3_busy_timeout(db, (int)integerValue(azArg[1]));
+    sqlite3_busy_timeout(db, static_cast<int>(integerValue(azArg[1])));
   } else if (HAS_TIMER && c == 't' && n >= 5 &&
              strncmp(azArg[0], "timer", n) == 0 && nArg == 2) {
     enableTimer = booleanValue(azArg[1]);
-  } else if (c == 't' && strncmp(azArg[0], "trace", n) == 0 && nArg > 1) {
-    output_file_close(p->traceOut);
-    p->traceOut = output_file_open(azArg[1]);
   } else if (c == 'v' && strncmp(azArg[0], "version", n) == 0) {
-    fprintf(p->out, "osquery %s\n", osquery::kVersion.c_str());
-    fprintf(p->out, "using SQLite %s\n", sqlite3_libversion());
+    meta_version(p);
   } else if (c == 'w' && strncmp(azArg[0], "width", n) == 0 && nArg > 1) {
     int j;
     assert(nArg <= ArraySize(azArg));
     for (j = 1; j < nArg && j < ArraySize(p->colWidth); j++) {
-      p->colWidth[j - 1] = (int)integerValue(azArg[j]);
+      p->colWidth[j - 1] = static_cast<int>(integerValue(azArg[j]));
     }
   } else {
     fprintf(stderr,
@@ -1235,15 +1410,15 @@ static int do_meta_command(char *zLine, struct callback_data *p) {
 ** Return TRUE if a semicolon occurs anywhere in the first N characters
 ** of string z[].
 */
-static int line_contains_semicolon(const char *z, int N) {
-  int i;
+static int line_contains_semicolon(const char* z, int N) {
   if (z == nullptr) {
     return 0;
   }
 
-  for (i = 0; i < N; i++) {
-    if (z[i] == ';')
+  for (int i = 0; i < N; i++) {
+    if (z[i] == ';') {
       return 1;
+    }
   }
   return 0;
 }
@@ -1251,66 +1426,40 @@ static int line_contains_semicolon(const char *z, int N) {
 /*
 ** Test to see if a line consists entirely of whitespace.
 */
-static int _all_whitespace(const char *z) {
-  for (; *z; z++) {
-    if (IsSpace(z[0]))
+static int _all_whitespace(const char* z) {
+  if (z == nullptr) {
+    return 0;
+  }
+
+  for (; *z != 0; z++) {
+    if (IsSpace(z[0])) {
       continue;
+    }
+
     if (*z == '/' && z[1] == '*') {
       z += 2;
-      while (*z && (*z != '*' || z[1] != '/')) {
+      while ((*z != 0) && (*z != '*' || z[1] != '/')) {
         z++;
       }
-      if (*z == 0)
+      if (*z == 0) {
         return 0;
+      }
       z++;
       continue;
     }
     if (*z == '-' && z[1] == '-') {
       z += 2;
-      while (*z && *z != '\n') {
+      while ((*z != 0) && *z != '\n') {
         z++;
       }
-      if (*z == 0)
+      if (*z == 0) {
         return 1;
+      }
       continue;
     }
     return 0;
   }
   return 1;
-}
-
-/*
-** Return TRUE if the line typed in is an SQL command terminator other
-** than a semi-colon.  The SQL Server style "go" command is understood
-** as is the Oracle "/".
-*/
-static int line_is_command_terminator(const char *zLine) {
-  while (IsSpace(zLine[0])) {
-    zLine++;
-  };
-  if (zLine[0] == '/' && _all_whitespace(&zLine[1])) {
-    return 1; /* Oracle */
-  }
-  if (ToLower(zLine[0]) == 'g' && ToLower(zLine[1]) == 'o' &&
-      _all_whitespace(&zLine[2])) {
-    return 1; /* SQL Server */
-  }
-  return 0;
-}
-
-/*
-** Return true if zSql is a complete SQL statement.  Return false if it
-** ends in the middle of a string literal or C-style comment.
-*/
-static int line_is_complete(char *zSql, int nSql) {
-  int rc;
-  if (zSql == 0)
-    return 1;
-  zSql[nSql] = ';';
-  zSql[nSql + 1] = 0;
-  rc = sqlite3_complete(zSql);
-  zSql[nSql] = 0;
-  return rc;
 }
 
 /*
@@ -1322,66 +1471,84 @@ static int line_is_complete(char *zSql, int nSql) {
 **
 ** Return the number of errors.
 */
-static int process_input(struct callback_data *p, FILE *in) {
-  char *zLine = 0; /* A single input line */
-  char *zSql = 0; /* Accumulated SQL text */
-  int nLine; /* Length of current line */
+static int process_input(struct callback_data* p, FILE* in) {
+  /* A single input line */
+  char* zLine = nullptr;
+
+  /* Accumulated SQL text */
+  char* zSql = nullptr;
+
+  /* Error message returned */
+  char* zErrMsg = nullptr;
+
+  int nLine = 0; /* Length of current line */
   int nSql = 0; /* Bytes of zSql[] used */
   int nAlloc = 0; /* Allocated zSql[] space */
   int nSqlPrior = 0; /* Bytes of zSql[] used by prior line */
-  char *zErrMsg; /* Error message returned */
-  int rc; /* Error code */
+  int rc = 0; /* Error code */
   int errCnt = 0; /* Number of errors seen */
   int lineno = 0; /* Current line number */
   int startline = 0; /* Line number for start of current input */
+  bool typesQuery = false;
 
-  while (errCnt == 0 || !bail_on_error || (in == 0 && stdin_is_interactive)) {
+  while (errCnt == 0 || (bail_on_error == 0) ||
+         (in == nullptr && stdin_is_interactive)) {
     fflush(p->out);
-    zLine = one_input_line(in, zLine, nSql > 0);
-    if (zLine == 0) {
+    zLine = one_input_line(in, zLine, static_cast<int>(nSql > 0));
+    if (zLine == nullptr) {
       /* End of input */
-      if (stdin_is_interactive)
+      if (stdin_is_interactive) {
         printf("\n");
+      }
       break;
     }
-    if (seenInterrupt) {
-      if (in != 0)
+    if (seenInterrupt != 0) {
+      if (in != nullptr) {
         break;
+      }
       seenInterrupt = 0;
     }
     lineno++;
-    if (nSql == 0 && _all_whitespace(zLine)) {
-      if (p->echoOn)
+    if (nSql == 0 && (_all_whitespace(zLine) != 0)) {
+      if (p->echoOn != 0) {
         printf("%s\n", zLine);
-      continue;
-    }
-    if (zLine && zLine[0] == '.' && nSql == 0) {
-      if (p->echoOn)
-        printf("%s\n", zLine);
-      rc = do_meta_command(zLine, p);
-      if (rc == 2) { /* exit requested */
-        break;
-      } else if (rc) {
-        errCnt++;
       }
       continue;
     }
-    if (line_is_command_terminator(zLine) && line_is_complete(zSql, nSql)) {
-      memcpy(zLine, ";", 2);
+    if (zLine != nullptr && zLine[0] == '.' && nSql == 0) {
+      if (p->echoOn != 0) {
+        printf("%s\n", zLine);
+      }
+      if (strncmp(zLine, ".types ", 7) == 0) {
+        typesQuery = true;
+      } else {
+        rc = do_meta_command(zLine, p);
+        if (rc == 2) { /* exit requested */
+          break;
+        } else if (rc != 0) {
+          errCnt++;
+        }
+        continue;
+      }
     }
     nLine = strlen30(zLine);
     if (nSql + nLine + 2 >= nAlloc) {
       nAlloc = nSql + nLine + 100;
-      zSql = (char *)realloc(zSql, nAlloc);
-      if (zSql == 0) {
+      auto qSql = reinterpret_cast<char*>(realloc(zSql, nAlloc));
+      if (qSql == nullptr) {
         fprintf(stderr, "Error: out of memory\n");
+        if (zSql != nullptr) {
+          free(zSql);
+        }
         exit(1);
+      } else {
+        zSql = qSql;
       }
     }
     nSqlPrior = nSql;
     if (nSql == 0) {
       int i;
-      for (i = 0; zLine[i] && IsSpace(zLine[i]); i++) {
+      for (i = typesQuery ? 7 : 0; (zLine[i] != 0) && IsSpace(zLine[i]); i++) {
       }
       assert(nAlloc > 0 && zSql != nullptr);
       if (zSql != nullptr) {
@@ -1394,155 +1561,217 @@ static int process_input(struct callback_data *p, FILE *in) {
       memcpy(zSql + nSql, zLine, nLine + 1);
       nSql += nLine;
     }
-    if (nSql && line_contains_semicolon(&zSql[nSqlPrior], nSql - nSqlPrior) &&
-        sqlite3_complete(zSql)) {
-      p->cnt = 0;
-      BEGIN_TIMER;
-      rc = shell_exec(zSql, shell_callback, p, &zErrMsg);
-      END_TIMER;
-      if (rc || zErrMsg) {
-        char zPrefix[100];
-        if (in != 0 || !stdin_is_interactive) {
-          sqlite3_snprintf(
-              sizeof(zPrefix), zPrefix, "Error: near line %d:", startline);
-        } else {
-          sqlite3_snprintf(sizeof(zPrefix), zPrefix, "Error:");
+    if ((nSql != 0) &&
+        (line_contains_semicolon(&zSql[nSqlPrior], nSql - nSqlPrior) != 0) &&
+        (sqlite3_complete(zSql) != 0)) {
+      if (typesQuery) {
+        meta_types(p, zSql);
+        typesQuery = false;
+      } else {
+        p->cnt = 0;
+        BEGIN_TIMER;
+        rc = shell_exec(zSql, shell_callback, p, &zErrMsg);
+        END_TIMER;
+        if ((rc != 0) || zErrMsg != nullptr) {
+          char zPrefix[100] = {0};
+          if (in != nullptr || !stdin_is_interactive) {
+            sqlite3_snprintf(
+                sizeof(zPrefix), zPrefix, "Error: near line %d:", startline);
+          } else {
+            sqlite3_snprintf(sizeof(zPrefix), zPrefix, "Error:");
+          }
+          if (zErrMsg != nullptr) {
+            fprintf(stderr, "%s %s\n", zPrefix, zErrMsg);
+            sqlite3_free(zErrMsg);
+            zErrMsg = nullptr;
+          }
+          errCnt++;
         }
-        if (zErrMsg != 0) {
-          fprintf(stderr, "%s %s\n", zPrefix, zErrMsg);
-          sqlite3_free(zErrMsg);
-          zErrMsg = 0;
-        }
-        errCnt++;
       }
       nSql = 0;
-    } else if (nSql && _all_whitespace(zSql)) {
-      if (p->echoOn)
+    } else if ((nSql != 0) && (_all_whitespace(zSql) != 0)) {
+      if (p->echoOn != 0) {
         printf("%s\n", zSql);
+      }
       nSql = 0;
     }
   }
-  if (nSql) {
-    if (!_all_whitespace(zSql)) {
+
+  if (nSql != 0) {
+    if (_all_whitespace(zSql) == 0) {
       fprintf(stderr, "Error: incomplete SQL: %s\n", zSql);
     }
+  }
+  if (zSql != nullptr) {
     free(zSql);
   }
+
   free(zLine);
-  return errCnt > 0;
+  return static_cast<int>(errCnt > 0);
 }
 
 /*
 ** Initialize the state information in data
 */
-static void main_init(struct callback_data *data) {
-  memset(data, 0, sizeof(*data));
+static void main_init(struct callback_data* data) {
+  memset(data, 0, sizeof(struct callback_data));
   data->prettyPrint = new struct prettyprint_data();
   data->mode = MODE_Pretty;
-  memcpy(data->separator, "|", 2);
   data->showHeader = 1;
+  data->separator[0] = '|';
+
   sqlite3_config(SQLITE_CONFIG_URI, 1);
   sqlite3_config(SQLITE_CONFIG_LOG, shellLog, data);
-  sqlite3_snprintf(sizeof(mainPrompt), mainPrompt, "osquery> ");
-  sqlite3_snprintf(sizeof(continuePrompt), continuePrompt, "    ...> ");
+
+  auto term = osquery::getEnvVar("TERM");
+  if (term.is_initialized() &&
+      (*term).find("xterm-256color") != std::string::npos) {
+    sqlite3_snprintf(
+        sizeof(mainPrompt), mainPrompt, "\033[38;5;147mosquery> \033[0m");
+    sqlite3_snprintf(sizeof(continuePrompt),
+                     continuePrompt,
+                     "\033[38;5;147m    ...> \033[0m");
+  } else {
+    sqlite3_snprintf(sizeof(mainPrompt), mainPrompt, "osquery> ");
+    sqlite3_snprintf(sizeof(continuePrompt), continuePrompt, "    ...> ");
+  }
   sqlite3_config(SQLITE_CONFIG_SINGLETHREAD);
 }
 
-/*
-** Output text to the console in a font that attracts extra attention.
-*/
-static void printBold(const char *zText) { printf("\033[1m%s\033[0m", zText); }
-
 namespace osquery {
 
-int launchIntoShell(int argc, char **argv) {
-  struct callback_data data;
+void tableCompletionFunction(char const* prefix, linenoiseCompletions* lc) {
+  auto tables = osquery::RegistryFactory::get().names("table");
+  size_t index = 0;
+
+  while (index < tables.size()) {
+    const std::string& table = tables.at(index);
+    ++index;
+
+    if (boost::algorithm::starts_with(table, prefix)) {
+      linenoiseAddCompletion(lc, table.c_str());
+    }
+  }
+}
+
+int runQuery(struct callback_data* data, const char* query) {
+  char* error = nullptr;
+  int rc = shell_exec(query, shell_callback, data, &error);
+  if (error != nullptr) {
+    fprintf(stderr, "Error: %s\n", error);
+    rc = (rc == 0) ? 1 : rc;
+  } else if (rc != 0) {
+    fprintf(stderr, "Error: unable to process SQL \"%s\"\n", query);
+  }
+  return rc;
+}
+
+int runPack(struct callback_data* data) {
+  int rc = 0;
+
+  // Check every pack for a name matching the requested --pack flag.
+  Config::get().packs([data, &rc](const Pack& pack) {
+    if (pack.getName() != FLAGS_pack) {
+      return;
+    }
+
+    for (const auto& query : pack.getSchedule()) {
+      rc = runQuery(data, query.second.query.c_str());
+      if (rc != 0) {
+        fprintf(stderr,
+                "Could not execute query %s: %s\n",
+                query.first.c_str(),
+                query.second.query.c_str());
+        return;
+      }
+    }
+  });
+  return rc;
+}
+
+int launchIntoShell(int argc, char** argv) {
+  struct callback_data data {};
   main_init(&data);
 
-  {
-    // Hold the manager connection instance again in callbacks.
-    auto dbc = SQLiteDBManager::get();
-    // Add some shell-specific functions to the instance.
-    sqlite3_create_function(
-        dbc.db(), "shellstatic", 0, SQLITE_UTF8, 0, shellstaticFunc, 0, 0);
-  }
+#if defined(SQLITE_ENABLE_WHERETRACE)
+  sqlite3WhereTrace = 0xffffffff;
+#endif
 
-  Argv0 = argv[0];
-  stdin_is_interactive = isatty(0);
+  // Move the attach function method into the osquery SQL implementation.
+  // This allow simple/straightforward control of concurrent DB access.
+  osquery::attachFunctionInternal("shellstatic", shellstaticFunc);
+  stdin_is_interactive = platformIsatty(stdin);
 
   // SQLite: Make sure we have a valid signal handler early
   signal(SIGINT, interrupt_handler);
 
-  int warnInmemoryDb = 1;
-  data.zDbFilename = ":memory:";
   data.out = stdout;
 
   // Set modes and settings from CLI flags.
+  data.showHeader = static_cast<int>(FLAGS_header);
   if (FLAGS_list) {
     data.mode = MODE_List;
   } else if (FLAGS_line) {
     data.mode = MODE_Line;
   } else if (FLAGS_csv) {
     data.mode = MODE_Csv;
-    memcpy(data.separator, ",", 2);
+    data.separator[0] = ',';
   } else {
     data.mode = MODE_Pretty;
   }
 
-  sqlite3_snprintf(sizeof(data.separator), data.separator, "%s",
-    FLAGS_separator.c_str());
-  sqlite3_snprintf(sizeof(data.nullvalue), data.nullvalue, "%s",
-    FLAGS_nullvalue.c_str());
+  sqlite3_snprintf(
+      sizeof(data.separator), data.separator, "%s", FLAGS_separator.c_str());
+  sqlite3_snprintf(
+      sizeof(data.nullvalue), data.nullvalue, "%s", FLAGS_nullvalue.c_str());
 
   int rc = 0;
-  if (FLAGS_L == true || FLAGS_A.size() > 0) {
+  if (FLAGS_L || !FLAGS_A.empty()) {
     // Helper meta commands from shell switches.
     std::string query = (FLAGS_L) ? ".tables" : ".all " + FLAGS_A;
-    char *cmd = new char[query.size() + 1];
+    auto* cmd = new char[query.size() + 1];
     memset(cmd, 0, query.size() + 1);
     std::copy(query.begin(), query.end(), cmd);
     rc = do_meta_command(cmd, &data);
+    delete[] cmd;
+  } else if (!FLAGS_pack.empty()) {
+    rc = runPack(&data);
   } else if (argc > 1 && argv[1] != nullptr) {
     // Run a command or statement from CLI
-    char *query = argv[1];
-    char *error = 0;
+    char* query = argv[1];
     if (query[0] == '.') {
       rc = do_meta_command(query, &data);
       rc = (rc == 2) ? 0 : rc;
     } else {
-      rc = shell_exec(query, shell_callback, &data, &error);
-      if (error != 0) {
-        fprintf(stderr, "Error: %s\n", error);
-        return (rc != 0) ? rc : 1;
-      } else if (rc != 0) {
-        fprintf(stderr, "Error: unable to process SQL \"%s\"\n", query);
+      rc = runQuery(&data, query);
+      if (rc != 0) {
         return rc;
       }
     }
   } else {
     // Run commands received from standard input
     if (stdin_is_interactive) {
-      printBold("osquery");
-      printf(
-          " - being built, with love, at Samsung(not Facebook)\n"
-          "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-      if (warnInmemoryDb) {
-        printf("Using a ");
-        printBold("virtual database");
-        printf(". Need help, type '.help'\n");
-      }
+      printf("Using a ");
+      print_bold("virtual database");
+      printf(". Need help, type '.help'\n");
 
-      auto history_file = osquery::osqueryHomeDirectory() + "/.history";
-      read_history(history_file.c_str());
-      rc = process_input(&data, 0);
-      stifle_history(100);
-      write_history(history_file.c_str());
+      auto history_file =
+          (fs::path(osquery::osqueryHomeDirectory()) / ".history")
+              .make_preferred()
+              .string();
+      linenoiseHistorySetMaxLen(100);
+      linenoiseHistoryLoad(history_file.c_str());
+      linenoiseSetCompletionCallback(tableCompletionFunction);
+
+      rc = process_input(&data, nullptr);
+
+      linenoiseHistorySave(history_file.c_str());
     } else {
       rc = process_input(&data, stdin);
     }
   }
 
-  set_table_name(&data, 0);
+  set_table_name(&data, nullptr);
   sqlite3_free(data.zFreeOnClose);
 
   if (data.prettyPrint != nullptr) {
@@ -1550,4 +1779,4 @@ int launchIntoShell(int argc, char **argv) {
   }
   return rc;
 }
-}
+} // namespace osquery

@@ -1,26 +1,31 @@
-/*
- *  Copyright (c) 2014, Facebook, Inc.
+/**
+ *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
+ *  This source code is licensed in accordance with the terms specified in
+ *  the LICENSE file found in the root directory of this source tree.
  */
 
 #pragma once
 
+#include <map>
 #include <string>
+#include <vector>
 
-#include <osquery/database.h>
 #include <osquery/flags.h>
+#include <osquery/query.h>
 
 namespace osquery {
 
 /// Show all tables and exit the shell.
 DECLARE_bool(L);
+
 /// Select all from a table an exit the shell.
 DECLARE_string(A);
+
+/// The shell may request execution of all queries in a pack immediately.
+DECLARE_string(pack);
+
 /// The shell may need to disable events for fast operations.
 DECLARE_bool(disable_events);
 
@@ -74,7 +79,7 @@ void jsonPrint(const QueryData& q);
  *
  * @param r A row to analyze
  * @param lengths A mutable set of column lengths
- * @param use_columns Calulate lengths of column names or values
+ * @param use_columns Calculate lengths of column names or values
  *
  * @return A map of string to int such that the key represents the "column" in
  * the supplied QueryData and the int represents the length of the longest key

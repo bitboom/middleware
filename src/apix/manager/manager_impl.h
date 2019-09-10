@@ -42,7 +42,6 @@ public:
 	Rows execute(const std::string& query);
 	void subscribe(const std::string& table, const Callback& callback);
 
-	std::vector<std::string> tables(void) noexcept;
 	std::vector<std::string> columns(const std::string& table) noexcept;
 
 private:

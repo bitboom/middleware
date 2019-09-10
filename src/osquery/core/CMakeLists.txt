@@ -12,17 +12,28 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LIBRARY(osquery_core init.cpp
-								 conversions.cpp
-								 system.cpp
-								 text.cpp
+ADD_OSQUERY_LIBRARY(osquery_core flags.cpp
 								 tables.cpp
-								 flags.cpp
-								 hash.cpp
-								 watcher.cpp)
-
-# TODO(Sangwan): Detach from core
-ADD_OSQUERY_LIBRARY(osquery_test_util test_util.cpp)
+								 init.cpp
+								 query.cpp
+								 system.cpp
+								 watcher.cpp
+								 database/database.cpp
+								 database/in_memory_database.cpp
+								 plugins/logger.cpp
+								 plugins/plugin.cpp
+								 plugins/sql.cpp
+								 posix/initializer.cpp
+								 sql/column.cpp
+								 sql/diff_results.cpp
+								 sql/query_data.cpp
+								 sql/query_performance.cpp
+								 sql/row.cpp
+								 sql/scheduled_query.cpp
+								 sql/table_rows.cpp)
 
 FILE(GLOB OSQUERY_CORE_TESTS "tests/*.cpp")
-ADD_OSQUERY_TEST(${OSQUERY_CORE_TESTS})
+FILE(GLOB OSQUERY_CORE_POSIX_TESTS "tests/posix/*.cpp")
+ADD_OSQUERY_TEST(${OSQUERY_SQL_TESTS}
+				 ${OSQUERY_CORE_POSIX_TESTS}
+				 ${OSQUERY_CORE_PLUGINS_TESTS})

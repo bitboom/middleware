@@ -1,54 +1,80 @@
-/*
- *  Copyright (c) 2014, Facebook, Inc.
+/**
+ *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
+ *  This source code is licensed in accordance with the terms specified in
+ *  the LICENSE file found in the root directory of this source tree.
  */
 
 #pragma once
 
+#include <osquery/dispatcher.h>
 #include <osquery/extensions.h>
-
-#include "osquery/dispatcher/dispatcher.h"
-
-#include <thrift/server/TThreadPoolServer.h>
-#include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/transport/TServerSocket.h>
-#include <thrift/transport/TBufferTransports.h>
-#include <thrift/transport/TSocket.h>
-
-#ifdef OSQUERY_THRIFT
-#include "Extension.h"
-#include "ExtensionManager.h"
-#else
-#error "Required -DOSQUERY_THRIFT=/path/to/thrift/gen-cpp"
-#endif
+#include <osquery/query.h>
 
 namespace osquery {
 
-using namespace apache::thrift;
-using namespace apache::thrift::protocol;
-using namespace apache::thrift::transport;
-using namespace apache::thrift::server;
-using namespace apache::thrift::concurrency;
+/**
+ * An option is a 'basic' flag, the only important information is value.
+ */
+struct Option {
+  /// Current flag value.
+  std::string value;
+  /// Initial flag value.
+  std::string default_value;
+  /// String representation of type (unused).
+  std::string type;
+};
 
-/// Create easier to reference typedefs for Thrift layer implementations.
-#define SHARED_PTR_IMPL OSQUERY_THRIFT_POINTER::shared_ptr
-typedef SHARED_PTR_IMPL<TSocket> TSocketRef;
-typedef SHARED_PTR_IMPL<TTransport> TTransportRef;
-typedef SHARED_PTR_IMPL<TProtocol> TProtocolRef;
+/// This is replicated from the Thrift IDL.
+enum class ExtensionCode {
+  EXT_SUCCESS = 0,
+  EXT_FAILED = 1,
+  EXT_FATAL = 2,
+};
 
-typedef SHARED_PTR_IMPL<TProcessor> TProcessorRef;
-typedef SHARED_PTR_IMPL<TServerTransport> TServerTransportRef;
-typedef SHARED_PTR_IMPL<TTransportFactory> TTransportFactoryRef;
-typedef SHARED_PTR_IMPL<TProtocolFactory> TProtocolFactoryRef;
-typedef SHARED_PTR_IMPL<PosixThreadFactory> PosixThreadFactoryRef;
-typedef std::shared_ptr<TThreadPoolServer> TThreadPoolServerRef;
+using OptionList = std::map<std::string, Option>;
+using ExtensionRouteTable = std::map<std::string, PluginResponse>;
+using ExtensionRegistry = std::map<std::string, ExtensionRouteTable>;
 
-namespace extensions {
+/**
+ * @brief The basic API functions that our Thrift server and client implements.
+ *
+ * We include this abstract to force the server (interface) and clients to
+ * include the required APIs.
+ *
+ * For each interface, a child must implement the actual Thrift endpoints and
+ * call the methods included here, which contain the logic. This is a little
+ * bit of overhead that was already a sunk cost for osquery-- meaning we
+ * were already translating Thrift structures to library structures.
+ */
+class ExtensionAPI {
+ public:
+  virtual ~ExtensionAPI() = default;
+
+ public:
+  virtual Status ping() = 0;
+  virtual Status call(const std::string& registry,
+                      const std::string& item,
+                      const PluginRequest& request,
+                      PluginResponse& response) = 0;
+  virtual void shutdown() = 0;
+};
+
+class ExtensionManagerAPI {
+ public:
+  virtual ~ExtensionManagerAPI() = default;
+
+ public:
+  virtual ExtensionList extensions() = 0;
+  virtual OptionList options() = 0;
+  virtual Status registerExtension(const ExtensionInfo& info,
+                                   const ExtensionRegistry& registry,
+                                   RouteUUID& uuid) = 0;
+  virtual Status deregisterExtension(RouteUUID uuid) = 0;
+  virtual Status query(const std::string& sql, QueryData& qd) = 0;
+  virtual Status getQueryColumns(const std::string& sql, QueryData& qd) = 0;
+};
 
 /**
  * @brief The Thrift API server used by an osquery Extension process.
@@ -58,30 +84,22 @@ namespace extensions {
  * It implements all the Extension API handlers.
  *
  */
-class ExtensionHandler : virtual public ExtensionIf {
+class ExtensionInterface : public ExtensionAPI {
  public:
-  ExtensionHandler() : uuid_(0) {}
-  explicit ExtensionHandler(RouteUUID uuid) : uuid_(uuid) {}
+  ExtensionInterface() : ExtensionInterface(0) {}
+  explicit ExtensionInterface(RouteUUID uuid) : uuid_(uuid) {}
 
-  /// Ping an Extension for status and metrics.
-  void ping(ExtensionStatus& _return);
-
-  /**
-   * @brief The Thrift API used by Registry::call for an extension route.
-   *
-   * @param _return The return response (combo Status and PluginResponse).
-   * @param registry The name of the Extension registry.
-   * @param item The Extension plugin name.
-   * @param request The plugin request.
-   */
-  void call(ExtensionResponse& _return,
-            const std::string& registry,
-            const std::string& item,
-            const ExtensionPluginRequest& request);
+ public:
+  virtual Status ping() override;
+  virtual Status call(const std::string& registry,
+                      const std::string& item,
+                      const PluginRequest& request,
+                      PluginResponse& response) override;
+  virtual void shutdown() override;
 
  protected:
   /// Transient UUID assigned to the extension after registering.
-  RouteUUID uuid_;
+  std::atomic<RouteUUID> uuid_;
 };
 
 /**
@@ -95,13 +113,11 @@ class ExtensionHandler : virtual public ExtensionIf {
  * It implements all the ExtensionManager API handlers.
  *
  */
-class ExtensionManagerHandler : virtual public ExtensionManagerIf,
-                                public ExtensionHandler {
+class ExtensionManagerInterface : public ExtensionInterface,
+                                  public ExtensionManagerAPI {
  public:
-  ExtensionManagerHandler() {}
-
   /// Return a list of Route UUIDs and extension metadata.
-  void extensions(InternalExtensionList& _return);
+  virtual ExtensionList extensions() override;
 
   /**
    * @brief Return a map of osquery options (Flags, bootstrap CLI flags).
@@ -116,7 +132,7 @@ class ExtensionManagerHandler : virtual public ExtensionManagerIf,
    * of the current options. The best example is the `config_plugin` bootstrap
    * flag.
    */
-  void options(InternalOptionList& _return);
+  virtual OptionList options() override;
 
   /**
    * @brief Request a Route UUID and advertise a set of Registry routes.
@@ -127,13 +143,13 @@ class ExtensionManagerHandler : virtual public ExtensionManagerIf,
    * compatibility checks. On success the Extension is returned a Route UUID and
    * begins to serve the ExtensionHandler Thrift API.
    *
-   * @param _return The output Status and optional assigned RouteUUID.
+   * @return The output Status and optional assigned RouteUUID.
    * @param info The osquery Thrift-internal Extension metadata container.
    * @param registry The Extension's Registry::getBroadcast information.
    */
-  void registerExtension(ExtensionStatus& _return,
-                         const InternalExtensionInfo& info,
-                         const ExtensionRegistry& registry);
+  virtual Status registerExtension(const ExtensionInfo& info,
+                                   const ExtensionRegistry& registry,
+                                   RouteUUID& uuid) override;
 
   /**
    * @brief Request an Extension removal and removal of Registry routes.
@@ -146,8 +162,7 @@ class ExtensionManagerHandler : virtual public ExtensionManagerIf,
    * @param _return The output Status.
    * @param uuid The assigned Route UUID to deregister.
    */
-  void deregisterExtension(ExtensionStatus& _return,
-                           const ExtensionRouteUUID uuid);
+  virtual Status deregisterExtension(RouteUUID uuid) override;
 
   /**
    * @brief Execute an SQL statement in osquery core.
@@ -159,7 +174,7 @@ class ExtensionManagerHandler : virtual public ExtensionManagerIf,
    * @param _return The output Status and QueryData (as response).
    * @param sql The sql statement.
    */
-  void query(ExtensionResponse& _return, const std::string& sql);
+  virtual Status query(const std::string& sql, QueryData& qd) override;
 
   /**
    * @brief Get SQL column information for SQL statements in osquery core.
@@ -171,7 +186,8 @@ class ExtensionManagerHandler : virtual public ExtensionManagerIf,
    * @param _return The output Status and TableColumns (as response).
    * @param sql The sql statement.
    */
-  void getQueryColumns(ExtensionResponse& _return, const std::string& sql);
+  virtual Status getQueryColumns(const std::string& sql,
+                                 QueryData& qd) override;
 
  private:
   /// Check if an extension exists by the name it registered.
@@ -182,77 +198,74 @@ class ExtensionManagerHandler : virtual public ExtensionManagerIf,
   void refresh();
 
   /// Maintain a map of extension UUID to metadata for tracking deregistration.
-  InternalExtensionList extensions_;
+  ExtensionList extensions_;
+
+  /// Mutex for extensions accessors.
+  Mutex extensions_mutex_;
 };
 
-typedef SHARED_PTR_IMPL<ExtensionHandler> ExtensionHandlerRef;
-typedef SHARED_PTR_IMPL<ExtensionManagerHandler> ExtensionManagerHandlerRef;
-}
+struct ImplExtensionRunner;
+struct ImplExtensionClient;
 
-/// A Dispatcher service thread that watches an ExtensionManagerHandler.
-class ExtensionWatcher : public InternalRunnable {
+/**
+ * This implements a small API around setting up and running Thrift
+ * Servers. The implementation details and members are private and stored in
+ * the PIMPL structures defined above.
+ *
+ * An implementation will exist for Apache Thrift and for FBThrift.
+ */
+class ExtensionRunnerInterface {
  public:
-  virtual ~ExtensionWatcher() {}
-  ExtensionWatcher(const std::string& path, size_t interval, bool fatal)
-      : path_(path), interval_(interval), fatal_(fatal) {
-    // Set the interval to a minimum of 200 milliseconds.
-    interval_ = (interval_ < 200) ? 200 : interval_;
-  }
+  virtual ~ExtensionRunnerInterface();
+  ExtensionRunnerInterface();
 
- public:
-  /// The Dispatcher thread entry point.
-  void start();
+  /**
+   * Call into the Thrift server's server implementation.
+   */
+  void serve();
 
-  /// Perform health checks.
-  virtual void watch();
+  /// Set up structures.
+  void connect();
 
- protected:
-  /// Exit the extension process with a fatal if the ExtensionManager dies.
-  void exitFatal(int return_code = 1);
+  /// Create handler/processor.
+  void init(RouteUUID uuid, bool manager = false);
 
- protected:
-  /// The UNIX domain socket path for the ExtensionManager.
-  std::string path_;
+  /// Stop server.
+  void stopServer();
 
-  /// The internal in milliseconds to ping the ExtensionManager.
-  size_t interval_;
-
-  /// If the ExtensionManager socket is closed, should the extension exit.
-  bool fatal_;
-};
-
-class ExtensionManagerWatcher : public ExtensionWatcher {
- public:
-  ExtensionManagerWatcher(const std::string& path, size_t interval)
-      : ExtensionWatcher(path, interval, false) {}
-
-  /// Start a specialized health check for an ExtensionManager.
-  void watch();
-
- private:
-  /// Allow extensions to fail for several intervals.
-  std::map<RouteUUID, size_t> failures_;
-};
-
-class ExtensionRunnerCore : public InternalRunnable {
- public:
-  virtual ~ExtensionRunnerCore();
-  ExtensionRunnerCore(const std::string& path)
-      : path_(path), server_(nullptr) {}
-
- public:
-  /// Given a handler transport and protocol start a thrift threaded server.
-  void startServer(TProcessorRef processor);
-
-  // The Dispatcher thread service stop point.
-  void stop();
+  /// Stop server manager.
+  void stopServerManager();
 
  protected:
   /// The UNIX domain socket used for requests from the ExtensionManager.
   std::string path_;
 
-  /// Server instance, will be stopped if thread service is removed.
-  TThreadPoolServerRef server_;
+  /// True if the extension is an extension manager.
+  bool manager_;
+
+  /// Thrift server implementation.
+  std::unique_ptr<ImplExtensionRunner> server_;
+};
+
+class ExtensionRunnerCore : public InternalRunnable,
+                            public ExtensionRunnerInterface {
+ public:
+  virtual ~ExtensionRunnerCore();
+  explicit ExtensionRunnerCore(const std::string& path);
+
+ public:
+  /// Given a handler transport and protocol start a thrift threaded server.
+  void startServer();
+
+  // The Dispatcher thread service stop point.
+  void stop() override;
+
+ protected:
+  /// Protect the service start and stop, this mutex protects server creation.
+  Mutex service_start_;
+
+  /// Record a dispatcher's request to stop the service.
+  bool service_stopping_{false};
 };
 
 /**
@@ -265,16 +278,13 @@ class ExtensionRunnerCore : public InternalRunnable {
  */
 class ExtensionRunner : public ExtensionRunnerCore {
  public:
-  ExtensionRunner(const std::string& manager_path, RouteUUID uuid)
-      : ExtensionRunnerCore(""), uuid_(uuid) {
-    path_ = getExtensionSocket(uuid, manager_path);
-  }
+  ExtensionRunner(const std::string& manager_path, RouteUUID uuid);
 
  public:
-  void start();
+  void start() override;
 
   /// Access the UUID provided by the ExtensionManager.
-  RouteUUID getUUID() { return uuid_; }
+  RouteUUID getUUID() const;
 
  private:
   /// The unique and transient Extension UUID assigned by the ExtensionManager.
@@ -290,57 +300,111 @@ class ExtensionRunner : public ExtensionRunnerCore {
  */
 class ExtensionManagerRunner : public ExtensionRunnerCore {
  public:
-  explicit ExtensionManagerRunner(const std::string& manager_path)
-      : ExtensionRunnerCore(manager_path) {}
+  virtual ~ExtensionManagerRunner();
+  explicit ExtensionManagerRunner(const std::string& manager_path);
 
  public:
-  void start();
+  void start() override;
 };
 
 /// Internal accessor for extension clients.
-class EXInternal {
+class ExtensionClientCore : private boost::noncopyable {
  public:
-  explicit EXInternal(const std::string& path)
-      : socket_(new TSocket(path)),
-        transport_(new TBufferedTransport(socket_)),
-        protocol_(new TBinaryProtocol(transport_)) {}
+  virtual ~ExtensionClientCore();
 
-  virtual ~EXInternal() { transport_->close(); }
+ public:
+  /**
+   * @brief Initialize the UNIX socket from a string pathname.
+   *
+   * A very basic client can just store the string.
+   * More complex clients can create the client structure.
+   */
+  void init(const std::string& path, bool manager = false);
+
+  /// Set the receive and send timeout.
+  void setTimeouts(size_t timeout);
+
+  /// Check if the client is an extension manager.
+  bool manager();
 
  protected:
-  TSocketRef socket_;
-  TTransportRef transport_;
-  TProtocolRef protocol_;
+  /// Path to extension server socket.
+  std::string path_;
+
+  /// True if the client is an extension manager client.
+  bool manager_;
+
+  /// Thrift client implementation.
+  std::unique_ptr<ImplExtensionClient> client_;
 };
 
 /// Internal accessor for a client to an extension (from an extension manager).
-class EXClient : public EXInternal {
+class ExtensionClient : public ExtensionClientCore, public ExtensionAPI {
  public:
-  explicit EXClient(const std::string& path) : EXInternal(path) {
-    client_ = std::make_shared<extensions::ExtensionClient>(protocol_);
-    (void)transport_->open();
-  }
+  /**
+   * @brief Create a client to a client extension.
+   *
+   * @note The default timeout to wait for buffered (whole-content) responses
+   * is 5 minutes.
+   * @param path This is the socket path for the client communication.
+   * @param timeout [optional] time in milliseconds to wait for input.
+   */
+  explicit ExtensionClient(const std::string& path, size_t timeout = 5000 * 60);
+  ~ExtensionClient();
 
-  const std::shared_ptr<extensions::ExtensionClient>& get() { return client_; }
+ protected:
+  ExtensionClient() = default;
 
- private:
-  std::shared_ptr<extensions::ExtensionClient> client_;
+ public:
+  /// Ping a server and have it fill in the extension's UUID as the code.
+  Status ping() override;
+
+  /// Call an extension's plugin.
+  Status call(const std::string& registry,
+              const std::string& item,
+              const PluginRequest& request,
+              PluginResponse& response) override;
+
+  /// Request that the extension stop.
+  void shutdown() override;
 };
 
 /// Internal accessor for a client to an extension manager (from an extension).
-class EXManagerClient : public EXInternal {
+class ExtensionManagerClient : public ExtensionClient,
+                               public ExtensionManagerAPI {
  public:
-  explicit EXManagerClient(const std::string& manager_path)
-      : EXInternal(manager_path) {
-    client_ = std::make_shared<extensions::ExtensionManagerClient>(protocol_);
-    (void)transport_->open();
-  }
+  /**
+   * @brief Create a client to a manager extension.
+   *
+   * @param path This is the socket path for the manager communication.
+   * @param timeout [optional] time in milliseconds to wait for input.
+   */
+  explicit ExtensionManagerClient(const std::string& path,
+                                  size_t timeout = 5000 * 60);
+  ~ExtensionManagerClient();
 
-  const std::shared_ptr<extensions::ExtensionManagerClient>& get() {
-    return client_;
-  }
+ public:
+  /// List all osquery extensions.
+  ExtensionList extensions() override;
 
- private:
-  std::shared_ptr<extensions::ExtensionManagerClient> client_;
+  /// List all osquery options (gflags).
+  OptionList options() override;
+
+  /// Regiester yourself as a new extension.
+  Status registerExtension(const ExtensionInfo& info,
+                           const ExtensionRegistry& registry,
+                           RouteUUID& uuid) override;
+
+  /// Remove an extension.
+  Status deregisterExtension(RouteUUID uuid) override;
+
+  /// Issue a query.
+  Status query(const std::string& sql, QueryData& qd) override;
+
+  /// Get column information from a query.
+  Status getQueryColumns(const std::string& sql, QueryData& qd) override;
 };
-}
+
+/// Attempt to remove all stale extension sockets.
+void removeStalePaths(const std::string& manager);
+} // namespace osquery

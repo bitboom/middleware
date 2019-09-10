@@ -12,10 +12,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LIBRARY(osquery_filesystem filesystem.cpp)
-
-ADD_OSQUERY_LIBRARY(osquery_filesystem_linux linux/proc.cpp
-											 linux/mem.cpp)
+ADD_OSQUERY_LIBRARY(osquery_filesystem filesystem.cpp
+									   mock_file_structure.cpp
+									   linux/mem.cpp
+									   linux/proc.cpp
+									   posix/fileops.cpp)
 
 FILE(GLOB OSQUERY_FILESYSTEM_TESTS "tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_FILESYSTEM_TESTS})

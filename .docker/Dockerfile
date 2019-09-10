@@ -45,15 +45,18 @@ RUN cd /usr/src/gflags && \
     cmake . && make && make install
 
 # thrift
-RUN apt-get install -qq libevent-dev libtool flex bison pkg-config g++ libssl-dev
+RUN apt-get update --fix-missing && \
+    apt-get install -qq libevent-dev libtool flex bison pkg-config g++ libssl-dev
 
 RUN cd /usr/src && \
     git clone https://github.com/apache/thrift.git
 
 RUN cd /usr/src/thrift && \
-    git checkout 0.9.3 && \
+    git checkout 0.11.0 && \
     ./bootstrap.sh && \
-    ./configure && \
+    ./configure --with-boost=/usr --without-ruby --disable-tests \
+                --without-php_extension --with-cpp --with-libevent=no \
+                --with-python --enable-tutorial=no && \
     make && make install
 
 # table gen dependencies
@@ -61,4 +64,10 @@ RUN apt-get install -qq python-pip && \
     pip install Jinja2
 
 # table dependencies
-RUN apt-get install -qq libprocps-dev libsystemd-dev libudev-dev iptables-dev
+RUN apt-get install -qq libprocps-dev libsystemd-dev libudev-dev iptables-dev uuid-dev
+
+# linenoise
+RUN cd /usr/src && \
+    git clone https://github.com/arangodb/linenoise-ng.git && \
+    cd /usr/src/linenoise-ng && \
+    cmake -DCMAKE_BUILD_TYPE=Release . && make && make install

@@ -12,11 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LIBRARY(osquery_config config.cpp)
-
-ADD_OSQUERY_LIBRARY(osquery_config_plugins update.cpp
-										   plugins/filesystem.cpp
-										   parsers/query_packs.cpp)
+ADD_OSQUERY_LIBRARY(osquery_config config.cpp
+								   packs.cpp)
 
 FILE(GLOB OSQUERY_CONFIG_TESTS "tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_CONFIG_TESTS})

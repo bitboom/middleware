@@ -1,40 +1,56 @@
-/*
- *  Copyright (c) 2014, Facebook, Inc.
+/**
+ *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
+ *  This source code is licensed in accordance with the terms specified in
+ *  the LICENSE file found in the root directory of this source tree.
  */
 
 #include <chrono>
+#include <iostream>
 #include <random>
+#include <thread>
 
-#include <syslog.h>
 #include <stdio.h>
 #include <time.h>
+
+#ifdef WIN32
+
+#include <osquery/utils/system/system.h>
+
+#include <WbemIdl.h>
+#include <signal.h>
+
+#else
 #include <unistd.h>
+#endif
 
-#include <iostream>
+#ifndef WIN32
+#include <sys/resource.h>
+#endif
 
-#include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
 
-#include <osquery/config.h>
+#include "osquery/utils/config/default_paths.h"
+#include "osquery/utils/info/platform_type.h"
+#include <osquery/config/config.h>
 #include <osquery/core.h>
+#include <osquery/data_logger.h>
+#include <osquery/dispatcher.h>
 #include <osquery/events.h>
 #include <osquery/extensions.h>
+#include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
-#include <osquery/filesystem.h>
-#include <osquery/logger.h>
+#include <osquery/killswitch.h>
+#include <osquery/numeric_monitoring.h>
+#include <osquery/process/process.h>
 #include <osquery/registry.h>
+#include <osquery/utils/info/version.h>
+#include <osquery/utils/system/time.h>
 
 #include "osquery/core/watcher.h"
-#include "osquery/database/db_handle.h"
 
 #ifdef __linux__
-#include <sys/resource.h>
 #include <sys/syscall.h>
 
 /*
@@ -53,7 +69,7 @@ enum {
 /*
  * 8 best effort priority levels are supported
  */
-#define IOPRIO_BE_NR  (8)
+#define IOPRIO_BE_NR (8)
 
 enum {
   IOPRIO_WHO_PROCESS = 1,
@@ -62,54 +78,174 @@ enum {
 };
 #endif
 
-namespace fs = boost::filesystem;
-
-namespace osquery {
-
-#define DESCRIPTION \
+#define DESCRIPTION                                                            \
   "osquery %s, your OS as a high-performance relational database\n"
 #define EPILOG "\nosquery project page <https://osquery.io>.\n"
-#define OPTIONS \
+#define OPTIONS                                                                \
   "\nosquery configuration options (set by config or CLI flags):\n\n"
 #define OPTIONS_SHELL "\nosquery shell-only CLI flags:\n\n"
 #define OPTIONS_CLI "osquery%s command line flags:\n\n"
 #define USAGE "Usage: %s [OPTION]... %s\n\n"
-#define CONFIG_ERROR                                                          \
-  "You are using default configurations for osqueryd for one or more of the " \
-  "following\n"                                                               \
-  "flags: pidfile, db_path.\n\n"                                              \
-  "These options create files in /var/osquery but it looks like that path "   \
-  "has not\n"                                                                 \
-  "been created. Please consider explicitly defining those "                  \
-  "options as a different \n"                                                 \
-  "path. Additionally, review the \"using osqueryd\" wiki page:\n"            \
-  " - https://osquery.readthedocs.org/en/latest/introduction/using-osqueryd/" \
-  "\n\n";
 
-typedef std::chrono::high_resolution_clock chrono_clock;
-
+namespace osquery {
+CLI_FLAG(uint64, alarm_timeout, 4, "Seconds to wait for a graceful shutdown");
 CLI_FLAG(bool,
-         config_check,
+         enable_signal_handler,
          false,
-         "Check the format of an osquery config and exit");
+         "Enable custom osquery signals handler instead of default one");
+}
 
-#ifndef __APPLE__
-CLI_FLAG(bool, daemonize, false, "Run as daemon (osqueryd only)");
+namespace {
+extern "C" {
+static inline bool hasWorkerVariable() {
+  return ::osquery::getEnvVar("OSQUERY_WORKER").is_initialized();
+}
+
+volatile std::sig_atomic_t kHandledSignal{0};
+
+static inline bool hasWorker() {
+  return (osquery::Watcher::get().isWorkerValid());
+}
+
+void signalHandler(int num) {
+  // Inform exit status of main threads blocked by service joins.
+  if (kHandledSignal == 0) {
+    kHandledSignal = num;
+    // If no part of osquery requested an interruption then the exit 'wanted'
+    // code becomes the signal number.
+    if (num != SIGUSR1 && osquery::kExitCode == 0) {
+      // The only exception is SIGUSR1 which is used to signal the main thread
+      // to interrupt dispatched services.
+      osquery::kExitCode = 128 + num;
+    }
+
+    // Handle signals based on a tri-state (worker, watcher, neither).
+    if (num == SIGHUP) {
+      if (!hasWorker() || hasWorkerVariable()) {
+        // Reload configuration.
+      }
+    } else if (num == SIGTERM || num == SIGINT || num == SIGABRT ||
+               num == SIGUSR1) {
+#ifndef WIN32
+      // Time to stop, set an upper bound time constraint on how long threads
+      // have to terminate (join). Publishers may be in 20ms or similar sleeps.
+      alarm(osquery::FLAGS_alarm_timeout);
+
+      // Allow the OS to auto-reap our child processes.
+      std::signal(SIGCHLD, SIG_IGN);
 #endif
 
-ToolType kToolType = OSQUERY_TOOL_UNKNOWN;
+      // Restore the default signal handler.
+      std::signal(num, SIG_DFL);
 
-void printUsage(const std::string& binary, int tool) {
+      // The watcher waits for the worker to die.
+      if (hasWorker()) {
+        // Bind the fate of the worker to this watcher.
+        osquery::Watcher::get().bindFates();
+      } else {
+        // Otherwise the worker or non-watched process joins.
+        // Stop thrift services/clients/and their thread pools.
+        osquery::Dispatcher::stopServices();
+      }
+    }
+  }
+
+#ifndef WIN32
+  if (num == SIGALRM) {
+    // Restore the default signal handler for SIGALRM.
+    std::signal(SIGALRM, SIG_DFL);
+
+    // Took too long to stop.
+    VLOG(1) << "Cannot stop event publisher threads or services";
+    raise((kHandledSignal != 0) ? kHandledSignal : SIGALRM);
+  }
+#endif
+
+  if (hasWorker()) {
+    // The signal should be proliferated through the process group.
+    // Otherwise the watcher could 'forward' the signal to workers and
+    // managed extension processes.
+  }
+}
+}
+}
+
+using chrono_clock = std::chrono::high_resolution_clock;
+
+namespace fs = boost::filesystem;
+
+DECLARE_string(flagfile);
+
+namespace osquery {
+
+DECLARE_string(config_plugin);
+DECLARE_string(logger_plugin);
+DECLARE_string(numeric_monitoring_plugins);
+DECLARE_string(killswitch_plugin);
+DECLARE_bool(config_check);
+DECLARE_bool(config_dump);
+DECLARE_bool(database_dump);
+DECLARE_string(database_path);
+DECLARE_bool(disable_database);
+DECLARE_bool(disable_events);
+DECLARE_bool(disable_logging);
+DECLARE_bool(enable_killswitch);
+DECLARE_bool(enable_numeric_monitoring);
+
+CLI_FLAG(bool, S, false, "Run as a shell process");
+CLI_FLAG(bool, D, false, "Run as a daemon process");
+CLI_FLAG(bool, daemonize, false, "Attempt to daemonize (POSIX only)");
+
+FLAG(bool, ephemeral, false, "Skip pidfile and database state checks");
+
+ToolType kToolType{ToolType::UNKNOWN};
+
+/// The saved exit code from a thread's request to stop the process.
+volatile std::sig_atomic_t kExitCode{0};
+
+/// The saved thread ID for shutdown to short-circuit raising a signal.
+static std::thread::id kMainThreadId;
+
+/// Legacy thread ID to ensure that the windows service waits before exiting
+unsigned long kLegacyThreadId;
+
+/// When no flagfile is provided via CLI, attempt to read flag 'defaults'.
+const std::string kBackupDefaultFlagfile{OSQUERY_HOME "osquery.flags.default"};
+
+const size_t kDatabaseMaxRetryCount{25};
+const size_t kDatabaseRetryDelay{200};
+std::function<void()> Initializer::shutdown_{nullptr};
+RecursiveMutex Initializer::shutdown_mutex_;
+
+namespace {
+
+void initWorkDirectories() {
+  if (!FLAGS_disable_database) {
+    auto const recursive = true;
+    auto const ignore_existence = true;
+    auto const status = createDirectory(
+        boost::filesystem::path(FLAGS_database_path).parent_path(),
+        recursive,
+        ignore_existence);
+    if (!status.ok()) {
+      LOG(ERROR) << "Could not initialize db directory: " << status.what();
+    }
+  }
+}
+
+} // namespace
+
+static inline void printUsage(const std::string& binary, ToolType tool) {
   // Parse help options before gflags. Only display osquery-related options.
   fprintf(stdout, DESCRIPTION, kVersion.c_str());
-  if (tool == OSQUERY_TOOL_SHELL) {
+  if (tool == ToolType::SHELL) {
     // The shell allows a caller to run a single SQL statement and exit.
     fprintf(stdout, USAGE, binary.c_str(), "[SQL STATEMENT]");
   } else {
     fprintf(stdout, USAGE, binary.c_str(), "");
   }
 
-  if (tool == OSQUERY_EXTENSION) {
+  if (tool == ToolType::EXTENSION) {
     fprintf(stdout, OPTIONS_CLI, " extension");
     Flag::printFlags(false, true);
   } else {
@@ -119,7 +255,7 @@ void printUsage(const std::string& binary, int tool) {
     Flag::printFlags();
   }
 
-  if (tool == OSQUERY_TOOL_SHELL) {
+  if (tool == ToolType::SHELL) {
     // Print shell flags.
     fprintf(stdout, OPTIONS_SHELL);
     Flag::printFlags(true);
@@ -128,59 +264,134 @@ void printUsage(const std::string& binary, int tool) {
   fprintf(stdout, EPILOG);
 }
 
-Initializer::Initializer(int& argc, char**& argv, ToolType tool)
-    : argc_(&argc),
-      argv_(&argv),
-      tool_(tool),
-      binary_(fs::path(std::string(argv[0])).filename().string()) {
-  std::srand(chrono_clock::now().time_since_epoch().count());
+Initializer::Initializer(int& argc,
+                         char**& argv,
+                         ToolType tool,
+                         bool const init_glog)
+    : argc_(&argc), argv_(&argv) {
+  // Initialize random number generated based on time.
+  std::srand(static_cast<unsigned int>(
+      chrono_clock::now().time_since_epoch().count()));
+  // The config holds the initialization time for easy access.
+  Config::setStartTime(getUnixTime());
+
+  // osquery can function as the daemon or shell depending on argv[0].
+  if (tool == ToolType::SHELL_DAEMON) {
+    if (fs::path(argv[0]).filename().string().find("osqueryd") !=
+        std::string::npos) {
+      kToolType = ToolType::DAEMON;
+      binary_ = "osqueryd";
+    } else {
+      kToolType = ToolType::SHELL;
+      binary_ = "osqueryi";
+    }
+  } else {
+    // Set the tool type to allow runtime decisions based on daemon, shell, etc.
+    kToolType = tool;
+  }
+
+  // The 'main' thread is that which executes the initializer.
+  kMainThreadId = std::this_thread::get_id();
+
+  // Maintain a legacy thread id for Windows service stops.
+  kLegacyThreadId = platformGetTid();
+
+#ifndef WIN32
+  // Set the max number of open files.
+  struct rlimit nofiles;
+  if (getrlimit(RLIMIT_NOFILE, &nofiles) == 0) {
+    if (nofiles.rlim_cur < 1024 || nofiles.rlim_max < 1024) {
+      nofiles.rlim_cur = (nofiles.rlim_cur < 1024) ? 1024 : nofiles.rlim_cur;
+      nofiles.rlim_max = (nofiles.rlim_max < 1024) ? 1024 : nofiles.rlim_max;
+      setrlimit(RLIMIT_NOFILE, &nofiles);
+    }
+  }
+#endif
+
+  Flag::create("logtostderr",
+               {"Log messages to stderr in addition to the logger plugin(s)",
+                false,
+                false,
+                true,
+                false});
+  Flag::create("stderrthreshold",
+               {"Stderr log level threshold", false, false, true, false});
 
   // osquery implements a custom help/usage output.
+  bool default_flags = true;
   for (int i = 1; i < *argc_; i++) {
     auto help = std::string((*argv_)[i]);
-    if ((help == "--help" || help == "-help" || help == "--h" ||
-         help == "-h") &&
-        tool != OSQUERY_TOOL_TEST) {
-      printUsage(binary_, tool_);
-      ::exit(0);
+    if (help == "-S" || help == "--S") {
+      kToolType = ToolType::SHELL;
+      binary_ = "osqueryi";
+    } else if (help == "-D" || help == "--D") {
+      kToolType = ToolType::DAEMON;
+      binary_ = "osqueryd";
+    } else if ((help == "--help" || help == "-help" || help == "--h" ||
+                help == "-h") &&
+               tool != ToolType::TEST) {
+      printUsage(binary_, kToolType);
+      shutdown();
+    }
+    if (help.find("--flagfile") == 0) {
+      default_flags = false;
     }
   }
 
-// To change the default config plugin, compile osquery with
-// -DOSQUERY_DEFAULT_CONFIG_PLUGIN=<new_default_plugin>
-#ifdef OSQUERY_DEFAULT_CONFIG_PLUGIN
-  FLAGS_config_plugin = STR(OSQUERY_DEFAULT_CONFIG_PLUGIN);
-#endif
+  if (isShell()) {
+    // The shell is transient, rewrite config-loaded paths.
+    FLAGS_disable_logging = true;
+    // The shell never will not fork a worker.
+    FLAGS_disable_watchdog = true;
+    FLAGS_disable_events = true;
+  }
 
-// To change the default logger plugin, compile osquery with
-// -DOSQUERY_DEFAULT_LOGGER_PLUGIN=<new_default_plugin>
-#ifdef OSQUERY_DEFAULT_LOGGER_PLUGIN
-  FLAGS_logger_plugin = STR(OSQUERY_DEFAULT_LOGGER_PLUGIN);
-#endif
+  if (default_flags && isReadable(kBackupDefaultFlagfile)) {
+    // No flagfile was set (daemons and services always set a flagfile).
+    FLAGS_flagfile = kBackupDefaultFlagfile;
+  } else {
+    // No flagfile was set, but no default flags exist.
+    default_flags = false;
+  }
 
   // Set version string from CMake build
   GFLAGS_NAMESPACE::SetVersionString(kVersion.c_str());
 
   // Let gflags parse the non-help options/flags.
-  GFLAGS_NAMESPACE::ParseCommandLineFlags(
-      argc_, argv_, (tool == OSQUERY_TOOL_SHELL));
+  GFLAGS_NAMESPACE::ParseCommandLineFlags(argc_, argv_, isShell());
 
-  // Set the tool type to allow runtime decisions based on daemon, shell, etc.
-  kToolType = tool;
-  if (tool == OSQUERY_TOOL_SHELL) {
-    // The shell is transient, rewrite config-loaded paths.
-    FLAGS_disable_logging = true;
-    // Get the caller's home dir for temporary storage/state management.
-    auto homedir = osqueryHomeDirectory();
-    if (osquery::pathExists(homedir).ok() ||
-        boost::filesystem::create_directory(homedir)) {
-      // Only apply user/shell-specific paths if not overridden by CLI flag.
-      if (Flag::isDefault("database_path")) {
-        osquery::FLAGS_database_path = homedir + "/shell.db";
-      }
-      if (Flag::isDefault("extensions_socket")) {
-        osquery::FLAGS_extensions_socket = homedir + "/shell.em";
-      }
+  // Initialize registries and plugins
+  registryAndPluginInit();
+
+  if (isShell() || FLAGS_ephemeral) {
+    if (Flag::isDefault("database_path") &&
+        Flag::isDefault("disable_database")) {
+      // The shell should not use a database by default, but should use the DB
+      // specified by database_path if it is set
+      FLAGS_disable_database = true;
+    }
+  }
+
+  if (isShell()) {
+    // Initialize the shell after setting modified defaults and parsing flags.
+    initShell();
+  }
+  if (isDaemon()) {
+    initWorkDirectories();
+  }
+
+  if (FLAGS_enable_signal_handler) {
+    std::signal(SIGABRT, signalHandler);
+    std::signal(SIGUSR1, signalHandler);
+
+    // All tools handle the same set of signals.
+    // If a daemon process is a watchdog the signal is passed to the worker,
+    // unless the worker has not yet started.
+    if (!isPlatform(PlatformType::TYPE_WINDOWS)) {
+      std::signal(SIGTERM, signalHandler);
+      std::signal(SIGINT, signalHandler);
+      std::signal(SIGHUP, signalHandler);
+      std::signal(SIGALRM, signalHandler);
     }
   }
 
@@ -189,163 +400,260 @@ Initializer::Initializer(int& argc, char**& argv, ToolType tool)
     FLAGS_disable_watchdog = true;
   }
 
+  if (isWatcher()) {
+    FLAGS_disable_database = true;
+    FLAGS_disable_logging = true;
+  }
+
   // Initialize the status and results logger.
-  initStatusLogger(binary_);
-  if (tool != OSQUERY_EXTENSION) {
+  initStatusLogger(binary_, init_glog);
+  if (kToolType != ToolType::EXTENSION) {
     if (isWorker()) {
       VLOG(1) << "osquery worker initialized [watcher="
-              << getenv("OSQUERY_WORKER") << "]";
+              << PlatformProcess::getLauncherProcess()->pid() << "]";
     } else {
       VLOG(1) << "osquery initialized [version=" << kVersion << "]";
     }
   } else {
-    VLOG(1) << "osquery extension initialized [sdk=" << kSDKVersion << "]";
+    VLOG(1) << "osquery extension initialized [sdk=" << kVersion << "]";
   }
+
+  if (default_flags) {
+    VLOG(1) << "Using default flagfile: " << kBackupDefaultFlagfile;
+  }
+
+  // Initialize the COM libs
+  platformSetup();
 }
 
-void Initializer::initDaemon() {
+void Initializer::initDaemon() const {
+  if (isWorker() || !isDaemon()) {
+    // The worker process (child) will not daemonize.
+    return;
+  }
+
   if (FLAGS_config_check) {
     // No need to daemonize, emit log lines, or create process mutexes.
     return;
   }
 
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(WIN32)
   // OS X uses launchd to daemonize.
   if (osquery::FLAGS_daemonize) {
     if (daemon(0, 0) == -1) {
-      ::exit(EXIT_FAILURE);
+      shutdown(EXIT_FAILURE);
     }
   }
 #endif
 
-  // Print the version to SYSLOG.
-  syslog(
-      LOG_NOTICE, "%s started [version=%s]", binary_.c_str(), kVersion.c_str());
+  // Print the version to the OS system log.
+  systemLog(binary_ + " started [version=" + kVersion + "]");
 
-  // Check if /var/osquery exists
-  if ((Flag::isDefault("pidfile") || Flag::isDefault("database_path")) &&
-      !isDirectory("/var/osquery")) {
-    std::cerr << CONFIG_ERROR
-  }
-
-  // Create a process mutex around the daemon.
-  auto pid_status = createPidFile();
-  if (!pid_status.ok()) {
-    LOG(ERROR) << binary_ << " initialize failed: " << pid_status.toString();
-    ::exit(EXIT_FAILURE);
+  if (!FLAGS_ephemeral) {
+    // Create a process mutex around the daemon.
+    auto pid_status = createPidFile();
+    if (!pid_status.ok()) {
+      LOG(ERROR) << binary_ << " initialize failed: " << pid_status.toString();
+      shutdown(EXIT_FAILURE);
+    }
   }
 
   // Nice ourselves if using a watchdog and the level is not too permissive.
-  if (!FLAGS_disable_watchdog &&
-      FLAGS_watchdog_level >= WATCHDOG_LEVEL_DEFAULT &&
-      FLAGS_watchdog_level != WATCHDOG_LEVEL_DEBUG) {
+  if (!FLAGS_disable_watchdog && FLAGS_watchdog_level >= 0) {
     // Set CPU scheduling I/O limits.
-    setpriority(PRIO_PGRP, 0, 10);
+    // On windows these values are inherited so no further calls are needed.
+    setToBackgroundPriority();
+
 #ifdef __linux__
     // Using: ioprio_set(IOPRIO_WHO_PGRP, 0, IOPRIO_CLASS_IDLE);
     syscall(SYS_ioprio_set, IOPRIO_WHO_PGRP, 0, IOPRIO_CLASS_IDLE);
-#elif defined(__APPLE__) || defined(__FreeBSD__)
+#elif defined(__APPLE__)
     setiopolicy_np(IOPOL_TYPE_DISK, IOPOL_SCOPE_PROCESS, IOPOL_THROTTLE);
 #endif
   }
 }
 
-void Initializer::initWatcher() {
-  // The watcher takes a list of paths to autoload extensions from.
-  osquery::loadExtensions();
-
-  // Add a watcher service thread to start/watch an optional worker and set
-  // of optional extensions in the autoload paths.
-  if (Watcher::hasManagedExtensions() || !FLAGS_disable_watchdog) {
-    Dispatcher::addService(std::make_shared<WatcherRunner>(
-        *argc_, *argv_, !FLAGS_disable_watchdog));
+void Initializer::initShell() const {
+  // Get the caller's home dir for temporary storage/state management.
+  auto homedir = osqueryHomeDirectory();
+  if (osquery::pathExists(homedir).ok()) {
+    // Only apply user/shell-specific paths if not overridden by CLI flag.
+    if (Flag::isDefault("database_path")) {
+      osquery::FLAGS_database_path =
+          (fs::path(homedir) / "shell.db").make_preferred().string();
+    }
+    initShellSocket(homedir);
+  } else {
+    fprintf(
+        stderr, "Cannot access or create osquery home: %s", homedir.c_str());
+    FLAGS_disable_extensions = true;
+    FLAGS_disable_database = true;
   }
 
-  // If there are no autoloaded extensions, the watcher service will end,
-  // otherwise it will continue as a background thread and respawn them.
-  // If the watcher is also a worker watchdog it will do nothing but monitor
-  // the extensions and worker process.
-  if (!FLAGS_disable_watchdog) {
-    Dispatcher::joinServices();
-    // Execution should never reach this point.
-    ::exit(EXIT_FAILURE);
+  if (Flag::isDefault("hash_delay")) {
+    // The hash_delay is designed for daemons only.
+    Flag::updateValue("hash_delay", "0");
   }
 }
 
-void Initializer::initWorker(const std::string& name) {
+void Initializer::initWatcher() const {
+  // The watcher should not log into or use a persistent database.
+  if (isWatcher()) {
+    DatabasePlugin::setAllowOpen(true);
+    DatabasePlugin::initPlugin();
+  }
+
+  // The watcher takes a list of paths to autoload extensions from.
+  // The loadExtensions call will populate the watcher's list of extensions.
+  osquery::loadExtensions();
+
+  // Add a watcher service thread to start/watch an optional worker and list
+  // of optional extensions from the autoload paths.
+  if (Watcher::get().hasManagedExtensions() || !FLAGS_disable_watchdog) {
+    Dispatcher::addService(
+        std::make_shared<WatcherRunner>(*argc_, *argv_, isWatcher()));
+  }
+
+  if (isWatcher()) {
+    if (shutdown_ != nullptr) {
+      shutdown_();
+      shutdown_ = nullptr;
+    }
+
+    // If there are no autoloaded extensions, the watcher service will end,
+    // otherwise it will continue as a background thread and respawn them.
+    // If the watcher is also a worker watchdog it will do nothing but monitor
+    // the extensions and worker process.
+    Dispatcher::joinServices();
+    // Execution should only reach this point if a signal was handled by the
+    // worker and watcher.
+    auto retcode = 0;
+    if (kHandledSignal > 0) {
+      retcode = 128 + kHandledSignal;
+    } else if (Watcher::get().getWorkerStatus() >= 0) {
+      retcode = Watcher::get().getWorkerStatus();
+    } else {
+      retcode = EXIT_FAILURE;
+    }
+    requestShutdown(retcode);
+  }
+}
+
+void Initializer::initWorker(const std::string& name) const {
   // Clear worker's arguments.
-  size_t name_size = strlen((*argv_)[0]);
   auto original_name = std::string((*argv_)[0]);
-  for (int i = 0; i < *argc_; i++) {
+  for (int i = 1; i < *argc_; i++) {
     if ((*argv_)[i] != nullptr) {
-      memset((*argv_)[i], ' ', strlen((*argv_)[i]));
+      memset((*argv_)[i], '\0', strlen((*argv_)[i]));
     }
   }
 
-  // Set the worker's process name.
-  if (name.size() < name_size) {
-    std::copy(name.begin(), name.end(), (*argv_)[0]);
-    (*argv_)[0][name.size()] = '\0';
-  } else {
-    std::copy(original_name.begin(), original_name.end(), (*argv_)[0]);
-    (*argv_)[0][original_name.size()] = '\0';
-  }
-
-  // Start a watcher watcher thread to exit the process if the watcher exits.
-  Dispatcher::addService(std::make_shared<WatcherWatcherRunner>(getppid()));
+  // Start a 'watcher watcher' thread to exit the process if the watcher exits.
+  // In this case the parent process is called the 'watcher' process.
+  Dispatcher::addService(std::make_shared<WatcherWatcherRunner>(
+      PlatformProcess::getLauncherProcess()));
 }
 
-void Initializer::initWorkerWatcher(const std::string& name) {
+void Initializer::initWorkerWatcher(const std::string& name) const {
   if (isWorker()) {
     initWorker(name);
   } else {
     // The watcher will forever monitor and spawn additional workers.
+    // This initialize will handle work for processes without watchdogs too.
     initWatcher();
   }
 }
 
-bool Initializer::isWorker() { return (getenv("OSQUERY_WORKER") != nullptr); }
+bool Initializer::isWorker() {
+  return hasWorkerVariable();
+}
+
+bool Initializer::isWatcher() {
+  return !FLAGS_disable_watchdog && !isWorker();
+}
 
 void Initializer::initActivePlugin(const std::string& type,
-                                   const std::string& name) {
-  // Use a delay, meaning the amount of milliseconds waited for extensions.
-  size_t delay = 0;
-  // The timeout is the maximum microseconds in seconds to wait for extensions.
-  size_t timeout = atoi(FLAGS_extensions_timeout.c_str()) * 1000000;
-  if (timeout < kExtensionInitializeLatencyUS * 10) {
-    timeout = kExtensionInitializeLatencyUS * 10;
-  }
-  while (!Registry::setActive(type, name)) {
-    if (!Watcher::hasManagedExtensions() || delay > timeout) {
-      LOG(ERROR) << "Active " << type << " plugin not found: " << name;
-      ::exit(EXIT_CATASTROPHIC);
+                                   const std::string& name) const {
+  auto status = applyExtensionDelay(([type, name](bool& stop) {
+    auto rs = RegistryFactory::get().setActive(type, name);
+    if (rs.ok()) {
+      // The plugin was found, and is now active.
+      return rs;
     }
-    delay += kExtensionInitializeLatencyUS;
-    ::usleep(kExtensionInitializeLatencyUS);
+
+    if (!Watcher::get().hasManagedExtensions()) {
+      // The plugin must be local, and is not active, problem.
+      stop = true;
+    }
+    return rs;
+  }));
+
+  if (!status.ok()) {
+    LOG(ERROR) << "Cannot activate " << name << " " << type
+               << " plugin: " << status.getMessage();
+    requestShutdown(EXIT_CATASTROPHIC);
   }
 }
 
-void Initializer::start() {
-  // Load registry/extension modules before extensions.
-  osquery::loadModules();
+void Initializer::installShutdown(std::function<void()>& handler) {
+  RecursiveLock lock(shutdown_mutex_);
+  shutdown_ = std::move(handler);
+}
 
+void Initializer::start() const {
   // Pre-extension manager initialization options checking.
-  if (FLAGS_config_check && !Watcher::hasManagedExtensions()) {
+  // If the shell or daemon does not need extensions and it will exit quickly,
+  // prefer to disable the extension manager.
+  if ((FLAGS_config_check || FLAGS_config_dump) &&
+      !Watcher::get().hasManagedExtensions()) {
     FLAGS_disable_extensions = true;
   }
 
-  // Check the backing store by allocating and exiting on error.
-  if (!DBHandle::checkDB()) {
-    LOG(ERROR) << binary_ << " initialize failed: Could not open RocksDB";
-    if (isWorker()) {
-      ::exit(EXIT_CATASTROPHIC);
-    } else {
-      ::exit(EXIT_FAILURE);
+  // A watcher should not need access to the backing store.
+  // If there are spurious access then warning logs will be emitted since the
+  // set-allow-open will never be called.
+  if (!isWatcher()) {
+    DatabasePlugin::setAllowOpen(true);
+    // A daemon must always have R/W access to the database.
+    DatabasePlugin::setRequireWrite(isDaemon());
+
+    for (size_t i = 1; i <= kDatabaseMaxRetryCount; i++) {
+      if (DatabasePlugin::initPlugin().ok()) {
+        break;
+      }
+
+      if (i == kDatabaseMaxRetryCount) {
+        LOG(ERROR) << RLOG(1629) << binary_
+                   << " initialize failed: Could not initialize database";
+        auto retcode = (isWorker()) ? EXIT_CATASTROPHIC : EXIT_FAILURE;
+        requestShutdown(retcode);
+      }
+
+      sleepFor(kDatabaseRetryDelay);
+    }
+
+    // Ensure the database results version is up to date before proceeding
+    if (!upgradeDatabase()) {
+      LOG(ERROR) << "Failed to upgrade database";
+      auto retcode = (isWorker()) ? EXIT_CATASTROPHIC : EXIT_FAILURE;
+      requestShutdown(retcode);
     }
   }
 
   // Bind to an extensions socket and wait for registry additions.
-  osquery::startExtensionManager();
+  // After starting the extension manager, osquery MUST shutdown using the
+  // internal 'shutdown' method.
+  auto s = osquery::startExtensionManager();
+  if (!s.ok()) {
+    auto severity = (Watcher::get().hasManagedExtensions()) ? google::GLOG_ERROR
+                                                            : google::GLOG_INFO;
+    if (severity == google::GLOG_INFO) {
+      VLOG(1) << "Cannot start extension manager: " + s.getMessage();
+    } else {
+      google::LogMessage(__FILE__, __LINE__, severity).stream()
+          << "Cannot start extension manager: " + s.getMessage();
+    }
+  }
 
   // Then set the config plugin, which uses a single/active plugin.
   initActivePlugin("config", FLAGS_config_plugin);
@@ -355,31 +663,109 @@ void Initializer::start() {
 
   if (FLAGS_config_check) {
     // The initiator requested an initialization and config check.
-    auto s = Config::checkConfig();
+    s = Config::get().load();
     if (!s.ok()) {
       std::cerr << "Error reading config: " << s.toString() << "\n";
     }
     // A configuration check exits the application.
-    ::exit(s.getCode());
+    // Make sure to request a shutdown as plugins may have created services.
+    requestShutdown(s.getCode());
+  }
+
+  if (FLAGS_database_dump) {
+    dumpDatabase();
+    requestShutdown();
   }
 
   // Load the osquery config using the default/active config plugin.
-  Config::load();
+  s = Config::get().load();
+  if (!s.ok()) {
+    auto message = "Error reading config: " + s.toString();
+    if (isDaemon()) {
+      LOG(WARNING) << message;
+    } else {
+      VLOG(1) << message;
+    }
+  }
 
   // Initialize the status and result plugin logger.
-  initActivePlugin("logger", FLAGS_logger_plugin);
-  initLogger(binary_);
+  if (!FLAGS_disable_logging) {
+    initActivePlugin("logger", FLAGS_logger_plugin);
+    initLogger(binary_);
+  }
+
+  if (FLAGS_enable_killswitch) {
+    initActivePlugin("killswitch", FLAGS_killswitch_plugin);
+  }
+  if (FLAGS_enable_numeric_monitoring) {
+    initActivePlugin(monitoring::registryName(),
+                     FLAGS_numeric_monitoring_plugins);
+  }
+
+  if (Killswitch::get().isAppStartMonitorEnabled()) {
+    monitoring::record("osquery.start", 1, monitoring::PreAggregationType::Sum);
+  }
 
   // Start event threads.
   osquery::attachEvents();
   EventFactory::delay();
 }
 
-void Initializer::shutdown() {
+void Initializer::waitForShutdown() {
+  {
+    RecursiveLock lock(shutdown_mutex_);
+    if (shutdown_ != nullptr) {
+      // Copy the callable, then remove it, prevent callable recursion.
+      auto shutdown = shutdown_;
+      shutdown_ = nullptr;
+
+      // Call the shutdown callable.
+      shutdown();
+    }
+  }
+
+  // Attempt to be the only place in code where a join is attempted.
+  Dispatcher::joinServices();
   // End any event type run loops.
-  EventFactory::end();
+  EventFactory::end(true);
 
   // Hopefully release memory used by global string constructors in gflags.
   GFLAGS_NAMESPACE::ShutDownCommandLineFlags();
+  DatabasePlugin::shutdown();
+
+  auto excode = (kExitCode != 0) ? kExitCode : EXIT_SUCCESS;
+  if (isWatcher()) {
+    platformMainThreadExit(excode);
+  }
+  exit(excode);
+}
+
+void Initializer::requestShutdown(int retcode) {
+  if (kExitCode == 0) {
+    kExitCode = retcode;
+  }
+
+  // Stop thrift services/clients/and their thread pools.
+  if (std::this_thread::get_id() != kMainThreadId &&
+      FLAGS_enable_signal_handler) {
+    raise(SIGUSR1);
+  } else {
+    // The main thread is requesting a shutdown, meaning in almost every case
+    // it is NOT waiting for a shutdown.
+    // Exceptions include: tight request / wait in an exception handler or
+    // custom signal handling.
+    Dispatcher::stopServices();
+    waitForShutdown();
+  }
+}
+
+void Initializer::requestShutdown(int retcode, const std::string& system_log) {
+  systemLog(system_log);
+  requestShutdown(retcode);
+}
+
+void Initializer::shutdown(int retcode) {
+  platformTeardown();
+  ::exit(retcode);
 }
 }

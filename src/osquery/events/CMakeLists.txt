@@ -12,14 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LINK(udev ip4tc)
+ADD_OSQUERY_LIBRARY(osquery_event events.cpp)
 
-ADD_OSQUERY_LIBRARY(osquery_events events.cpp)
-ADD_OSQUERY_LIBRARY(osquery_events_linux linux/inotify.cpp
-										 linux/udev.cpp)
-
-FILE(GLOB OSQUERY_EVENTS_TESTS "tests/*.cpp")
-ADD_OSQUERY_TEST(${OSQUERY_EVENTS_TESTS})
-
-FILE(GLOB OSQUERY_LINUX_EVENTS_TESTS "linux/tests/*.cpp")
-ADD_OSQUERY_TEST(${OSQUERY_LINUX_EVENTS_TESTS})
+FILE(GLOB OSQUERY_EVENT_TESTS "tests/*.cpp")
+ADD_OSQUERY_TEST(${OSQUERY_EVENT_TESTS})
