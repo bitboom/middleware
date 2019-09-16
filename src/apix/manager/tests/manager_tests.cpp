@@ -30,18 +30,18 @@ TEST_F(ManagerTests, test_manager_execute) {
 	auto rows = OsqueryManager::execute(query);
 	EXPECT_EQ(rows.size(), 1);
 
-	VLOG(1) << "[Test] time table rows:";
-	VLOG(1) << "\t hour: " << rows[0]["hour"];
-	VLOG(1) << "\t minutes: " << rows[0]["minutes"];
-	VLOG(1) << "\t seconds: " << rows[0]["seconds"];
+	LOG(INFO) << "[Test] time table rows:";
+	LOG(INFO) << "\t hour: " << rows[0]["hour"];
+	LOG(INFO) << "\t minutes: " << rows[0]["minutes"];
+	LOG(INFO) << "\t seconds: " << rows[0]["seconds"];
 }
 
 TEST_F(ManagerTests, test_manager_subscribe) {
 	int called = 0;
 	auto callback = [&](const Row& row) {
-		VLOG(1) << "NotifyCallback called:";
+		LOG(INFO) << "NotifyCallback called:";
 		for (const auto& r : row)
-			VLOG(1) << "\t" << r.first << " : " << r.second;
+			LOG(INFO) << "\t" << r.first << " : " << r.second;
 		called++;
 	};
 
@@ -63,7 +63,7 @@ TEST_F(ManagerTests, test_manager_columns) {
 	auto columns = OsqueryManager::columns("time");
 	EXPECT_TRUE(columns.size() > 0);
 
-	VLOG(1) << "[Test] Enabled columns of time table:";
+	LOG(INFO) << "[Test] Enabled columns of time table:";
 	for (const auto& c : columns)
-		VLOG(1) << "\t" << c;
+		LOG(INFO) << "\t" << c;
 }

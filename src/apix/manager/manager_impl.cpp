@@ -21,6 +21,7 @@
 
 #include "manager_impl.h"
 
+#include <osquery/registry.h>
 #include <osquery/core.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
@@ -46,6 +47,8 @@ ManagerImpl::ManagerImpl()
 		boost::filesystem::create_directories(logDir);
 
 	LOG(INFO) << "Initalize osquery manager. ";
+
+	registryAndPluginInit();
 }
 
 ManagerImpl::~ManagerImpl() noexcept
@@ -62,13 +65,13 @@ ManagerImpl& ManagerImpl::instance()
 Rows ManagerImpl::execute(const std::string& query)
 {
 	LOG(INFO) << "Execute query: " << query;
+	osquery::SQL sql(query, true);
+	if (!sql.ok()) {
+		LOG(ERROR) << "Executing query failed: " << sql.getMessageString();
+		return Rows();
+	}
 
-	osquery::QueryData results;
-	auto status = osquery::query(query, results);
-	if (!status.ok())
-		LOG(ERROR) << "Executing query failed: " << status.getCode();
-
-	return results;
+	return std::move(sql.rows());
 }
 
 void ManagerImpl::subscribe(const std::string& table, const Callback& callback)

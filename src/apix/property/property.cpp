@@ -26,7 +26,6 @@
 #include <schema/processes.h>
 #include <schema/users.h>
 #include <schema/groups.h>
-#include <schema/memory-map.h>
 
 #include <osquery/logger.h>
 
@@ -52,12 +51,6 @@ auto processes = make_table("processes",
 							make_column("euid", &Processes::euid),
 							make_column("egid", &Processes::egid),
 							make_column("on_disk", &Processes::on_disk),
-//							make_column("wired_size", &Processes::wired_size),
-							make_column("resident_size", &Processes::resident_size),
-							make_column("phys_footprint", &Processes::phys_footprint),
-							make_column("user_time", &Processes::user_time),
-							make_column("system_time", &Processes::system_time),
-							make_column("start_time", &Processes::start_time),
 							make_column("parent", &Processes::parent));
 
 auto users = make_table("users",
@@ -75,13 +68,7 @@ auto groups = make_table("groups",
 						 make_column("gid_signed", &Groups::gid_signed),
 						 make_column("groupname", &Groups::groupname));
 
-auto memoryMap = make_table("memory_map",
-						 make_column("region", &MemoryMap::region),
-						 make_column("type", &MemoryMap::type),
-						 make_column("start", &MemoryMap::start),
-						 make_column("end", &MemoryMap::end));
-
-auto db = make_database("db", time, processes, users, groups, memoryMap);
+auto db = make_database("db", time, processes, users, groups);
 
 } // anonymous namespace
 
@@ -120,9 +107,13 @@ Member Property<T>::at(Member Struct::* field) const
 	if (value.empty()) {
 		LOG(ERROR) << "The value of key[" << key << "] is not exist.";
 		return Member();
-	} else {
-		/// TODO(Sangwan): Catch boost::bad_lexical_cast
+	}
+
+	try {
 		return boost::lexical_cast<Member>(value);
+	} catch (...) {
+		LOG(ERROR) << "Failed to casting [key]: " << key;
+		return Member();
 	}
 }
 
@@ -173,12 +164,5 @@ template unsigned long long int Property<Groups>::at(unsigned long long int Grou
 template unsigned long long int Property<Groups>::operator[](unsigned long long int Groups::*) const;
 template std::string Property<Groups>::at(std::string Groups::*) const;
 template std::string Property<Groups>::operator[](std::string Groups::*) const;
-
-template class Property<MemoryMap>;
-template class Properties<MemoryMap>;
-template int Property<MemoryMap>::at(int MemoryMap::*) const;
-template int Property<MemoryMap>::operator[](int MemoryMap::*) const;
-template std::string Property<MemoryMap>::at(std::string MemoryMap::*) const;
-template std::string Property<MemoryMap>::operator[](std::string MemoryMap::*) const;
 
 } // namespace osquery

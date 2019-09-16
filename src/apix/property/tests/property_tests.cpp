@@ -24,7 +24,6 @@
 #include <schema/processes.h>
 #include <schema/users.h>
 #include <schema/groups.h>
-#include <schema/memory-map.h>
 
 using namespace osquery;
 
@@ -39,16 +38,16 @@ TEST_F(PropertyTests, property) {
 	result.seconds = time.at(&Time::seconds);
 
 	/// Once query execution
-	VLOG(1) << "[Test] time table:";
-	VLOG(1) << "\t hour: " << result.hour;
-	VLOG(1) << "\t minutes: " << result.minutes;
-	VLOG(1) << "\t seconds: " << result.seconds;
+	LOG(INFO) << "[Test] time table:";
+	LOG(INFO) << "\t hour: " << result.hour;
+	LOG(INFO) << "\t minutes: " << result.minutes;
+	LOG(INFO) << "\t seconds: " << result.seconds;
 
 	/// Each query execution
-	VLOG(1) << "[Test] time table:";
-	VLOG(1) << "\t hour: " << Property<Time>().at(&Time::hour);
-	VLOG(1) << "\t minutes: " << Property<Time>().at(&Time::minutes);
-	VLOG(1) << "\t seconds: " <<  Property<Time>().at(&Time::seconds);
+	LOG(INFO) << "[Test] time table:";
+	LOG(INFO) << "\t hour: " << Property<Time>().at(&Time::hour);
+	LOG(INFO) << "\t minutes: " << Property<Time>().at(&Time::minutes);
+	LOG(INFO) << "\t seconds: " <<  Property<Time>().at(&Time::seconds);
 
 	EXPECT_NE(result.hour, -1);
 	EXPECT_NE(result.minutes, -1);
@@ -64,10 +63,10 @@ TEST_F(PropertyTests, propertyArrayOp) {
 	result.seconds = time[&Time::seconds];
 
 	/// Once query execution
-	VLOG(1) << "[Test] time table:";
-	VLOG(1) << "\t hour: " << result.hour;
-	VLOG(1) << "\t minutes: " << result.minutes;
-	VLOG(1) << "\t seconds: " << result.seconds;
+	LOG(INFO) << "[Test] time table:";
+	LOG(INFO) << "\t hour: " << result.hour;
+	LOG(INFO) << "\t minutes: " << result.minutes;
+	LOG(INFO) << "\t seconds: " << result.seconds;
 
 	EXPECT_NE(result.hour, -1);
 	EXPECT_NE(result.minutes, -1);
@@ -75,28 +74,12 @@ TEST_F(PropertyTests, propertyArrayOp) {
 }
 
 TEST_F(PropertyTests, propertiesProcesses) {
-	Processes result = {
-		-1, /// pid
-		"", /// name
-		"", /// path
-		"", /// cmdline
-		-1, /// uid
-		-1, /// gid
-		-1, /// euid
-		-1, /// egid
-		"", /// on_disk
-//		"", /// wired_size
-		"", /// resident_size
-		"", /// phys_footprint
-		"", /// user_time
-		"", /// system_time
-		"", /// start_time
-		-1  /// parent
-		};
-
+	Processes result;
 	Properties<Processes> processes;
+	EXPECT_TRUE(processes.size() > 0);
 
 	for(auto& p : processes) {
+		EXPECT_TRUE(p.size() > 0);
 		result.pid = p.at(&Processes::pid);
 		result.name = p.at(&Processes::name);
 		result.path = p.at(&Processes::path);
@@ -106,66 +89,49 @@ TEST_F(PropertyTests, propertiesProcesses) {
 		result.euid = p.at(&Processes::euid);
 		result.egid = p.at(&Processes::egid);
 		result.on_disk = p.at(&Processes::on_disk);
-//		result.wired_size = p.at(&Processes::wired_size);
-		result.resident_size = p.at(&Processes::resident_size);
-		result.phys_footprint = p.at(&Processes::phys_footprint);
-		result.user_time = p.at(&Processes::user_time);
-		result.system_time = p.at(&Processes::system_time);
-		result.start_time = p.at(&Processes::start_time);
 		result.parent = p.at(&Processes::parent);
 
-		VLOG(1) << "[Test] Processes table:";
-		VLOG(1) << "\t pid: " << result.pid;
-		VLOG(1) << "\t name: " << result.name;
-		VLOG(1) << "\t path: " << result.path;
-		VLOG(1) << "\t cmdline: " << result.cmdline;
-		VLOG(1) << "\t uid: " << result.uid;
-		VLOG(1) << "\t gid: " << result.gid;
-		VLOG(1) << "\t euid: " << result.euid;
-		VLOG(1) << "\t egid: " << result.egid;
-		VLOG(1) << "\t on_disk: " << result.on_disk;
-//		VLOG(1) << "\t wired_size: " << result.wired_size;
-		VLOG(1) << "\t resident_size: " << result.resident_size;
-		VLOG(1) << "\t phys_footprint: " << result.phys_footprint;
-		VLOG(1) << "\t user_time: " << result.user_time;
-		VLOG(1) << "\t system_time: " << result.system_time;
-		VLOG(1) << "\t start_time: " << result.start_time;
-		VLOG(1) << "\t parent: " << result.parent;
+		LOG(INFO) << "[Test] Processes table:";
+		LOG(INFO) << "\t pid: " << result.pid;
+		LOG(INFO) << "\t name: " << result.name;
+		LOG(INFO) << "\t path: " << result.path;
+		LOG(INFO) << "\t cmdline: " << result.cmdline;
+		LOG(INFO) << "\t uid: " << result.uid;
+		LOG(INFO) << "\t gid: " << result.gid;
+		LOG(INFO) << "\t euid: " << result.euid;
+		LOG(INFO) << "\t egid: " << result.egid;
+		LOG(INFO) << "\t on_disk: " << result.on_disk;
+		LOG(INFO) << "\t parent: " << result.parent;
 	}
 }
 
 TEST_F(PropertyTests, propertiesUsers) {
 	Properties<Users> users;
+	EXPECT_TRUE(users.size() > 0);
+
 	for(const auto& user : users) {
-		VLOG(1) << "[Test] User table:";
-		VLOG(1) << "\t uid: " << user[&Users::uid];
-		VLOG(1) << "\t gid: " << user[&Users::gid];
-		VLOG(1) << "\t uid_signed: " << user[&Users::uid_signed];
-		VLOG(1) << "\t gid_signed: " << user[&Users::gid_signed];
-		VLOG(1) << "\t username: " << user[&Users::username];
-		VLOG(1) << "\t description: " << user[&Users::description];
-		VLOG(1) << "\t directory: " << user[&Users::directory];
-		VLOG(1) << "\t shell: " << user[&Users::shell];
+		EXPECT_TRUE(user.size() > 0);
+		LOG(INFO) << "[Test] User table:";
+		LOG(INFO) << "\t uid: " << user[&Users::uid];
+		LOG(INFO) << "\t gid: " << user[&Users::gid];
+		LOG(INFO) << "\t uid_signed: " << user[&Users::uid_signed];
+		LOG(INFO) << "\t gid_signed: " << user[&Users::gid_signed];
+		LOG(INFO) << "\t username: " << user[&Users::username];
+		LOG(INFO) << "\t description: " << user[&Users::description];
+		LOG(INFO) << "\t directory: " << user[&Users::directory];
+		LOG(INFO) << "\t shell: " << user[&Users::shell];
 	}
 }
 
 TEST_F(PropertyTests, propertiesGroups) {
 	Properties<Groups> groups;
-	for(const auto& group : groups) {
-		VLOG(1) << "[Test] Group table:";
-		VLOG(1) << "\t gid: " << group[&Groups::gid];
-		VLOG(1) << "\t gid_signed: " << group[&Groups::gid_signed];
-		VLOG(1) << "\t groupname: " << group[&Groups::groupname];
-	}
-}
+	EXPECT_TRUE(groups.size() > 0);
 
-TEST_F(PropertyTests, propertiesMemoryMap) {
-	Properties<MemoryMap> memoryMap;
-	for(const auto& mm : memoryMap) {
-		VLOG(1) << "[Test] memory_map table:";
-		VLOG(1) << "\t region: " << mm[&MemoryMap::region];
-		VLOG(1) << "\t type: " << mm[&MemoryMap::type];
-		VLOG(1) << "\t start: " << mm[&MemoryMap::start];
-		VLOG(1) << "\t end: " << mm[&MemoryMap::end];
+	for(const auto& group : groups) {
+		EXPECT_TRUE(group.size() > 0);
+		LOG(INFO) << "[Test] Group table:";
+		LOG(INFO) << "\t gid: " << group[&Groups::gid];
+		LOG(INFO) << "\t gid_signed: " << group[&Groups::gid_signed];
+		LOG(INFO) << "\t groupname: " << group[&Groups::groupname];
 	}
 }

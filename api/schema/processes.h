@@ -26,7 +26,7 @@
 #include <string>
 
 struct Processes {
-	int pid;
+	long long int pid;
 	std::string name;
 	std::string path;
 	std::string cmdline;
@@ -34,12 +34,7 @@ struct Processes {
 	long long int gid;
 	long long int euid;
 	long long int egid;
-	std::string on_disk;
-//	std::string wired_size; // It doen't supported
-	std::string resident_size;
-	std::string phys_footprint;
-	std::string user_time;
-	std::string system_time;
-	std::string start_time;
-	int parent;
+	int on_disk;
+	long long int resident_size;
+	long long int parent;
 };

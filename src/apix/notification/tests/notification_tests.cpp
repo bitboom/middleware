@@ -27,9 +27,9 @@ TEST_F(NotificationTests, test_add_positive) {
 	auto& notifier = Notification::instance();
 
 	auto callback = [](const Row& row) {
-		VLOG(1) << "NotifyCallback called:";
+		LOG(INFO) << "NotifyCallback called:";
 		for (const auto& r : row)
-			VLOG(1) << "\t" << r.first << " : " << r.second;
+			LOG(INFO) << "\t" << r.first << " : " << r.second;
 	};
 
 	auto s = notifier.add("test", std::move(callback));
@@ -40,9 +40,9 @@ TEST_F(NotificationTests, test_add_negative) {
 	auto& notifier = Notification::instance();
 
 	auto callback = [](const Row& row) {
-		VLOG(1) << "NotifyCallback called:";
+		LOG(INFO) << "NotifyCallback called:";
 		for (const auto& r : row)
-			VLOG(1) << "\t" << r.first << " : " << r.second;
+			LOG(INFO) << "\t" << r.first << " : " << r.second;
 	};
 
 	auto s = notifier.add("", std::move(callback));
@@ -54,9 +54,9 @@ TEST_F(NotificationTests, test_emit_positive) {
 
 	int called = 0;
 	auto callback = [&](const Row& row) {
-		VLOG(1) << "NotifyCallback called:";
+		LOG(INFO) << "NotifyCallback called:";
 		for (const auto& r : row)
-			VLOG(1) << "\t" << r.first << " : " << r.second;
+			LOG(INFO) << "\t" << r.first << " : " << r.second;
 		called++;
 	};
 

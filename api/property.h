@@ -44,6 +44,8 @@ public:
 	template<typename Struct, typename Member>
 	Member operator[](Member Struct::*) const;
 
+	inline std::size_t size() const { return data.size(); }
+
 private:
 	KeyValuePair data;
 };
@@ -62,6 +64,8 @@ public:
 	inline CIter begin() const { return datas.cbegin(); }
 	inline Iter end() { return datas.end(); }
 	inline CIter end() const { return datas.end(); }
+
+	inline std::size_t size() const { return datas.size(); }
 
 private:
 	std::vector<Property<T>> datas;
