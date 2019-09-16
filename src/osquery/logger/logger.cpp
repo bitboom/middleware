@@ -22,7 +22,6 @@
 #include <osquery/events.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
-#include <osquery/numeric_monitoring.h>
 #include <osquery/plugins/logger.h>
 #include <osquery/registry_factory.h>
 #include <osquery/system.h>

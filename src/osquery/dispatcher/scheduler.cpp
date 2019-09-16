@@ -17,7 +17,6 @@
 #include <osquery/data_logger.h>
 #include <osquery/database.h>
 #include <osquery/flags.h>
-#include <osquery/numeric_monitoring.h>
 #include <osquery/process/process.h>
 #include <osquery/query.h>
 #include <osquery/utils/system/time.h>
@@ -54,35 +53,30 @@ HIDDEN_FLAG(bool,
 
 /// Used to bypass (optimize-out) the set-differential of query results.
 DECLARE_bool(events_optimize);
-DECLARE_bool(enable_numeric_monitoring);
 
 SQLInternal monitor(const std::string& name, const ScheduledQuery& query) {
-  if (FLAGS_enable_numeric_monitoring) {
-    return SQLInternal(query.query, true);
-  } else {
-    // Snapshot the performance and times for the worker before running.
-    auto pid = std::to_string(PlatformProcess::getCurrentPid());
-    auto r0 = SQL::selectFrom({"resident_size", "user_time", "system_time"},
-                              "processes",
-                              "pid",
-                              EQUALS,
-                              pid);
-    auto t0 = getUnixTime();
-    Config::get().recordQueryStart(name);
-    SQLInternal sql(query.query, true);
-    // Snapshot the performance after, and compare.
-    auto t1 = getUnixTime();
-    auto r1 = SQL::selectFrom({"resident_size", "user_time", "system_time"},
-                              "processes",
-                              "pid",
-                              EQUALS,
-                              pid);
-    if (r0.size() > 0 && r1.size() > 0) {
-      // Always called while processes table is working.
-      Config::get().recordQueryPerformance(name, t1 - t0, r0[0], r1[0]);
-    }
-    return sql;
+  // Snapshot the performance and times for the worker before running.
+  auto pid = std::to_string(PlatformProcess::getCurrentPid());
+  auto r0 = SQL::selectFrom({"resident_size", "user_time", "system_time"},
+                            "processes",
+                            "pid",
+                            EQUALS,
+                            pid);
+  auto t0 = getUnixTime();
+  Config::get().recordQueryStart(name);
+  SQLInternal sql(query.query, true);
+  // Snapshot the performance after, and compare.
+  auto t1 = getUnixTime();
+  auto r1 = SQL::selectFrom({"resident_size", "user_time", "system_time"},
+                            "processes",
+                            "pid",
+                            EQUALS,
+                            pid);
+  if (r0.size() > 0 && r1.size() > 0) {
+    // Always called while processes table is working.
+    Config::get().recordQueryPerformance(name, t1 - t0, r0[0], r1[0]);
   }
+  return sql;
 }
 
 Status launchQuery(const std::string& name, const ScheduledQuery& query) {
@@ -174,14 +168,6 @@ void SchedulerRunner::start() {
             TablePlugin::kCacheInterval = query.splayed_interval;
             TablePlugin::kCacheStep = i;
             const auto status = launchQuery(name, query);
-            monitoring::record(
-                (boost::format("scheduler.query.%s.%s.status.%s") %
-                 query.pack_name % query.name %
-                 (status.ok() ? "success" : "failure"))
-                    .str(),
-                1,
-                monitoring::PreAggregationType::Sum,
-                true);
           }
         }));
     // Configuration decorators run on 60 second intervals only.

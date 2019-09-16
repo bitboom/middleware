@@ -40,7 +40,6 @@
 #include <osquery/events.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
-#include <osquery/numeric_monitoring.h>
 #include <osquery/process/process.h>
 #include <osquery/registry.h>
 #include <osquery/utils/info/version.h>
@@ -155,7 +154,6 @@ namespace osquery {
 
 DECLARE_string(config_plugin);
 DECLARE_string(logger_plugin);
-DECLARE_string(numeric_monitoring_plugins);
 DECLARE_bool(config_check);
 DECLARE_bool(config_dump);
 DECLARE_bool(database_dump);
@@ -163,7 +161,6 @@ DECLARE_string(database_path);
 DECLARE_bool(disable_database);
 DECLARE_bool(disable_events);
 DECLARE_bool(disable_logging);
-DECLARE_bool(enable_numeric_monitoring);
 
 CLI_FLAG(bool, S, false, "Run as a shell process");
 CLI_FLAG(bool, D, false, "Run as a daemon process");
@@ -527,11 +524,6 @@ void Initializer::start() const {
   if (!FLAGS_disable_logging) {
     initActivePlugin("logger", FLAGS_logger_plugin);
     initLogger(binary_);
-  }
-
-  if (FLAGS_enable_numeric_monitoring) {
-    initActivePlugin(monitoring::registryName(),
-                     FLAGS_numeric_monitoring_plugins);
   }
 
   // Start event threads.
