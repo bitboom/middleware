@@ -12,8 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LINK(linenoise)
-
 ADD_OSQUERY_LIBRARY(osquery_sql dynamic_table_row.cpp
 								sqlite_encoding.cpp
 								sqlite_hashing.cpp

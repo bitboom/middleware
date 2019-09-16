@@ -9,6 +9,9 @@ docker_run:
 	docker build --network=host --tag tizen-osquery ./.docker
 	docker run --rm -it --net=host --privileged -v $(shell pwd):/usr/src tizen-osquery
 
+gbs_run:
+	gbs lb -A armv7l --include-all -P standard
+
 %::
 	mkdir -p build
 	cd build && cmake .. && make --no-print-directory $@

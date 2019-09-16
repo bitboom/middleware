@@ -1,5 +1,5 @@
 Name: osquery
-Version: 1.5.0
+Version: 0.0.0
 Release: 0
 License: Apache-2.0 and GPLv2 and MIT
 Summary: A SQL powered operating system instrumentation, monitoring framework.
@@ -27,6 +27,7 @@ BuildRequires: pkgconfig(libsystemd)
 BuildRequires: pkgconfig(openssl)
 BuildRequires: iptables-devel
 BuildRequires: python-jinja2
+BuildRequires: libuuid-devel
 Requires: glog
 Requires: gflag
 Requires: rocksdb
@@ -49,7 +50,6 @@ This allows you to write SQL-based queries to explore operating system data.
 %files
 %manifest %{name}.manifest
 %license MIT-LICENSE
-%{_bindir}/osqueryi
 
 %prep
 %setup -q

@@ -82,27 +82,6 @@ class Plugin : private boost::noncopyable {
     return name_;
   }
 
- public:
-
-  /**
-   * @brief Bind this plugin to an external plugin reference.
-   *
-   * Allow a specialized plugin type to act when an external plugin is
-   * registered (e.g., a TablePlugin will attach the table name).
-   *
-   * @param name The broadcasted name of the plugin.
-   * @param info The routing info for the owning extension.
-   */
-  static Status addExternal(const std::string& name,
-                            const PluginResponse& info) {
-    (void)name;
-    (void)info;
-    return Status::success();
-  }
-
-  /// Allow a specialized plugin type to act when an external plugin is removed.
-  static void removeExternal(const std::string& /*name*/) {}
-
  protected:
   /// Customized name for the plugin, usually set by the registry.
   std::string name_;

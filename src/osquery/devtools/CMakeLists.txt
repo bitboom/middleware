@@ -15,7 +15,6 @@
 ADD_OSQUERY_LINK(linenoise)
 
 ADD_OSQUERY_LIBRARY(osquery_devtools printer.cpp)
-#									 shell.cpp)
 
 FILE(GLOB OSQUERY_DEVTOOLS_TESTS "tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_DEVTOOLS_TESTS})
