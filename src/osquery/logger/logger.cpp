@@ -22,7 +22,6 @@
 #include <osquery/events.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
-#include <osquery/killswitch.h>
 #include <osquery/numeric_monitoring.h>
 #include <osquery/plugins/logger.h>
 #include <osquery/registry_factory.h>
@@ -408,11 +407,6 @@ Status logQueryLogItem(const QueryLogItem& results,
     return Status::success();
   }
 
-  if (Killswitch::get().isTotalQueryCounterMonitorEnabled()) {
-    monitoring::record(
-        kTotalQueryCounterMonitorPath, 1, monitoring::PreAggregationType::Sum);
-  }
-
   std::vector<std::string> json_items;
   Status status;
   if (FLAGS_logger_event_type) {
@@ -435,11 +429,6 @@ Status logQueryLogItem(const QueryLogItem& results,
 Status logSnapshotQuery(const QueryLogItem& item) {
   if (FLAGS_disable_logging) {
     return Status::success();
-  }
-
-  if (Killswitch::get().isTotalQueryCounterMonitorEnabled()) {
-    monitoring::record(
-        kTotalQueryCounterMonitorPath, 1, monitoring::PreAggregationType::Sum);
   }
 
   std::vector<std::string> json_items;
