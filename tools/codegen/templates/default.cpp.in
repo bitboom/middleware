@@ -1,11 +1,9 @@
-/*
- *  Copyright (c) 2014, Facebook, Inc.
+/**
+ *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
+ *  This source code is licensed in accordance with the terms specified in
+ *  the LICENSE file found in the root directory of this source tree.
  */
 
 /*
@@ -13,8 +11,8 @@
 */
 
 #include <osquery/events.h>
+#include <osquery/logger.h>
 #include <osquery/tables.h>
-#include <osquery/status.h>
 #include <osquery/registry_factory.h>
 
 namespace osquery {
@@ -22,54 +20,116 @@ namespace osquery {
 /// BEGIN[GENTABLE]
 namespace tables {
 {% if class_name == "" %}\
-osquery::QueryData {{function}}(QueryContext& request);
-{% if function_update != "" %}\
-osquery::Status {{function_update}}(Row& row);
+{% if generator %}\
+void {{function}}(RowYield& yield, QueryContext& context);
+{% elif strongly_typed_rows %}\
+osquery::TableRows {{function}}(QueryContext& context);
+{% else %}\
+osquery::QueryData {{function}}(QueryContext& context);
 {% endif %}\
 {% else %}
 class {{class_name}} {
  public:
-  osquery::QueryData {{function}}(QueryContext& request);
-{% if function_update != "" %}\
-  osquery::Status {{function_update}}(Row& row);
-{% endif %}\
+  void {{function}}(RowYield& yield, QueryContext& context);
 };
 {% endif %}\
 }
 
 class {{table_name_cc}}TablePlugin : public TablePlugin {
  private:
-  TableColumns columns() const {
+  TableColumns columns() const override {
     return {
 {% for column in schema %}\
-     std::make_tuple("{{column.name}}", {{column.type.affinity}}_TYPE,\
-     ColumnOptions::DEFAULT)\
-{% if not loop.last %}, {% endif %}
+      std::make_tuple("{{column.name}}", {{column.type.affinity}},\
+{% if column.options|length > 0 %} {{column.options_set}}\
+{% else %} ColumnOptions::DEFAULT\
+{% endif %}\
+),
+{% endfor %}\
+    };
+  }
+{% if aliases|length > 0 %}\
+
+  std::vector<std::string> aliases() const override {
+    return {
+{% for alias in aliases %}\
+      "{{alias}}",
+{% endfor %}\
+    };
+  }
+{% endif %}\
+
+{% if has_column_aliases %}\
+
+  ColumnAliasSet columnAliases() const override {
+    return {
+{% for column in schema %}\
+{% if column.aliases|length > 0 %}\
+      {"{{column.name}}", {% raw %}{{% endraw %}\
+{% for alias in column.aliases %}"{{alias}}"\
+{% if not loop.last %}, {% endif %}\
+{% endfor %}}},
+{% endif %}\
 {% endfor %}\
     };
   }
 
-  TableRows generate(QueryContext& context) override {
+  AliasColumnMap aliasedColumns() const override {
+    return {
+{% for column in schema %}\
+{% if column.aliases|length > 0 %}\
+{% for alias in column.aliases %}\
+      { "{{alias}}", "{{column.name}}" },
+{% endfor %}\
+{% endif %}\
+{% endfor %}\
+    };
+  }
+{% endif %}\
+
+  TableAttributes attributes() const override {
+    return \
+{% for attribute in attribute_set %}\
+      TableAttributes::{{attribute}} |\
+{% endfor %}\
+      TableAttributes::NONE;
+  }
+
+{% if generator %}\
+  bool usesGenerator() const override { return true; }
+
+  void generator(RowYield& yield, QueryContext& context) override {
 {% if class_name != "" %}\
-    if (EventFactory::exists("{{class_name}}")) {
-      auto subscriber = EventFactory::getEventSubscriber("{{class_name}}");
-      return subscriber->{{function}}(request);
+    if (EventFactory::exists(getName())) {
+      auto subscriber = EventFactory::getEventSubscriber(getName());
+      return subscriber->{{function}}(yield, context);
     } else {
-      return {};
+      LOG(ERROR) << "Subscriber table missing: " << getName();
     }
 {% else %}\
-    TableRows results = osquery::tableRowsFromQueryData(tables::{{function}}(context));
+    tables::{{function}}(yield, context);
 {% endif %}\
+  }
+{% else %}\
+  TableRows generate(QueryContext& context) override {
+{% if attributes.cacheable %}\
+    if (isCached(kCacheStep, context)) {
+      return getCache();
+    }
+{% endif %}\
+{% if attributes.strongly_typed_rows %}\
+    TableRows results = tables::{{function}}(context);
+{% else %}\
+    TableRows results = osquery::tableRowsFromQueryData(tables::{{function}}(context));
+{% endif %}
+{% if attributes.cacheable %}\
+    setCache(kCacheStep, kCacheInterval, context, results);
+{% endif %}
     return results;
   }
-
-{% if function_update != "" %}\
-  Status update(Row& row) {
-    return tables::{{function_update}}(row);
-  }
 {% endif %}\
-};
 
+};
 
 {% if attributes.utility %}
 REGISTER_INTERNAL({{table_name_cc}}TablePlugin, "table", "{{table_name}}");

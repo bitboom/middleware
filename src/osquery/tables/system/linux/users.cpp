@@ -1,64 +1,86 @@
-/*
- *  Copyright (c) 2014, Facebook, Inc.
+/**
+ *  Copyright (c) 2014-present, Facebook, Inc.
  *  All rights reserved.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant 
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
+ *  This source code is licensed in accordance with the terms specified in
+ *  the LICENSE file found in the root directory of this source tree.
  */
-
-#include <set>
-#include <mutex>
-#include <vector>
-#include <string>
 
 #include <pwd.h>
 
+#include <mutex>
+
 #include <osquery/core.h>
 #include <osquery/tables.h>
-#include <osquery/status.h>
-#include <osquery/logger.h>
+#include <osquery/utils/mutex.h>
+#include <osquery/utils/conversions/tryto.h>
 
 namespace osquery {
 namespace tables {
 
-std::mutex pwdEnumerationMutex;
+Mutex pwdEnumerationMutex;
 
-QueryData genUsers(QueryContext& context) {
-  std::lock_guard<std::mutex> lock(pwdEnumerationMutex);
-  QueryData results;
-  struct passwd *pwd = nullptr;
-  std::set<long> users_in;
+void genUser(const struct passwd* pwd, QueryData& results) {
+  Row r;
+  r["uid"] = BIGINT(pwd->pw_uid);
+  r["gid"] = BIGINT(pwd->pw_gid);
+  r["uid_signed"] = BIGINT((int32_t)pwd->pw_uid);
+  r["gid_signed"] = BIGINT((int32_t)pwd->pw_gid);
 
-  while ((pwd = getpwent()) != nullptr) {
-    if (std::find(users_in.begin(), users_in.end(), pwd->pw_uid) ==
-        users_in.end()) {
-      Row r;
-      r["uid"] = BIGINT(pwd->pw_uid);
-      r["gid"] = BIGINT(pwd->pw_gid);
-      r["uid_signed"] = BIGINT((int32_t) pwd->pw_uid);
-      r["gid_signed"] = BIGINT((int32_t) pwd->pw_gid);
-      r["username"] = TEXT(pwd->pw_name);
-      r["description"] = TEXT(pwd->pw_gecos);
-      r["directory"] = TEXT(pwd->pw_dir);
-      r["shell"] = TEXT(pwd->pw_shell);
-      results.push_back(r);
-      users_in.insert(pwd->pw_uid);
-    }
+  if (pwd->pw_name != nullptr) {
+    r["username"] = TEXT(pwd->pw_name);
   }
-  endpwent();
-  users_in.clear();
 
-  return results;
+  if (pwd->pw_gecos != nullptr) {
+    r["description"] = TEXT(pwd->pw_gecos);
+  }
+
+  if (pwd->pw_dir != nullptr) {
+    r["directory"] = TEXT(pwd->pw_dir);
+  }
+
+  if (pwd->pw_shell != nullptr) {
+    r["shell"] = TEXT(pwd->pw_shell);
+  }
+  results.push_back(r);
 }
 
-/// Example of update feature
-Status updateUsers(Row& row) {
-  for (auto& r : row)
-    LOG(ERROR) << "DEBUG: " << r.first << ", " << r.second;
+QueryData genUsers(QueryContext& context) {
+  QueryData results;
 
-  return Status(0, "OK");
+  struct passwd* pwd = nullptr;
+  if (context.constraints["uid"].exists(EQUALS)) {
+    auto uids = context.constraints["uid"].getAll(EQUALS);
+    for (const auto& uid : uids) {
+      auto const auid_exp = tryTo<long>(uid, 10);
+      if (auid_exp.isValue()) {
+        WriteLock lock(pwdEnumerationMutex);
+        pwd = getpwuid(auid_exp.get());
+        if (pwd != nullptr) {
+          genUser(pwd, results);
+        }
+      }
+    }
+  } else if (context.constraints["username"].exists(EQUALS)) {
+    auto usernames = context.constraints["username"].getAll(EQUALS);
+    for (const auto& username : usernames) {
+      WriteLock lock(pwdEnumerationMutex);
+      pwd = getpwnam(username.c_str());
+      if (pwd != nullptr) {
+        genUser(pwd, results);
+      }
+    }
+  } else {
+    WriteLock lock(pwdEnumerationMutex);
+    pwd = getpwent();
+    while (pwd != nullptr) {
+      genUser(pwd, results);
+      pwd = getpwent();
+    }
+    endpwent();
+  }
+
+  return results;
 }
 }
 }
