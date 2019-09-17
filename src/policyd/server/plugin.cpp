@@ -53,7 +53,7 @@ PolicyLoader::PolicyLoader(const std::string& base) :
 {
 }
 
-AbstractPolicyProvider* PolicyLoader::instantiate(const std::string& name, PolicyControlContext& context)
+std::shared_ptr<AbstractPolicyProvider> PolicyLoader::instantiate(const std::string& name)
 {
 	PluginMap::iterator iter = pluginMap.find(name);
 	if (iter == pluginMap.end()) {
@@ -72,7 +72,8 @@ AbstractPolicyProvider* PolicyLoader::instantiate(const std::string& name, Polic
 
 		pluginMap[name] = std::move(plguin);
 
-		return (*factory)(context);
+		auto provider = (*factory)();
+		return std::shared_ptr<AbstractPolicyProvider>(provider);
 	}
 
 	return nullptr;

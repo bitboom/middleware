@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  *  limitations under the License
  */
 
-#ifndef __DPM_PLUGIN_H__
-#define __DPM_PLUGIN_H__
+#pragma once
+
 #include <string>
 #include <exception>
 #include <unordered_map>
+#include <memory>
 
-#include "pil/policy-context.h"
 #include "pil/policy-model.h"
 
 class Plugin {
@@ -48,10 +48,10 @@ private:
 
 class PolicyLoader {
 public:
-	typedef AbstractPolicyProvider* (*PolicyFactory)(PolicyControlContext& context);
+	typedef AbstractPolicyProvider* (*PolicyFactory)();
 
 	PolicyLoader(const std::string& base);
-	AbstractPolicyProvider* instantiate(const std::string& name, rmi::Service& context);
+	std::shared_ptr<AbstractPolicyProvider> instantiate(const std::string& name);
 
 private:
 	typedef std::unordered_map<std::string, Plugin> PluginMap;
@@ -59,5 +59,3 @@ private:
 	std::string basename;
 	PluginMap pluginMap;
 };
-
-#endif /*!__DPM_PLUGIN_H__*/

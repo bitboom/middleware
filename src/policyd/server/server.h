@@ -44,6 +44,12 @@ public:
 
 	void run(int activation, int timeout);
 
+	// Temporary debug method
+	inline std::vector<std::shared_ptr<AbstractPolicyProvider>>& getProviderList()
+	{
+		return this->providerList;
+	}
+
 private:
 	void initPolicyStorage();
 
@@ -60,7 +66,7 @@ private:
 	typedef std::unordered_map<int, int> ClientRegistry;
 	ClientRegistry clientRegistry;
 
-	std::vector<AbstractPolicyProvider *> policyList;
+	std::vector<std::shared_ptr<AbstractPolicyProvider>> providerList;
 	std::unique_ptr<PolicyLoader> policyLoader;
 	std::thread policyApplyThread;
 

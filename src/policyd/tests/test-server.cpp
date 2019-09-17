@@ -18,10 +18,22 @@
 
 #include <klay/testbench.h>
 
+#include <iostream>
+
 TESTCASE(LOAD_PLUGINS)
 {
 	DevicePolicyManager manager;
 	auto result = manager.loadPolicyPlugins();
+
+	// Temporary debug method
+	auto providers = manager.getProviderList();
+	for (const auto& provider : providers) {
+		for (const auto& policy : provider->policies) {
+			std::cout << "Policy Lists:" << std::endl;
+			std::cout << "\t" << policy->name << std::endl;
+		}
+	}
+
 	TEST_EXPECT(true, result.first > 0);
 	TEST_EXPECT(true, result.second == 0);
 }

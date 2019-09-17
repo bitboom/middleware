@@ -32,7 +32,6 @@ SET(PAPIS app-bundle.h
 		  logger.h
 		  packman.h
 		  policy-event.h
-		  policy-context.h
 		  policy-admin.h
 		  policy-client.h
 		  policy-model.h
@@ -40,27 +39,28 @@ SET(PAPIS app-bundle.h
 		  status.h
 		  observer.h)
 
-SET(PIL_DEPENDENCY klay
-				   glib-2.0
-				   gio-2.0
-				   sqlite3
-				   bundle
-				   aul
-				   appsvc
-				   pkgmgr
-				   pkgmgr-info
-				   syspopup-caller
-				   deviced
-				   libtzplatform-config
-				   security-privilege-manager
-				   capi-system-info
-				   capi-base-common
-				   capi-system-system-settings
-				   cynara-client
-				   notification
-				   cynara-session)
+SET(DEPENDENCY klay
+			   glib-2.0
+			   gio-2.0
+			   sqlite3
+			   bundle
+			   aul
+			   appsvc
+			   pkgmgr
+			   pkgmgr-info
+			   vconf
+			   syspopup-caller
+			   deviced
+			   libtzplatform-config
+			   security-privilege-manager
+			   capi-system-info
+			   capi-base-common
+			   capi-system-system-settings
+			   notification
+			   cynara-client
+			   cynara-session)
 
-PKG_CHECK_MODULES(PIL_DEPS REQUIRED ${PIL_DEPENDENCY})
+PKG_CHECK_MODULES(PIL_DEPS REQUIRED ${DEPENDENCY})
 
 INCLUDE_DIRECTORIES(SYSTEM "${PIL_DEPS_INCLUDE_DIRS}")
 

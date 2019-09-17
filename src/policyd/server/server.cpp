@@ -94,7 +94,7 @@ std::pair<int, int> DevicePolicyManager::loadPolicyPlugins()
 			continue;
 		}
 
-		auto instance = policyLoader->instantiate(iter->getName(), *this);
+		auto instance = policyLoader->instantiate(iter->getName());
 		if (instance == nullptr) {
 			ERROR(DPM, "Failed to instantiate.: " << iter->getName());
 			++failed;
@@ -102,7 +102,7 @@ std::pair<int, int> DevicePolicyManager::loadPolicyPlugins()
 			continue;
 		}
 
-		policyList.push_back(instance);
+		providerList.emplace_back(std::move(instance));
 		++passed;
 		++iter;
 	}

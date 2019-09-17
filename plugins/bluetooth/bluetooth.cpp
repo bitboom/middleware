@@ -18,10 +18,11 @@
 #include <bluetooth-api.h>
 #include <bluetooth_internal.h>
 
-#include <policyd/pil/policy-context.h>
-#include <policyd/pil/policy-model.h>
+#include <policyd/pil/global-policy.h>
 #include <policyd/pil/policy-storage.h>
 #include <policyd/pil/policy-event.h>
+
+#include <memory>
 
 #include "../dlog.h"
 
@@ -46,14 +47,14 @@ inline int canonicalize(int value)
 
 } // namespace
 
-class ModeChange : public GlobalPolicy<DataSetInt> {
+class ModeChange : public GlobalPolicy {
 public:
 	ModeChange() : GlobalPolicy("bluetooth")
 	{
 		PolicyEventNotifier::create("bluetooth");
 	}
 
-	bool apply(const DataType& value)
+	bool apply(const DataSetInt& value, uid_t)
 	{
 		int ret = bluetooth_dpm_set_allow_mode(STATE_CHANGE_IS_ALLOWED(value));
 		if (!BT_FAILED(ret)) {
@@ -65,14 +66,14 @@ public:
 	}
 };
 
-class DesktopConnectivity : public GlobalPolicy<DataSetInt> {
+class DesktopConnectivity : public GlobalPolicy {
 public:
 	DesktopConnectivity() : GlobalPolicy("bluetooth-desktop-connectivity")
 	{
 		PolicyEventNotifier::create("bluetooth_desktop_connectivity");
 	}
 
-	bool apply(const DataType & value)
+	bool apply(const DataSetInt & value, uid_t)
 	{
 		int ret = bluetooth_dpm_set_desktop_connectivity_state(POLICY_IS_ALLOWED(value));
 		if (!BT_FAILED(ret)) {
@@ -85,14 +86,14 @@ public:
 	}
 };
 
-class Pairing: public GlobalPolicy<DataSetInt> {
+class Pairing: public GlobalPolicy {
 public:
 	Pairing() : GlobalPolicy("bluetooth-pairing")
 	{
 		PolicyEventNotifier::create("bluetooth_pairing");
 	}
 
-	bool apply(const DataType& value)
+	bool apply(const DataSetInt& value, uid_t)
 	{
 		int ret = bluetooth_dpm_set_pairing_state(POLICY_IS_ALLOWED(value));
 		if (!BT_FAILED(ret)) {
@@ -105,14 +106,14 @@ public:
 	}
 };
 
-class Tethering: public GlobalPolicy<DataSetInt> {
+class Tethering: public GlobalPolicy {
 public:
 	Tethering() : GlobalPolicy("bluetooth-tethering")
 	{
 		PolicyEventNotifier::create("bluetooth_tethering");
 	}
 
-	bool apply(const DataType& value)
+	bool apply(const DataSetInt& value, uid_t)
 	{
 		int enable = value;
 		PolicyEventNotifier::emit("bluetooth_tethering",
@@ -126,34 +127,19 @@ public:
 	Bluetooth();
 	~Bluetooth();
 
-	int setModeChangeState(bool enable);
-	bool getModeChangeState();
-	int setDesktopConnectivityState(bool enable);
-	bool getDesktopConnectivityState();
-	int setTetheringState(bool enable);
-	bool getTetheringState();
-	int setPairingState(bool enable);
-	bool getPairingState();
-
 private:
 	static void onStateChanged(int result, bt_adapter_state_e state, void *user_data);
-
-private:
-	ModeChange          modeChange;
-	DesktopConnectivity connectivity;
-	Pairing             pairing;
-	Tethering          tethering;
 };
 
 Bluetooth::Bluetooth()
 {
 	if (::bt_initialize() != BT_ERROR_NONE) {
-		ERROR(PLUGINS, "Bluetooth framework was not initilaized");
+		ERROR(PLUGINS,"Bluetooth framework was not initilaized");
 		return;
 	}
 
 	if (::bt_adapter_set_state_changed_cb(onStateChanged, this) != BT_ERROR_NONE) {
-		ERROR(PLUGINS, "Failed to register Bluetooth callback");
+		ERROR(PLUGINS,"Failed to register Bluetooth callback");
 		return;
 	}
 }
@@ -174,96 +160,3 @@ void Bluetooth::onStateChanged(int result, bt_adapter_state_e state, void *user_
 //		pimpl->uuidRestriction.enforce();
 	}
 }
-
-int Bluetooth::setModeChangeState(bool enable)
-{
-	try {
-		modeChange.set(enable);
-	} catch (runtime::Exception& e) {
-		ERROR(PLUGINS, "Exception: " << e.what());
-		return -1;
-	}
-
-	return 0;
-}
-
-bool Bluetooth::getModeChangeState()
-{
-	return modeChange.get();
-}
-
-int Bluetooth::setDesktopConnectivityState(bool enable)
-{
-	try {
-		connectivity.set(enable);
-	} catch (runtime::Exception& e) {
-		ERROR(PLUGINS, "Exception: " << e.what());
-		return -1;
-	}
-
-	return 0;
-}
-
-bool Bluetooth::getDesktopConnectivityState()
-{
-	return connectivity.get();
-}
-
-int Bluetooth::setPairingState(bool enable)
-{
-	try {
-		pairing.set(enable);
-	} catch (runtime::Exception& e) {
-		ERROR(PLUGINS, "Exception: " << e.what());
-		return -1;
-	}
-
-	return 0;
-}
-
-bool Bluetooth::getPairingState()
-{
-	return pairing.get();
-}
-
-int Bluetooth::setTetheringState(bool enable)
-{
-	try {
-		tethering.set(enable);
-	} catch (runtime::Exception& e) {
-		ERROR(PLUGINS, "Exception " << e.what());
-		return -1;
-	}
-
-	return 0;
-}
-
-bool Bluetooth::getTetheringState()
-{
-	return tethering.get();
-}
-
-
-extern "C" {
-
-#define PRIVILEGE "http://tizen.org/privilege/dpm.bluetooth"
-
-AbstractPolicyProvider *PolicyFactory(PolicyControlContext& context)
-{
-	INFO(PLUGINS, "Bluetooth plugin loaded");
-	Bluetooth *policy = new Bluetooth();
-
-	context.expose(policy, PRIVILEGE, (int)(Bluetooth::setModeChangeState)(bool));
-	context.expose(policy, PRIVILEGE, (int)(Bluetooth::setDesktopConnectivityState)(bool));
-	context.expose(policy, PRIVILEGE, (int)(Bluetooth::setTetheringState)(bool));
-	context.expose(policy, PRIVILEGE, (int)(Bluetooth::setPairingState)(bool));
-
-	context.expose(policy, "", (bool)(Bluetooth::getModeChangeState)());
-	context.expose(policy, "", (bool)(Bluetooth::getDesktopConnectivityState)());
-	context.expose(policy, "", (bool)(Bluetooth::getTetheringState)());
-	context.expose(policy, "", (bool)(Bluetooth::getPairingState)());
-
-	return policy;
-}
-
-} // extern "C"
