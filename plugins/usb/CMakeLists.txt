@@ -16,8 +16,7 @@ SET(TARGET "dpm-plugin-usb")
 
 SET(PLUGIN_SOURCES "usb.cpp")
 
-SET(DEPENDENCY klay
-			   dpm-pil)
+SET(DEPENDENCY klay)
 
 PKG_CHECK_MODULES(PLUGIN_DEPS REQUIRED ${DEPENDENCY})
 

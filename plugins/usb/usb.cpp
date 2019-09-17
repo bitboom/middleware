@@ -14,12 +14,12 @@
  *  limitations under the License
  */
 
-#include <dpm/pil/policy-context.h>
-#include <dpm/pil/policy-model.h>
-#include <dpm/pil/policy-storage.h>
-#include <dpm/pil/policy-event.h>
-#include <dpm/pil/app-bundle.h>
-#include <dpm/pil/launchpad.h>
+#include <policyd/pil/policy-context.h>
+#include <policyd/pil/policy-model.h>
+#include <policyd/pil/policy-storage.h>
+#include <policyd/pil/policy-event.h>
+#include <policyd/pil/app-bundle.h>
+#include <policyd/pil/launchpad.h>
 
 #include <klay/auth/user.h>
 #include <klay/dbus/variant.h>

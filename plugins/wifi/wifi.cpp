@@ -24,10 +24,10 @@
 
 #include <klay/dbus/connection.h>
 
-#include <dpm/pil/policy-context.h>
-#include <dpm/pil/policy-model.h>
-#include <dpm/pil/policy-storage.h>
-#include <dpm/pil/policy-event.h>
+#include <policyd/pil/policy-context.h>
+#include <policyd/pil/policy-model.h>
+#include <policyd/pil/policy-storage.h>
+#include <policyd/pil/policy-event.h>
 
 #include "../dlog.h"
 

@@ -17,7 +17,7 @@ SET(TARGET "dpm-plugin-bluetooth")
 SET(PLUGIN_SOURCES "bluetooth.cpp")
 
 SET(DEPENDENCY klay
-			   dpm-pil
+			   aul
 			   bluetooth-api
 			   capi-network-bluetooth)
 

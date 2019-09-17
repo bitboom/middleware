@@ -1,0 +1,93 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "الحافظة"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "موافق"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "إلغاء"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "التقاط الشاشة"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "كلمة المرور"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "نقطة اتصال"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "تمنع سياسة الأمان استخدام مزامنة سطح المكتب."
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "الكاميرا"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "تمنع سياسة الحماية استخدام %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "سياسة الأمان تقيد استخدام %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "تم تطبيق سياسة الحماية."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "سياسة الحماية سارية المفعول"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "تمنع سياسة الحماية تثبيت التطبيقات."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "تمنع سياسة الحماية تثبيت هذا التطبيق."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "تمنع سياسة الحماية إلغاء تثبيت التطبيقات."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "تمنع سياسة الحماية إلغاء تثبيت هذا التطبيق."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "يطلب نهج الأمان‬ منك تغيير كلمة المرور"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "تُقيد سياسة الحماية استخدام الميكروفون."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "تُقيد سياسة الحماية استخدام معلومات الموقع."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "تمنع سياسة الحماية استخدام البلوتوث."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "تمنع سياسة الحماية إرسال الرسائل."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "تُقيد سياسة الحماية استرداد الرسائل."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "تمنع سياسة الأمان استخدام تطبيقات التصفح."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "تُقيد سياسة الحماية استخدام بطاقة SD."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "تمنع سياسة الحماية فك تشفير الهاتف."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "تمنع سياسة الحماية استخدام شبكة Wi-Fi."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "تمنع سياسة الحماية تغيير الضبط."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "سياسة الأمان تقيد استخدام البريد الإلكتروني POP/IMAP."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "تمنع سياسة الأمان استخدام البريد الإلكتروني POP/IMAP."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "يقوم نهج الأمان بتقييد استخدام اتصال الكمبيوتر."
+

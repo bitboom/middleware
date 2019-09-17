@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_APIX_LIBRARY(notification notification.cpp)
+ADD_APIX_LIBRARY(apix_notification notification.cpp)
 
 FILE(GLOB NOTIFICATION_TESTS "tests/*.cpp")
 ADD_APIX_TEST(${NOTIFICATION_TESTS})

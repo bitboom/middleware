@@ -1,0 +1,93 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "클립보드"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "확인"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "취소"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "화면 캡처"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "비밀번호"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "핫스팟"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "보안정책에 따라 PC를 동기화할 수 없습니다."
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "카메라"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "보안정책에 따라 %s 앱을 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "보안정책에 따라 %s 기능을 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "보안정책을 적용했습니다."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "보안정책 적용 중"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "보안정책에 따라 앱을 설치할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "보안정책에 따라 이 앱을 설치할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "보안정책에 따라 앱을 삭제할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "보안정책에 따라 이 앱을 삭제할 수 없습니다."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "보안정책에 따라 비밀번호를 변경하세요."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "보안정책에 따라 마이크를 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "보안정책에 따라 위치정보를 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "보안정책에 따라 [블루투스]를 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "보안정책에 따라 메시지를 보낼 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "보안정책에 따라 메시지를 가져올 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "보안정책에 따라 브라우저 앱을 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "보안정책에 따라 SD 카드를 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "보안정책에 따라 휴대전화의 암호화를 해제할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "보안정책에 따라 Wi-Fi를 사용할 수 없습니다."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "보안정책에 따라 설정을 변경할 수 없습니다."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "보안정책에 따라 [POP/IMAP 이메일]을 사용할 수 없습니다."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "보안정책에 따라 [POP/IMAP 이메일]을 사용할 수 없습니다."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "보안정책에 따라 PC에 연결할 수 없습니다."
+

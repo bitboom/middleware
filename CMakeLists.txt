@@ -16,6 +16,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(OSQUERY)
 
 INCLUDE(GNUInstallDirs)
+INCLUDE(CMake/Macro.cmake)
+
+IF(DEFINED GBS_BUILD)
+	INCLUDE(FindPkgConfig)
+ENDIF(DEFINED GBS_BUILD)
 
 IF(NOT CMAKE_BUILD_TYPE)
 	SET(CMAKE_BUILD_TYPE "RELEASE")
@@ -60,10 +65,11 @@ INCLUDE_DIRECTORIES("/usr/local/include")
 
 ENABLE_TESTING()
 
-INCLUDE(CMake/Macro.cmake)
-
 # Make sure the generated paths exist
 EXECUTE_PROCESS(COMMAND mkdir -p "${CMAKE_BINARY_DIR}/generated")
+
+CONFIGURE_FILE(packaging/device-policy-manager.manifest.in
+			   device-policy-manager.manifest @ONLY)
 
 ADD_SUBDIRECTORY(specs)
 ADD_SUBDIRECTORY(src)

@@ -17,16 +17,8 @@ SET(TARGET "dpm-plugin-wifi")
 SET(PLUGIN_SOURCES "wifi.cpp")
 
 SET(DEPENDENCY klay
-			   dpm-pil
 			   capi-network-wifi-manager
 			   capi-network-connection)
-
-
-	SET(GBS_ONLY_PACKAGES klay
-						  dpm-pil
-						  capi-base-common
-						  capi-system-info
-						  capi-network-wifi-manager)
 
 PKG_CHECK_MODULES(PLUGIN_DEPS REQUIRED ${DEPENDENCY})
 

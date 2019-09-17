@@ -1,0 +1,93 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "Iškarpinė"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "Gerai"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "Atšaukti"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "Ekrano nuotrauka"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "Slaptažodis"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "Saitvietė"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Saugos politika neleidžia naudoti darbalaukio sinchronizavimo."
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "Fot."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "Saugos politika neleidžia naudoti %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "Saugos politika draudžia naudoti „%s“."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "Saugos politika pritaikyta."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "Saugos politika galioja"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "Saugos politika neleidžia diegti programų."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "Saugos politika neleidžia diegti šios programos."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "Saugos politika neleidžia išdiegti programų."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "Saugos politika neleidžia išdiegti šios programos."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "Pagal naują saugumo politiką reikalaujama, kad pakeistumėte slaptažodį dabar."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "Saugos politika riboja mikrofono naudojimą."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "Saugos politika riboja vietos informacijos naudojimą."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "Saugos politika neleidžia naudoti „Bluetooth“."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "Saugos politika neleidžia siųsti žinučių."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "Saugos politika riboja žinučių gavimą."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "Saugos politika neleidžia naudoti naršyklės programos."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "Saugos politika riboja SD kortelės naudojimą."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "Saugos politika neleidžia iššifruoti telefono."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "Saugos politika neleidžia naudoti „Wi-Fi“."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "Saugos politika neleidžia keisti nustatymų."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Saugos strategija riboja naudojimąsi POP/IMAP el. paštu."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Saugos politika neleidžia naudoti POP/IMAP el. pašto."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Saugos strategija riboja ryšio su kompiuteriu naudojimą."
+
