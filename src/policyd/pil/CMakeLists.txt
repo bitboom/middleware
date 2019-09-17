@@ -13,69 +13,14 @@
 # limitations under the License.
 #
 
-SET(PIL_TARGET "dpm-pil")
+ADD_POLICYD_LIBRARY(pil app-bundle.cpp
+						launchpad.cpp
+						logger.cpp
+						packman.cpp
+						policy-event.cpp
+						policy-client.cpp
+						policy-admin.cpp
+						policy-storage.cpp)
 
-SET(LIB_VERSION "${VERSION}")
-SET(LIB_SOVERSION "0")
-
-SET(PIL app-bundle.cpp
-		launchpad.cpp
-		logger.cpp
-		packman.cpp
-		policy-event.cpp
-		policy-client.cpp
-		policy-admin.cpp
-		policy-storage.cpp)
-
-SET(PAPIS app-bundle.h
-		  launchpad.h
-		  logger.h
-		  packman.h
-		  policy-event.h
-		  policy-admin.h
-		  policy-client.h
-		  policy-model.h
-		  policy-storage.h
-		  status.h
-		  observer.h)
-
-SET(DEPENDENCY klay
-			   glib-2.0
-			   gio-2.0
-			   sqlite3
-			   bundle
-			   aul
-			   appsvc
-			   pkgmgr
-			   pkgmgr-info
-			   vconf
-			   syspopup-caller
-			   deviced
-			   libtzplatform-config
-			   security-privilege-manager
-			   capi-system-info
-			   capi-base-common
-			   capi-system-system-settings
-			   notification
-			   cynara-client
-			   cynara-session)
-
-PKG_CHECK_MODULES(PIL_DEPS REQUIRED ${DEPENDENCY})
-
-INCLUDE_DIRECTORIES(SYSTEM "${PIL_DEPS_INCLUDE_DIRS}")
-
-SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,noexecstack")
-
-ADD_LIBRARY(${PIL_TARGET} SHARED ${PIL})
-
-SET_TARGET_PROPERTIES(${PIL_TARGET} PROPERTIES COMPILE_FLAGS "-fvisibility=default")
-SET_TARGET_PROPERTIES(${PIL_TARGET} PROPERTIES SOVERSION ${LIB_SOVERSION})
-SET_TARGET_PROPERTIES(${PIL_TARGET} PROPERTIES VERSION   ${LIB_VERSION})
-
-TARGET_COMPILE_DEFINITIONS(${PIL_TARGET} PRIVATE
-	EVENT_CONFIGURE_DIR="${EVENT_CONFIGURE_DIR}"
-)
-
-TARGET_LINK_LIBRARIES(${PIL_TARGET} ${PIL_DEPS_LIBRARIES} pthread sqlite3)
-INSTALL(FILES ${PAPIS} DESTINATION ${INCLUDE_INSTALL_DIR}/dpm/pil)
-INSTALL(TARGETS ${PIL_TARGET} DESTINATION ${LIB_INSTALL_DIR} COMPONENT RuntimeLibraries)
+FILE(GLOB PIL_TESTS "tests/*.cpp")
+ADD_POLICYD_TEST(${PIL_TESTS})

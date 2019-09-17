@@ -160,13 +160,10 @@ managing device policies.
 %attr(700,root,root) %{_bindir}/dpm-admin-cli
 %attr(755,root,root) %{_bindir}/dpm-syspopup
 %attr(755,root,root) %{_bindir}/dpm-storage-builder
-%attr(755,root,root) %{_bindir}/device-policy-manager
 %attr(755,root,root) %{_bindir}/device-policy-syspopup
-%attr(755,root,root) %{_libdir}/libdpm-pil.so.%{version}
 %attr(-,%{user_name},%{group_name}) %{dpm_base}
 %attr(-,%{user_name},%{group_name}) %{dpm_event}
 %attr(-,%{user_name},%{group_name}) %{dpm_plugins}
-%{_libdir}/libdpm-pil.so.0
 %{_unitdir}/device-policy-manager.service
 %{_unitdir}/device-policy-manager.socket
 %{_unitdir}/sockets.target.wants/device-policy-manager.socket
@@ -194,9 +191,7 @@ developing the device policy module.
 %files policyd-devel
 #%manifest device-policy-client.manifest
 %defattr(644,root,root,755)
-%{_libdir}/libdpm-pil.so
 %{_includedir}/dpm
-%{_includedir}/dpm/pil
 %{_libdir}/pkgconfig/dpm-pil.pc
 
 ## DPM Syspopup Package ######################################################
@@ -230,7 +225,7 @@ BuildRequires: pkgconfig(klay)
 Testcases for device policy manager
 
 %files policyd-test
-%{_bindir}/dpm-test
+%{_bindir}/policyd-test
 
 ## DPM Plugins - ############################################################
 %package policyd-plugins
