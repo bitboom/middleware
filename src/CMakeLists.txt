@@ -12,13 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-SET(TARGET_OSQUERY_LIB osquery)
 SET(TARGET_APIX_LIB apix)
+SET(TARGET_OSQUERY_LIB osquery)
+SET(TARGET_POLICYD_LIB policyd)
 
-ADD_SUBDIRECTORY(osquery)
 ADD_SUBDIRECTORY(apix)
-
-IF(DEFINED GBS_BUILD)
-	SET(TARGET_POLICYD_LIB policyd)
-	ADD_SUBDIRECTORY(policyd)
-ENDIF(DEFINED GBS_BUILD)
+ADD_SUBDIRECTORY(osquery)
+ADD_SUBDIRECTORY(policyd)
