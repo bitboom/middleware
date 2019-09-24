@@ -18,9 +18,8 @@
 #include <bluetooth-api.h>
 #include <bluetooth_internal.h>
 
-#include <policyd/pil/global-policy.h>
-#include <policyd/pil/policy-storage.h>
-#include <policyd/pil/policy-event.h>
+#include <policyd/sdk/global-policy.h>
+#include <policyd/sdk/policy-provider.h>
 
 #include <memory>
 
@@ -38,125 +37,76 @@
 	((int)(enable) ? BLUETOOTH_DPM_BT_ALLOWED :              \
 					 BLUETOOTH_DPM_BT_RESTRICTED)
 
-namespace {
-
-inline int canonicalize(int value)
-{
-	return -value;
-}
-
-} // namespace
+using namespace policyd;
 
 class ModeChange : public GlobalPolicy {
 public:
-	ModeChange() : GlobalPolicy("bluetooth")
-	{
-		PolicyEventNotifier::create("bluetooth");
-	}
+	ModeChange() : GlobalPolicy("bluetooth", PolicyValue(1)) {}
 
-	bool apply(const DataSetInt& value, uid_t)
+	void onChanged(const PolicyValue& value) override
 	{
-		int ret = bluetooth_dpm_set_allow_mode(STATE_CHANGE_IS_ALLOWED(value));
-		if (!BT_FAILED(ret)) {
-			int enable = value;
-			PolicyEventNotifier::emit("bluetooth", enable ? "allowed" : "disallowed");
-			return true;
-		}
-		return false;
+		int ret = ::bluetooth_dpm_set_allow_mode(STATE_CHANGE_IS_ALLOWED(value));
+		if (BT_FAILED(ret))
+			throw std::runtime_error("Failed to set bluetooth.");
 	}
 };
 
 class DesktopConnectivity : public GlobalPolicy {
 public:
-	DesktopConnectivity() : GlobalPolicy("bluetooth-desktop-connectivity")
-	{
-		PolicyEventNotifier::create("bluetooth_desktop_connectivity");
-	}
+	DesktopConnectivity() :
+		GlobalPolicy("bluetooth-desktop-connectivity", PolicyValue(1)) {}
 
-	bool apply(const DataSetInt & value, uid_t)
+	void onChanged(const PolicyValue& value) override
 	{
-		int ret = bluetooth_dpm_set_desktop_connectivity_state(POLICY_IS_ALLOWED(value));
-		if (!BT_FAILED(ret)) {
-			int enable = value;
-			PolicyEventNotifier::emit("bluetooth_desktop_connectivity",
-									  enable ? "allowed" : "disallowed");
-			return true;
-		}
-		return false;
+		int ret = ::bluetooth_dpm_set_desktop_connectivity_state(POLICY_IS_ALLOWED(value));
+		if (BT_FAILED(ret))
+			throw std::runtime_error("Failed to set bt_desktop_connectivity.");
 	}
 };
 
 class Pairing: public GlobalPolicy {
 public:
-	Pairing() : GlobalPolicy("bluetooth-pairing")
-	{
-		PolicyEventNotifier::create("bluetooth_pairing");
-	}
+	Pairing() : GlobalPolicy("bluetooth-pairing", PolicyValue(1)) {}
 
-	bool apply(const DataSetInt& value, uid_t)
+	void onChanged(const PolicyValue& value) override
 	{
-		int ret = bluetooth_dpm_set_pairing_state(POLICY_IS_ALLOWED(value));
-		if (!BT_FAILED(ret)) {
-			int enable = value;
-			PolicyEventNotifier::emit("bluetooth_pairing",
-									  enable ? "allowed" : "disallowed");
-			return true;
-		}
-		return false;
+		int ret = ::bluetooth_dpm_set_pairing_state(POLICY_IS_ALLOWED(value));
+		if (BT_FAILED(ret))
+			throw std::runtime_error("Failed to set bt_pairing.");
 	}
 };
 
 class Tethering: public GlobalPolicy {
 public:
-	Tethering() : GlobalPolicy("bluetooth-tethering")
-	{
-		PolicyEventNotifier::create("bluetooth_tethering");
-	}
+	Tethering() : GlobalPolicy("bluetooth-tethering", PolicyValue(1)) {}
 
-	bool apply(const DataSetInt& value, uid_t)
-	{
-		int enable = value;
-		PolicyEventNotifier::emit("bluetooth_tethering",
-								  enable ? "allowed" : "disallowed");
-		return true;
-	}
+	void onChanged(const PolicyValue&) {}
 };
 
-class Bluetooth : public AbstractPolicyProvider {
+class Bluetooth : public PolicyProvider {
 public:
-	Bluetooth();
-	~Bluetooth();
+	Bluetooth(const std::string& name) : PolicyProvider(name)
+	{
+		if (::bt_initialize() != BT_ERROR_NONE)
+			ERROR(PLUGINS,"Bluetooth framework was not initilaized");
+	}
 
-private:
-	static void onStateChanged(int result, bt_adapter_state_e state, void *user_data);
+	~Bluetooth()
+	{
+		::bt_deinitialize();
+	}
 };
 
-Bluetooth::Bluetooth()
-{
-	if (::bt_initialize() != BT_ERROR_NONE) {
-		ERROR(PLUGINS,"Bluetooth framework was not initilaized");
-		return;
-	}
+// TODO(Sangwan): Add privilege to provider
+#define PRIVILEGE "http://tizen.org/privilege/dpm.bluetooth"
 
-	if (::bt_adapter_set_state_changed_cb(onStateChanged, this) != BT_ERROR_NONE) {
-		ERROR(PLUGINS,"Failed to register Bluetooth callback");
-		return;
-	}
-}
-
-Bluetooth::~Bluetooth()
+extern "C" PolicyProvider* PolicyFactory()
 {
-	::bt_deinitialize();
-}
+	Bluetooth* provider = new Bluetooth("bluetooth");
+	provider->add(std::make_shared<ModeChange>());
+	provider->add(std::make_shared<DesktopConnectivity>());
+	provider->add(std::make_shared<Pairing>());
+	provider->add(std::make_shared<Tethering>());
 
-void Bluetooth::onStateChanged(int result, bt_adapter_state_e state, void *user_data)
-{
-	Bluetooth *pimpl = reinterpret_cast<Bluetooth *>(user_data);
-	if (pimpl != nullptr && state == BT_ADAPTER_ENABLED) {
-//		pimpl->modeChange.apply();
-//		pimpl->desktopConnectivity.apply();
-//		pimpl->pairing.apply();
-//		pimpl->deviceRestriction.enforce();
-//		pimpl->uuidRestriction.enforce();
-	}
+	return provider;
 }

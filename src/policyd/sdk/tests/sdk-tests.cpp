@@ -30,7 +30,7 @@ namespace {
 
 using namespace policyd;
 
-class PolicyModelTests : public testing::Test {};
+class PolicySDKTests : public testing::Test {};
 
 class TestGlobalPolicy : public GlobalPolicy {
 public:
@@ -41,7 +41,7 @@ public:
 	}
 };
 
-TEST_F(PolicyModelTests, global_policy) {
+TEST_F(PolicySDKTests, global_policy) {
 	TestGlobalPolicy policy;
 
 	EXPECT_EQ(policy.getName(), "test_policy");
@@ -72,7 +72,7 @@ public:
 	}
 };
 
-TEST_F(PolicyModelTests, domain_policy) {
+TEST_F(PolicySDKTests, domain_policy) {
 	TestDomainPolicy policy;
 	uid_t domain = 5001;
 
@@ -94,7 +94,7 @@ TEST_F(PolicyModelTests, domain_policy) {
 	EXPECT_EQ(3, policy.get(domain));
 }
 
-TEST_F(PolicyModelTests, policy_provider) {
+TEST_F(PolicySDKTests, policy_provider) {
 	PolicyProvider provider("testProvider");
 	provider.add(std::make_shared<TestGlobalPolicy>());
 	provider.add(std::make_shared<TestDomainPolicy>());

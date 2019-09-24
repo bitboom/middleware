@@ -20,13 +20,17 @@
 #include "global-policy.h"
 
 #include <cstddef>
+#include <memory>
 #include <unordered_map>
 
 namespace policyd {
 
-class PolicyProvider final {
+class PolicyProvider {
 public:
+	using FactoryType = PolicyProvider* (*)();
+
 	explicit PolicyProvider(std::string name) noexcept : name(std::move(name)) {}
+	virtual ~PolicyProvider() = default;
 
 	inline void add(std::shared_ptr<GlobalPolicy>&& policy) {
 		global.emplace(policy->getName(), std::move(policy));
@@ -37,6 +41,10 @@ public:
 	}
 
 	inline const std::string& getName() const noexcept { return name; }
+	static const std::string& getFactoryName() noexcept {
+		static std::string name = "PolicyFactory";
+		return name;
+	}
 
 	std::size_t gsize() { return global.size(); }
 	std::size_t dsize() { return domain.size(); }
@@ -46,7 +54,5 @@ private:
 	std::unordered_map<std::string, std::shared_ptr<GlobalPolicy>> global;
 	std::unordered_map<std::string, std::shared_ptr<DomainPolicy>> domain;
 };
-
-using PolicyFactory = PolicyProvider* (*)();
 
 } // namespace policyd

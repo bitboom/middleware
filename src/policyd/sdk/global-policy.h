@@ -18,7 +18,7 @@
 
 #include "policy-model.h"
 
-#include <exception>
+#include <stdexcept>
 #include <string>
 
 namespace policyd {

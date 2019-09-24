@@ -99,10 +99,10 @@ mkdir -p %{buildroot}%{dpm_event}
 mkdir -p %{buildroot}%{dpm_plugins}
 mkdir -p %{buildroot}/%{_unitdir}/multi-user.target.wants
 mkdir -p %{buildroot}/%{_unitdir}/sockets.target.wants
-ln -s ../src/policyd/device-policy-manager.service %{buildroot}/%{_unitdir}/multi-user.target.wants/device-policy-manager.service
-ln -s ../src/policyd/device-policy-manager.socket %{buildroot}/%{_unitdir}/sockets.target.wants/device-policy-manager.socket
+#ln -s ../src/policyd/device-policy-manager.service %{buildroot}/%{_unitdir}/multi-user.target.wants/device-policy-manager.service
+#ln -s ../src/policyd/device-policy-manager.socket %{buildroot}/%{_unitdir}/sockets.target.wants/device-policy-manager.socket
 
-%find_lang dpm-syspopup
+#%find_lang dpm-syspopup
 
 %clean
 rm -rf %{buildroot}
@@ -119,8 +119,8 @@ Testcases for osquery
 
 %files test
 %manifest %{name}.manifest
-%{_bindir}/osquery-test
-%{_bindir}/apix-test
+#%{_bindir}/osquery-test
+#%{_bindir}/apix-test
 
 
 ## DPM Policyd ###############################################################
@@ -157,20 +157,20 @@ managing device policies.
 %files policyd
 %manifest device-policy-manager.manifest
 %defattr(644,root,root,755)
-%attr(700,root,root) %{_bindir}/dpm-admin-cli
-%attr(755,root,root) %{_bindir}/dpm-syspopup
-%attr(755,root,root) %{_bindir}/dpm-storage-builder
-%attr(755,root,root) %{_bindir}/device-policy-syspopup
-%attr(-,%{user_name},%{group_name}) %{dpm_base}
-%attr(-,%{user_name},%{group_name}) %{dpm_event}
+#%attr(700,root,root) %{_bindir}/dpm-admin-cli
+#%attr(755,root,root) %{_bindir}/dpm-syspopup
+#%attr(755,root,root) %{_bindir}/dpm-storage-builder
+#%attr(755,root,root) %{_bindir}/device-policy-syspopup
+#%attr(-,%{user_name},%{group_name}) %{dpm_base}
+#%attr(-,%{user_name},%{group_name}) %{dpm_event}
 %attr(-,%{user_name},%{group_name}) %{dpm_plugins}
-%{_unitdir}/device-policy-manager.service
-%{_unitdir}/device-policy-manager.socket
-%{_unitdir}/sockets.target.wants/device-policy-manager.socket
-%{_unitdir}/multi-user.target.wants/device-policy-manager.service
-%{_unitdir}/device-policy-syspopup.service
-/etc/dbus-1/system.d/org.tizen.dpm.syspopup.conf
-/usr/share/dbus-1/system-services/org.tizen.dpm.syspopup.service
+#%{_unitdir}/device-policy-manager.service
+#%{_unitdir}/device-policy-manager.socket
+#%{_unitdir}/sockets.target.wants/device-policy-manager.socket
+#%{_unitdir}/multi-user.target.wants/device-policy-manager.service
+#%{_unitdir}/device-policy-syspopup.service
+#/etc/dbus-1/system.d/org.tizen.dpm.syspopup.conf
+#/usr/share/dbus-1/system-services/org.tizen.dpm.syspopup.service
 
 ## Devel Package ##############################################################
 %package policyd-devel
@@ -191,8 +191,8 @@ developing the device policy module.
 %files policyd-devel
 #%manifest device-policy-client.manifest
 %defattr(644,root,root,755)
-%{_includedir}/dpm
-%{_libdir}/pkgconfig/dpm-pil.pc
+#%{_includedir}/dpm
+#%{_libdir}/pkgconfig/dpm-pil.pc
 
 ## DPM Syspopup Package ######################################################
 %package -n org.tizen.dpm-syspopup
@@ -206,13 +206,14 @@ BuildRequires: pkgconfig(capi-system-info)
 %description -n org.tizen.dpm-syspopup
 Tizen DPM system popup interface package
 
-%files -n org.tizen.dpm-syspopup -f dpm-syspopup.lang
+%files -n org.tizen.dpm-syspopup
+# -f dpm-syspopup.lang
 %defattr(-,root,root,-)
-%manifest src/policyd/tools/syspopup/org.tizen.dpm-syspopup.manifest
-%{TZ_SYS_RO_APP}/org.tizen.dpm-syspopup/bin/*
-%{TZ_SYS_RO_PACKAGES}/org.tizen.dpm-syspopup.xml
-/usr/share/icons/default/small/org.tizen.dpm-syspopup.png
-%{TZ_SYS_RO_APP}/org.tizen.dpm-syspopup/res/images/*
+#%manifest src/policyd/tools/syspopup/org.tizen.dpm-syspopup.manifest
+#%{TZ_SYS_RO_APP}/org.tizen.dpm-syspopup/bin/*
+#%{TZ_SYS_RO_PACKAGES}/org.tizen.dpm-syspopup.xml
+#/usr/share/icons/default/small/org.tizen.dpm-syspopup.png
+#%{TZ_SYS_RO_APP}/org.tizen.dpm-syspopup/res/images/*
 
 ## Test Package ###############################################################
 %package policyd-test
