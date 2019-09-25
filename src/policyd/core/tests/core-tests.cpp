@@ -23,12 +23,12 @@ using namespace policyd;
 class PolicyCoreTests : public testing::Test {};
 
 TEST_F(PolicyCoreTests, policy_loader) {
-	PolicyManager pm;
-	auto result = pm.loadProviders(PLUGIN_INSTALL_DIR);
+	auto& manager = PolicyManager::instance();
+	auto result = manager.loadProviders(PLUGIN_INSTALL_DIR);
 
 	EXPECT_TRUE(result.first > 0);
 	EXPECT_TRUE(result.second == 0);
 
-	auto size = pm.loadPolicies();
+	auto size = manager.loadPolicies();
 	EXPECT_TRUE(size > 0);
 }

@@ -29,12 +29,24 @@ namespace policyd {
 
 class PolicyManager final {
 public:
-	explicit PolicyManager() : storage(DB_PATH) {}
+	PolicyManager(const PolicyManager&) = delete;
+	PolicyManager& operator=(const PolicyManager&) = delete;
+
+	PolicyManager(PolicyManager&&) = delete;
+	PolicyManager& operator=(PolicyManager&&) = delete;
+
+	static PolicyManager& instance() {
+		static PolicyManager manager;
+		return manager;
+	}
 
 	std::pair<int, int> loadProviders(const std::string& path);
 	int loadPolicies();
 
 private:
+	explicit PolicyManager() : storage(DB_PATH) {}
+	~PolicyManager() = default;
+
 	PolicyStorage storage;
 	std::vector<std::shared_ptr<PolicyProvider>> providers;
 
