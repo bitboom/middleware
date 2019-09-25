@@ -24,8 +24,11 @@ class PolicyCoreTests : public testing::Test {};
 
 TEST_F(PolicyCoreTests, policy_loader) {
 	PolicyManager pm;
-	auto result = pm.loadPolicy(PLUGIN_INSTALL_DIR);
+	auto result = pm.loadProviders(PLUGIN_INSTALL_DIR);
 
 	EXPECT_TRUE(result.first > 0);
 	EXPECT_TRUE(result.second == 0);
+
+	auto size = pm.loadPolicies();
+	EXPECT_TRUE(size > 0);
 }

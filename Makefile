@@ -10,7 +10,7 @@ docker_run:
 	docker run --rm -it --net=host --privileged -v $(shell pwd):/usr/src tizen-osquery
 
 gbs_run:
-	gbs lb -A armv7l --include-all -P standard
+	gbs lb -A armv7l --include-all --define="build_type DEBUG" -P standard
 
 %::
 	mkdir -p build

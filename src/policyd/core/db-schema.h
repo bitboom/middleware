@@ -13,33 +13,34 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-
 #pragma once
 
-#include <policyd/sdk/policy-provider.h>
-
-#include "policy-storage.h"
-
 #include <string>
-#include <exception>
-#include <memory>
-#include <vector>
 
 namespace policyd {
+namespace schema {
 
-class PolicyManager final {
-public:
-	explicit PolicyManager() : storage(DB_PATH) {}
-
-	std::pair<int, int> loadProviders(const std::string& path);
-	int loadPolicies();
-
-private:
-	PolicyStorage storage;
-	std::vector<std::shared_ptr<PolicyProvider>> providers;
-
-	std::unordered_map<std::string, std::shared_ptr<GlobalPolicy>> global;
-	std::unordered_map<std::string, std::shared_ptr<DomainPolicy>> domain;
+struct Admin {
+	int id;
+	std::string pkg;
+	int uid;
+	std::string key;
+	int removable;
 };
 
+struct ManagedPolicy {
+	int id;
+	int aid;
+	int pid;
+	int value;
+};
+
+struct PolicyDefinition {
+	int id;
+	int scope;
+	std::string name;
+	int ivalue;
+};
+
+} // namespace schema
 } // namespace policyd

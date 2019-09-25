@@ -53,6 +53,8 @@ private:
 	std::string name;
 	std::unordered_map<std::string, std::shared_ptr<GlobalPolicy>> global;
 	std::unordered_map<std::string, std::shared_ptr<DomainPolicy>> domain;
+
+	friend class PolicyManager;
 };
 
 } // namespace policyd

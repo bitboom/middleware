@@ -14,32 +14,31 @@
  *  limitations under the License
  */
 
-#pragma once
+#include <gtest/gtest.h>
 
-#include <policyd/sdk/policy-provider.h>
+#include "../policy-storage.h"
 
-#include "policy-storage.h"
+using namespace policyd;
 
-#include <string>
-#include <exception>
-#include <memory>
-#include <vector>
+class PolicyStorageTests : public testing::Test {};
 
-namespace policyd {
+TEST_F(PolicyStorageTests, policy_storage) {
+	bool isRaised = false;
 
-class PolicyManager final {
-public:
-	explicit PolicyManager() : storage(DB_PATH) {}
+	try {
+		PolicyStorage storage(DB_PATH);
+	} catch (const std::exception&) {
+		isRaised = true;
+	}
 
-	std::pair<int, int> loadProviders(const std::string& path);
-	int loadPolicies();
+	EXPECT_TRUE(!isRaised);
 
-private:
-	PolicyStorage storage;
-	std::vector<std::shared_ptr<PolicyProvider>> providers;
+	isRaised = false;
+	try {
+		PolicyStorage storage("/tmp/dummy");
+	} catch (const std::exception&) {
+		isRaised = true;
+	}
 
-	std::unordered_map<std::string, std::shared_ptr<GlobalPolicy>> global;
-	std::unordered_map<std::string, std::shared_ptr<DomainPolicy>> domain;
-};
-
-} // namespace policyd
+	EXPECT_TRUE(isRaised);
+}

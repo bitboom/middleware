@@ -22,7 +22,8 @@
 
 namespace policyd {
 
-std::pair<int, int> PolicyManager::loadPolicy(const std::string& path) {
+std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
+{
 	INFO(DPM, "Load policies from :" << path);
 	klay::File dir(path);
 	if (!dir.exists() || !dir.isDirectory())
@@ -49,6 +50,26 @@ std::pair<int, int> PolicyManager::loadPolicy(const std::string& path) {
 
 	INFO(DPM, "Loaded result >> passed: " << passed << ", failed: " << failed);
 	return std::make_pair(passed, failed);
+}
+
+int PolicyManager::loadPolicies()
+{
+	for (const auto& p : providers) {
+		this->global.insert(p->global.cbegin(), p->global.cend());
+		this->domain.insert(p->domain.cbegin(), p->domain.cend());
+	}
+
+	for (const auto& g : global) {
+		if (!storage.exists(g.first))
+			throw std::runtime_error("Policy does not exist.: " + g.first);
+	}
+
+	for (const auto& d : domain) {
+		if (!storage.exists(d.first))
+			throw std::runtime_error("Policy does not exist.: " + d.first);
+	}
+
+	return global.size() + domain.size();
 }
 
 } // namespace policyd
