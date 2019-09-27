@@ -27,27 +27,24 @@ using namespace policyd::schema;
 
 namespace {
 
-auto _admin = make_table("admin",
-						 make_column("id", &Admin::id),
-						 make_column("pkg", &Admin::pkg),
-						 make_column("uid", &Admin::uid),
-						 make_column("key", &Admin::key),
-						 make_column("removable", &Admin::removable));
+auto adminTable = make_table("admin",
+							 make_column("id", &Admin::id),
+							 make_column("pkg", &Admin::pkg),
+							 make_column("uid", &Admin::uid),
+							 make_column("key", &Admin::key),
+							 make_column("removable", &Admin::removable));
 
-auto _managedPolicy = make_table("managed_policy",
-								 make_column("id", &ManagedPolicy::id),
-								 make_column("aid", &ManagedPolicy::aid),
-								 make_column("pid", &ManagedPolicy::pid),
-								 make_column("value", &ManagedPolicy::value));
+auto managedPolTable = make_table("managed_policy",
+								  make_column("id", &ManagedPolicy::id),
+								  make_column("aid", &ManagedPolicy::aid),
+								  make_column("pid", &ManagedPolicy::pid),
+								  make_column("value", &ManagedPolicy::value));
 
-auto _policyDefinition = make_table("policy_definition",
-									make_column("id", &PolicyDefinition::id),
-									make_column("scope", &PolicyDefinition::scope),
-									make_column("name", &PolicyDefinition::name),
-									make_column("ivalue", &PolicyDefinition::ivalue));
-
-auto _dpm = make_database("dpm", _admin, _managedPolicy, _policyDefinition);
-
+auto definitionTable = make_table("policy_definition",
+								  make_column("id", &PolicyDefinition::id),
+								  make_column("scope", &PolicyDefinition::scope),
+								  make_column("name", &PolicyDefinition::name),
+								  make_column("ivalue", &PolicyDefinition::ivalue));
 } // anonymous namespace
 
 namespace policyd {
@@ -70,7 +67,8 @@ void PolicyStorage::sync()
 
 void PolicyStorage::syncPolicyDefinition()
 {
-	std::string query = _policyDefinition.selectAll();
+	this->definitions.clear();
+	std::string query = definitionTable.selectAll();
 	database::Statement stmt(*database, query);
 
 	while (stmt.step()) {
@@ -79,14 +77,15 @@ void PolicyStorage::syncPolicyDefinition()
 		pd.scope = stmt.getColumn(1);
 		pd.name = std::string(stmt.getColumn(2));
 		pd.ivalue = stmt.getColumn(3);
-		DEBUG(DPM, "Sync policy:" + pd.name);
+		DEBUG(DPM, "Defined policy:" + pd.name);
 		this->definitions.emplace(pd.name, std::move(pd));
 	}
 }
 
 void PolicyStorage::syncAdmin()
 {
-	std::string query = _admin.selectAll();
+	this->admins.clear();
+	std::string query = adminTable.selectAll();
 	database::Statement stmt(*database, query);
 
 	while (stmt.step()) {
@@ -96,13 +95,14 @@ void PolicyStorage::syncAdmin()
 		admin.uid = stmt.getColumn(2);
 		admin.key = std::string(stmt.getColumn(3));
 		admin.removable = stmt.getColumn(4);
-		this->admins.emplace_back(std::move(admin));
+		this->admins.emplace(admin.pkg, std::move(admin));
 	}
 }
 
 void PolicyStorage::syncManagedPolicy()
 {
-	std::string query = _managedPolicy.selectAll();
+	this->managedPolicies.clear();
+	std::string query = managedPolTable.selectAll();
 	database::Statement stmt(*database, query);
 
 	while (stmt.step()) {
@@ -114,5 +114,65 @@ void PolicyStorage::syncManagedPolicy()
 		this->managedPolicies.emplace_back(std::move(mp));
 	}
 }
+
+void PolicyStorage::enroll(const std::string& name, uid_t domain)
+{
+	int uid = static_cast<int>(domain);
+	std::string alias = getAlias(name, uid);
+	INFO(DPM, "Enroll admin: " + alias);
+	if (admins.find(alias) != admins.end()) {
+		ERROR(DPM, "Admin is aleady enrolled.: " + alias);
+		return;
+	} 
+
+	Admin admin;
+	admin.pkg = name;
+	admin.uid = uid;
+	admin.key = "Not supported";
+	admin.removable = true;
+
+	std::string insertQuery = adminTable.insert(&Admin::pkg, &Admin::uid,
+												&Admin::key, &Admin::removable);
+	database::Statement stmt(*database, insertQuery);
+	stmt.bind(1, admin.pkg);
+	stmt.bind(2, admin.uid);
+	stmt.bind(3, admin.key);
+	stmt.bind(4, admin.removable);
+	if (!stmt.exec())
+		throw std::runtime_error("Failed to enroll admin.: " + admin.pkg);
+
+	this->admins.emplace(alias, std::move(admin));
+
+	syncManagedPolicy();
+	int count = managedPolicies.size() / admins.size();
+	INFO(DPM, "Admin[" + alias + "] manages " + std::to_string(count) + "policies.");
+}
+
+void PolicyStorage::disenroll(const std::string& name, uid_t domain)
+{
+	int uid = static_cast<int>(domain);
+	std::string alias = getAlias(name, uid);
+	INFO(DPM, "Disenroll admin: " + alias);
+	if (admins.find(alias) == admins.end()) {
+		ERROR(DPM, "Not exist admin.: " + alias);
+		return;
+	} else {
+		admins.erase(alias);
+	}
+
+	std::string query = adminTable.remove().where(expr(&Admin::pkg) == name &&
+												  expr(&Admin::uid) == uid);
+	database::Statement stmt(*database, query);
+	stmt.bind(1, name);
+	stmt.bind(2, uid);
+	if (!stmt.exec())
+		throw std::runtime_error("Failed to disenroll admin.: " + name);
+}
+
+std::string PolicyStorage::getAlias(const std::string& name, uid_t uid) const noexcept
+{
+	return name + std::to_string(uid);
+}
+
 
 } // namespace policyd

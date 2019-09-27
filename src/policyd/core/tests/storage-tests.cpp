@@ -22,16 +22,17 @@ using namespace policyd;
 
 class PolicyStorageTests : public testing::Test {};
 
-TEST_F(PolicyStorageTests, policy_storage) {
+TEST_F(PolicyStorageTests, initialize) {
 	bool isRaised = false;
 
 	try {
+		/// TODO(Sangwan KWon): Change to test db
 		PolicyStorage storage(DB_PATH);
 	} catch (const std::exception&) {
 		isRaised = true;
 	}
 
-	EXPECT_TRUE(!isRaised);
+	EXPECT_FALSE(isRaised);
 
 	isRaised = false;
 	try {
@@ -41,4 +42,19 @@ TEST_F(PolicyStorageTests, policy_storage) {
 	}
 
 	EXPECT_TRUE(isRaised);
+}
+
+TEST_F(PolicyStorageTests, enrollment) {
+	PolicyStorage storage(DB_PATH);
+	EXPECT_FALSE(storage.isActivated());
+
+	storage.enroll("testAdmin", 0);
+	storage.enroll("testAdmin", 1);
+	EXPECT_TRUE(storage.isActivated());
+
+	storage.disenroll("testAdmin", 0);
+	EXPECT_TRUE(storage.isActivated());
+
+	storage.disenroll("testAdmin", 1);
+	EXPECT_FALSE(storage.isActivated());
 }

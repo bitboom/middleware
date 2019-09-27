@@ -32,22 +32,32 @@ class PolicyStorage final {
 public:
 	explicit PolicyStorage(const std::string& path);
 
+	/// TODO(Sangwan): Consider to support lazy sync
 	void sync();
 
-	inline bool exists(const std::string& policy) noexcept {
+	inline bool exists(const std::string& policy) const noexcept {
 		return definitions.find(policy) != definitions.end();
 	}
+
+	inline bool isActivated() const noexcept {
+		return admins.size() > 0 && managedPolicies.size() > 0;
+	}
+
+	void enroll(const std::string& admin, uid_t uid);
+	void disenroll(const std::string& name, uid_t uid);
 
 private:
 	void syncPolicyDefinition();
 	void syncAdmin();
 	void syncManagedPolicy();
 
+	std::string getAlias(const std::string& name, uid_t uid) const noexcept;
+
 	std::shared_ptr<klay::database::Connection> database;
 
 	/// DB Cache objects
 	std::unordered_map<std::string, PolicyDefinition> definitions;
-	std::vector<Admin> admins;
+	std::unordered_map<std::string, Admin> admins;
 	std::vector<ManagedPolicy> managedPolicies;
 };
 
