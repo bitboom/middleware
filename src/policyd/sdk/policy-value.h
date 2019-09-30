@@ -38,6 +38,7 @@ struct PolicyValue final {
 	operator int() const { return value; }
 	bool operator==(const PolicyValue& rhs) const { return value == rhs.value; }
 	bool operator!=(const PolicyValue& rhs) const { return value != rhs.value; }
+	bool operator<(const PolicyValue& rhs) const { return value < rhs.value; }
 
 	int value = -1;
 };

@@ -16,25 +16,30 @@
 
 #include <gtest/gtest.h>
 
+#include <memory>
+
 #include "../policy-storage.h"
 
 using namespace policyd;
 
-class PolicyStorageTests : public testing::Test {};
+class PolicyStorageTests : public testing::Test {
+public:
+	void SetUp() override {
+		/// TODO(Sangwan KWon): Change to test db
+		this->storage = std::make_shared<PolicyStorage>(DB_PATH);
+	}
+
+	std::shared_ptr<PolicyStorage> getStorage() {
+		return this->storage;
+	}
+
+private:
+	std::shared_ptr<PolicyStorage> storage = nullptr;
+};
 
 TEST_F(PolicyStorageTests, initialize) {
 	bool isRaised = false;
 
-	try {
-		/// TODO(Sangwan KWon): Change to test db
-		PolicyStorage storage(DB_PATH);
-	} catch (const std::exception&) {
-		isRaised = true;
-	}
-
-	EXPECT_FALSE(isRaised);
-
-	isRaised = false;
 	try {
 		PolicyStorage storage("/tmp/dummy");
 	} catch (const std::exception&) {
@@ -45,16 +50,74 @@ TEST_F(PolicyStorageTests, initialize) {
 }
 
 TEST_F(PolicyStorageTests, enrollment) {
-	PolicyStorage storage(DB_PATH);
-	EXPECT_FALSE(storage.isActivated());
+	auto storage = getStorage();
+	EXPECT_FALSE(storage->isActivated());
 
-	storage.enroll("testAdmin", 0);
-	storage.enroll("testAdmin", 1);
-	EXPECT_TRUE(storage.isActivated());
+	storage->enroll("testAdmin", 0);
+	storage->enroll("testAdmin", 1);
+	EXPECT_TRUE(storage->isActivated());
 
-	storage.disenroll("testAdmin", 0);
-	EXPECT_TRUE(storage.isActivated());
+	storage->disenroll("testAdmin", 0);
+	EXPECT_TRUE(storage->isActivated());
 
-	storage.disenroll("testAdmin", 1);
-	EXPECT_FALSE(storage.isActivated());
+	storage->disenroll("testAdmin", 1);
+	EXPECT_FALSE(storage->isActivated());
+}
+
+TEST_F(PolicyStorageTests, update) {
+	auto storage = getStorage();
+	storage->enroll("testAdmin", 0);
+
+	bool isRaised = false;
+	try {
+		storage->update("testAdmin", 1, "bluetooth", PolicyValue(0));
+	} catch (const std::exception&) {
+		isRaised = true;
+	}
+
+	isRaised = false;
+	try {
+		storage->update("testAdmin", 0, "bluetooth", PolicyValue(0));
+	} catch (const std::exception&) {
+		isRaised = true;
+	}
+	EXPECT_FALSE(isRaised);
+
+	isRaised = false;
+	try {
+		storage->update("testAdmin", 0, "FakePolicy", PolicyValue(0));
+	} catch (const std::exception&) {
+		isRaised = true;
+	}
+	EXPECT_TRUE(isRaised);
+
+	storage->disenroll("testAdmin", 0);
+}
+
+TEST_F(PolicyStorageTests, strictest) {
+	auto storage = getStorage();
+	storage->enroll("testAdmin", 0);
+	storage->enroll("testAdmin", 1);
+
+	storage->update("testAdmin", 0, "bluetooth", PolicyValue(3));
+	storage->update("testAdmin", 1, "bluetooth", PolicyValue(6));
+
+	bool isRaised = false;
+	try {
+		auto value = storage->strictest("FakePolicy", 3);
+	} catch (const std::exception&) {
+		isRaised = true;
+	}
+	EXPECT_TRUE(isRaised);
+
+	/// as global policy
+	auto policy = storage->strictest("bluetooth");
+	EXPECT_EQ(policy.value, 3);
+
+	/// as domain policy
+	policy = storage->strictest("bluetooth", 1);
+	EXPECT_EQ(policy.value, 6);
+
+	storage->disenroll("testAdmin", 0);
+	storage->disenroll("testAdmin", 1);
 }

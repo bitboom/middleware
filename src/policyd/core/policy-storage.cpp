@@ -95,7 +95,9 @@ void PolicyStorage::syncAdmin()
 		admin.uid = stmt.getColumn(2);
 		admin.key = std::string(stmt.getColumn(3));
 		admin.removable = stmt.getColumn(4);
-		this->admins.emplace(admin.pkg, std::move(admin));
+
+		std::string alias = getAlias(admin.pkg, admin.uid);
+		this->admins.emplace(alias, std::move(admin));
 	}
 }
 
@@ -111,23 +113,22 @@ void PolicyStorage::syncManagedPolicy()
 		mp.aid = stmt.getColumn(1);
 		mp.pid = stmt.getColumn(2);
 		mp.value = stmt.getColumn(3);
-		this->managedPolicies.emplace_back(std::move(mp));
+		this->managedPolicies.emplace(mp.pid, std::move(mp));
 	}
 }
 
-void PolicyStorage::enroll(const std::string& name, uid_t domain)
+void PolicyStorage::enroll(const std::string& name, uid_t uid)
 {
-	int uid = static_cast<int>(domain);
 	std::string alias = getAlias(name, uid);
 	INFO(DPM, "Enroll admin: " + alias);
 	if (admins.find(alias) != admins.end()) {
 		ERROR(DPM, "Admin is aleady enrolled.: " + alias);
 		return;
-	} 
+	}
 
 	Admin admin;
 	admin.pkg = name;
-	admin.uid = uid;
+	admin.uid = static_cast<int>(uid);
 	admin.key = "Not supported";
 	admin.removable = true;
 
@@ -141,32 +142,94 @@ void PolicyStorage::enroll(const std::string& name, uid_t domain)
 	if (!stmt.exec())
 		throw std::runtime_error("Failed to enroll admin.: " + admin.pkg);
 
-	this->admins.emplace(alias, std::move(admin));
-
+	/// Sync admin for getting admin ID.
+	syncAdmin();
+	/// ManagedPolicy is triggered by enrolling admin.
 	syncManagedPolicy();
+
 	int count = managedPolicies.size() / admins.size();
-	INFO(DPM, "Admin[" + alias + "] manages " + std::to_string(count) + "policies.");
+	INFO(DPM, "Admin[" + alias + "] manages " + std::to_string(count) + "-policies.");
 }
 
-void PolicyStorage::disenroll(const std::string& name, uid_t domain)
+void PolicyStorage::disenroll(const std::string& name, uid_t uid)
 {
-	int uid = static_cast<int>(domain);
 	std::string alias = getAlias(name, uid);
 	INFO(DPM, "Disenroll admin: " + alias);
 	if (admins.find(alias) == admins.end()) {
-		ERROR(DPM, "Not exist admin.: " + alias);
+		ERROR(DPM, "Not exist admin: " + alias);
 		return;
 	} else {
 		admins.erase(alias);
 	}
 
+	int iUid = static_cast<int>(uid);
 	std::string query = adminTable.remove().where(expr(&Admin::pkg) == name &&
-												  expr(&Admin::uid) == uid);
+												  expr(&Admin::uid) == iUid);
 	database::Statement stmt(*database, query);
 	stmt.bind(1, name);
-	stmt.bind(2, uid);
+	stmt.bind(2, iUid);
 	if (!stmt.exec())
-		throw std::runtime_error("Failed to disenroll admin.: " + name);
+		throw std::runtime_error("Failed to disenroll admin: " + name);
+}
+
+void PolicyStorage::update(const std::string& name, uid_t uid,
+						   const std::string& policy, const PolicyValue& value)
+{
+	std::string alias = getAlias(name, uid);
+	if (admins.find(alias) == admins.end())
+		throw std::runtime_error("Not exist admin: " + alias);
+
+	if (definitions.find(policy) == definitions.end())
+		throw std::runtime_error("Not exist policy: " + policy);
+
+	DEBUG(DPM, "Policy-update is called by admin: " + alias + ", about: " + policy +
+			   ", value: " + std::to_string(value));
+
+	int policyId = definitions[policy].id;
+	int policyValue = value;
+	int adminId = admins[alias].id;
+	std::string query = managedPolTable.update(&ManagedPolicy::value)
+									   .where(expr(&ManagedPolicy::pid) == policyId &&
+											  expr(&ManagedPolicy::aid) == adminId);
+	database::Statement stmt(*database, query);
+	stmt.bind(1, policyValue);
+	stmt.bind(2, policyId);
+	stmt.bind(3, adminId);
+	if (!stmt.exec())
+		throw runtime::Exception("Failed to update policy:" + policy);
+
+	syncManagedPolicy();
+}
+
+PolicyValue PolicyStorage::strictest(const std::string& policy, uid_t uid)
+{
+	if (definitions.find(policy) == definitions.end())
+		throw std::runtime_error("Not exist policy: " + policy);
+
+	std::shared_ptr<PolicyValue> strictest = nullptr;
+	int policyId = definitions[policy].id;
+	auto range = managedPolicies.equal_range(policyId);
+	for (auto iter = range.first; iter != range.second; iter++) {
+		if (uid != 0) {
+			int ret = getUid(iter->second.aid);
+			if (ret == -1 || ret != uid)
+				continue;
+		}
+
+		int value = iter->second.value;
+		if (strictest == nullptr)
+			strictest = std::make_shared<PolicyValue>(value);
+		else
+			strictest->value = (*strictest < value) ? strictest->value : value;
+
+		DEBUG(DPM, "The strictest of policy[" + policy +
+				   "] : " + std::to_string(strictest->value));
+	}
+
+	if (strictest == nullptr)
+		throw std::runtime_error("Not exist managed policy: " + policy);
+
+	return std::move(*strictest);
 }
 
 std::string PolicyStorage::getAlias(const std::string& name, uid_t uid) const noexcept
@@ -174,5 +237,13 @@ std::string PolicyStorage::getAlias(const std::string& name, uid_t uid) const no
 	return name + std::to_string(uid);
 }
 
+int PolicyStorage::getUid(int adminId) const noexcept
+{
+	for (const auto& a : admins)
+		if (a.second.id == adminId)
+			return a.second.uid;
+
+	return -1;
+}
 
 } // namespace policyd

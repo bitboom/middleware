@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <policyd/sdk/policy-value.h>
+
 #include "db-schema.h"
 
 #include <memory>
@@ -44,7 +46,11 @@ public:
 	}
 
 	void enroll(const std::string& admin, uid_t uid);
-	void disenroll(const std::string& name, uid_t uid);
+	void disenroll(const std::string& admin, uid_t uid);
+
+	void update(const std::string& admin, uid_t uid,
+				const std::string& policy, const PolicyValue& value);
+	PolicyValue strictest(const std::string& policy, uid_t uid = 0);
 
 private:
 	void syncPolicyDefinition();
@@ -52,13 +58,14 @@ private:
 	void syncManagedPolicy();
 
 	std::string getAlias(const std::string& name, uid_t uid) const noexcept;
+	int getUid(int adminId) const noexcept;
 
 	std::shared_ptr<klay::database::Connection> database;
 
 	/// DB Cache objects
 	std::unordered_map<std::string, PolicyDefinition> definitions;
 	std::unordered_map<std::string, Admin> admins;
-	std::vector<ManagedPolicy> managedPolicies;
+	std::unordered_multimap<int, ManagedPolicy> managedPolicies;
 };
 
 } // namespace policyd
