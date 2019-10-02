@@ -32,3 +32,22 @@ TEST_F(PolicyCoreTests, policy_loader) {
 	auto size = manager.loadPolicies();
 	EXPECT_TRUE(size > 0);
 }
+
+TEST_F(PolicyCoreTests, policy_set_get) {
+	auto& manager = PolicyManager::instance();
+	manager.enroll("testAdmin", 0);
+	manager.set("bluetooth", PolicyValue(5), "testAdmin", 0);
+
+	auto policy = manager.get("bluetooth", 0);
+	EXPECT_EQ(policy.value, 5);
+
+	manager.enroll("testAdmin1", 0);
+	manager.set("bluetooth", PolicyValue(10), "testAdmin1", 0);
+
+	/// Manager should return the strongest policy.
+	policy = manager.get("bluetooth", 0);
+	EXPECT_EQ(policy.value, 5);
+
+	manager.disenroll("testAdmin", 0);
+	manager.disenroll("testAdmin1", 0);
+}

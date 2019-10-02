@@ -39,9 +39,9 @@ std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 			auto provider = PolicyLoader::load(iter->getPath());
 			DEBUG(DPM, "Loaded provider: " << provider->getName());
 			this->providers.emplace_back(std::move(provider));
-		} catch (const std::exception&) {
+		} catch (const std::exception& e) {
 			++failed;
-			ERROR(DPM, "Failed to load: " << iter->getPath());
+			ERROR(DPM, "Failed to load: " << iter->getPath() << e.what());
 			continue;
 		}
 
@@ -70,6 +70,39 @@ int PolicyManager::loadPolicies()
 	}
 
 	return global.size() + domain.size();
+}
+
+void PolicyManager::enroll(const std::string& admin, uid_t uid)
+{
+	this->storage.enroll(admin, uid);
+}
+
+void PolicyManager::disenroll(const std::string& admin, uid_t uid)
+{
+	this->storage.disenroll(admin, uid);
+}
+
+void PolicyManager::set(const std::string& policy, const PolicyValue& value,
+						const std::string& admin, uid_t uid)
+{
+	storage.update(admin, uid, policy, value);
+
+	if (global.find(policy) != global.end()) {
+		global[policy]->set(value);
+		return;
+	}
+
+	if (domain.find(policy) != domain.end()) {
+		domain[policy]->set(uid, value);
+		return;
+	}
+
+	throw std::runtime_error("Cannot set policy." + policy);
+}
+
+PolicyValue PolicyManager::get(const std::string& policy, uid_t uid)
+{
+	return storage.strictest(policy, uid);
 }
 
 } // namespace policyd

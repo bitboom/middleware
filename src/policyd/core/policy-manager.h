@@ -17,6 +17,7 @@
 #pragma once
 
 #include <policyd/sdk/policy-provider.h>
+#include <policyd/sdk/policy-value.h>
 
 #include "policy-storage.h"
 
@@ -42,6 +43,14 @@ public:
 
 	std::pair<int, int> loadProviders(const std::string& path);
 	int loadPolicies();
+
+	void enroll(const std::string& admin, uid_t uid);
+	void disenroll(const std::string& admin, uid_t uid);
+
+	void set(const std::string& policy, const PolicyValue& value,
+			 const std::string& admin, uid_t uid);
+	PolicyValue get(const std::string& policy, uid_t uid);
+
 
 private:
 	explicit PolicyManager() : storage(DB_PATH) {}

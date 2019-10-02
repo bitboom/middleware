@@ -212,7 +212,7 @@ PolicyValue PolicyStorage::strictest(const std::string& policy, uid_t uid)
 	for (auto iter = range.first; iter != range.second; iter++) {
 		if (uid != 0) {
 			int ret = getUid(iter->second.aid);
-			if (ret == -1 || ret != uid)
+			if (ret == -1 || ret != static_cast<int>(uid))
 				continue;
 		}
 

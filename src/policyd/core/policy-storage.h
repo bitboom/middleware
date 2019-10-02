@@ -63,6 +63,7 @@ private:
 	std::shared_ptr<klay::database::Connection> database;
 
 	/// DB Cache objects
+	/// TODO(Sangwan): add locking mechanism
 	std::unordered_map<std::string, PolicyDefinition> definitions;
 	std::unordered_map<std::string, Admin> admins;
 	std::unordered_multimap<int, ManagedPolicy> managedPolicies;
