@@ -1,8 +1,0 @@
-#!/bin/bash
-PATH="/usr/bin:/bin:/usr/sbin:/sbin"
-
-dbus-send --system --type=method_call --print-reply --dest=org.tizen.DevicePolicyManager \
-				 /org/tizen/DevicePolicyManager/Syspopup \
-				 org.tizen.DevicePolicyManager.Syspopup.show \
-				 string:${1}
-

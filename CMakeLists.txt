@@ -68,9 +68,6 @@ ENABLE_TESTING()
 # Make sure the generated paths exist
 EXECUTE_PROCESS(COMMAND mkdir -p "${CMAKE_BINARY_DIR}/generated")
 
-CONFIGURE_FILE(packaging/device-policy-manager.manifest.in
-			   device-policy-manager.manifest @ONLY)
-
 ADD_SUBDIRECTORY(specs)
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(tools/sqlite3)

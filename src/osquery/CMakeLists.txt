@@ -22,22 +22,13 @@ SET(${TARGET_OSQUERY_LIB}_TESTS "")
 ADD_OSQUERY_LINK(glog
 				 gflags
 				 pthread
-				#rocksdb deps
-				 librocksdb.a
-				 snappy
-				 z
-				 bz2
 				 dl
-				 lz4
-				 zstd
 				 boost_regex
 				 boost_system
 				 boost_thread
 				 boost_filesystem
 				 crypto # openssl
-				#shell deps
-				 readline
-				#build-in tables deps
+				 # build-in tables deps
 				 systemd)
 
 IF(DEFINED GBS_BUILD)
