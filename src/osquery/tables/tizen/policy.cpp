@@ -14,9 +14,9 @@
  *  limitations under the License
  */
 /*
- * @file wifi_policy.cpp
+ * @file bluetooth_policy.cpp
  * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief Implementation of wifi_policy table
+ * @brief Implementation of bluetooth_policy table
  */
 
 #include <string>
@@ -27,34 +27,43 @@
 #include <osquery/logger.h>
 #include <osquery/tables.h>
 
-#include <dpm/device-policy-manager.h>
-#include <dpm/pil/policy-client.h>
+#include <policyd/core/policy-manager.h>
+
+using namespace policyd;
 
 namespace osquery {
 namespace tables {
 
-QueryData genWifiPolicy(QueryContext& context) try {
-	std::shared_ptr<void> handle(dpm_manager_create(), dpm_manager_destroy);
-	if (handle == nullptr)
-		throw std::runtime_error("Cannot create dpm-client handle.");
+QueryData genPolicy(QueryContext& context) try {
+	auto& manager = PolicyManager::Instance();
 
-	/// This status is defined at DPM
-	::Status<bool> status { true };
-	Row r;
+	QueryData results;
+	if (context.constraints["name"].exists(EQUALS)) { /// where clause
+		auto names = context.constraints["name"].getAll(EQUALS);
+		for (const auto& name : names) {
+			auto ret = manager.get(name);
 
-	DevicePolicyClient &client = GetDevicePolicyClient(handle.get());
-	status = client.methodCall<bool>("Wifi::getState");
-	r["wifi"] =  INTEGER(status.get());
+			Row r;
+			r["name"] = TEXT(name);
+			r["value"] = TEXT(ret.value);
 
-	status = client.methodCall<bool>("Wifi::isProfileChangeRestricted");
-	r["wifi_profile_change"] =  INTEGER(status.get());
+			results.emplace_back(std::move(r));
+		}
+	} else { /// select *;
+		auto policies = manager.getAll();
+		for (auto& policy : policies) {
+			Row r;
+			r["name"] = TEXT(policy.first);
+			r["value"] = TEXT(policy.second);
 
-	status = client.methodCall<bool>("Wifi::getHotspotState");
-	r["wifi_hotspot"] =  INTEGER(status.get());
+			results.emplace_back(std::move(r));
+		}
+	}
 
-	return { r };
+	return results;
 } catch (...) {
 // TODO(Sangwan): Resolve duplicated "ERROR" macro with DPM
+//    LOG(ERROR) << "Exception occured";
 	Row r;
 	return { r };
 }

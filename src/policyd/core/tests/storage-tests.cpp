@@ -121,3 +121,18 @@ TEST_F(PolicyStorageTests, strictest) {
 	storage->disenroll("testAdmin", 0);
 	storage->disenroll("testAdmin", 1);
 }
+
+TEST_F(PolicyStorageTests, strictest_all) {
+	auto storage = getStorage();
+	storage->enroll("testAdmin", 1);
+
+	/// as global policy
+	auto policies = storage->strictest();
+	EXPECT_TRUE(policies.size() > 0);
+
+	/// as domain policy
+	policies = storage->strictest(1);
+	EXPECT_TRUE(policies.size() > 0);
+
+	storage->disenroll("testAdmin", 1);
+}

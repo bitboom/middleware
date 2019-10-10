@@ -16,69 +16,15 @@
 
 #include <gtest/gtest.h>
 
-#include <osquery/sql.h>
-#include <osquery/logger.h>
-
-#include <dpm/device-policy-manager.h>
-#include <dpm/pil/policy-client.h>
+#include <policyd/core/policy-manager.h>
 
 class PolicyTests : public testing::Test {};
 
-using namespace osquery;
+using namespace policyd;
 
-TEST_F(PolicyTests, Bluetooth) {
-	std::shared_ptr<void> handle(dpm_manager_create(), dpm_manager_destroy);
-	if (handle == nullptr)
-		throw std::runtime_error("Cannot create dpm-client handle.");
+TEST_F(PolicyTests, get_all) {
+	auto& manager = PolicyManager::Instance();
+	auto policies = manager.getAll();
 
-	::Status<bool> status { true };
-
-	DevicePolicyClient &client = GetDevicePolicyClient(handle.get());
-	status = client.methodCall<bool>("Bluetooth::getModeChangeState");
-	EXPECT_EQ(true, status.get());
-
-	status = client.methodCall<bool>("Bluetooth::getDesktopConnectivityState");
-	EXPECT_EQ(true, status.get());
-
-	status = client.methodCall<bool>("Bluetooth::getTetheringState");
-	EXPECT_EQ(true, status.get());
-
-	status = client.methodCall<bool>("Bluetooth::getPairingState");
-	EXPECT_EQ(true, status.get());
-}
-
-TEST_F(PolicyTests, Wifi) {
-	std::shared_ptr<void> handle(dpm_manager_create(), dpm_manager_destroy);
-	if (handle == nullptr)
-		throw std::runtime_error("Cannot create dpm-client handle.");
-
-	::Status<bool> status { true };
-
-	DevicePolicyClient &client = GetDevicePolicyClient(handle.get());
-	status = client.methodCall<bool>("Wifi::getState");
-	EXPECT_EQ(true, status.get());
-
-	status = client.methodCall<bool>("Wifi::isProfileChangeRestricted");
-	EXPECT_EQ(true, status.get());
-
-	status = client.methodCall<bool>("Wifi::getHotspotState");
-	EXPECT_EQ(true, status.get());
-}
-
-TEST_F(PolicyTests, Usb) {
-	std::shared_ptr<void> handle(dpm_manager_create(), dpm_manager_destroy);
-	if (handle == nullptr)
-		throw std::runtime_error("Cannot create dpm-client handle.");
-
-	::Status<bool> status { true };
-
-	DevicePolicyClient &client = GetDevicePolicyClient(handle.get());
-	status = client.methodCall<bool>("Usb::getDebuggingState");
-	EXPECT_EQ(true, status.get());
-
-	status = client.methodCall<bool>("Usb::getTetheringState");
-	EXPECT_EQ(true, status.get());
-
-	status = client.methodCall<bool>("Usb::getClientState");
-	EXPECT_EQ(true, status.get());
+	EXPECT_TRUE(policies.size() > 0);
 }

@@ -18,14 +18,19 @@
 
 #include "../policy-manager.h"
 
-using namespace policyd;
+namespace policyd {
 
 class PolicyCoreTests : public testing::Test {};
 
 TEST_F(PolicyCoreTests, policy_loader) {
-	auto& manager = PolicyManager::instance();
-	auto result = manager.loadProviders(PLUGIN_INSTALL_DIR);
+	auto& manager = PolicyManager::Instance();
 
+	/// Clearing for test
+	manager.providers.clear();
+	manager.global.clear();
+	manager.domain.clear();
+
+	auto result = manager.loadProviders(PLUGIN_INSTALL_DIR);
 	EXPECT_TRUE(result.first > 0);
 	EXPECT_TRUE(result.second == 0);
 
@@ -34,7 +39,7 @@ TEST_F(PolicyCoreTests, policy_loader) {
 }
 
 TEST_F(PolicyCoreTests, policy_set_get) {
-	auto& manager = PolicyManager::instance();
+	auto& manager = PolicyManager::Instance();
 	manager.enroll("testAdmin", 0);
 	manager.set("bluetooth", PolicyValue(5), "testAdmin", 0);
 
@@ -51,3 +56,5 @@ TEST_F(PolicyCoreTests, policy_set_get) {
 	manager.disenroll("testAdmin", 0);
 	manager.disenroll("testAdmin1", 0);
 }
+
+} // namespace policyd

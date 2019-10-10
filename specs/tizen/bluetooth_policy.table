@@ -1,9 +1,0 @@
-table_name("bluetooth_policy")
-description("A single row containing the bluetooth policy.")
-schema([
-  Column("mode_change_state", INTEGER, "Bluetooth policy state"),
-  Column("desktop_connectivity_state", INTEGER, "Desktop connectivity policy state"),
-  Column("tethering_state", INTEGER, "Tethering policy state"),
-  Column("paring_state", INTEGER, "Paring policy state"),
-])
-implementation("bluetooth_policy@genBluetoothPolicy")

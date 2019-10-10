@@ -50,7 +50,10 @@ public:
 
 	void update(const std::string& admin, uid_t uid,
 				const std::string& policy, const PolicyValue& value);
+
 	PolicyValue strictest(const std::string& policy, uid_t uid = 0);
+	/// Return all strictest policy values
+	std::unordered_map<std::string, PolicyValue> strictest(uid_t uid = 0);
 
 private:
 	void syncPolicyDefinition();

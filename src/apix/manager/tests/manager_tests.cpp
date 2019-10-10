@@ -36,6 +36,29 @@ TEST_F(ManagerTests, test_manager_execute) {
 	LOG(INFO) << "\t seconds: " << rows[0]["seconds"];
 }
 
+TEST_F(ManagerTests, test_manager_execute_policy) {
+	std::string query = "SELECT * FROM policy";
+	auto rows = OsqueryManager::execute(query);
+	EXPECT_TRUE(rows.size() > 0);
+
+	LOG(INFO) << "[Test] policy table rows:";
+	for (auto& r : rows) {
+		LOG(INFO) << "\t name: " << r["name"];
+		LOG(INFO) << "\t value: " << r["value"];
+	}
+
+	query = "SELECT * FROM policy WHERE name = 'bluetooth'";
+	rows = OsqueryManager::execute(query);
+
+	LOG(INFO) << "[Test] policy table rows with where clause:";
+	for (auto& r : rows) {
+		LOG(INFO) << "\t name: " << r["name"];
+		LOG(INFO) << "\t value: " << r["value"];
+	}
+
+	EXPECT_EQ(rows.size(), 1);
+}
+
 TEST_F(ManagerTests, test_manager_subscribe) {
 	int called = 0;
 	auto callback = [&](const Row& row) {

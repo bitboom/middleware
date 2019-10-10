@@ -206,6 +206,10 @@ PolicyValue PolicyStorage::strictest(const std::string& policy, uid_t uid)
 	if (definitions.find(policy) == definitions.end())
 		throw std::runtime_error("Not exist policy: " + policy);
 
+	// There is no enrolled admins.
+	if (managedPolicies.size() == 0)
+		return PolicyValue(definitions[policy].ivalue);
+
 	std::shared_ptr<PolicyValue> strictest = nullptr;
 	int policyId = definitions[policy].id;
 	auto range = managedPolicies.equal_range(policyId);
@@ -230,6 +234,19 @@ PolicyValue PolicyStorage::strictest(const std::string& policy, uid_t uid)
 		throw std::runtime_error("Not exist managed policy: " + policy);
 
 	return std::move(*strictest);
+}
+
+std::unordered_map<std::string, PolicyValue> PolicyStorage::strictest(uid_t uid)
+{
+	std::unordered_map<std::string, PolicyValue> policies;
+	for (const auto& pair : definitions) {
+		std::string name = pair.first;
+		auto value = this->strictest(name, uid);
+
+		policies.emplace(std::move(name), std::move(value));
+	}
+
+	return policies;
 }
 
 std::string PolicyStorage::getAlias(const std::string& name, uid_t uid) const noexcept

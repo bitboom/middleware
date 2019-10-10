@@ -22,6 +22,13 @@
 
 namespace policyd {
 
+PolicyManager::PolicyManager() : storage(DB_PATH)
+{
+	loadProviders(PLUGIN_INSTALL_DIR);
+	int cnt = loadPolicies();
+	INFO(DPM, std::to_string(cnt) + "-policies loaded");
+}
+
 std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 {
 	INFO(DPM, "Load policies from :" << path);
@@ -103,6 +110,11 @@ void PolicyManager::set(const std::string& policy, const PolicyValue& value,
 PolicyValue PolicyManager::get(const std::string& policy, uid_t uid)
 {
 	return storage.strictest(policy, uid);
+}
+
+std::unordered_map<std::string, PolicyValue> PolicyManager::getAll(uid_t uid)
+{
+	return storage.strictest(uid);
 }
 
 } // namespace policyd

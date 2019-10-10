@@ -1,8 +1,0 @@
-table_name("usb_policy")
-description("A single row containing the usb policy.")
-schema([
-  Column("usb_debugging", INTEGER, "USB debugging mode policy state"),
-  Column("usb_tethering", INTEGER, "USB tethering policy state"),
-  Column("usb_client", INTEGER, "USB client policy state"),
-])
-implementation("usb_policy@genUsbPolicy")

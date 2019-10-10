@@ -21,10 +21,13 @@
 
 #include "policy-storage.h"
 
-#include <string>
 #include <exception>
 #include <memory>
+#include <string>
+#include <unordered_map>
 #include <vector>
+
+#include <gtest/gtest_prod.h>
 
 namespace policyd {
 
@@ -36,31 +39,34 @@ public:
 	PolicyManager(PolicyManager&&) = delete;
 	PolicyManager& operator=(PolicyManager&&) = delete;
 
-	static PolicyManager& instance() {
+	static PolicyManager& Instance() {
 		static PolicyManager manager;
 		return manager;
 	}
-
-	std::pair<int, int> loadProviders(const std::string& path);
-	int loadPolicies();
 
 	void enroll(const std::string& admin, uid_t uid);
 	void disenroll(const std::string& admin, uid_t uid);
 
 	void set(const std::string& policy, const PolicyValue& value,
-			 const std::string& admin, uid_t uid);
-	PolicyValue get(const std::string& policy, uid_t uid);
+			 const std::string& admin, uid_t uid = 0);
+	PolicyValue get(const std::string& policy, uid_t uid = 0);
 
+	std::unordered_map<std::string, PolicyValue> getAll(uid_t uid = 0);
 
 private:
-	explicit PolicyManager() : storage(DB_PATH) {}
+	explicit PolicyManager();
 	~PolicyManager() = default;
+
+	std::pair<int, int> loadProviders(const std::string& path);
+	int loadPolicies();
 
 	PolicyStorage storage;
 	std::vector<std::shared_ptr<PolicyProvider>> providers;
 
 	std::unordered_map<std::string, std::shared_ptr<GlobalPolicy>> global;
 	std::unordered_map<std::string, std::shared_ptr<DomainPolicy>> domain;
+
+	FRIEND_TEST(PolicyCoreTests, policy_loader);
 };
 
 } // namespace policyd

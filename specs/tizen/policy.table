@@ -1,0 +1,10 @@
+table_name("policy")
+description("Device polices.")
+schema([
+    Column("name", TEXT, "Policy name"),
+    Column("value", TEXT, "Policy value"),
+])
+implementation("tizen/policy@genPolicy")
+examples([
+  "select * from policy where name = 'bluetooth'",
+])
