@@ -62,8 +62,34 @@ QueryData genPolicy(QueryContext& context) try {
 
 	return results;
 } catch (...) {
-// TODO(Sangwan): Resolve duplicated "ERROR" macro with DPM
-//    LOG(ERROR) << "Exception occured";
+	Row r;
+	return { r };
+}
+
+QueryData updatePolicy(QueryContext& context, const PluginRequest& request) try {
+	if (request.count("json_value_array") == 0)
+		throw std::runtime_error("Wrong request format. Not found json value.");
+
+	std::string str = request.at("json_value_array");
+	rapidjson::Document document;
+	document.Parse(str.c_str());
+	if (document.HasParseError() || !document.IsArray())
+		throw std::runtime_error("Cannot parse request.");
+
+	if (document.Size() != 2)
+		throw std::runtime_error("Wrong request format.");
+
+	std::string name = document[0].GetString();
+	int value = std::stoi(document[1].GetString());
+
+	/// TODO(Sangwan): Get admin name from policyd
+	auto& manager = PolicyManager::Instance();
+	manager.set(name, PolicyValue(value), "admin");
+
+	Row r;
+	r["status"] = "success";
+	return { r };
+} catch (...) {
 	Row r;
 	return { r };
 }

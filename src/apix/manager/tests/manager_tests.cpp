@@ -21,6 +21,8 @@
 #include <osquery/notification.h>
 #include <osquery/logger.h>
 
+#include <policyd/core/policy-manager.h>
+
 using namespace osquery;
 
 class ManagerTests : public testing::Test {};
@@ -57,6 +59,27 @@ TEST_F(ManagerTests, test_manager_execute_policy) {
 	}
 
 	EXPECT_EQ(rows.size(), 1);
+}
+
+TEST_F(ManagerTests, test_manager_execute_policy_update) {
+	auto& manager = policyd::PolicyManager::Instance();
+	manager.enroll("admin", 0);
+
+	std::string query = "SELECT * FROM policy WHERE name = 'bluetooth'";
+	auto rows = OsqueryManager::execute(query);
+	/// Initial policy value
+	EXPECT_EQ(rows[0]["value"], std::to_string(1));
+
+	query = "UPDATE policy SET value = '3' WHERE name = 'bluetooth'";
+	rows = OsqueryManager::execute(query);
+	EXPECT_EQ(rows.size(), 0);
+
+	query = "SELECT * FROM policy WHERE name = 'bluetooth'";
+	rows = OsqueryManager::execute(query);
+	/// Initial policy value
+	EXPECT_EQ(rows[0]["value"], std::to_string(3));
+
+	manager.disenroll("admin", 0);
 }
 
 TEST_F(ManagerTests, test_manager_subscribe) {

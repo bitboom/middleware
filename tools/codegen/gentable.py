@@ -196,6 +196,7 @@ class TableState(Singleton):
         self.header = ""
         self.impl = ""
         self.function = ""
+        self.function_update = ""
         self.class_name = ""
         self.description = ""
         self.attributes = {}
@@ -283,6 +284,7 @@ class TableState(Singleton):
             header=self.header,
             impl=self.impl,
             function=self.function,
+            function_update=self.function_update,
             class_name=self.class_name,
             attributes=self.attributes,
             examples=self.examples,
@@ -440,6 +442,20 @@ def implementation(impl_string, generator=False):
                     table.table_name, BIGINT)))
             sys.exit(1)
 
+# patched
+def implementation_update(impl_string, generator=False):
+    if impl_string is None:
+        table.function_update = ""
+    else:
+        filename, function_update = impl_string.split("@")
+        class_parts = function_update.split("::")[::-1]
+        function_update = class_parts[0]
+        class_name = class_parts[1] if len(class_parts) > 1 else ""
+        impl = "%s.cpp" % filename
+        table.impl = impl
+        table.function_update = function_update
+        table.class_name = class_name
+        table.generator = generator
 
 def main():
     parser = argparse.ArgumentParser(

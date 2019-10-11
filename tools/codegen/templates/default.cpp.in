@@ -24,9 +24,28 @@ namespace tables {
 void {{function}}(RowYield& yield, QueryContext& context);
 {% elif strongly_typed_rows %}\
 osquery::TableRows {{function}}(QueryContext& context);
+
+/// patch start
+{% if function_update != "" %}\
+osquery::QueryData {{function_update}}(QueryContext& context,
+                                       const PluginRequest& request);
+/// patch end
+
+{% endif %}\
+
 {% else %}\
 osquery::QueryData {{function}}(QueryContext& context);
+
+/// patch start
+{% if function_update != "" %}\
+osquery::QueryData {{function_update}}(QueryContext& context,
+                                       const PluginRequest& request);
+/// patch end
+
 {% endif %}\
+
+{% endif %}\
+
 {% else %}
 class {{class_name}} {
  public:
@@ -127,6 +146,16 @@ class {{table_name_cc}}TablePlugin : public TablePlugin {
 {% endif %}
     return results;
   }
+
+/// patch start
+{% if function_update != "" %}\
+  QueryData update(QueryContext& context,
+                   const PluginRequest& request) override {
+    return tables::{{function_update}}(context, request);
+  }
+{% endif %}\
+/// patch end
+
 {% endif %}\
 
 };

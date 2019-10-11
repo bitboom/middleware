@@ -944,6 +944,7 @@ struct sqlite3_module* getVirtualTableModule(const std::string& table_name,
   sqlite_module_map[table_name].xEof = tables::sqlite::xEof;
   sqlite_module_map[table_name].xColumn = tables::sqlite::xColumn;
   sqlite_module_map[table_name].xRowid = tables::sqlite::xRowid;
+  sqlite_module_map[table_name].xUpdate = tables::sqlite::xUpdate;
 
   // Allow the table to receive INSERT/UPDATE/DROP events if it is
   // implemented from an extension and is overwriting the right methods
