@@ -29,9 +29,8 @@ osquery::TableRows {{function}}(QueryContext& context);
 {% if function_update != "" %}\
 osquery::QueryData {{function_update}}(QueryContext& context,
                                        const PluginRequest& request);
-/// patch end
-
 {% endif %}\
+/// patch end
 
 {% else %}\
 osquery::QueryData {{function}}(QueryContext& context);
@@ -40,12 +39,10 @@ osquery::QueryData {{function}}(QueryContext& context);
 {% if function_update != "" %}\
 osquery::QueryData {{function_update}}(QueryContext& context,
                                        const PluginRequest& request);
+{% endif %}\
 /// patch end
 
 {% endif %}\
-
-{% endif %}\
-
 {% else %}
 class {{class_name}} {
  public:

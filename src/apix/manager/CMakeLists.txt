@@ -16,4 +16,9 @@ ADD_APIX_LIBRARY(manager manager.cpp
 						 manager_impl.cpp)
 
 FILE(GLOB MANAGER_TESTS "tests/*.cpp")
+
+IF(DEFINED GBS_BUILD)
+	FILE(GLOB TIZEN_POLICYD_TESTS "tests/tizen/*.cpp")
+ENDIF(DEFINED GBS_BUILD)
+
 ADD_APIX_TEST(${MANAGER_TESTS})
