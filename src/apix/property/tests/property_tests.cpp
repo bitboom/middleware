@@ -22,8 +22,6 @@
 
 #include <schema/time.h>
 #include <schema/processes.h>
-#include <schema/users.h>
-#include <schema/groups.h>
 
 using namespace osquery;
 
@@ -102,36 +100,5 @@ TEST_F(PropertyTests, propertiesProcesses) {
 		LOG(INFO) << "\t egid: " << result.egid;
 		LOG(INFO) << "\t on_disk: " << result.on_disk;
 		LOG(INFO) << "\t parent: " << result.parent;
-	}
-}
-
-TEST_F(PropertyTests, propertiesUsers) {
-	Properties<Users> users;
-	EXPECT_TRUE(users.size() > 0);
-
-	for(const auto& user : users) {
-		EXPECT_TRUE(user.size() > 0);
-		LOG(INFO) << "[Test] User table:";
-		LOG(INFO) << "\t uid: " << user[&Users::uid];
-		LOG(INFO) << "\t gid: " << user[&Users::gid];
-		LOG(INFO) << "\t uid_signed: " << user[&Users::uid_signed];
-		LOG(INFO) << "\t gid_signed: " << user[&Users::gid_signed];
-		LOG(INFO) << "\t username: " << user[&Users::username];
-		LOG(INFO) << "\t description: " << user[&Users::description];
-		LOG(INFO) << "\t directory: " << user[&Users::directory];
-		LOG(INFO) << "\t shell: " << user[&Users::shell];
-	}
-}
-
-TEST_F(PropertyTests, propertiesGroups) {
-	Properties<Groups> groups;
-	EXPECT_TRUE(groups.size() > 0);
-
-	for(const auto& group : groups) {
-		EXPECT_TRUE(group.size() > 0);
-		LOG(INFO) << "[Test] Group table:";
-		LOG(INFO) << "\t gid: " << group[&Groups::gid];
-		LOG(INFO) << "\t gid_signed: " << group[&Groups::gid_signed];
-		LOG(INFO) << "\t groupname: " << group[&Groups::groupname];
 	}
 }
