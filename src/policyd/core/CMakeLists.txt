@@ -13,7 +13,8 @@
 # limitations under the License.
 #
 
-ADD_POLICYD_LIBRARY(policyd_core policy-manager.cpp
+ADD_POLICYD_LIBRARY(policyd_core api.cpp
+								 policy-manager.cpp
 								 policy-loader.cpp
 								 policy-storage.cpp
 								 logger.cpp)

@@ -14,14 +14,25 @@
  *  limitations under the License
  */
 
-#include <gtest/gtest.h>
+#pragma once
 
-#include <policyd/api.h>
+#include <policyd/sdk/policy-value.h>
 
-class PolicyTests : public testing::Test {};
+#include <string>
+#include <unordered_map>
 
-TEST_F(PolicyTests, get_all) {
-	auto policies = policyd::API::GetAll();
+namespace policyd {
 
-	EXPECT_TRUE(policies.size() > 0);
-}
+struct API {
+	static PolicyValue Get(const std::string& policy);
+	static std::unordered_map<std::string, PolicyValue> GetAll();
+
+	struct Admin {
+		static void Set(const std::string& policy, const PolicyValue& value);
+
+		static void Enroll(const std::string& admin, uid_t uid);
+		static void Disenroll(const std::string& admin, uid_t uid);
+	};
+};
+
+} // namespace policyd

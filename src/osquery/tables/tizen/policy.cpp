@@ -13,11 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file bluetooth_policy.cpp
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief Implementation of bluetooth_policy table
- */
 
 #include <string>
 #include <memory>
@@ -27,21 +22,17 @@
 #include <osquery/logger.h>
 #include <osquery/tables.h>
 
-#include <policyd/core/policy-manager.h>
-
-using namespace policyd;
+#include <policyd/api.h>
 
 namespace osquery {
 namespace tables {
 
 QueryData genPolicy(QueryContext& context) try {
-	auto& manager = PolicyManager::Instance();
-
 	QueryData results;
 	if (context.constraints["name"].exists(EQUALS)) { /// where clause
 		auto names = context.constraints["name"].getAll(EQUALS);
 		for (const auto& name : names) {
-			auto ret = manager.get(name);
+			auto ret = policyd::API::Get(name);
 
 			Row r;
 			r["name"] = TEXT(name);
@@ -50,7 +41,7 @@ QueryData genPolicy(QueryContext& context) try {
 			results.emplace_back(std::move(r));
 		}
 	} else { /// select *;
-		auto policies = manager.getAll();
+		auto policies = policyd::API::GetAll();
 		for (auto& policy : policies) {
 			Row r;
 			r["name"] = TEXT(policy.first);
@@ -82,9 +73,7 @@ QueryData updatePolicy(QueryContext& context, const PluginRequest& request) try 
 	std::string name = document[0].GetString();
 	int value = std::stoi(document[1].GetString());
 
-	/// TODO(Sangwan): Get admin name from policyd
-	auto& manager = PolicyManager::Instance();
-	manager.set(name, PolicyValue(value), "admin");
+	policyd::API::Admin::Set(name, policyd::PolicyValue(value));
 
 	Row r;
 	r["status"] = "success";
