@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -800,18 +800,19 @@ err:
 
 		if (result == 1 && checkCaFlag) { // check strictly
 			STACK_OF(X509) *resultChain = X509_STORE_CTX_get1_chain(&context);
-			X509 *tmpCert = NULL;
-			int caFlagValidity;
 
-			while ((tmpCert = sk_X509_pop(resultChain))) {
-				caFlagValidity = X509_check_ca(tmpCert);
+			// the last one is not a CA.
+			while (sk_X509_num(resultChain) > 1) {
+				X509 *tmpCert = sk_X509_pop(resultChain);
+				int caFlagValidity = X509_check_ca(tmpCert);
+				X509_free(tmpCert);
 
-				if (caFlagValidity != 1 && (tmpCert = sk_X509_pop(resultChain)) != NULL) {
-					// the last one is not a CA.
+				if (caFlagValidity != 1) {
 					result = 0;
 					break;
 				}
 			}
+			sk_X509_pop_free(resultChain, X509_free);
 		}
 
 		X509_STORE_CTX_cleanup(&context);
