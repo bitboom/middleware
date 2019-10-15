@@ -64,7 +64,6 @@ TEST_F(PolicydTests, update) {
 
 	query = "SELECT * FROM policy WHERE name = 'bluetooth'";
 	rows = OsqueryManager::execute(query);
-	/// Initial policy value
 	EXPECT_EQ(rows[0]["value"], std::to_string(3));
 
 	manager.disenroll("admin", 0);
