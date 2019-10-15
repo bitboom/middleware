@@ -17,9 +17,10 @@
 #ifndef __RUNTIME_SERIALIZER_H__
 #define __RUNTIME_SERIALIZER_H__
 
-#include <vector>
+#include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <klay/klay.h>
 #include <klay/reflection.h>
@@ -90,6 +91,16 @@ private:
 		}
 	}
 
+	template<typename KeyType, typename ValueType>
+	void visitInternal(const std::map<KeyType, ValueType>& map)
+	{
+		visitInternal(map.size());
+		for (const auto& pair : map) {
+			visitInternal(pair.first);
+			visitInternal(pair.second);
+		}
+	}
+
 private:
 	StorageType& storage;
 };
@@ -138,6 +149,23 @@ private:
 
 		for (DataType& value : values) {
 			visitInternal(value);
+		}
+	}
+
+	template<typename KeyType, typename ValueType>
+	void visitInternal(std::map<KeyType, ValueType>& map)
+	{
+		size_t size;
+		visitInternal(size);
+
+		while (size--) {
+			KeyType key;
+			ValueType value;
+
+			visitInternal(key);
+			visitInternal(value);
+
+			map[key] = value;
 		}
 	}
 
