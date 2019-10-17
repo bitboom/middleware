@@ -9,4 +9,4 @@ Name: klay
 Description: Tizen Klay library and header files
 Version: @VERSION@
 Libs: -L${libdir} -lklay
-Cflags: -I${includedir}/klay
+Cflags: -I${includedir}/klay -I${includedir}/glib-2.0 -I${libdir}/glib-2.0/include

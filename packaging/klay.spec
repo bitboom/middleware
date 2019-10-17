@@ -60,6 +60,7 @@ rm -rf %{buildroot}
 Summary: Tizen Klay development package
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
+Requires: pkgconfig(glib-2.0)
 
 %description devel
 The klay-devel package provides libraries and header files necessary for
