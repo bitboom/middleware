@@ -21,7 +21,7 @@
 #include <memory>
 #include <mutex>
 
-#define DPM Logger::GetLogSink("DPM")
+#define VIST Logger::GetLogSink("VIST")
 
 namespace policyd {
 

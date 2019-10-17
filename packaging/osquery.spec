@@ -28,13 +28,19 @@ Requires: boost-regex boost-system boost-thread boost-filesystem
 Requires: procps-ng
 Requires: libsystemd
 
-%global user_name        security_fw
-%global group_name       security_fw
-%global smack_label      System
+%global user_name   security_fw
+%global group_name  security_fw
+%global smack_label System
 
-%global dpm_base         %{TZ_SYS_DATA}/dpm
-%global dpm_event        %{dpm_base}/event
-%global dpm_plugins      %{_libdir}/dpm/plugins
+%global ro_dir %{_datadir}
+%global rw_dir %{TZ_SYS_DATA}
+
+%global vist_ro_dir %{ro_dir}/vist
+%global vist_rw_dir %{rw_dir}/vist
+
+%global vist_db_dir     %{vist_rw_dir}/db
+%global vist_plugin_dir %{vist_ro_dir}/plugin
+%global vist_script_dir %{vist_ro_dir}/script
 
 %description
 Osquery exposes an operating system as a high-performance relational database.
@@ -63,30 +69,27 @@ cp %SOURCE1 .
 		 -DUSER_NAME=%{user_name} \
 		 -DGROUP_NAME=%{group_name} \
 		 -DSMACK_LABEL=%{smack_label} \
-		 -DSCRIPT_INSTALL_DIR=%{_scriptdir} \
-		 -DSYSTEMD_UNIT_INSTALL_DIR=%{_unitdir} \
-		 -DDATA_INSTALL_DIR=%{dpm_base} \
-		 -DEVENT_CONFIGURE_DIR=%{dpm_event} \
-		 -DPLUGIN_INSTALL_DIR=%{dpm_plugins} \
-		 -DDB_INSTALL_DIR=%{TZ_SYS_DB} \
-		 -DRUN_INSTALL_DIR=%{TZ_SYS_RUN} \
-		 -DAPP_INSTALL_PREFIX="%{TZ_SYS_RO_APP}" \
-		 -DAPP_SHARE_PACKAGES_DIR="%{TZ_SYS_RO_PACKAGES}" \
-		 -DPAMD_INSTALL_DIR=/etc/pam.d \
-		 -DDBUS_CONFIGURE_DIR=/etc/dbus-1/system.d \
-		 -DDBUS_SERVICE_DIR=/usr/share/dbus-1/system-services
+		 -DDB_INSTALL_DIR:PATH=%{vist_db_dir} \
+		 -DPLUGIN_INSTALL_DIR:PATH=%{vist_plugin_dir} \
+		 -DSCRIPT_INSTALL_DIR:PATH=%{vist_script_dir}
 
 make %{?jobs:-j%jobs}
 
 %install
 %make_install
-mkdir -p %{buildroot}%{dpm_event}
-mkdir -p %{buildroot}%{dpm_plugins}
-mkdir -p %{buildroot}/%{_unitdir}/multi-user.target.wants
-mkdir -p %{buildroot}/%{_unitdir}/sockets.target.wants
+mkdir -p %{buildroot}/%{vist_db_dir}
+mkdir -p %{buildroot}/%{vist_plugin_dir}
+mkdir -p %{buildroot}/%{vist_script_dir}
+
+cp data/script/*.sql %{buildroot}/%{vist_script_dir}
 
 %clean
 rm -rf %{buildroot}
+
+%files
+%manifest %{name}.manifest
+%{vist_script_dir}/*.sql
+%dir %attr(-, %{user_name}, %{group_name}) %{vist_db_dir}
 
 ## Test Package ##############################################################
 %package test 
@@ -99,14 +102,13 @@ Requires: gtest
 Testcases for osquery 
 
 %files test
-%manifest %{name}.manifest
 %{_bindir}/osquery-test
 %{_bindir}/apix-test
 %{_bindir}/policyd-test
 
-## DPM Plugins - ############################################################
+## ViST Plugins - ###########################################################
 %package policyd-plugins
-Summary: DPM plugins
+Summary: ViST plugins
 Group: Security/Other
 ## Common
 BuildRequires: pkgconfig(buxton2)
@@ -127,4 +129,4 @@ Provides plugins for device policy manager
 
 %files policyd-plugins
 %manifest packaging/%{name}-plugins.manifest
-%{_libdir}/dpm/plugins/bluetooth
+%{vist_plugin_dir}/bluetooth

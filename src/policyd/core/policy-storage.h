@@ -37,6 +37,10 @@ public:
 	/// TODO(Sangwan): Consider to support lazy sync
 	void sync();
 
+	void syncPolicyDefinition();
+	void syncAdmin();
+	void syncManagedPolicy();
+
 	inline bool exists(const std::string& policy) const noexcept {
 		return definitions.find(policy) != definitions.end();
 	}
@@ -48,6 +52,7 @@ public:
 	void enroll(const std::string& admin, uid_t uid);
 	void disenroll(const std::string& admin, uid_t uid);
 
+	void define(int scope, const std::string& policy, int ivalue);
 	void update(const std::string& admin, uid_t uid,
 				const std::string& policy, const PolicyValue& value);
 
@@ -56,10 +61,7 @@ public:
 	std::unordered_map<std::string, PolicyValue> strictest(uid_t uid = 0);
 
 private:
-	void syncPolicyDefinition();
-	void syncAdmin();
-	void syncManagedPolicy();
-
+	std::string getScript(const std::string& name);
 	std::string getAlias(const std::string& name, uid_t uid) const noexcept;
 	int getUid(int adminId) const noexcept;
 

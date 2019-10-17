@@ -26,12 +26,12 @@ PolicyManager::PolicyManager() : storage(DB_PATH)
 {
 	loadProviders(PLUGIN_INSTALL_DIR);
 	int cnt = loadPolicies();
-	INFO(DPM, std::to_string(cnt) + "-policies loaded");
+	INFO(VIST, std::to_string(cnt) + "-policies loaded");
 }
 
 std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 {
-	INFO(DPM, "Load policies from :" << path);
+	INFO(VIST, "Load policies from :" << path);
 	klay::File dir(path);
 	if (!dir.exists() || !dir.isDirectory())
 		throw std::invalid_argument("Plugin directory is wrong.: " + path);
@@ -44,18 +44,18 @@ std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 
 		try {
 			auto provider = PolicyLoader::load(iter->getPath());
-			DEBUG(DPM, "Loaded provider: " << provider->getName());
+			DEBUG(VIST, "Loaded provider: " << provider->getName());
 			this->providers.emplace_back(std::move(provider));
 		} catch (const std::exception& e) {
 			++failed;
-			ERROR(DPM, "Failed to load: " << iter->getPath() << e.what());
+			ERROR(VIST, "Failed to load: " << iter->getPath() << e.what());
 			continue;
 		}
 
 		++passed;
 	}
 
-	INFO(DPM, "Loaded result >> passed: " << passed << ", failed: " << failed);
+	INFO(VIST, "Loaded result >> passed: " << passed << ", failed: " << failed);
 	return std::make_pair(passed, failed);
 }
 
@@ -66,15 +66,25 @@ int PolicyManager::loadPolicies()
 		this->domain.insert(p->domain.cbegin(), p->domain.cend());
 	}
 
+	bool changed = false;
 	for (const auto& g : global) {
-		if (!storage.exists(g.first))
-			throw std::runtime_error("Policy does not exist.: " + g.first);
+		if (!storage.exists(g.first)) {
+			INFO(VIST, "Define global policy: " << g.first);
+			storage.define(0, g.first, g.second->getInitial().value);
+			changed = true;
+		}
 	}
 
 	for (const auto& d : domain) {
-		if (!storage.exists(d.first))
-			throw std::runtime_error("Policy does not exist.: " + d.first);
+		if (!storage.exists(d.first)) {
+			INFO(VIST, "Define domain policy: " << d.first);
+			storage.define(1, d.first, d.second->getInitial().value);
+			changed = true;
+		}
 	}
+
+	if (changed)
+		storage.syncPolicyDefinition();
 
 	return global.size() + domain.size();
 }

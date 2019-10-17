@@ -22,6 +22,8 @@
 #include <klay/db/statement.h>
 #include <klay/exception.h>
 
+#include <fstream>
+
 using namespace query_builder;
 using namespace policyd::schema;
 
@@ -45,6 +47,10 @@ auto definitionTable = make_table("policy_definition",
 								  make_column("scope", &PolicyDefinition::scope),
 								  make_column("name", &PolicyDefinition::name),
 								  make_column("ivalue", &PolicyDefinition::ivalue));
+
+const std::string SCRIPT_BASE = SCRIPT_INSTALL_DIR;
+const std::string SCRIPT_CREATE_SCHEMA  = "create_schema";
+
 } // anonymous namespace
 
 namespace policyd {
@@ -54,12 +60,15 @@ PolicyStorage::PolicyStorage(const std::string& path) :
 													database::Connection::ReadWrite |
 													database::Connection::Create))
 {
+	database->exec("PRAGMA foreign_keys = ON;");
+	database->exec(getScript(SCRIPT_CREATE_SCHEMA));
+
 	sync();
 }
 
 void PolicyStorage::sync()
 {
-	DEBUG(DPM, "Sync policy storage to cache object.");
+	DEBUG(VIST, "Sync policy storage to cache object.");
 	syncPolicyDefinition();
 	syncAdmin();
 	syncManagedPolicy();
@@ -77,7 +86,7 @@ void PolicyStorage::syncPolicyDefinition()
 		pd.scope = stmt.getColumn(1);
 		pd.name = std::string(stmt.getColumn(2));
 		pd.ivalue = stmt.getColumn(3);
-		DEBUG(DPM, "Defined policy:" + pd.name);
+		DEBUG(VIST, "Defined policy:" + pd.name);
 		this->definitions.emplace(pd.name, std::move(pd));
 	}
 }
@@ -117,12 +126,50 @@ void PolicyStorage::syncManagedPolicy()
 	}
 }
 
+std::string PolicyStorage::getScript(const std::string& name)
+{
+	std::string path = SCRIPT_BASE + "/" + name + ".sql";
+	std::ifstream is(path);
+	if (is.fail())
+		throw std::invalid_argument("Failed to open script: " + path); 
+
+	std::istreambuf_iterator<char> begin(is), end;
+	auto content = std::string(begin, end);
+	if (content.empty())
+		throw std::runtime_error("Failed to read script: " + path); 
+
+	return content;
+}
+
+void PolicyStorage::define(int scope, const std::string& policy, int ivalue)
+{
+	if (definitions.find(policy) != definitions.end()) {
+		INFO(VIST, "Policy is already defined: " + policy);
+		return;
+	}
+
+	PolicyDefinition pd;
+	pd.scope = scope;
+	pd.name = policy;
+	pd.ivalue = ivalue;
+
+	std::string insertQuery = definitionTable.insert(&PolicyDefinition::scope,
+													 &PolicyDefinition::name,
+													 &PolicyDefinition::ivalue);
+	database::Statement stmt(*database, insertQuery);
+	stmt.bind(1, pd.scope);
+	stmt.bind(2, pd.name);
+	stmt.bind(3, pd.ivalue);
+	if (!stmt.exec())
+		throw std::runtime_error("Failed to define policy: " + pd.name);
+}
+
 void PolicyStorage::enroll(const std::string& name, uid_t uid)
 {
 	std::string alias = getAlias(name, uid);
-	INFO(DPM, "Enroll admin: " + alias);
+	INFO(VIST, "Enroll admin: " + alias);
 	if (admins.find(alias) != admins.end()) {
-		ERROR(DPM, "Admin is aleady enrolled.: " + alias);
+		ERROR(VIST, "Admin is aleady enrolled.: " + alias);
 		return;
 	}
 
@@ -140,7 +187,7 @@ void PolicyStorage::enroll(const std::string& name, uid_t uid)
 	stmt.bind(3, admin.key);
 	stmt.bind(4, admin.removable);
 	if (!stmt.exec())
-		throw std::runtime_error("Failed to enroll admin.: " + admin.pkg);
+		throw std::runtime_error("Failed to enroll admin: " + admin.pkg);
 
 	/// Sync admin for getting admin ID.
 	syncAdmin();
@@ -148,15 +195,15 @@ void PolicyStorage::enroll(const std::string& name, uid_t uid)
 	syncManagedPolicy();
 
 	int count = managedPolicies.size() / admins.size();
-	INFO(DPM, "Admin[" + alias + "] manages " + std::to_string(count) + "-policies.");
+	INFO(VIST, "Admin[" + alias + "] manages " + std::to_string(count) + "-policies.");
 }
 
 void PolicyStorage::disenroll(const std::string& name, uid_t uid)
 {
 	std::string alias = getAlias(name, uid);
-	INFO(DPM, "Disenroll admin: " + alias);
+	INFO(VIST, "Disenroll admin: " + alias);
 	if (admins.find(alias) == admins.end()) {
-		ERROR(DPM, "Not exist admin: " + alias);
+		ERROR(VIST, "Not exist admin: " + alias);
 		return;
 	} else {
 		admins.erase(alias);
@@ -182,7 +229,7 @@ void PolicyStorage::update(const std::string& name, uid_t uid,
 	if (definitions.find(policy) == definitions.end())
 		throw std::runtime_error("Not exist policy: " + policy);
 
-	DEBUG(DPM, "Policy-update is called by admin: " + alias + ", about: " + policy +
+	DEBUG(VIST, "Policy-update is called by admin: " + alias + ", about: " + policy +
 			   ", value: " + std::to_string(value));
 
 	int policyId = definitions[policy].id;
@@ -226,8 +273,8 @@ PolicyValue PolicyStorage::strictest(const std::string& policy, uid_t uid)
 		else
 			strictest->value = (*strictest < value) ? strictest->value : value;
 
-		DEBUG(DPM, "The strictest of policy[" + policy +
-				   "] : " + std::to_string(strictest->value));
+		DEBUG(VIST, "The strictest of policy[" + policy +
+				    "] : " + std::to_string(strictest->value));
 	}
 
 	if (strictest == nullptr)

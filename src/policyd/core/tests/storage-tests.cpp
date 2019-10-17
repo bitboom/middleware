@@ -41,12 +41,13 @@ TEST_F(PolicyStorageTests, initialize) {
 	bool isRaised = false;
 
 	try {
+		// DB is maden at run-time
 		PolicyStorage storage("/tmp/dummy");
 	} catch (const std::exception&) {
 		isRaised = true;
 	}
 
-	EXPECT_TRUE(isRaised);
+	EXPECT_FALSE(isRaised);
 }
 
 TEST_F(PolicyStorageTests, enrollment) {
