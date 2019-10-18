@@ -32,12 +32,12 @@ public:
 	explicit PolicyProvider(std::string name) noexcept : name(std::move(name)) {}
 	virtual ~PolicyProvider() = default;
 
-	inline void add(std::shared_ptr<GlobalPolicy>&& policy) {
-		global.emplace(policy->getName(), std::move(policy));
+	inline void add(const std::shared_ptr<GlobalPolicy>& policy) {
+		global[policy->getName()] = policy;
 	}
 
-	inline void add(std::shared_ptr<DomainPolicy>&& policy) {
-		domain.emplace(policy->getName(), std::move(policy));
+	inline void add(const std::shared_ptr<DomainPolicy>& policy) {
+		domain[policy->getName()] = policy;
 	}
 
 	inline const std::string& getName() const noexcept { return name; }

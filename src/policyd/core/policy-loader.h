@@ -27,7 +27,7 @@
 namespace policyd {
 
 struct PolicyLoader final {
-	static std::shared_ptr<PolicyProvider> load(const std::string& path);
+	static PolicyProvider* load(const std::string& path);
 };
 
 class PluginLoader final {
@@ -38,7 +38,7 @@ public:
 	void load(const std::string& name, T& symbol);
 
 private:
-	using Handle = std::unique_ptr<void, decltype(&::dlclose)>;
+	using Handle = std::unique_ptr<void, int(*)(void*)>;
 	Handle handle;
 };
 

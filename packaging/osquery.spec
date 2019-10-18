@@ -27,6 +27,7 @@ Requires: gflag
 Requires: boost-regex boost-system boost-thread boost-filesystem
 Requires: procps-ng
 Requires: libsystemd
+Requires: klay
 
 %global user_name   security_fw
 %global group_name  security_fw
@@ -115,6 +116,7 @@ BuildRequires: pkgconfig(buxton2)
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(capi-system-info)
 BuildRequires: pkgconfig(capi-base-common)
+BuildRequires: pkgconfig(klay)
 
 ## Bluetooth
 BuildRequires: pkgconfig(bluetooth-api)
@@ -123,6 +125,7 @@ BuildRequires: pkgconfig(capi-network-bluetooth)
 ## Wifi
 BuildRequires: pkgconfig(capi-network-wifi-manager)
 BuildRequires: pkgconfig(capi-network-connection)
+Requires: klay
 
 %description policyd-plugins
 Provides plugins for device policy manager
@@ -130,3 +133,4 @@ Provides plugins for device policy manager
 %files policyd-plugins
 %manifest packaging/%{name}-plugins.manifest
 %{vist_plugin_dir}/bluetooth
+%{vist_plugin_dir}/wifi

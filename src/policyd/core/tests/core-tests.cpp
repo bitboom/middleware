@@ -25,17 +25,8 @@ class PolicyCoreTests : public testing::Test {};
 TEST_F(PolicyCoreTests, policy_loader) {
 	auto& manager = PolicyManager::Instance();
 
-	/// Clearing for test
-	manager.providers.clear();
-	manager.global.clear();
-	manager.domain.clear();
-
-	auto result = manager.loadProviders(PLUGIN_INSTALL_DIR);
-	EXPECT_TRUE(result.first > 0);
-	EXPECT_TRUE(result.second == 0);
-
-	auto size = manager.loadPolicies();
-	EXPECT_TRUE(size > 0);
+	EXPECT_TRUE(manager.providers.size() > 0);
+	EXPECT_TRUE(manager.policies.size() > 0);
 }
 
 TEST_F(PolicyCoreTests, policy_set_get) {

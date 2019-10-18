@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-SET(TARGET "dpm-plugin-bluetooth")
+SET(TARGET "vist-plugin-bluetooth")
 
 SET(PLUGIN_SOURCES "bluetooth.cpp")
 
@@ -27,6 +27,6 @@ ADD_LIBRARY(${TARGET} SHARED ${PLUGIN_SOURCES})
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES COMPILE_FLAGS "-fvisibility=default")
 TARGET_LINK_LIBRARIES(${TARGET} ${PLUGIN_DEPS_LIBRARIES})
 
-INSTALL(FILES libdpm-plugin-bluetooth.so
+INSTALL(FILES libvist-plugin-bluetooth.so
 		RENAME bluetooth
 		DESTINATION ${PLUGIN_INSTALL_DIR})

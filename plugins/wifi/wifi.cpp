@@ -15,19 +15,14 @@
  */
 
 #include <arpa/inet.h>
-
-#include <cstdlib>
-#include <functional>
-#include <unordered_set>
-
 #include <wifi-manager.h>
+
+#include <policyd/sdk/global-policy.h>
+#include <policyd/sdk/policy-provider.h>
 
 #include <klay/dbus/connection.h>
 
-#include <policyd/pil/policy-context.h>
-#include <policyd/pil/policy-model.h>
-#include <policyd/pil/policy-storage.h>
-#include <policyd/pil/policy-event.h>
+#include <memory>
 
 #include "../dlog.h"
 
@@ -36,204 +31,98 @@
 	"/net/netconfig/network",	\
 	"net.netconfig.network"
 
-class ModeChange : public GlobalPolicy<DataSetInt> {
-public:
-	ModeChange() : GlobalPolicy("wifi")
-	{
-		PolicyEventNotifier::create("wifi");
-	}
+using namespace policyd;
 
-	bool apply(const DataType& value)
+class ModeChange : public GlobalPolicy {
+public:
+	ModeChange() : GlobalPolicy("wifi", PolicyValue(1)) {}
+
+	void onChanged(const PolicyValue& value) override
 	{
 		int enable = value;
-		try {
-			dbus::Connection &systemDBus = dbus::Connection::getSystem();
-			systemDBus.methodcall(NETCONFIG_INTERFACE,
-								  "DevicePolicySetWifi",
-								  -1,
-								  "",
-								  "(i)",
-								  enable);
-		} catch (runtime::Exception& e) {
-			ERROR(PLUGINS, "Failed to chaneg Wi-Fi state");
-			return false;
+		klay::dbus::Connection &systemDBus = klay::dbus::Connection::getSystem();
+		systemDBus.methodcall(NETCONFIG_INTERFACE,
+							  "DevicePolicySetWifi",
+							  -1,
+							  "",
+							  "(i)",
+							  enable);
+	}
+};
+
+class ProfileChange : public GlobalPolicy {
+public:
+	ProfileChange() : GlobalPolicy("wifi-profile-change", PolicyValue(1)) {}
+
+	void onChanged(const PolicyValue& value) override
+	{
+		int enable = value;
+		dbus::Connection &systemDBus = dbus::Connection::getSystem();
+		systemDBus.methodcall(NETCONFIG_INTERFACE,
+							  "DevicePolicySetWifiProfile",
+							  -1,
+							  "",
+							  "(i)",
+							  enable);
+	}
+};
+
+class Hotspot : public GlobalPolicy {
+public:
+	Hotspot() : GlobalPolicy("wifi-hotspot", PolicyValue(1)) {}
+
+	void onChanged(const PolicyValue&) override
+	{
+		/// N/A
+	}
+};
+
+class SsidRestriction : public GlobalPolicy {
+public:
+	SsidRestriction() : GlobalPolicy("wifi-ssid-restriction", PolicyValue(0)) {}
+
+	void onChanged(const PolicyValue&) override
+	{
+		/// N/A
+	}
+};
+
+class Wifi : public PolicyProvider {
+public:
+	Wifi(const std::string& name) : PolicyProvider(name)
+	{
+		int ret = ::wifi_manager_initialize(&handle);
+		if (ret != WIFI_MANAGER_ERROR_NONE) {
+			if (ret == WIFI_MANAGER_ERROR_NOT_SUPPORTED)
+				return;
+
+			throw std::runtime_error("WiFi Manager initialization failed.");
 		}
-
-		PolicyEventNotifier::emit("wifi", enable ? "allowed" : "disallowed");
-		return true;
 	}
-};
 
-class ProfileChange : public GlobalPolicy<DataSetInt> {
-public:
-	ProfileChange() : GlobalPolicy("wifi-profile-change")
+	~Wifi()
 	{
-		PolicyEventNotifier::create("wifi_profile_change");
-	}
-
-	bool apply(const DataType& value)
-	{
-		int enable = value;
-		try {
-			dbus::Connection &systemDBus = dbus::Connection::getSystem();
-			systemDBus.methodcall(NETCONFIG_INTERFACE,
-								  "DevicePolicySetWifiProfile",
-								  -1,
-								  "",
-								  "(i)",
-								  enable);
-		} catch (runtime::Exception& e) {
-			ERROR(PLUGINS, "Failed to set Wi-Fi profile change restriction");
-			return false;
-		}
-		PolicyEventNotifier::emit("wifi_profile_change", enable ? "allowed" : "disallowed");
-		return true;
-	}
-};
-
-class Hotspot : public GlobalPolicy<DataSetInt> {
-public:
-	Hotspot() : GlobalPolicy("wifi-hotspot")
-	{
-		PolicyEventNotifier::create("wifi_hotspot");
-	}
-
-	bool apply(const DataType& value)
-	{
-		int enable = value;
-		PolicyEventNotifier::emit("wifi_hotspot", enable ? "allowed" : "disallowed");
-		return true;
-	}
-};
-
-class Wifi : public AbstractPolicyProvider {
-public:
-	Wifi();
-	~Wifi();
-
-	int setState(bool enable);
-	bool getState();
-	int setHotspotState(bool enable);
-	bool getHotspotState();
-	int setProfileChangeRestriction(bool enable);
-	bool isProfileChangeRestricted();
-
-	static void onConnectionStateChanged(wifi_manager_connection_state_e state,
-										 wifi_manager_ap_h ap, void *user_data);
-
-private:
-	wifi_manager_h handle;
-
-	ModeChange modeChange;
-	ProfileChange profileChange;
-	Hotspot hotspot;
-};
-
-
-Wifi::Wifi() : handle(nullptr)
-{
-	int ret = 0;
-
-	ret = ::wifi_manager_initialize(&handle);
-	if (ret != WIFI_MANAGER_ERROR_NONE) {
-		if (ret == WIFI_MANAGER_ERROR_NOT_SUPPORTED) {
+		if (handle == nullptr)
 			return;
-		}
-		throw runtime::Exception("WiFi Manager initialization failed");
-	}
 
-	ret = ::wifi_manager_set_connection_state_changed_cb(handle, &onConnectionStateChanged, this);
-	if (ret != WIFI_MANAGER_ERROR_NONE) {
-		throw runtime::Exception("WiFi Manager set connection state changed callback failed");
-	}
-}
-
-Wifi::~Wifi()
-{
-	if (handle) {
-		::wifi_manager_unset_connection_state_changed_cb(handle);
 		::wifi_manager_deinitialize(handle);
 	}
-}
 
-void Wifi::onConnectionStateChanged(wifi_manager_connection_state_e state,
-									wifi_manager_ap_h ap, void *user_data)
-{
-	if (state == WIFI_MANAGER_CONNECTION_STATE_FAILURE ||
-		state == WIFI_MANAGER_CONNECTION_STATE_DISCONNECTED) {
-		return;
-	}
-}
+private:
+	::wifi_manager_h handle = nullptr;
+};
 
-int Wifi::setState(bool enable)
-{
-	try {
-		modeChange.set(enable);
-	} catch (runtime::Exception& e) {
-		ERROR(PLUGINS, e.what());
-		return -1;
-	}
-
-	return 0;
-}
-
-bool Wifi::getState()
-{
-	return modeChange.get();
-}
-
-int Wifi::setHotspotState(bool enable)
-{
-	try {
-		hotspot.set(enable);
-	} catch (runtime::Exception& e) {
-		ERROR(PLUGINS, e.what());
-		return -1;
-	}
-
-	return 0;
-}
-
-bool Wifi::getHotspotState()
-{
-	return hotspot.get();
-}
-
-int Wifi::setProfileChangeRestriction(bool enable)
-{
-	try {
-		profileChange.set(enable);
-	} catch (runtime::Exception& e) {
-		ERROR(PLUGINS, e.what());
-		return -1;
-	}
-
-	return 0;
-}
-
-bool Wifi::isProfileChangeRestricted()
-{
-	return profileChange.get();
-}
-
-extern "C" {
-
+// TODO(Sangwan): Add privilege to provider
 #define PRIVILEGE "http://tizen.org/privilege/dpm.wifi"
 
-AbstractPolicyProvider *PolicyFactory(PolicyControlContext& context)
+extern "C" PolicyProvider* PolicyFactory()
 {
-	INFO(PLUGINS, "Wifi plugin loaded");
-	Wifi *policy = new Wifi();
+	INFO(PLUGINS, "Wifi plugin loaded.");
+	Wifi* provider = new Wifi("wifi");
+	provider->add(std::make_shared<ModeChange>());
+	provider->add(std::make_shared<ProfileChange>());
+	provider->add(std::make_shared<Hotspot>());
+	provider->add(std::make_shared<SsidRestriction>());
 
-	context.expose(policy, PRIVILEGE, (int)(Wifi::setState)(bool));
-	context.expose(policy, PRIVILEGE, (int)(Wifi::setHotspotState)(bool));
-	context.expose(policy, PRIVILEGE, (int)(Wifi::setProfileChangeRestriction)(bool));
-
-	context.expose(policy, "", (bool)(Wifi::getState)());
-	context.expose(policy, "", (bool)(Wifi::getHotspotState)());
-	context.expose(policy, "", (bool)(Wifi::isProfileChangeRestricted)());
-
-	return policy;
+	return provider;
 }
-
-} // extern "C"

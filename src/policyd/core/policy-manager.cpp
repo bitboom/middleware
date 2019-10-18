@@ -45,7 +45,17 @@ std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 		try {
 			auto provider = PolicyLoader::load(iter->getPath());
 			DEBUG(VIST, "Loaded provider: " << provider->getName());
-			this->providers.emplace_back(std::move(provider));
+
+			bool exist = false;
+			for (const auto& p : this->providers) {
+				if (p->getName() == provider->getName()) {
+					exist = true;
+					break;
+				}
+			}
+
+			if (!exist)
+				this->providers.emplace_back(std::move(provider));
 		} catch (const std::exception& e) {
 			++failed;
 			ERROR(VIST, "Failed to load: " << iter->getPath() << e.what());
@@ -61,32 +71,36 @@ std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 
 int PolicyManager::loadPolicies()
 {
-	for (const auto& p : providers) {
-		this->global.insert(p->global.cbegin(), p->global.cend());
-		this->domain.insert(p->domain.cbegin(), p->domain.cend());
-	}
-
 	bool changed = false;
-	for (const auto& g : global) {
-		if (!storage.exists(g.first)) {
-			INFO(VIST, "Define global policy: " << g.first);
-			storage.define(0, g.first, g.second->getInitial().value);
-			changed = true;
-		}
-	}
 
-	for (const auto& d : domain) {
-		if (!storage.exists(d.first)) {
-			INFO(VIST, "Define domain policy: " << d.first);
-			storage.define(1, d.first, d.second->getInitial().value);
-			changed = true;
+	/// Make policy-provider map for performance
+	for (const auto& provider : providers) {
+		for (const auto& pair : provider->global) {
+			policies[pair.first] = provider->getName();
+
+			/// Check the policy is defined on policy-storage
+			if (!storage.exists(pair.first)) {
+				INFO(VIST, "Define global policy: " << pair.first);
+				storage.define(0, pair.first, pair.second->getInitial().value);
+				changed = true;
+			}
+		}
+
+		for (const auto& pair : provider->domain) {
+			policies[pair.first] = provider->getName();
+
+			if (!storage.exists(pair.first)) {
+				INFO(VIST, "Define domain policy: " << pair.first);
+				storage.define(1, pair.first, pair.second->getInitial().value);
+				changed = true;
+			}
 		}
 	}
 
 	if (changed)
 		storage.syncPolicyDefinition();
 
-	return global.size() + domain.size();
+	return policies.size();
 }
 
 void PolicyManager::enroll(const std::string& admin, uid_t uid)
@@ -102,19 +116,25 @@ void PolicyManager::disenroll(const std::string& admin, uid_t uid)
 void PolicyManager::set(const std::string& policy, const PolicyValue& value,
 						const std::string& admin, uid_t uid)
 {
+	if (policies.find(policy) == policies.end())
+		std::runtime_error("Not exist policy: " + policy);
+
 	storage.update(admin, uid, policy, value);
 
-	if (global.find(policy) != global.end()) {
-		global[policy]->set(value);
-		return;
-	}
+	for (auto& p : providers) {
+		if (p->getName() != policies[policy])
+			continue;
 
-	if (domain.find(policy) != domain.end()) {
-		domain[policy]->set(uid, value);
-		return;
-	}
+		if (p->global.find(policy) != p->global.end()) {
+			p->global[policy]->set(value);
+			return;
+		}
 
-	throw std::runtime_error("Cannot set policy." + policy);
+		if (p->domain.find(policy) != p->domain.end()) {
+			p->domain[policy]->set(uid, value);
+			return;
+		}
+	}
 }
 
 PolicyValue PolicyManager::get(const std::string& policy, uid_t uid)

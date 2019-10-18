@@ -18,7 +18,7 @@
 
 namespace policyd {
 
-std::shared_ptr<PolicyProvider> PolicyLoader::load(const std::string& path)
+PolicyProvider* PolicyLoader::load(const std::string& path)
 {
 	PluginLoader loader(path);
 	PolicyProvider::FactoryType factory = nullptr;
@@ -26,7 +26,7 @@ std::shared_ptr<PolicyProvider> PolicyLoader::load(const std::string& path)
 	if (factory == nullptr)
 		std::runtime_error("Failed to load symbol. " + PolicyProvider::getFactoryName());
 
-	std::shared_ptr<PolicyProvider> provider((*factory)());
+	auto provider = (*factory)();
 	if (provider == nullptr)
 		std::runtime_error("Failed to make provider. " + PolicyProvider::getFactoryName());
 
@@ -34,7 +34,10 @@ std::shared_ptr<PolicyProvider> PolicyLoader::load(const std::string& path)
 }
 
 PluginLoader::PluginLoader(const std::string& path, int flag)
-	: handle(::dlopen(path.c_str(), flag), ::dlclose)
+	: handle(::dlopen(path.c_str(), flag), [](void*)->int{return 0;})
+// Cleaning object after dlclose() makes SEGFAULT.
+// TODO: Sync dynamic loading's life-cycle with program.(PluginManager)
+//	: handle(::dlopen(path.c_str(), flag), ::dlclose)
 {
 	if (handle == nullptr)
 		throw std::invalid_argument("Failed to open: " + path);

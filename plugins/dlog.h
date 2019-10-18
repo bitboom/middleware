@@ -45,7 +45,7 @@ public:
 private:
 	DLog()
 	{
-		auto dlog = new audit::DlogLogSink("DPM_PLUGIN");
+		auto dlog = new audit::DlogLogSink("VIST_PLUGIN");
 		this->logSink.reset(dynamic_cast<audit::LogSink*>(dlog));
 	}
 	~DLog() noexcept = default;

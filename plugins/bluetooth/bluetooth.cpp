@@ -102,6 +102,7 @@ public:
 
 extern "C" PolicyProvider* PolicyFactory()
 {
+	INFO(PLUGINS, "Bluetooth plugin loaded.");
 	Bluetooth* provider = new Bluetooth("bluetooth");
 	provider->add(std::make_shared<ModeChange>());
 	provider->add(std::make_shared<DesktopConnectivity>());

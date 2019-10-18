@@ -61,10 +61,10 @@ private:
 	int loadPolicies();
 
 	PolicyStorage storage;
-	std::vector<std::shared_ptr<PolicyProvider>> providers;
+	std::vector<std::unique_ptr<PolicyProvider>> providers;
 
-	std::unordered_map<std::string, std::shared_ptr<GlobalPolicy>> global;
-	std::unordered_map<std::string, std::shared_ptr<DomainPolicy>> domain;
+	/// Policy-Provider
+	std::unordered_map<std::string, std::string> policies;
 
 	FRIEND_TEST(PolicyCoreTests, policy_loader);
 };
