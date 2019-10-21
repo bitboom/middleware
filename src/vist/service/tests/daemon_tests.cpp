@@ -14,35 +14,21 @@
  *  limitations under the License
  */
 
-#pragma once
+#include <gtest/gtest.h>
 
-#include <string>
-#include <memory>
+#include "../vistd.h" 
+#include "ipc/client.h"
 
-#include <klay/rmi/service.h>
+#include <chrono>
+#include <thread>
 
-namespace ipc {
+using namespace vist;
 
-class Server final {
-public:
-	Server(const Server&) = delete;
-	Server& operator=(const Server&) = delete;
+class DaemonTests : public testing::Test {};
 
-	Server(Server&&) = delete;
-	Server& operator=(Server&&) = delete;
+TEST_F(DaemonTests, query) {
+	Vistd vistd;
+	auto rows = vistd.query("SELECT * FROM policy");
 
-	static std::unique_ptr<klay::rmi::Service>& Instance(const std::string& sock)
-	{
-		static Server server(sock);
-		return server.instance;
-	}
-
-private:
-	explicit Server(const std::string& sock) :
-		instance(std::make_unique<klay::rmi::Service>(sock)) {}
-	~Server() = default;
-
-	std::unique_ptr<klay::rmi::Service> instance;
-};
-
-} // namespace ipc
+	EXPECT_TRUE(rows.size() > 0);
+}

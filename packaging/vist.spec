@@ -91,6 +91,7 @@ rm -rf %{buildroot}
 %license LICENSE-Apache-2.0
 %license LICENSE-GPL-2.0
 %license LICENSE-MIT
+%{_bindir}/vistd
 %{vist_script_dir}/*.sql
 %dir %attr(-, %{user_name}, %{group_name}) %{vist_db_dir}
 %dir %attr(-, %{user_name}, %{group_name}) %{vist_plugin_dir}

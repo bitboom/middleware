@@ -12,5 +12,5 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-FILE(GLOB SERVER_TESTS "tests/*.cpp")
-ADD_VIST_TEST(${SERVER_TESTS})
+FILE(GLOB IPC_TESTS "ipc/tests/*.cpp")
+ADD_VIST_TEST(${IPC_TESTS})

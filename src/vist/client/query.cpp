@@ -14,38 +14,21 @@
  *  limitations under the License
  */
 
-#pragma once
+#include "query.h"
 
-#include <string>
-#include <memory>
+#include "ipc/client.h" 
 
-#include <klay/rmi/client.h>
+namespace {
+	const std::string SOCK_ADDR = "/tmp/.vistd";
+} // anonymous namespace
 
-namespace ipc {
+namespace vist {
 
-class Client final {
-public:
-	Client(const Client&) = delete;
-	Client& operator=(const Client&) = delete;
+Rows Query::Execute(const std::string& statement)
+{
+	auto& client = ipc::Client::Instance(SOCK_ADDR);
 
-	Client(Client&&) = delete;
-	Client& operator=(Client&&) = delete;
+	return client->methodCall<Rows>("Vistd::query", statement);
+}
 
-	static std::unique_ptr<klay::rmi::Client>& Instance(const std::string& sock)
-	{
-		static Client client(sock);
-		return client.instance;
-	}
-
-private:
-	explicit Client(const std::string& sock) :
-		instance(std::make_unique<klay::rmi::Client>(sock))
-	{
-		instance->connect();
-	}
-	~Client() = default;
-
-	std::unique_ptr<klay::rmi::Client> instance;
-};
-
-} // namespace ipc
+} // namespace vist

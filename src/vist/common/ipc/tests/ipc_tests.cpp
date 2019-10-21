@@ -16,8 +16,8 @@
 
 #include <gtest/gtest.h>
 
-#include "../server.h"
-#include "../client.h"
+#include "ipc/server.h"
+#include "ipc/client.h"
 
 #include <chrono>
 #include <thread>
@@ -25,15 +25,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-using namespace ipc;
+using namespace vist;
 
 namespace {
 	std::string g_socket = "/tmp/vist-test";
-
-	void init()
-	{
-	}
-
 } // anonymous namespace
 
 class TestServer {
