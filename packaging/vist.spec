@@ -1,8 +1,8 @@
-Name: osquery
+Name: vist
 Version: 0.0.0
 Release: 0
 License: Apache-2.0 and GPLv2 and MIT
-Summary: A SQL powered operating system instrumentation, monitoring framework.
+Summary: ViST(Virtual Security Table) is a security monitoring framework using SQL query.
 Url: https://github.com/facebook/osquery
 Group: Security/Libraries
 Source0: file://%{name}-%{version}.tar.gz
@@ -29,6 +29,8 @@ Requires: procps-ng
 Requires: libsystemd
 Requires: klay
 
+%global osquery_version 4.0.0
+
 %global user_name   security_fw
 %global group_name  security_fw
 %global smack_label System
@@ -44,12 +46,9 @@ Requires: klay
 %global vist_script_dir %{vist_ro_dir}/script
 
 %description
-Osquery exposes an operating system as a high-performance relational database.
-This allows you to write SQL-based queries to explore operating system data.
-
-%files
-%manifest %{name}.manifest
-%license MIT-LICENSE
+ViST provides APIs for monitoring and controlling security resources.
+ViST views security resources as virtual tables and manipulates them through SQL queries.
+ViST adopts a plug-in architecture and uses osquery as the query analysis engine.
 
 %prep
 %setup -q
@@ -64,9 +63,9 @@ cp %SOURCE1 .
 %endif
 
 %cmake . -DCMAKE_BUILD_TYPE=%{build_type} \
-		 -DOSQUERY_BUILD_VERSION=%{version} \
-		 -DGBS_BUILD="TRUE" \
 		 -DVERSION=%{version} \
+		 -DOSQUERY_VERSION=%{osquery_version} \
+		 -DGBS_BUILD="TRUE" \
 		 -DUSER_NAME=%{user_name} \
 		 -DGROUP_NAME=%{group_name} \
 		 -DSMACK_LABEL=%{smack_label} \
@@ -89,27 +88,32 @@ rm -rf %{buildroot}
 
 %files
 %manifest %{name}.manifest
+%license LICENSE-Apache-2.0
+%license LICENSE-GPL-2.0
+%license LICENSE-MIT
 %{vist_script_dir}/*.sql
 %dir %attr(-, %{user_name}, %{group_name}) %{vist_db_dir}
+%dir %attr(-, %{user_name}, %{group_name}) %{vist_plugin_dir}
+%dir %attr(-, %{user_name}, %{group_name}) %{vist_script_dir}
 
 ## Test Package ##############################################################
 %package test 
-Summary: Osquery test
+Summary: Virtaul Security Table (unit test)
 Group: Security/Testing
 BuildRequires: gtest-devel
 Requires: gtest
 
 %description test 
-Testcases for osquery 
+Provides internal testcases for ViST implementation.
 
 %files test
 %{_bindir}/osquery-test
-%{_bindir}/apix-test
+%{_bindir}/vist-test
 %{_bindir}/policyd-test
 
 ## ViST Plugins - ###########################################################
-%package policyd-plugins
-Summary: ViST plugins
+%package plugins
+Summary: Virtaul Security Table (policy modules)
 Group: Security/Other
 ## Common
 BuildRequires: pkgconfig(buxton2)
@@ -127,10 +131,10 @@ BuildRequires: pkgconfig(capi-network-wifi-manager)
 BuildRequires: pkgconfig(capi-network-connection)
 Requires: klay
 
-%description policyd-plugins
-Provides plugins for device policy manager
+%description plugins
+Provides plugins for controlling policies.
 
-%files policyd-plugins
+%files plugins
 %manifest packaging/%{name}-plugins.manifest
 %{vist_plugin_dir}/bluetooth
 %{vist_plugin_dir}/wifi

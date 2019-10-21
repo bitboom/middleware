@@ -12,13 +12,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_APIX_LIBRARY(manager manager.cpp
+ADD_VIST_LIBRARY(manager manager.cpp
 						 manager_impl.cpp)
 
 FILE(GLOB MANAGER_TESTS "tests/m*.cpp")
-ADD_APIX_TEST(${MANAGER_TESTS})
+ADD_VIST_TEST(${MANAGER_TESTS})
 
 IF(DEFINED GBS_BUILD)
 	FILE(GLOB POLICYD_TESTS "tests/p*.cpp")
-	ADD_APIX_TEST(${POLICYD_TESTS})
+	ADD_VIST_TEST(${POLICYD_TESTS})
 ENDIF(DEFINED GBS_BUILD)

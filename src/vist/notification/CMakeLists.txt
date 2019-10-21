@@ -12,5 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-FILE(GLOB TSQB_TESTS "tests/*.cpp")
-ADD_APIX_TEST(${TSQB_TESTS})
+ADD_VIST_LIBRARY(vist_notification notification.cpp)
+
+FILE(GLOB NOTIFICATION_TESTS "tests/*.cpp")
+ADD_VIST_TEST(${NOTIFICATION_TESTS})

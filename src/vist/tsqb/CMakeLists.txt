@@ -12,7 +12,5 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_APIX_LIBRARY(property property.cpp)
-
-FILE(GLOB PROPERTY_TESTS "tests/*.cpp")
-ADD_APIX_TEST(${PROPERTY_TESTS})
+FILE(GLOB TSQB_TESTS "tests/*.cpp")
+ADD_VIST_TEST(${TSQB_TESTS})

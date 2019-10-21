@@ -13,7 +13,7 @@
 #  limitations under the License
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-PROJECT(OSQUERY)
+PROJECT(vist)
 
 INCLUDE(GNUInstallDirs)
 INCLUDE(CMake/Macro.cmake)
@@ -39,8 +39,9 @@ ADD_DEFINITIONS("-fPIC")
 #ADD_DEFINITIONS("-pedantic")
 #ADD_DEFINITIONS("-pedantic-errors")
 
-# TODO(sangwan.kwon): Get version from packing spec.
-SET(OSQUERY_VERSION "4.0.0")
+IF(NOT DEFINED OSQUERY_VERSION)
+	SET(OSQUERY_VERSION "4.0.0")
+ENDIF(NOT DEFINED OSQUERY_VERSION)
 
 # Set various platform/platform-version/build version/etc defines.
 ADD_DEFINITIONS(-DLINUX="1"
@@ -59,7 +60,7 @@ INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/api")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/src")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/tools/sqlite3")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/src/osquery/include")
-INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/src/apix/tsqb")
+INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/src/vist/tsqb")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/src/osquery/extensions/thrift/gen")
 INCLUDE_DIRECTORIES("/usr/local/include")
 

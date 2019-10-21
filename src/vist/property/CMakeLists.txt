@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_APIX_LIBRARY(apix_notification notification.cpp)
+ADD_VIST_LIBRARY(property property.cpp)
 
-FILE(GLOB NOTIFICATION_TESTS "tests/*.cpp")
-ADD_APIX_TEST(${NOTIFICATION_TESTS})
+FILE(GLOB PROPERTY_TESTS "tests/*.cpp")
+ADD_VIST_TEST(${PROPERTY_TESTS})

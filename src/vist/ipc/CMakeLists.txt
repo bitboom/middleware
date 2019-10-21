@@ -13,4 +13,4 @@
 #  limitations under the License
 
 FILE(GLOB SERVER_TESTS "tests/*.cpp")
-ADD_APIX_TEST(${SERVER_TESTS})
+ADD_VIST_TEST(${SERVER_TESTS})

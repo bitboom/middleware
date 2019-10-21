@@ -1,10 +1,10 @@
-# Osquery for Tizen
-> [Osquery](https://osquery.io/) is open-source project which means "Performant endpoint visibility".  
-> It can be used as security monitoring, audit, malware anaysis.
+# ViST, Virtual Security Table
+ViST(Virtual Security Table) is a security monitoring framework using SQL query.
+- Provides APIs for monitoring and controlling security resources.
+- Views security resources as virtual tables and manipulates them through SQL queries.
+- Adopts a plug-in architecture and uses [osquery](https://osquery.io/) as the query analysis engine.
 
-We fork osquery and improve it for **device security which manages device-policy and auditing**.  
-The supporting elements can be extended like security analyzer, network security, kernel integrity.
-
+# Architecture
 ![tizen-osquery-architecture](https://github.sec.samsung.net/storage/user/692/files/74819c00-4c95-11e9-9648-54e02513e338)
 
 # Advantages of tizen-osquery better than osquery
