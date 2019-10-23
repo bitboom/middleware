@@ -23,11 +23,12 @@
 
 #pragma once
 
-#include <string>
 #include <map>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
-namespace osquery {
+namespace vist {
 
 /// TBD: Consider error handling.
 template <typename T>
@@ -71,4 +72,4 @@ private:
 	std::vector<Property<T>> datas;
 };
 
-} // namespace osquery
+} // namespace vist

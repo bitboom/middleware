@@ -24,6 +24,7 @@
 #include <schema/processes.h>
 
 using namespace osquery;
+using namespace vist;
 
 class PropertyTests : public testing::Test {};
 

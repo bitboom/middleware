@@ -13,31 +13,45 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file manager.cpp
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief Implementation of osquery manager
- */
 
-#include <osquery_manager.h>
+#pragma once
 
-#include "manager_impl.h"
+#include <map>
+#include <string>
+#include <vector>
 
-namespace osquery {
+namespace vist {
 
-Rows OsqueryManager::execute(const std::string& query)
-{
-	return ManagerImpl::instance().execute(query);
-}
+using Row = std::map<std::string, std::string>;
+using Rows = std::vector<Row>;
 
-void OsqueryManager::subscribe(const std::string& table, const Callback& callback)
-{
-	return ManagerImpl::instance().subscribe(table, callback);
-}
+class Vist final {
+public:
+	Vist(const Vist&) = delete;
+	Vist& operator=(const Vist&) = delete;
 
-std::vector<std::string> OsqueryManager::columns(const std::string& table) noexcept
-{
-	return ManagerImpl::instance().columns(table);
-}
+	Vist(Vist&&) = default;
+	Vist& operator=(Vist&&) = default;
 
-} // namespace osquery
+	/// Exposed method (API)
+	Rows query(const std::string& statement);
+
+	static Vist& Instance()
+	{
+		static Vist instance;
+		return instance;
+	}
+
+	static Rows Query(const std::string& statement)
+	{
+		return Vist::Instance().query(statement);
+	}
+
+	void start();
+
+private:
+	explicit Vist();
+	~Vist() = default;
+};
+
+} // namespace vist

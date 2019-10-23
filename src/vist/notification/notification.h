@@ -26,13 +26,14 @@
 #include <map>
 #include <vector>
 
-#include <osquery_manager.h>
-
-#include <osquery/database.h>
 #include <osquery/status.h>
-#include <osquery/registry.h>
 
-namespace osquery {
+namespace vist {
+
+using Row = std::map<std::string, std::string>;
+using Rows = std::vector<Row>;
+
+using Callback = std::function<void(const Row&)>;
 
 using NotifyCallback = Callback;
 
@@ -40,12 +41,11 @@ class Notification final {
 public:
 	static Notification& instance();
 
-	Status add(const std::string& table, const NotifyCallback& callback);
-	Status emit(const std::string& table, const Row& result) const;
-
-public:
 	Notification(const Notification&) = delete;
 	Notification& operator=(const Notification&) = delete;
+
+	osquery::Status add(const std::string& table, const NotifyCallback& callback);
+	osquery::Status emit(const std::string& table, const Row& result) const;
 
 private:
 	Notification() = default;
@@ -54,4 +54,4 @@ private:
 	std::multimap<std::string, NotifyCallback> callbacks;
 };
 
-} // namespace osquery
+} // namespace vist

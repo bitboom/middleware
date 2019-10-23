@@ -14,7 +14,7 @@
  *  limitations under the License
  */
 
-#include "vistd.h"
+#include "vist.h"
 #include "ipc/server.h"
 
 #include <stdexcept>
@@ -26,25 +26,25 @@
 #define QUERY_RET_TYPE std::vector<std::map<std::string, std::string>>
 
 namespace {
-	const std::string SOCK_ADDR = "/tmp/.vistd";
+	const std::string SOCK_ADDR = "/tmp/.vist";
 } // anonymous namespace
 
 namespace vist {
 
-Vistd::Vistd()
+Vist::Vist()
 {
 	osquery::registryAndPluginInit();
 }
 
-void Vistd::start()
+void Vist::start()
 {
 	auto& server = ipc::Server::Instance(SOCK_ADDR);
 
-	server->expose(this, "", (QUERY_RET_TYPE)(Vistd::query)(std::string));
+	server->expose(this, "", (QUERY_RET_TYPE)(Vist::query)(std::string));
 	server->start();
 }
 
-Rows Vistd::query(const std::string& statement)
+Rows Vist::query(const std::string& statement)
 {
 	osquery::SQL sql(statement, true);
 	if (!sql.ok())

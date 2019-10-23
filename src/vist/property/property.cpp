@@ -19,11 +19,12 @@
  * @brief Implementation of Property
  */
 
-#include <osquery_manager.h>
 #include <property.h>
 
 #include <schema/time.h>
 #include <schema/processes.h>
+
+#include "../service/vist.h"
 
 #include <osquery/logger.h>
 
@@ -55,12 +56,12 @@ auto db = make_database("db", time, processes);
 
 } // anonymous namespace
 
-namespace osquery {
+namespace vist {
 
 template <typename T>
 Property<T>::Property()
 {
-	auto results = OsqueryManager::execute(db.selectAll<T>());
+	auto results = Vist::Query(db.selectAll<T>());
 	if (results.size() > 0)
 		this->data = std::move(results[0]);
 }
@@ -110,7 +111,7 @@ Member Property<T>::operator[](Member Struct::*field) const
 template <typename T>
 Properties<T>::Properties()
 {
-	auto results = OsqueryManager::execute(db.selectAll<T>());
+	auto results = Vist::Query(db.selectAll<T>());
 	for (auto& r : results)
 		this->datas.emplace_back(Property<T>(std::move(r)));
 }
@@ -130,4 +131,4 @@ template long long int Property<Processes>::operator[](long long int Processes::
 template std::string Property<Processes>::at(std::string Processes::*) const;
 template std::string Property<Processes>::operator[](std::string Processes::*) const;
 
-} // namespace osquery
+} // namespace vist

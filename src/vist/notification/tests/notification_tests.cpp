@@ -16,10 +16,10 @@
 
 #include <gtest/gtest.h>
 
-#include <osquery/notification.h>
+#include "../notification.h"
 #include <osquery/logger.h>
 
-using namespace osquery;
+using namespace vist;
 
 class NotificationTests : public testing::Test {};
 

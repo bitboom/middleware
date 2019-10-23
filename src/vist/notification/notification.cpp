@@ -19,16 +19,19 @@
  * @brief Implementation of notification
  */
 
+#include "notification.h"
+
 #include <mutex>
 
-#include <osquery/notification.h>
 #include <osquery/logger.h>
 
 namespace {
 	std::mutex mutex;
 } // anonymous namespace
 
-namespace osquery {
+namespace vist {
+
+using namespace osquery;
 
 Notification& Notification::instance()
 {
@@ -72,4 +75,4 @@ Status Notification::emit(const std::string& table, const Row& result) const
 	return Status(0, "OK");
 }
 
-} // namespace osquery
+} // namespace vist

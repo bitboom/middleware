@@ -14,16 +14,16 @@
  *  limitations under the License
  */
 
-#include "service/vistd.h"
+#include "service/vist.h"
 
 #include <cstdlib>
 #include <stdexcept>
 
+using namespace vist;
+
 int main() try
 {
-	vist::Vistd vistd;
-	vistd.start();
-
+	Vist::Instance().start();
 	return EXIT_SUCCESS;
 } catch(const std::exception&)
 {

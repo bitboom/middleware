@@ -19,7 +19,7 @@
 #include "ipc/client.h" 
 
 namespace {
-	const std::string SOCK_ADDR = "/tmp/.vistd";
+	const std::string SOCK_ADDR = "/tmp/.vist";
 } // anonymous namespace
 
 namespace vist {
@@ -28,7 +28,7 @@ Rows Query::Execute(const std::string& statement)
 {
 	auto& client = ipc::Client::Instance(SOCK_ADDR);
 
-	return client->methodCall<Rows>("Vistd::query", statement);
+	return client->methodCall<Rows>("Vist::query", statement);
 }
 
 } // namespace vist
