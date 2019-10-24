@@ -16,7 +16,8 @@
 
 #include "query.h"
 
-#include "ipc/client.h" 
+#include <vist/common/ipc/client.h>
+#include <vist/common/audit/logger.h>
 
 namespace {
 	const std::string SOCK_ADDR = "/tmp/.vist";
@@ -26,6 +27,7 @@ namespace vist {
 
 Rows Query::Execute(const std::string& statement)
 {
+	INFO(VIST_CLIENT, "Query execution: " << statement);
 	auto& client = ipc::Client::Instance(SOCK_ADDR);
 
 	return client->methodCall<Rows>("Vist::query", statement);

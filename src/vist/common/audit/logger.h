@@ -17,21 +17,40 @@
 #pragma once
 
 #include <klay/audit/logger.h>
+#include <klay/audit/dlog-sink.h>
 
 #include <memory>
-#include <mutex>
 
-#define VIST Logger::GetLogSink("VIST")
+#define VIST vist::Logger::Instance()
+#define VIST_CLIENT vist::Logger::ClientInstance()
 
-namespace policyd {
+namespace vist {
 
-class Logger {
+class Logger final {
 public:
-	static audit::LogSink* GetLogSink(const std::string& tag);
+	Logger(const Logger&) = delete;
+	Logger& operator=(const Logger&) = delete;
+
+	Logger(Logger&&) = default;
+	Logger& operator=(Logger&&) = default;
+
+	static klay::LogSink* Instance()
+	{
+		static Logger instance("VIST");
+		return &instance.logSink;
+	}
+
+	static klay::LogSink* ClientInstance()
+	{
+		static Logger instance("VIST_CLIENT");
+		return &instance.logSink;
+	}
 
 private:
-	static std::unique_ptr<audit::LogSink> logSink;
-	static std::once_flag flag;
+	explicit Logger(const std::string& tag) : logSink(tag) {}
+	~Logger() = default;
+
+	klay::DlogLogSink logSink;
 };
 
-} // namespace policyd
+} // namespace vist

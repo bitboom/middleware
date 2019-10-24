@@ -15,13 +15,14 @@
  */
 
 #include "vist.h"
-#include "ipc/server.h"
+
+#include <vist/common/ipc/server.h>
+#include <vist/common/audit/logger.h>
 
 #include <stdexcept>
 
-#include <osquery/registry.h>
+#include <osquery/registry_interface.h>
 #include <osquery/sql.h>
-#include <osquery/status.h>
 
 #define QUERY_RET_TYPE std::vector<std::map<std::string, std::string>>
 
@@ -38,6 +39,7 @@ Vist::Vist()
 
 void Vist::start()
 {
+	INFO(VIST, "Vist daemon starts.");
 	auto& server = ipc::Server::Instance(SOCK_ADDR);
 
 	server->expose(this, "", (QUERY_RET_TYPE)(Vist::query)(std::string));

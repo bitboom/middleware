@@ -16,15 +16,14 @@
 
 #include <gtest/gtest.h>
 
-#include <osquery/logger.h>
-
 #include "../virtual-table.h"
 
 #include "../schema/time.h"
 #include "../schema/policy.h"
 #include "../schema/processes.h"
 
-using namespace osquery;
+#include <vist/common/audit/logger.h>
+
 using namespace vist;
 using namespace vist::schema;
 
@@ -39,16 +38,16 @@ TEST_F(VirtualTableTests, time_row_at) {
 	result.seconds = time.at(&Time::seconds);
 
 	/// Once query execution
-	LOG(INFO) << "[Test] time table:";
-	LOG(INFO) << "\t hour: " << result.hour;
-	LOG(INFO) << "\t minutes: " << result.minutes;
-	LOG(INFO) << "\t seconds: " << result.seconds;
+	INFO(VIST_CLIENT, "[Test] time table:");
+	INFO(VIST_CLIENT, "\t hour: " << result.hour);
+	INFO(VIST_CLIENT, "\t minutes: " << result.minutes);
+	INFO(VIST_CLIENT, "\t seconds: " << result.seconds);
 
 	/// Each query execution
-	LOG(INFO) << "[Test] time table:";
-	LOG(INFO) << "\t hour: " << VirtualRow<Time>().at(&Time::hour);
-	LOG(INFO) << "\t minutes: " << VirtualRow<Time>().at(&Time::minutes);
-	LOG(INFO) << "\t seconds: " <<  VirtualRow<Time>().at(&Time::seconds);
+	INFO(VIST_CLIENT, "[Test] time table:");
+	INFO(VIST_CLIENT, "\t hour: " << VirtualRow<Time>().at(&Time::hour));
+	INFO(VIST_CLIENT, "\t minutes: " << VirtualRow<Time>().at(&Time::minutes));
+	INFO(VIST_CLIENT, "\t seconds: " <<  VirtualRow<Time>().at(&Time::seconds));
 
 	EXPECT_NE(result.hour, -1);
 	EXPECT_NE(result.minutes, -1);
@@ -64,10 +63,10 @@ TEST_F(VirtualTableTests, time_row_arry_op) {
 	result.seconds = time[&Time::seconds];
 
 	/// Once query execution
-	LOG(INFO) << "[Test] time table:";
-	LOG(INFO) << "\t hour: " << result.hour;
-	LOG(INFO) << "\t minutes: " << result.minutes;
-	LOG(INFO) << "\t seconds: " << result.seconds;
+	INFO(VIST_CLIENT, "[Test] time table:");
+	INFO(VIST_CLIENT, "\t hour: " << result.hour);
+	INFO(VIST_CLIENT, "\t minutes: " << result.minutes);
+	INFO(VIST_CLIENT, "\t seconds: " << result.seconds);
 
 	EXPECT_NE(result.hour, -1);
 	EXPECT_NE(result.minutes, -1);
@@ -92,17 +91,17 @@ TEST_F(VirtualTableTests, processes_table) {
 		result.on_disk = p.at(&Processes::on_disk);
 		result.parent = p.at(&Processes::parent);
 
-		LOG(INFO) << "[Test] Processes table:";
-		LOG(INFO) << "\t pid: " << result.pid;
-		LOG(INFO) << "\t name: " << result.name;
-		LOG(INFO) << "\t path: " << result.path;
-		LOG(INFO) << "\t cmdline: " << result.cmdline;
-		LOG(INFO) << "\t uid: " << result.uid;
-		LOG(INFO) << "\t gid: " << result.gid;
-		LOG(INFO) << "\t euid: " << result.euid;
-		LOG(INFO) << "\t egid: " << result.egid;
-		LOG(INFO) << "\t on_disk: " << result.on_disk;
-		LOG(INFO) << "\t parent: " << result.parent;
+		INFO(VIST_CLIENT, "[Test] Processes table:");
+		INFO(VIST_CLIENT, "\t pid: " << result.pid);
+		INFO(VIST_CLIENT, "\t name: " << result.name);
+		INFO(VIST_CLIENT, "\t path: " << result.path);
+		INFO(VIST_CLIENT, "\t cmdline: " << result.cmdline);
+		INFO(VIST_CLIENT, "\t uid: " << result.uid);
+		INFO(VIST_CLIENT, "\t gid: " << result.gid);
+		INFO(VIST_CLIENT, "\t euid: " << result.euid);
+		INFO(VIST_CLIENT, "\t egid: " << result.egid);
+		INFO(VIST_CLIENT, "\t on_disk: " << result.on_disk);
+		INFO(VIST_CLIENT, "\t parent: " << result.parent);
 	}
 }
 
@@ -113,8 +112,8 @@ TEST_F(VirtualTableTests, policy_table) {
 	for(const auto& row : table) {
 		Policy policy = { row[&Policy::name], row[&Policy::value] };
 
-		LOG(INFO) << "[Test] Policy table:";
-		LOG(INFO) << "\t name: " << policy.name;
-		LOG(INFO) << "\t value: " << policy.value;
+		INFO(VIST_CLIENT, "[Test] Policy table:");
+		INFO(VIST_CLIENT, "\t name: " << policy.name);
+		INFO(VIST_CLIENT, "\t value: " << policy.value);
 	}
 }

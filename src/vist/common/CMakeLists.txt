@@ -12,5 +12,5 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-FILE(GLOB IPC_TESTS "ipc/tests/*.cpp")
-ADD_VIST_TEST(${IPC_TESTS})
+FILE(GLOB COMMON_TESTS "ipc/tests/*.cpp")
+ADD_VIST_TEST(${COMMON_TESTS})

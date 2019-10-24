@@ -16,8 +16,7 @@
 ADD_POLICYD_LIBRARY(policyd_core api.cpp
 								 policy-manager.cpp
 								 policy-loader.cpp
-								 policy-storage.cpp
-								 logger.cpp)
+								 policy-storage.cpp)
 
 FILE(GLOB SDK_TESTS "tests/*.cpp")
 ADD_POLICYD_TEST(${SDK_TESTS})

@@ -26,7 +26,7 @@
 #include "schema/policy.h"
 #include "schema/processes.h"
 
-#include <osquery/logger.h>
+#include <vist/common/audit/logger.h>
 
 #include <tsqb.hxx>
 
@@ -95,14 +95,14 @@ Member VirtualRow<T>::at(Member Struct::* field) const
 
 	std::string value = this->data.at(key);
 	if (value.empty()) {
-		LOG(ERROR) << "The value of key[" << key << "] is not exist.";
+		ERROR(VIST, "The value of key[" << key << "] is not exist.");
 		return Member();
 	}
 
 	try {
 		return boost::lexical_cast<Member>(value);
 	} catch (...) {
-		LOG(ERROR) << "Failed to casting [key]: " << key;
+		ERROR(VIST, "Failed to casting [key]: " << key);
 		return Member();
 	}
 }

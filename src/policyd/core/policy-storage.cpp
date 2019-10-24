@@ -15,7 +15,8 @@
  */
 
 #include "policy-storage.h"
-#include "logger.h"
+
+#include <vist/common/audit/logger.h>
 
 #include <klay/db/column.h>
 #include <klay/db/query-builder.h>

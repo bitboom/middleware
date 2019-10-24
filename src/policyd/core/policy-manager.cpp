@@ -16,7 +16,8 @@
 
 #include "policy-manager.h"
 #include "policy-loader.h"
-#include "logger.h"
+
+#include <vist/common/audit/logger.h>
 
 #include <klay/filesystem.h>
 
