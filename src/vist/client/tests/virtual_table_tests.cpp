@@ -18,20 +18,20 @@
 
 #include <osquery/logger.h>
 
-#include <property.h>
+#include "../virtual-table.h"
 
-#include <schema/time.h>
-#include <schema/processes.h>
+#include "../schema/time.h"
+#include "../schema/processes.h"
 
 using namespace osquery;
 using namespace vist;
 
-class PropertyTests : public testing::Test {};
+class VirtualTableTests : public testing::Test {};
 
-TEST_F(PropertyTests, property) {
+TEST_F(VirtualTableTests, time_row_at) {
 	Time result = { -1, -1, -1 };
 
-	Property<Time> time;
+	VirtualRow<Time> time;
 	result.hour = time.at(&Time::hour);
 	result.minutes = time.at(&Time::minutes);
 	result.seconds = time.at(&Time::seconds);
@@ -44,19 +44,19 @@ TEST_F(PropertyTests, property) {
 
 	/// Each query execution
 	LOG(INFO) << "[Test] time table:";
-	LOG(INFO) << "\t hour: " << Property<Time>().at(&Time::hour);
-	LOG(INFO) << "\t minutes: " << Property<Time>().at(&Time::minutes);
-	LOG(INFO) << "\t seconds: " <<  Property<Time>().at(&Time::seconds);
+	LOG(INFO) << "\t hour: " << VirtualRow<Time>().at(&Time::hour);
+	LOG(INFO) << "\t minutes: " << VirtualRow<Time>().at(&Time::minutes);
+	LOG(INFO) << "\t seconds: " <<  VirtualRow<Time>().at(&Time::seconds);
 
 	EXPECT_NE(result.hour, -1);
 	EXPECT_NE(result.minutes, -1);
 	EXPECT_NE(result.seconds, -1);
 }
 
-TEST_F(PropertyTests, propertyArrayOp) {
+TEST_F(VirtualTableTests, time_row_arry_op) {
 	Time result = { -1, -1, -1 };
 
-	Property<Time> time;
+	VirtualRow<Time> time;
 	result.hour = time[&Time::hour];
 	result.minutes = time[&Time::minutes];
 	result.seconds = time[&Time::seconds];
@@ -72,9 +72,9 @@ TEST_F(PropertyTests, propertyArrayOp) {
 	EXPECT_NE(result.seconds, -1);
 }
 
-TEST_F(PropertyTests, propertiesProcesses) {
+TEST_F(VirtualTableTests, processes_table) {
 	Processes result;
-	Properties<Processes> processes;
+	VirtualTable<Processes> processes;
 	EXPECT_TRUE(processes.size() > 0);
 
 	for(auto& p : processes) {

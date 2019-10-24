@@ -12,7 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_VIST_LIBRARY(vist_client query.cpp)
+ADD_VIST_LIBRARY(vist_client query.cpp
+							 virtual-table.cpp)
 
 FILE(GLOB CLIENT_TESTS "tests/*.cpp")
 ADD_VIST_TEST(${CLIENT_TESTS})

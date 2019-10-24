@@ -14,13 +14,6 @@
  *  limitations under the License
  */
 
-
-/**
- * @file property.h
- * @brief Provides type-safe getter method
- */
-
-
 #pragma once
 
 #include <map>
@@ -30,14 +23,13 @@
 
 namespace vist {
 
-/// TBD: Consider error handling.
 template <typename T>
-class Property {
+class VirtualRow final {
 public:
 	using KeyValuePair = std::map<std::string, std::string>;
 
-	explicit Property();
-	explicit Property(KeyValuePair&&);
+	explicit VirtualRow();
+	explicit VirtualRow(KeyValuePair&&);
 
 	template<typename Struct, typename Member>
 	Member at(Member Struct::*) const;
@@ -53,23 +45,23 @@ private:
 
 
 template <typename T>
-class Properties {
+class VirtualTable final {
 public:
-	explicit Properties();
+	explicit VirtualTable();
 
 	/// Make iteratable
-	using Iter = typename std::vector<Property<T>>::iterator;
-	using CIter = typename std::vector<Property<T>>::const_iterator;
+	using Iter = typename std::vector<VirtualRow<T>>::iterator;
+	using CIter = typename std::vector<VirtualRow<T>>::const_iterator;
 
-	inline Iter begin() { return datas.begin(); }
-	inline CIter begin() const { return datas.cbegin(); }
-	inline Iter end() { return datas.end(); }
-	inline CIter end() const { return datas.end(); }
+	inline Iter begin() { return dataset.begin(); }
+	inline CIter begin() const { return dataset.cbegin(); }
+	inline Iter end() { return dataset.end(); }
+	inline CIter end() const { return dataset.end(); }
 
-	inline std::size_t size() const { return datas.size(); }
+	inline std::size_t size() const { return dataset.size(); }
 
 private:
-	std::vector<Property<T>> datas;
+	std::vector<VirtualRow<T>> dataset;
 };
 
 } // namespace vist
