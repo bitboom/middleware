@@ -16,20 +16,21 @@
 
 
 /**
- * @file time.h
- * @brief The scheme of time (sync with osquery/tables/spec/time.table)
+ * @file processes.h
+ * @brief The scheme of policy
  */
 
 
 #pragma once
 
+#include <string>
+
 namespace vist {
 namespace schema {
 
-struct Time {
-	int hour;
-	int minutes;
-	int seconds;
+struct Policy {
+	std::string	name;
+	std::string value;
 };
 
 } // namesapce schema

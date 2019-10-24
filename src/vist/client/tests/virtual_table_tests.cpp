@@ -21,10 +21,12 @@
 #include "../virtual-table.h"
 
 #include "../schema/time.h"
+#include "../schema/policy.h"
 #include "../schema/processes.h"
 
 using namespace osquery;
 using namespace vist;
+using namespace vist::schema;
 
 class VirtualTableTests : public testing::Test {};
 
@@ -101,5 +103,18 @@ TEST_F(VirtualTableTests, processes_table) {
 		LOG(INFO) << "\t egid: " << result.egid;
 		LOG(INFO) << "\t on_disk: " << result.on_disk;
 		LOG(INFO) << "\t parent: " << result.parent;
+	}
+}
+
+TEST_F(VirtualTableTests, policy_table) {
+	VirtualTable<Policy> table;
+	EXPECT_TRUE(table.size() > 0);
+
+	for(const auto& row : table) {
+		Policy policy = { row[&Policy::name], row[&Policy::value] };
+
+		LOG(INFO) << "[Test] Policy table:";
+		LOG(INFO) << "\t name: " << policy.name;
+		LOG(INFO) << "\t value: " << policy.value;
 	}
 }

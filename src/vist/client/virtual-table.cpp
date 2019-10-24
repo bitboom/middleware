@@ -23,6 +23,7 @@
 #include "query.h" 
 
 #include "schema/time.h"
+#include "schema/policy.h"
 #include "schema/processes.h"
 
 #include <osquery/logger.h>
@@ -34,6 +35,8 @@
 namespace {
 
 using namespace tsqb;
+using namespace vist::schema;
+
 auto time = make_table("time",
 					   make_column("hour", &Time::hour),
 					   make_column("minutes", &Time::minutes),
@@ -51,7 +54,11 @@ auto processes = make_table("processes",
 							make_column("on_disk", &Processes::on_disk),
 							make_column("parent", &Processes::parent));
 
-auto db = make_database("db", time, processes);
+auto policy = make_table("policy",
+						 make_column("name", &Policy::name),
+						 make_column("value", &Policy::value));
+
+auto metaDB = make_database("db", time, processes, policy);
 
 } // anonymous namespace
 
@@ -60,7 +67,7 @@ namespace vist {
 template <typename T>
 VirtualRow<T>::VirtualRow()
 {
-	auto results = Query::Execute(db.selectAll<T>());
+	auto results = Query::Execute(metaDB.selectAll<T>());
 	if (results.size() > 0)
 		this->data = std::move(results[0]);
 }
@@ -77,7 +84,7 @@ Member VirtualRow<T>::at(Member Struct::* field) const
 	if (this->data.size() == 0)
 		throw std::runtime_error("Data is not exist.");
 
-	std::string key = db.getColumnName(field);
+	std::string key = metaDB.getColumnName(field);
 	if (key.empty())
 		throw std::runtime_error("Key is not exist.");
 
@@ -110,7 +117,7 @@ Member VirtualRow<T>::operator[](Member Struct::*field) const
 template <typename T>
 VirtualTable<T>::VirtualTable()
 {
-	auto results = Query::Execute(db.selectAll<T>());
+	auto results = Query::Execute(metaDB.selectAll<T>());
 	for (auto& r : results)
 		this->dataset.emplace_back(VirtualRow<T>(std::move(r)));
 }
@@ -129,5 +136,10 @@ template long long int VirtualRow<Processes>::at(long long int Processes::*) con
 template long long int VirtualRow<Processes>::operator[](long long int Processes::*) const;
 template std::string VirtualRow<Processes>::at(std::string Processes::*) const;
 template std::string VirtualRow<Processes>::operator[](std::string Processes::*) const;
+
+template class VirtualTable<Policy>;
+template class VirtualRow<Policy>;
+template std::string VirtualRow<Policy>::at(std::string Policy::*) const;
+template std::string VirtualRow<Policy>::operator[](std::string Policy::*) const;
 
 } // namespace vist

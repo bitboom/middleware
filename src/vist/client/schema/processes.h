@@ -25,6 +25,9 @@
 
 #include <string>
 
+namespace vist {
+namespace schema {
+
 struct Processes {
 	long long int pid;
 	std::string name;
@@ -38,3 +41,6 @@ struct Processes {
 	long long int resident_size;
 	long long int parent;
 };
+
+} // namesapce schema
+} // namesapce vist
