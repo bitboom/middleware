@@ -196,6 +196,8 @@ class TableState(Singleton):
         self.header = ""
         self.impl = ""
         self.function = ""
+        self.function_delete = ""
+        self.function_insert = ""
         self.function_update = ""
         self.class_name = ""
         self.description = ""
@@ -284,6 +286,8 @@ class TableState(Singleton):
             header=self.header,
             impl=self.impl,
             function=self.function,
+            function_delete=self.function_delete,
+            function_insert=self.function_insert,
             function_update=self.function_update,
             class_name=self.class_name,
             attributes=self.attributes,
@@ -442,7 +446,35 @@ def implementation(impl_string, generator=False):
                     table.table_name, BIGINT)))
             sys.exit(1)
 
-# patched
+### patch start ###########################################################
+def implementation_delete(impl_string, generator=False):
+    if impl_string is None:
+        table.function_delete = ""
+    else:
+        filename, function_delete = impl_string.split("@")
+        class_parts = function_delete.split("::")[::-1]
+        function_delete = class_parts[0]
+        class_name = class_parts[1] if len(class_parts) > 1 else ""
+        impl = "%s.cpp" % filename
+        table.impl = impl
+        table.function_delete = function_delete
+        table.class_name = class_name
+        table.generator = generator
+
+def implementation_insert(impl_string, generator=False):
+    if impl_string is None:
+        table.function_insert = ""
+    else:
+        filename, function_insert = impl_string.split("@")
+        class_parts = function_insert.split("::")[::-1]
+        function_insert = class_parts[0]
+        class_name = class_parts[1] if len(class_parts) > 1 else ""
+        impl = "%s.cpp" % filename
+        table.impl = impl
+        table.function_insert = function_insert
+        table.class_name = class_name
+        table.generator = generator
+
 def implementation_update(impl_string, generator=False):
     if impl_string is None:
         table.function_update = ""
@@ -456,6 +488,8 @@ def implementation_update(impl_string, generator=False):
         table.function_update = function_update
         table.class_name = class_name
         table.generator = generator
+
+### patch end #############################################################
 
 def main():
     parser = argparse.ArgumentParser(

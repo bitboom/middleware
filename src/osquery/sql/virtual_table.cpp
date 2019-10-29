@@ -125,6 +125,44 @@ bool getColumnValue(std::string& value,
   return true;
 }
 
+/// PATCH START //////////////////////////////////////////////////////////////
+int serializeDeleteParameters(std::string& json_value_array,
+							  VirtualTable* pVtab) {
+	auto content = pVtab->content;
+	if (content->constraints.size() <= 0) {
+		LOG(ERROR) << "Invalid constraints arguments";
+		return SQLITE_ERROR;
+	}
+
+	auto document = rapidjson::Document();
+	document.SetArray();
+	auto& allocator = document.GetAllocator();
+
+	for (std::size_t i = 0; i < content->constraints.size(); i++) {
+		for (auto& constraint : content->constraints[i]) {
+			auto key = constraint.first;
+			auto value = constraint.second.expr;
+
+			if (!value.empty()) {
+				/// Since concrete table is not able to know the key, make alias.
+				rapidjson::Value jsonValue((key + ";" + value).c_str(), allocator);
+				document.PushBack(jsonValue, allocator);
+			}
+		}
+	}
+
+	rapidjson::StringBuffer buffer;
+	buffer.Clear();
+
+	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+	document.Accept(writer);
+
+	json_value_array = buffer.GetString();
+
+	return SQLITE_OK;
+}
+/// PATCH END /////////////////////////////////////////////////////////////////
+
 // Type-aware serializer to pass parameters between osquery and the extension
 int serializeUpdateParameters(std::string& json_value_array,
                               size_t argc,
@@ -341,6 +379,12 @@ int xUpdate(sqlite3_vtab* p,
     auto row_to_delete = sqlite3_value_int64(argv[0]);
     plugin_request.insert({"id", std::to_string(row_to_delete)});
 
+/// PATCH START //////////////////////////////////////////////////////////////
+	std::string json_value_array;
+	/// serialize constraints
+	serializeDeleteParameters(json_value_array, reinterpret_cast<VirtualTable*>(p));
+	plugin_request.insert({"json_value_array", json_value_array});
+/// PATCH END ////////////////////////////////////////////////////////////////
   } else if (sqlite3_value_type(argv[0]) == SQLITE_NULL) {
     // This is an INSERT query; if the rowid has been generated for us, we'll
     // find it inside argv[1]
@@ -464,6 +508,7 @@ int xUpdate(sqlite3_vtab* p,
     return SQLITE_ERROR;
   }
 
+/*
   // INSERT actions must always return a valid rowid to sqlite
   if (plugin_request.at("action") == "insert") {
     std::string rowid;
@@ -491,7 +536,7 @@ int xUpdate(sqlite3_vtab* p,
     }
     *pRowid = exp.take();
   }
-
+*/
   return SQLITE_OK;
 }
 
