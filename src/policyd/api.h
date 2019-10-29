@@ -19,6 +19,7 @@
 #include <policyd/sdk/policy-value.h>
 
 #include <string>
+#include <map>
 #include <unordered_map>
 
 namespace policyd {
@@ -32,6 +33,8 @@ struct API {
 
 		static void Enroll(const std::string& admin, uid_t uid);
 		static void Disenroll(const std::string& admin, uid_t uid);
+
+		static std::multimap<std::string, int> GetAll();
 	};
 };
 

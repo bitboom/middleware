@@ -148,4 +148,9 @@ std::unordered_map<std::string, PolicyValue> PolicyManager::getAll(uid_t uid)
 	return storage.strictest(uid);
 }
 
+std::multimap<std::string, int> PolicyManager::getAdmins()
+{
+	return storage.getAdmins();
+}
+
 } // namespace policyd

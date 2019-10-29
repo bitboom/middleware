@@ -20,9 +20,10 @@
 
 #include "db-schema.h"
 
+#include <map>
 #include <memory>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 #include <klay/db/connection.h>
 
@@ -59,6 +60,9 @@ public:
 	PolicyValue strictest(const std::string& policy, uid_t uid = 0);
 	/// Return all strictest policy values
 	std::unordered_map<std::string, PolicyValue> strictest(uid_t uid = 0);
+
+	/// Admin name can be duplicated
+	std::multimap<std::string, int> getAdmins();
 
 private:
 	std::string getScript(const std::string& name);

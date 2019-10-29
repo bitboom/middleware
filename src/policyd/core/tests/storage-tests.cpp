@@ -137,3 +137,26 @@ TEST_F(PolicyStorageTests, strictest_all) {
 
 	storage->disenroll("testAdmin", 1);
 }
+
+TEST_F(PolicyStorageTests, admin_list) {
+	auto storage = getStorage();
+
+	auto admins = storage->getAdmins();
+	EXPECT_EQ(admins.size(), 0);
+
+	storage->enroll("testAdmin", 1);
+	admins = storage->getAdmins();
+	EXPECT_EQ(admins.size(), 1);
+
+	storage->enroll("testAdmin", 2);
+	admins = storage->getAdmins();
+	EXPECT_EQ(admins.size(), 2);
+
+	storage->disenroll("testAdmin", 2);
+	admins = storage->getAdmins();
+	EXPECT_EQ(admins.size(), 1);
+
+	storage->disenroll("testAdmin", 1);
+	admins = storage->getAdmins();
+	EXPECT_EQ(admins.size(), 0);
+}

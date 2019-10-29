@@ -297,6 +297,22 @@ std::unordered_map<std::string, PolicyValue> PolicyStorage::strictest(uid_t uid)
 	return policies;
 }
 
+std::multimap<std::string, int> PolicyStorage::getAdmins()
+{
+	std::multimap<std::string, int> admins;
+	for (const auto& pair : this->admins) {
+		std::string alias = pair.first;
+		int uid = pair.second.uid;
+		/// Erase uid from alias(name + uid)
+		std::size_t pos = alias.rfind(std::to_string(uid));
+		alias.erase(pos, std::to_string(uid).size());
+
+		admins.emplace(std::move(alias), uid);
+	}
+
+	return admins;
+}
+
 std::string PolicyStorage::getAlias(const std::string& name, uid_t uid) const noexcept
 {
 	return name + std::to_string(uid);

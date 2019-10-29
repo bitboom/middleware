@@ -46,4 +46,9 @@ void API::Admin::Disenroll(const std::string& admin, uid_t uid)
 	PolicyManager::Instance().disenroll(admin, uid);
 }
 
+std::multimap<std::string, int> API::Admin::GetAll()
+{
+	return PolicyManager::Instance().getAdmins();
+}
+
 } // namespace policyd

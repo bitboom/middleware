@@ -22,6 +22,7 @@
 #include "policy-storage.h"
 
 #include <exception>
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -50,8 +51,9 @@ public:
 	void set(const std::string& policy, const PolicyValue& value,
 			 const std::string& admin, uid_t uid = 0);
 	PolicyValue get(const std::string& policy, uid_t uid = 0);
-
 	std::unordered_map<std::string, PolicyValue> getAll(uid_t uid = 0);
+
+	std::multimap<std::string, int> getAdmins();
 
 private:
 	explicit PolicyManager();

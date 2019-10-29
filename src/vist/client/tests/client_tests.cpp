@@ -30,3 +30,26 @@ TEST_F(ClientTests, query) {
 
 	EXPECT_TRUE(rows.size() > 0);
 }
+
+TEST_F(ClientTests, admin_enrollment) {
+	auto rows = Query::Execute("INSERT INTO policy_admin (name, uid) "
+							   "VALUES ('testAdmin', 0)");
+	EXPECT_EQ(rows.size(), 0);
+
+	rows = Query::Execute("SELECT * FROM policy_admin");
+	EXPECT_EQ(rows.size(), 1);
+
+	Query::Execute("INSERT INTO policy_admin (name, uid) VALUES ('testAdmin', 1)");
+	rows = Query::Execute("SELECT * FROM policy_admin");
+	EXPECT_EQ(rows.size(), 2);
+
+	rows = Query::Execute("DELETE FROM policy_admin WHERE uid = 0 AND name = 'testAdmin'");
+	EXPECT_EQ(rows.size(), 0);
+
+	rows = Query::Execute("SELECT * FROM policy_admin");
+	EXPECT_EQ(rows.size(), 1);
+
+	Query::Execute("DELETE FROM policy_admin WHERE name = 'testAdmin' AND uid = 1");
+	rows = Query::Execute("SELECT * FROM policy_admin");
+	EXPECT_EQ(rows.size(), 0);
+}

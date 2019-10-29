@@ -1,0 +1,9 @@
+table_name("policy_admin")
+description("Policy administrator.")
+schema([
+    Column("name", TEXT, "Policy admin name"),
+    Column("uid", INTEGER, "Policy admin uid"),
+])
+implementation("tizen/policy_admin@genPolicyAdmin")
+implementation_delete("tizen/policy_admin@deletePolicyAdmin")
+implementation_insert("tizen/policy_admin@insertPolicyAdmin")
