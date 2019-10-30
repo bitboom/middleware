@@ -28,7 +28,7 @@ namespace {
 	uid_t d_uid = 0;
 } // anonymous namespace
 
-using namespace policyd;
+using namespace vist::policy;
 
 class PolicySDKTests : public testing::Test {};
 

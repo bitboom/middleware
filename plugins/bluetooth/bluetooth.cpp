@@ -18,8 +18,8 @@
 #include <bluetooth-api.h>
 #include <bluetooth_internal.h>
 
-#include <policyd/sdk/global-policy.h>
-#include <policyd/sdk/policy-provider.h>
+#include <vist/policy/sdk/global-policy.h>
+#include <vist/policy/sdk/policy-provider.h>
 
 #include <memory>
 
@@ -37,7 +37,7 @@
 	((int)(enable) ? BLUETOOTH_DPM_BT_ALLOWED :              \
 					 BLUETOOTH_DPM_BT_RESTRICTED)
 
-using namespace policyd;
+using namespace vist::policy;
 
 class ModeChange : public GlobalPolicy {
 public:

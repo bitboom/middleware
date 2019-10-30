@@ -16,7 +16,8 @@
 
 #pragma once
 
-namespace policyd {
+namespace vist {
+namespace policy {
 
 // TODO: Support various value type
 struct PolicyValue final {
@@ -43,4 +44,5 @@ struct PolicyValue final {
 	int value = -1;
 };
 
-} // namespace policyd
+} // namespace policy
+} // namespace vist

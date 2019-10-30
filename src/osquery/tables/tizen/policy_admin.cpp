@@ -21,7 +21,7 @@
 #include <osquery/sql.h>
 #include <osquery/tables.h>
 
-#include <policyd/api.h>
+#include <vist/policy/api.h>
 #include <vist/common/audit/logger.h>
 
 namespace {
@@ -70,10 +70,10 @@ namespace osquery {
 namespace tables {
 
 QueryData genPolicyAdmin(QueryContext& context) try {
-	INFO(VIST, "Select query about policy-admin.");
+	INFO(VIST, "Select query about policy-admin table.");
 
 	QueryData results;
-	auto admins = policyd::API::Admin::GetAll();
+	auto admins = vist::policy::API::Admin::GetAll();
 
 	for (auto& admin : admins) {
 		Row r;
@@ -92,13 +92,13 @@ QueryData genPolicyAdmin(QueryContext& context) try {
 }
 
 QueryData insertPolicyAdmin(QueryContext& context, const PluginRequest& request) try {
-	INFO(VIST, "Insert query about policy-admin.");
+	INFO(VIST, "Insert query about policy-admin table.");
 	if (request.count("json_value_array") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
 	auto admin = parseAdmin(request.at("json_value_array"));
 	DEBUG(VIST, "Admin info [name]: " << admin.first << ", [uid]: " << admin.second);
-	policyd::API::Admin::Enroll(admin.first, admin.second);
+	vist::policy::API::Admin::Enroll(admin.first, admin.second);
 
 	Row r;
 	r["status"] = "success";
@@ -110,13 +110,13 @@ QueryData insertPolicyAdmin(QueryContext& context, const PluginRequest& request)
 }
 
 QueryData deletePolicyAdmin(QueryContext& context, const PluginRequest& request) try {
-	INFO(VIST, "Delete query about policy-admin.");
+	INFO(VIST, "Delete query about policy-admin table.");
 	if (request.count("json_value_array") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
 	auto admin = parseAdmin(request.at("json_value_array"), false);
 	DEBUG(VIST, "Admin info [name]: " << admin.first << ", [uid]: " << admin.second);
-	policyd::API::Admin::Disenroll(admin.first, admin.second);
+	vist::policy::API::Admin::Disenroll(admin.first, admin.second);
 
 	Row r;
 	r["status"] = "success";

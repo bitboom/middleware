@@ -19,20 +19,22 @@
 #include <stdexcept>
 
 #include <osquery/sql.h>
-#include <osquery/logger.h>
 #include <osquery/tables.h>
 
-#include <policyd/api.h>
+#include <vist/policy/api.h>
+#include <vist/common/audit/logger.h>
 
 namespace osquery {
 namespace tables {
 
 QueryData genPolicy(QueryContext& context) try {
+	INFO(VIST, "Select query about policy table.");
+
 	QueryData results;
 	if (context.constraints["name"].exists(EQUALS)) { /// where clause
 		auto names = context.constraints["name"].getAll(EQUALS);
 		for (const auto& name : names) {
-			auto ret = policyd::API::Get(name);
+			auto ret = vist::policy::API::Get(name);
 
 			Row r;
 			r["name"] = TEXT(name);
@@ -41,7 +43,7 @@ QueryData genPolicy(QueryContext& context) try {
 			results.emplace_back(std::move(r));
 		}
 	} else { /// select *;
-		auto policies = policyd::API::GetAll();
+		auto policies = vist::policy::API::GetAll();
 		for (auto& policy : policies) {
 			Row r;
 			r["name"] = TEXT(policy.first);
@@ -53,11 +55,13 @@ QueryData genPolicy(QueryContext& context) try {
 
 	return results;
 } catch (...) {
+	ERROR(VIST, "Failed to select query on policy.");
 	Row r;
 	return { r };
 }
 
 QueryData updatePolicy(QueryContext& context, const PluginRequest& request) try {
+	INFO(VIST, "Update query about policy table.");
 	if (request.count("json_value_array") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
@@ -73,7 +77,7 @@ QueryData updatePolicy(QueryContext& context, const PluginRequest& request) try 
 	std::string name = document[0].GetString();
 	int value = std::stoi(document[1].GetString());
 
-	policyd::API::Admin::Set(name, policyd::PolicyValue(value));
+	vist::policy::API::Admin::Set(name, vist::policy::PolicyValue(value));
 
 	Row r;
 	r["status"] = "success";

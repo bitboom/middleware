@@ -18,7 +18,8 @@
 
 #include "../policy-manager.h"
 
-namespace policyd {
+namespace vist {
+namespace policy {
 
 class PolicyCoreTests : public testing::Test {};
 
@@ -48,4 +49,5 @@ TEST_F(PolicyCoreTests, policy_set_get) {
 	manager.disenroll("testAdmin1", 0);
 }
 
-} // namespace policyd
+} // namespace policy
+} // namespace vist

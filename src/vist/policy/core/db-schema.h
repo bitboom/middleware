@@ -17,7 +17,8 @@
 
 #include <string>
 
-namespace policyd {
+namespace vist {
+namespace policy {
 namespace schema {
 
 struct Admin {
@@ -43,4 +44,5 @@ struct PolicyDefinition {
 };
 
 } // namespace schema
-} // namespace policyd
+} // namespace policy
+} // namespace vist

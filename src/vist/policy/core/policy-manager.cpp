@@ -21,7 +21,8 @@
 
 #include <klay/filesystem.h>
 
-namespace policyd {
+namespace vist {
+namespace policy {
 
 PolicyManager::PolicyManager() : storage(DB_PATH)
 {
@@ -153,4 +154,5 @@ std::multimap<std::string, int> PolicyManager::getAdmins()
 	return storage.getAdmins();
 }
 
-} // namespace policyd
+} // namespace policy
+} // namespace vist

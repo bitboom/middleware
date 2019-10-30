@@ -13,10 +13,18 @@
 # limitations under the License.
 #
 
-ADD_POLICYD_LIBRARY(policyd_core api.cpp
-								 policy-manager.cpp
-								 policy-loader.cpp
-								 policy-storage.cpp)
+SET(${TARGET_VIST_POLICY_LIB}_SRCS "")
 
-FILE(GLOB SDK_TESTS "tests/*.cpp")
-ADD_POLICYD_TEST(${SDK_TESTS})
+ADD_VIST_POLICY_LIBRARY(vist_policy_core core/api.cpp
+										 core/policy-manager.cpp
+										 core/policy-loader.cpp
+										 core/policy-storage.cpp)
+
+FILE(GLOB POLICY_CORE_TESTS "core/tests/*.cpp")
+ADD_VIST_TEST(${POLICY_CORE_TESTS})
+
+FILE(GLOB POLICY_SDK_TESTS "sdk/tests/*.cpp")
+ADD_VIST_TEST(${POLICY_SDK_TESTS})
+
+ADD_LIBRARY(${TARGET_VIST_POLICY_LIB} STATIC ${${TARGET_VIST_POLICY_LIB}_SRCS})
+TARGET_LINK_LIBRARIES(${TARGET_VIST_POLICY_LIB} pthread dl)

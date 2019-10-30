@@ -16,7 +16,8 @@
 
 #include "policy-loader.h"
 
-namespace policyd {
+namespace vist {
+namespace policy {
 
 PolicyProvider* PolicyLoader::load(const std::string& path)
 {
@@ -43,4 +44,5 @@ PluginLoader::PluginLoader(const std::string& path, int flag)
 		throw std::invalid_argument("Failed to open: " + path);
 }
 
-} // namespace policyd
+} // namespace policy
+} // namespace vist

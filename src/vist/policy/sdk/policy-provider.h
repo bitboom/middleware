@@ -23,7 +23,8 @@
 #include <memory>
 #include <unordered_map>
 
-namespace policyd {
+namespace vist {
+namespace policy {
 
 class PolicyProvider {
 public:
@@ -57,4 +58,5 @@ private:
 	friend class PolicyManager;
 };
 
-} // namespace policyd
+} // namespace policy
+} // namespace vist

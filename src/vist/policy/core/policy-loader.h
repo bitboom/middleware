@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <policyd/sdk/policy-provider.h>
+#include <vist/policy/sdk/policy-provider.h>
 
 #include <stdexcept>
 #include <string>
@@ -24,7 +24,8 @@
 
 #include <dlfcn.h>
 
-namespace policyd {
+namespace vist {
+namespace policy {
 
 struct PolicyLoader final {
 	static PolicyProvider* load(const std::string& path);
@@ -50,4 +51,5 @@ void PluginLoader::load(const std::string& name, T& symbol)
 		throw std::runtime_error("Failed to load: " + name);
 }
 
-} // namespace policyd
+} // namespace policy
+} // namespace vist

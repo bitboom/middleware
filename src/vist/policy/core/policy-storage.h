@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <policyd/sdk/policy-value.h>
+#include <vist/policy/sdk/policy-value.h>
 
 #include "db-schema.h"
 
@@ -27,7 +27,8 @@
 
 #include <klay/db/connection.h>
 
-namespace policyd {
+namespace vist {
+namespace policy {
 
 using namespace schema;
 
@@ -78,4 +79,5 @@ private:
 	std::unordered_multimap<int, ManagedPolicy> managedPolicies;
 };
 
-} // namespace policyd
+} // namespace policy
+} // namespace vist

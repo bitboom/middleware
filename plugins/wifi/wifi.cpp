@@ -17,8 +17,8 @@
 #include <arpa/inet.h>
 #include <wifi-manager.h>
 
-#include <policyd/sdk/global-policy.h>
-#include <policyd/sdk/policy-provider.h>
+#include <vist/policy/sdk/global-policy.h>
+#include <vist/policy/sdk/policy-provider.h>
 
 #include <klay/dbus/connection.h>
 
@@ -31,7 +31,7 @@
 	"/net/netconfig/network",	\
 	"net.netconfig.network"
 
-using namespace policyd;
+using namespace vist::policy;
 
 class ModeChange : public GlobalPolicy {
 public:

@@ -18,45 +18,46 @@
 
 #include "policy-model.h"
 
-#include <exception>
+#include <stdexcept>
 #include <string>
-#include <unordered_map>
 
-#include <sys/types.h>
+namespace vist {
+namespace policy {
 
-namespace policyd {
-
-class DomainPolicy : public PolicyModel {
+class GlobalPolicy : public PolicyModel {
 public:
-	explicit DomainPolicy(std::string name, PolicyValue initial) noexcept :
+	explicit GlobalPolicy(std::string name, PolicyValue initial) noexcept :
 		PolicyModel(std::move(name), std::move(initial)) {}
-	virtual ~DomainPolicy() = default;
+	virtual ~GlobalPolicy() = default;
 
-	DomainPolicy(DomainPolicy&&) = default;
-	DomainPolicy& operator=(DomainPolicy&&) = default;
+	GlobalPolicy(GlobalPolicy&&) = default;
+	GlobalPolicy& operator=(GlobalPolicy&&) = default;
 
-	inline void set(uid_t domain, const PolicyValue& value) {
-		current[domain] = value;
+	inline void set(const PolicyValue& value) {
+		current = value;
+		ready = true;
 
 		try {
-			this->onChanged(domain, value);
+			this->onChanged(value);
 		} catch (const std::exception& e) {
-			current.erase(domain);
+			ready = false;
 			std::rethrow_exception(std::current_exception());
 		}
 	}
 
-	inline const PolicyValue& get(uid_t domain) const {
-		if (!current.count(domain))
+	inline const PolicyValue& get() const {
+		if (!ready)
 			throw std::runtime_error("Policy value should be set once before use.");
 
-		return current.at(domain);
+		return current;
 	}
 
-	virtual void onChanged(uid_t domain, const PolicyValue& value) = 0;
+	virtual void onChanged(const PolicyValue& value) = 0;
 
 private:
-	std::unordered_map<uid_t, PolicyValue> current;
+	PolicyValue current;
+	bool ready = false;
 };
 
-} // namespace policyd
+} // namespace policy
+} // namespace vist

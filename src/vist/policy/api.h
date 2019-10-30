@@ -16,30 +16,28 @@
 
 #pragma once
 
-#include"policy-value.h" 
+#include <vist/policy/sdk/policy-value.h>
 
 #include <string>
+#include <map>
+#include <unordered_map>
 
-namespace policyd {
+namespace vist {
+namespace policy {
 
-class PolicyModel {
-public:
-	explicit PolicyModel(std::string name, PolicyValue initial) noexcept :
-		name(std::move(name)), initial(std::move(initial)) {}
-	virtual ~PolicyModel() = default;
+struct API {
+	static PolicyValue Get(const std::string& policy);
+	static std::unordered_map<std::string, PolicyValue> GetAll();
 
-	PolicyModel(const PolicyModel&) = delete;
-	PolicyModel& operator=(const PolicyModel&) = delete;
+	struct Admin {
+		static void Set(const std::string& policy, const PolicyValue& value);
 
-	PolicyModel(PolicyModel&&) = default;
-	PolicyModel& operator=(PolicyModel&&) = default;
+		static void Enroll(const std::string& admin, uid_t uid);
+		static void Disenroll(const std::string& admin, uid_t uid);
 
-	const std::string& getName() const noexcept { return name; }
-	const PolicyValue& getInitial() const noexcept { return initial; }
-
-protected:
-	std::string name;
-	PolicyValue initial;
+		static std::multimap<std::string, int> GetAll();
+	};
 };
 
-} // namespace policyd
+} // namespace policy
+} // namespace vist

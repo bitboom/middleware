@@ -22,7 +22,7 @@
 #include <chrono>
 #include <thread>
 
-#include <policyd/core/policy-manager.h>
+#include <vist/policy/core/policy-manager.h>
 
 using namespace vist;
 
@@ -41,7 +41,7 @@ TEST_F(CoreTests, query_select) {
 }
 
 TEST_F(CoreTests, query_update) {
-	auto& manager = policyd::PolicyManager::Instance();
+	auto& manager = policy::PolicyManager::Instance();
 	manager.enroll("admin", 0);
 
 	std::string statement = "SELECT * FROM policy WHERE name = 'bluetooth'";

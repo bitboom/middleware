@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <policyd/sdk/policy-provider.h>
-#include <policyd/sdk/policy-value.h>
+#include <vist/policy/sdk/policy-provider.h>
+#include <vist/policy/sdk/policy-value.h>
 
 #include "policy-storage.h"
 
@@ -30,7 +30,8 @@
 
 #include <gtest/gtest_prod.h>
 
-namespace policyd {
+namespace vist {
+namespace policy {
 
 class PolicyManager final {
 public:
@@ -71,4 +72,5 @@ private:
 	FRIEND_TEST(PolicyCoreTests, policy_loader);
 };
 
-} // namespace policyd
+} // namespace policy
+} // namespace vist

@@ -14,11 +14,12 @@
  *  limitations under the License
  */
 
-#include <policyd/api.h>
+#include <vist/policy/api.h>
 
 #include "policy-manager.h"
 
-namespace policyd {
+namespace vist {
+namespace policy {
 
 PolicyValue API::Get(const std::string& policy)
 {
@@ -51,4 +52,5 @@ std::multimap<std::string, int> API::Admin::GetAll()
 	return PolicyManager::Instance().getAdmins();
 }
 
-} // namespace policyd
+} // namespace policy
+} // namespace vist

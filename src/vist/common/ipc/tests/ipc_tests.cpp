@@ -58,7 +58,6 @@ public:
 		} else if (pid == 0) {
 			TestServer server;
 			server.init();
-			
 		}
 
 		std::this_thread::sleep_for(std::chrono::seconds(1));

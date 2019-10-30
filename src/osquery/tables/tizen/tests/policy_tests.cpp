@@ -16,33 +16,35 @@
 
 #include <gtest/gtest.h>
 
-#include <policyd/api.h>
+#include <vist/policy/api.h>
+
+using namespace vist;
 
 class PolicyTests : public testing::Test {};
 
 TEST_F(PolicyTests, get_all) {
-	auto policies = policyd::API::GetAll();
+	auto policies = policy::API::GetAll();
 
 	EXPECT_TRUE(policies.size() > 0);
 }
 
 TEST_F(PolicyTests, get_admin_all) {
-	auto admins = policyd::API::Admin::GetAll();
+	auto admins = policy::API::Admin::GetAll();
 	EXPECT_EQ(admins.size(), 0);
 
-	policyd::API::Admin::Enroll("testAdmin", 0);
-	admins = policyd::API::Admin::GetAll();
+	policy::API::Admin::Enroll("testAdmin", 0);
+	admins = policy::API::Admin::GetAll();
 	EXPECT_EQ(admins.size(), 1);
 
-	policyd::API::Admin::Enroll("testAdmin", 1);
-	admins = policyd::API::Admin::GetAll();
+	policy::API::Admin::Enroll("testAdmin", 1);
+	admins = policy::API::Admin::GetAll();
 	EXPECT_EQ(admins.size(), 2);
 
-	policyd::API::Admin::Disenroll("testAdmin", 0);
-	admins = policyd::API::Admin::GetAll();
+	policy::API::Admin::Disenroll("testAdmin", 0);
+	admins = policy::API::Admin::GetAll();
 	EXPECT_EQ(admins.size(), 1);
 
-	policyd::API::Admin::Disenroll("testAdmin", 1);
-	admins = policyd::API::Admin::GetAll();
+	policy::API::Admin::Disenroll("testAdmin", 1);
+	admins = policy::API::Admin::GetAll();
 	EXPECT_EQ(admins.size(), 0);
 }

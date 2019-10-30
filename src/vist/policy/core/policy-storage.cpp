@@ -26,7 +26,7 @@
 #include <fstream>
 
 using namespace query_builder;
-using namespace policyd::schema;
+using namespace vist::policy::schema;
 
 namespace {
 
@@ -54,7 +54,8 @@ const std::string SCRIPT_CREATE_SCHEMA  = "create_schema";
 
 } // anonymous namespace
 
-namespace policyd {
+namespace vist {
+namespace policy {
 
 PolicyStorage::PolicyStorage(const std::string& path) :
 	database(std::make_shared<database::Connection>(path,
@@ -327,4 +328,5 @@ int PolicyStorage::getUid(int adminId) const noexcept
 	return -1;
 }
 
-} // namespace policyd
+} // namespace policy
+} // namespace vist

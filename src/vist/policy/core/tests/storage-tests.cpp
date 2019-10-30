@@ -20,7 +20,7 @@
 
 #include "../policy-storage.h"
 
-using namespace policyd;
+using namespace vist::policy;
 
 class PolicyStorageTests : public testing::Test {
 public:

@@ -110,7 +110,6 @@ Provides internal testcases for ViST implementation.
 %files test
 %{_bindir}/osquery-test
 %{_bindir}/vist-test
-%{_bindir}/policyd-test
 
 ## ViST Plugins - ###########################################################
 %package plugins
