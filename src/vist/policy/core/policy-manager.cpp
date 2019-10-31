@@ -77,23 +77,13 @@ int PolicyManager::loadPolicies()
 
 	/// Make policy-provider map for performance
 	for (const auto& provider : providers) {
-		for (const auto& pair : provider->global) {
+		for (const auto& pair : provider->policies) {
 			policies[pair.first] = provider->getName();
 
 			/// Check the policy is defined on policy-storage
 			if (!storage.exists(pair.first)) {
-				INFO(VIST, "Define global policy: " << pair.first);
-				storage.define(0, pair.first, pair.second->getInitial().value);
-				changed = true;
-			}
-		}
-
-		for (const auto& pair : provider->domain) {
-			policies[pair.first] = provider->getName();
-
-			if (!storage.exists(pair.first)) {
-				INFO(VIST, "Define domain policy: " << pair.first);
-				storage.define(1, pair.first, pair.second->getInitial().value);
+				INFO(VIST, "Define policy: " << pair.first);
+				storage.define(pair.first, pair.second->getInitial().value);
 				changed = true;
 			}
 		}
@@ -105,51 +95,47 @@ int PolicyManager::loadPolicies()
 	return policies.size();
 }
 
-void PolicyManager::enroll(const std::string& admin, uid_t uid)
+void PolicyManager::enroll(const std::string& admin)
 {
-	this->storage.enroll(admin, uid);
+	this->storage.enroll(admin);
 }
 
-void PolicyManager::disenroll(const std::string& admin, uid_t uid)
+void PolicyManager::disenroll(const std::string& admin)
 {
-	this->storage.disenroll(admin, uid);
+	this->storage.disenroll(admin);
 }
 
-void PolicyManager::set(const std::string& policy, const PolicyValue& value,
-						const std::string& admin, uid_t uid)
+void PolicyManager::set(const std::string& policy,
+						const PolicyValue& value,
+						const std::string& admin)
 {
-	if (policies.find(policy) == policies.end())
+	if (this->policies.find(policy) == this->policies.end())
 		std::runtime_error("Not exist policy: " + policy);
 
-	storage.update(admin, uid, policy, value);
+	storage.update(admin, policy, value);
 
 	for (auto& p : providers) {
-		if (p->getName() != policies[policy])
+		if (p->getName() != this->policies[policy])
 			continue;
 
-		if (p->global.find(policy) != p->global.end()) {
-			p->global[policy]->set(value);
-			return;
-		}
-
-		if (p->domain.find(policy) != p->domain.end()) {
-			p->domain[policy]->set(uid, value);
+		if (p->policies.find(policy) != p->policies.end()) {
+			p->policies[policy]->set(value);
 			return;
 		}
 	}
 }
 
-PolicyValue PolicyManager::get(const std::string& policy, uid_t uid)
+PolicyValue PolicyManager::get(const std::string& policy)
 {
-	return storage.strictest(policy, uid);
+	return storage.strictest(policy);
 }
 
-std::unordered_map<std::string, PolicyValue> PolicyManager::getAll(uid_t uid)
+std::unordered_map<std::string, PolicyValue> PolicyManager::getAll()
 {
-	return storage.strictest(uid);
+	return storage.strictest();
 }
 
-std::multimap<std::string, int> PolicyManager::getAdmins()
+std::vector<std::string> PolicyManager::getAdmins()
 {
 	return storage.getAdmins();
 }

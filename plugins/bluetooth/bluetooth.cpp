@@ -18,7 +18,7 @@
 #include <bluetooth-api.h>
 #include <bluetooth_internal.h>
 
-#include <vist/policy/sdk/global-policy.h>
+#include <vist/policy/sdk/policy-model.h>
 #include <vist/policy/sdk/policy-provider.h>
 
 #include <memory>
@@ -39,9 +39,9 @@
 
 using namespace vist::policy;
 
-class ModeChange : public GlobalPolicy {
+class ModeChange : public PolicyModel {
 public:
-	ModeChange() : GlobalPolicy("bluetooth", PolicyValue(1)) {}
+	ModeChange() : PolicyModel("bluetooth", PolicyValue(1)) {}
 
 	void onChanged(const PolicyValue& value) override
 	{
@@ -51,10 +51,10 @@ public:
 	}
 };
 
-class DesktopConnectivity : public GlobalPolicy {
+class DesktopConnectivity : public PolicyModel {
 public:
 	DesktopConnectivity() :
-		GlobalPolicy("bluetooth-desktop-connectivity", PolicyValue(1)) {}
+		PolicyModel("bluetooth-desktop-connectivity", PolicyValue(1)) {}
 
 	void onChanged(const PolicyValue& value) override
 	{
@@ -64,9 +64,9 @@ public:
 	}
 };
 
-class Pairing: public GlobalPolicy {
+class Pairing: public PolicyModel {
 public:
-	Pairing() : GlobalPolicy("bluetooth-pairing", PolicyValue(1)) {}
+	Pairing() : PolicyModel("bluetooth-pairing", PolicyValue(1)) {}
 
 	void onChanged(const PolicyValue& value) override
 	{
@@ -76,9 +76,9 @@ public:
 	}
 };
 
-class Tethering: public GlobalPolicy {
+class Tethering: public PolicyModel {
 public:
-	Tethering() : GlobalPolicy("bluetooth-tethering", PolicyValue(1)) {}
+	Tethering() : PolicyModel("bluetooth-tethering", PolicyValue(1)) {}
 
 	void onChanged(const PolicyValue&) {}
 };

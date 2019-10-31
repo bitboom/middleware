@@ -17,7 +17,7 @@
 #include <arpa/inet.h>
 #include <wifi-manager.h>
 
-#include <vist/policy/sdk/global-policy.h>
+#include <vist/policy/sdk/policy-model.h>
 #include <vist/policy/sdk/policy-provider.h>
 
 #include <klay/dbus/connection.h>
@@ -33,9 +33,9 @@
 
 using namespace vist::policy;
 
-class ModeChange : public GlobalPolicy {
+class ModeChange : public PolicyModel {
 public:
-	ModeChange() : GlobalPolicy("wifi", PolicyValue(1)) {}
+	ModeChange() : PolicyModel("wifi", PolicyValue(1)) {}
 
 	void onChanged(const PolicyValue& value) override
 	{
@@ -50,9 +50,9 @@ public:
 	}
 };
 
-class ProfileChange : public GlobalPolicy {
+class ProfileChange : public PolicyModel {
 public:
-	ProfileChange() : GlobalPolicy("wifi-profile-change", PolicyValue(1)) {}
+	ProfileChange() : PolicyModel("wifi-profile-change", PolicyValue(1)) {}
 
 	void onChanged(const PolicyValue& value) override
 	{
@@ -67,9 +67,9 @@ public:
 	}
 };
 
-class Hotspot : public GlobalPolicy {
+class Hotspot : public PolicyModel {
 public:
-	Hotspot() : GlobalPolicy("wifi-hotspot", PolicyValue(1)) {}
+	Hotspot() : PolicyModel("wifi-hotspot", PolicyValue(1)) {}
 
 	void onChanged(const PolicyValue&) override
 	{
@@ -77,9 +77,9 @@ public:
 	}
 };
 
-class SsidRestriction : public GlobalPolicy {
+class SsidRestriction : public PolicyModel {
 public:
-	SsidRestriction() : GlobalPolicy("wifi-ssid-restriction", PolicyValue(0)) {}
+	SsidRestriction() : PolicyModel("wifi-ssid-restriction", PolicyValue(0)) {}
 
 	void onChanged(const PolicyValue&) override
 	{

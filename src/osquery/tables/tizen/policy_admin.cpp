@@ -37,31 +37,20 @@ std::string getValue(std::string&& alias, const std::string& key)
 		return std::string();
 }
 
-std::pair<std::string, int> parseAdmin(const std::string& request, bool insert = true)
+std::string parseAdmin(const std::string& request, bool insert = true)
 {
 	rapidjson::Document document;
 	document.Parse(request.c_str());
 	if (document.HasParseError() || !document.IsArray())
 		throw std::runtime_error("Cannot parse request.");
 
-	if (document.Size() != 2)
+	if (document.Size() != 1)
 		throw std::runtime_error("Wrong request format.");
 
-	if (insert) {
-		return std::make_pair(document[0].GetString(), document[1].GetInt());
-	} else { /// osquery transforms int to string in 'where clause' internally.
-		std::string name, uid;
-		std::string value = getValue(document[0].GetString(), "name");
-		if (!value.empty()) {
-			name = value;
-			uid = getValue(document[1].GetString(), "uid");
-		} else {
-			name = getValue(document[1].GetString(), "name");
-			uid = getValue(document[0].GetString(), "uid");
-		}
-
-		return std::make_pair(name, std::stoi(uid));
-	}
+	if (insert)
+		return std::string(document[0].GetString());
+	else
+		return getValue(document[0].GetString(), "name");
 }
 
 } // anonymous namespace
@@ -77,10 +66,9 @@ QueryData genPolicyAdmin(QueryContext& context) try {
 
 	for (auto& admin : admins) {
 		Row r;
-		r["name"] = SQL_TEXT(admin.first);
-		r["uid"] = INTEGER(admin.second);
+		r["name"] = SQL_TEXT(admin);
 
-		DEBUG(VIST, "Admin info [name]: " << r["name"] << ", [uid]: " << r["uid"]);
+		DEBUG(VIST, "Admin info [name]: " << r["name"]);
 		results.emplace_back(std::move(r));
 	}
 
@@ -97,8 +85,8 @@ QueryData insertPolicyAdmin(QueryContext& context, const PluginRequest& request)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
 	auto admin = parseAdmin(request.at("json_value_array"));
-	DEBUG(VIST, "Admin info [name]: " << admin.first << ", [uid]: " << admin.second);
-	vist::policy::API::Admin::Enroll(admin.first, admin.second);
+	DEBUG(VIST, "Admin info [name]: " << admin);
+	vist::policy::API::Admin::Enroll(admin);
 
 	Row r;
 	r["status"] = "success";
@@ -115,8 +103,8 @@ QueryData deletePolicyAdmin(QueryContext& context, const PluginRequest& request)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
 	auto admin = parseAdmin(request.at("json_value_array"), false);
-	DEBUG(VIST, "Admin info [name]: " << admin.first << ", [uid]: " << admin.second);
-	vist::policy::API::Admin::Disenroll(admin.first, admin.second);
+	DEBUG(VIST, "Admin info [name]: " << admin);
+	vist::policy::API::Admin::Disenroll(admin);
 
 	Row r;
 	r["status"] = "success";

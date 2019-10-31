@@ -24,7 +24,6 @@ namespace schema {
 struct Admin {
 	int id = -1;
 	std::string pkg;
-	int uid = -1;
 	std::string key;
 	int removable = -1;
 };
@@ -38,7 +37,6 @@ struct ManagedPolicy {
 
 struct PolicyDefinition {
 	int id = -1;
-	int scope = -1;
 	std::string name;
 	int ivalue = -1;
 };

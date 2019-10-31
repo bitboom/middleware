@@ -22,7 +22,6 @@
 #include "policy-storage.h"
 
 #include <exception>
-#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -41,20 +40,22 @@ public:
 	PolicyManager(PolicyManager&&) = delete;
 	PolicyManager& operator=(PolicyManager&&) = delete;
 
-	static PolicyManager& Instance() {
+	static PolicyManager& Instance()
+	{
 		static PolicyManager manager;
 		return manager;
 	}
 
-	void enroll(const std::string& admin, uid_t uid);
-	void disenroll(const std::string& admin, uid_t uid);
+	void enroll(const std::string& admin);
+	void disenroll(const std::string& admin);
 
-	void set(const std::string& policy, const PolicyValue& value,
-			 const std::string& admin, uid_t uid = 0);
-	PolicyValue get(const std::string& policy, uid_t uid = 0);
-	std::unordered_map<std::string, PolicyValue> getAll(uid_t uid = 0);
+	void set(const std::string& policy,
+			 const PolicyValue& value,
+			 const std::string& admin);
+	PolicyValue get(const std::string& policy);
+	std::unordered_map<std::string, PolicyValue> getAll();
 
-	std::multimap<std::string, int> getAdmins();
+	std::vector<std::string> getAdmins();
 
 private:
 	explicit PolicyManager();

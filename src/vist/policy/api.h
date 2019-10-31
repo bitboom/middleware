@@ -19,8 +19,8 @@
 #include <vist/policy/sdk/policy-value.h>
 
 #include <string>
-#include <map>
 #include <unordered_map>
+#include <vector>
 
 namespace vist {
 namespace policy {
@@ -32,10 +32,10 @@ struct API {
 	struct Admin {
 		static void Set(const std::string& policy, const PolicyValue& value);
 
-		static void Enroll(const std::string& admin, uid_t uid);
-		static void Disenroll(const std::string& admin, uid_t uid);
+		static void Enroll(const std::string& admin);
+		static void Disenroll(const std::string& admin);
 
-		static std::multimap<std::string, int> GetAll();
+		static std::vector<std::string> GetAll();
 	};
 };
 

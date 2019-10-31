@@ -16,8 +16,7 @@
 
 #pragma once
 
-#include "domain-policy.h"
-#include "global-policy.h"
+#include <vist/policy/sdk/policy-model.h>
 
 #include <cstddef>
 #include <memory>
@@ -33,27 +32,23 @@ public:
 	explicit PolicyProvider(std::string name) noexcept : name(std::move(name)) {}
 	virtual ~PolicyProvider() = default;
 
-	inline void add(const std::shared_ptr<GlobalPolicy>& policy) {
-		global[policy->getName()] = policy;
-	}
-
-	inline void add(const std::shared_ptr<DomainPolicy>& policy) {
-		domain[policy->getName()] = policy;
+	inline void add(const std::shared_ptr<PolicyModel>& policy)
+	{
+		policies[policy->getName()] = policy;
 	}
 
 	inline const std::string& getName() const noexcept { return name; }
-	static const std::string& getFactoryName() noexcept {
+	static const std::string& getFactoryName() noexcept
+	{
 		static std::string name = "PolicyFactory";
 		return name;
 	}
 
-	std::size_t gsize() { return global.size(); }
-	std::size_t dsize() { return domain.size(); }
+	inline std::size_t size() const noexcept { return policies.size(); }
 
 private:
 	std::string name;
-	std::unordered_map<std::string, std::shared_ptr<GlobalPolicy>> global;
-	std::unordered_map<std::string, std::shared_ptr<DomainPolicy>> domain;
+	std::unordered_map<std::string, std::shared_ptr<PolicyModel>> policies;
 
 	friend class PolicyManager;
 };

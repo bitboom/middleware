@@ -17,7 +17,6 @@
 CREATE TABLE IF NOT EXISTS admin (
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
     pkg       TEXT NOT NULL,
-    uid       INTEGER,
     key       TEXT,
     removable INTEGER
 );
@@ -31,7 +30,6 @@ CREATE TABLE IF NOT EXISTS managed_policy (
 
 CREATE TABLE IF NOT EXISTS policy_definition (
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    scope     INTEGER,
     name      TEXT NOT NULL,
     ivalue    INTEGER
 );

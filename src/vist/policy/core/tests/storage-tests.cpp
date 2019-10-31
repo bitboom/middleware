@@ -24,12 +24,13 @@ using namespace vist::policy;
 
 class PolicyStorageTests : public testing::Test {
 public:
-	void SetUp() override {
-		/// TODO(Sangwan KWon): Change to test db
+	void SetUp() override
+	{
 		this->storage = std::make_shared<PolicyStorage>(DB_PATH);
 	}
 
-	std::shared_ptr<PolicyStorage> getStorage() {
+	std::shared_ptr<PolicyStorage> getStorage()
+	{
 		return this->storage;
 	}
 
@@ -37,7 +38,8 @@ private:
 	std::shared_ptr<PolicyStorage> storage = nullptr;
 };
 
-TEST_F(PolicyStorageTests, initialize) {
+TEST_F(PolicyStorageTests, initialize)
+{
 	bool isRaised = false;
 
 	try {
@@ -50,35 +52,37 @@ TEST_F(PolicyStorageTests, initialize) {
 	EXPECT_FALSE(isRaised);
 }
 
-TEST_F(PolicyStorageTests, enrollment) {
+TEST_F(PolicyStorageTests, enrollment)
+{
 	auto storage = getStorage();
 	EXPECT_FALSE(storage->isActivated());
 
-	storage->enroll("testAdmin", 0);
-	storage->enroll("testAdmin", 1);
+	storage->enroll("testAdmin0");
+	storage->enroll("testAdmin1");
 	EXPECT_TRUE(storage->isActivated());
 
-	storage->disenroll("testAdmin", 0);
+	storage->disenroll("testAdmin0");
 	EXPECT_TRUE(storage->isActivated());
 
-	storage->disenroll("testAdmin", 1);
+	storage->disenroll("testAdmin1");
 	EXPECT_FALSE(storage->isActivated());
 }
 
-TEST_F(PolicyStorageTests, update) {
+TEST_F(PolicyStorageTests, update)
+{
 	auto storage = getStorage();
-	storage->enroll("testAdmin", 0);
+	storage->enroll("testAdmin");
 
 	bool isRaised = false;
 	try {
-		storage->update("testAdmin", 1, "bluetooth", PolicyValue(0));
+		storage->update("fakeAdmin", "bluetooth", PolicyValue(0));
 	} catch (const std::exception&) {
 		isRaised = true;
 	}
 
 	isRaised = false;
 	try {
-		storage->update("testAdmin", 0, "bluetooth", PolicyValue(0));
+		storage->update("testAdmin", "bluetooth", PolicyValue(0));
 	} catch (const std::exception&) {
 		isRaised = true;
 	}
@@ -86,77 +90,70 @@ TEST_F(PolicyStorageTests, update) {
 
 	isRaised = false;
 	try {
-		storage->update("testAdmin", 0, "FakePolicy", PolicyValue(0));
+		storage->update("testAdmin", "FakePolicy", PolicyValue(0));
 	} catch (const std::exception&) {
 		isRaised = true;
 	}
 	EXPECT_TRUE(isRaised);
 
-	storage->disenroll("testAdmin", 0);
+	storage->disenroll("testAdmin");
 }
 
-TEST_F(PolicyStorageTests, strictest) {
+TEST_F(PolicyStorageTests, strictest)
+{
 	auto storage = getStorage();
-	storage->enroll("testAdmin", 0);
-	storage->enroll("testAdmin", 1);
+	storage->enroll("testAdmin0");
+	storage->enroll("testAdmin1");
 
-	storage->update("testAdmin", 0, "bluetooth", PolicyValue(3));
-	storage->update("testAdmin", 1, "bluetooth", PolicyValue(6));
+	storage->update("testAdmin0", "bluetooth", PolicyValue(3));
+	storage->update("testAdmin1", "bluetooth", PolicyValue(6));
 
 	bool isRaised = false;
 	try {
-		auto value = storage->strictest("FakePolicy", 3);
+		auto value = storage->strictest("FakePolicy");
 	} catch (const std::exception&) {
 		isRaised = true;
 	}
 	EXPECT_TRUE(isRaised);
 
-	/// as global policy
 	auto policy = storage->strictest("bluetooth");
 	EXPECT_EQ(policy.value, 3);
 
-	/// as domain policy
-	policy = storage->strictest("bluetooth", 1);
-	EXPECT_EQ(policy.value, 6);
-
-	storage->disenroll("testAdmin", 0);
-	storage->disenroll("testAdmin", 1);
+	storage->disenroll("testAdmin0");
+	storage->disenroll("testAdmin1");
 }
 
-TEST_F(PolicyStorageTests, strictest_all) {
+TEST_F(PolicyStorageTests, strictest_all)
+{
 	auto storage = getStorage();
-	storage->enroll("testAdmin", 1);
+	storage->enroll("testAdmin");
 
-	/// as global policy
 	auto policies = storage->strictest();
 	EXPECT_TRUE(policies.size() > 0);
 
-	/// as domain policy
-	policies = storage->strictest(1);
-	EXPECT_TRUE(policies.size() > 0);
-
-	storage->disenroll("testAdmin", 1);
+	storage->disenroll("testAdmin");
 }
 
-TEST_F(PolicyStorageTests, admin_list) {
+TEST_F(PolicyStorageTests, admin_list)
+{
 	auto storage = getStorage();
 
 	auto admins = storage->getAdmins();
 	EXPECT_EQ(admins.size(), 0);
 
-	storage->enroll("testAdmin", 1);
+	storage->enroll("testAdmin1");
 	admins = storage->getAdmins();
 	EXPECT_EQ(admins.size(), 1);
 
-	storage->enroll("testAdmin", 2);
+	storage->enroll("testAdmin2");
 	admins = storage->getAdmins();
 	EXPECT_EQ(admins.size(), 2);
 
-	storage->disenroll("testAdmin", 2);
+	storage->disenroll("testAdmin2");
 	admins = storage->getAdmins();
 	EXPECT_EQ(admins.size(), 1);
 
-	storage->disenroll("testAdmin", 1);
+	storage->disenroll("testAdmin1");
 	admins = storage->getAdmins();
 	EXPECT_EQ(admins.size(), 0);
 }

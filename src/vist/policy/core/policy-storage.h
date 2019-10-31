@@ -20,7 +20,6 @@
 
 #include "db-schema.h"
 
-#include <map>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -43,32 +42,32 @@ public:
 	void syncAdmin();
 	void syncManagedPolicy();
 
-	inline bool exists(const std::string& policy) const noexcept {
+	inline bool exists(const std::string& policy) const noexcept
+	{
 		return definitions.find(policy) != definitions.end();
 	}
 
-	inline bool isActivated() const noexcept {
+	inline bool isActivated() const noexcept
+	{
 		return admins.size() > 0 && managedPolicies.size() > 0;
 	}
 
-	void enroll(const std::string& admin, uid_t uid);
-	void disenroll(const std::string& admin, uid_t uid);
+	void enroll(const std::string& admin);
+	void disenroll(const std::string& admin);
 
-	void define(int scope, const std::string& policy, int ivalue);
-	void update(const std::string& admin, uid_t uid,
-				const std::string& policy, const PolicyValue& value);
+	void define(const std::string& policy, int ivalue);
+	void update(const std::string& admin,
+				const std::string& policy,
+				const PolicyValue& value);
 
-	PolicyValue strictest(const std::string& policy, uid_t uid = 0);
+	PolicyValue strictest(const std::string& policy);
 	/// Return all strictest policy values
-	std::unordered_map<std::string, PolicyValue> strictest(uid_t uid = 0);
+	std::unordered_map<std::string, PolicyValue> strictest();
 
-	/// Admin name can be duplicated
-	std::multimap<std::string, int> getAdmins();
+	std::vector<std::string> getAdmins();
 
 private:
 	std::string getScript(const std::string& name);
-	std::string getAlias(const std::string& name, uid_t uid) const noexcept;
-	int getUid(int adminId) const noexcept;
 
 	std::shared_ptr<klay::database::Connection> database;
 
@@ -76,7 +75,7 @@ private:
 	/// TODO(Sangwan): add locking mechanism
 	std::unordered_map<std::string, PolicyDefinition> definitions;
 	std::unordered_map<std::string, Admin> admins;
-	std::unordered_multimap<int, ManagedPolicy> managedPolicies;
+	std::unordered_map<int, ManagedPolicy> managedPolicies;
 };
 
 } // namespace policy

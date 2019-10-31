@@ -37,17 +37,17 @@ void API::Admin::Set(const std::string& policy, const PolicyValue& value)
 	PolicyManager::Instance().set(policy, value, "admin");
 }
 
-void API::Admin::Enroll(const std::string& admin, uid_t uid)
+void API::Admin::Enroll(const std::string& admin)
 {
-	PolicyManager::Instance().enroll(admin, uid);
+	PolicyManager::Instance().enroll(admin);
 }
 
-void API::Admin::Disenroll(const std::string& admin, uid_t uid)
+void API::Admin::Disenroll(const std::string& admin)
 {
-	PolicyManager::Instance().disenroll(admin, uid);
+	PolicyManager::Instance().disenroll(admin);
 }
 
-std::multimap<std::string, int> API::Admin::GetAll()
+std::vector<std::string> API::Admin::GetAll()
 {
 	return PolicyManager::Instance().getAdmins();
 }

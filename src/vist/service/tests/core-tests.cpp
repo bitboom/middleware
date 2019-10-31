@@ -42,7 +42,7 @@ TEST_F(CoreTests, query_select) {
 
 TEST_F(CoreTests, query_update) {
 	auto& manager = policy::PolicyManager::Instance();
-	manager.enroll("admin", 0);
+	manager.enroll("admin");
 
 	std::string statement = "SELECT * FROM policy WHERE name = 'bluetooth'";
 	auto rows = Vist::Query(statement);
@@ -57,5 +57,5 @@ TEST_F(CoreTests, query_update) {
 	rows = Vist::Query(statement);
 	EXPECT_EQ(rows[0]["value"], std::to_string(3));
 
-	manager.disenroll("admin", 0);
+	manager.disenroll("admin");
 }

@@ -16,9 +16,10 @@
 
 #pragma once
 
-#include"policy-value.h" 
+#include <vist/policy/sdk/policy-value.h>
 
 #include <string>
+#include <stdexcept>
 
 namespace vist {
 namespace policy {
@@ -35,12 +36,39 @@ public:
 	PolicyModel(PolicyModel&&) = default;
 	PolicyModel& operator=(PolicyModel&&) = default;
 
+	inline void set(const PolicyValue& value)
+	{
+		auto rollback = current;
+		current = value;
+		ready = true;
+
+		try {
+			this->onChanged(value);
+		} catch (const std::exception& e) {
+			current = rollback;
+			ready = false;
+			std::rethrow_exception(std::current_exception());
+		}
+	}
+
+	inline const PolicyValue& get() const
+	{
+		if (!ready)
+			throw std::runtime_error("Policy value should be set once before use.");
+
+		return current;
+	}
+
+	virtual void onChanged(const PolicyValue& value) = 0;
+
 	const std::string& getName() const noexcept { return name; }
 	const PolicyValue& getInitial() const noexcept { return initial; }
 
 protected:
 	std::string name;
 	PolicyValue initial;
+	PolicyValue current;
+	bool ready = false;
 };
 
 } // namespace policy

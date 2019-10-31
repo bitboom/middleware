@@ -32,21 +32,21 @@ TEST_F(PolicyCoreTests, policy_loader) {
 
 TEST_F(PolicyCoreTests, policy_set_get) {
 	auto& manager = PolicyManager::Instance();
-	manager.enroll("testAdmin", 0);
-	manager.set("bluetooth", PolicyValue(5), "testAdmin", 0);
+	manager.enroll("testAdmin");
+	manager.set("bluetooth", PolicyValue(5), "testAdmin");
 
-	auto policy = manager.get("bluetooth", 0);
+	auto policy = manager.get("bluetooth");
 	EXPECT_EQ(policy.value, 5);
 
-	manager.enroll("testAdmin1", 0);
-	manager.set("bluetooth", PolicyValue(10), "testAdmin1", 0);
+	manager.enroll("testAdmin1");
+	manager.set("bluetooth", PolicyValue(10), "testAdmin1");
 
 	/// Manager should return the strongest policy.
-	policy = manager.get("bluetooth", 0);
+	policy = manager.get("bluetooth");
 	EXPECT_EQ(policy.value, 5);
 
-	manager.disenroll("testAdmin", 0);
-	manager.disenroll("testAdmin1", 0);
+	manager.disenroll("testAdmin");
+	manager.disenroll("testAdmin1");
 }
 
 } // namespace policy
