@@ -22,21 +22,16 @@ namespace policy {
 namespace schema {
 
 struct Admin {
-	int id = -1;
-	std::string pkg;
-	std::string key;
-	int removable = -1;
+	std::string name;
 };
 
-struct ManagedPolicy {
-	int id = -1;
-	int aid = -1;
-	int pid = -1;
+struct PolicyActivated {
+	std::string admin;
+	std::string policy;
 	int value = -1;
 };
 
 struct PolicyDefinition {
-	int id = -1;
 	std::string name;
 	int ivalue = -1;
 };

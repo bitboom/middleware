@@ -38,9 +38,9 @@ public:
 	/// TODO(Sangwan): Consider to support lazy sync
 	void sync();
 
-	void syncPolicyDefinition();
 	void syncAdmin();
-	void syncManagedPolicy();
+	void syncPolicyActivated();
+	void syncPolicyDefinition();
 
 	inline bool exists(const std::string& policy) const noexcept
 	{
@@ -49,7 +49,7 @@ public:
 
 	inline bool isActivated() const noexcept
 	{
-		return admins.size() > 0 && managedPolicies.size() > 0;
+		return admins.size() > 0 && activatedPolicies.size() > 0;
 	}
 
 	void enroll(const std::string& admin);
@@ -64,7 +64,7 @@ public:
 	/// Return all strictest policy values
 	std::unordered_map<std::string, PolicyValue> strictest();
 
-	std::vector<std::string> getAdmins();
+	const std::vector<std::string>& getAdmins() const noexcept;
 
 private:
 	std::string getScript(const std::string& name);
@@ -73,9 +73,9 @@ private:
 
 	/// DB Cache objects
 	/// TODO(Sangwan): add locking mechanism
+	std::vector<std::string> admins;
+	std::unordered_map<std::string, PolicyActivated> activatedPolicies;
 	std::unordered_map<std::string, PolicyDefinition> definitions;
-	std::unordered_map<std::string, Admin> admins;
-	std::unordered_map<int, ManagedPolicy> managedPolicies;
 };
 
 } // namespace policy
