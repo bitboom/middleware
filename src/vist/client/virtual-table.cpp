@@ -89,14 +89,14 @@ Member VirtualRow<T>::at(Member Struct::* field) const
 
 	std::string value = this->data.at(key);
 	if (value.empty()) {
-		ERROR(VIST, "The value of key[" << key << "] is not exist.");
+		ERROR(VIST) << "The value of key[" << key << "] is not exist.";
 		return Member();
 	}
 
 	try {
 		return boost::lexical_cast<Member>(value);
 	} catch (...) {
-		ERROR(VIST, "Failed to casting [key]: " << key);
+		ERROR(VIST) << "Failed to casting [key]: " << key;
 		return Member();
 	}
 }

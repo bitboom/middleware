@@ -28,7 +28,7 @@ namespace osquery {
 namespace tables {
 
 QueryData genPolicy(QueryContext& context) try {
-	INFO(VIST, "Select query about policy table.");
+	INFO(VIST) << "Select query about policy table.";
 
 	QueryData results;
 	if (context.constraints["name"].exists(EQUALS)) { /// where clause
@@ -55,13 +55,13 @@ QueryData genPolicy(QueryContext& context) try {
 
 	return results;
 } catch (...) {
-	ERROR(VIST, "Failed to select query on policy.");
+	ERROR(VIST) << "Failed to select query on policy.";
 	Row r;
 	return { r };
 }
 
 QueryData updatePolicy(QueryContext& context, const PluginRequest& request) try {
-	INFO(VIST, "Update query about policy table.");
+	INFO(VIST) << "Update query about policy table.";
 	if (request.count("json_value_array") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
@@ -83,6 +83,7 @@ QueryData updatePolicy(QueryContext& context, const PluginRequest& request) try 
 	r["status"] = "success";
 	return { r };
 } catch (...) {
+	ERROR(VIST) << "Failed to update query on policy.";
 	Row r;
 	return { r };
 }

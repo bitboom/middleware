@@ -63,7 +63,7 @@ PolicyStorage::PolicyStorage(const std::string& path) :
 
 void PolicyStorage::sync()
 {
-	DEBUG(VIST, "Sync policy storage to cache object.");
+	DEBUG(VIST) << "Sync policy storage to cache object.";
 	syncAdmin();
 	syncPolicyActivated();
 	syncPolicyDefinition();
@@ -79,11 +79,11 @@ void PolicyStorage::syncPolicyDefinition()
 		PolicyDefinition pd;
 		pd.name = std::string(stmt.getColumn(0));
 		pd.ivalue = stmt.getColumn(1);
-		DEBUG(VIST, "Defined policy:" + pd.name);
+		DEBUG(VIST) << "Defined policy:" << pd.name;
 		this->definitions.emplace(pd.name, std::move(pd));
 	}
 
-	DEBUG(VIST, definitions.size() << "- policies synced.");
+	DEBUG(VIST) << definitions.size() << "- policies synced.";
 }
 
 void PolicyStorage::syncAdmin()
@@ -95,7 +95,7 @@ void PolicyStorage::syncAdmin()
 	while (stmt.step())
 		this->admins.emplace_back(std::string(stmt.getColumn(0)));
 
-	DEBUG(VIST, admins.size() << "-admins synced.");
+	DEBUG(VIST) << admins.size() << "-admins synced.";
 }
 
 void PolicyStorage::syncPolicyActivated()
@@ -112,7 +112,7 @@ void PolicyStorage::syncPolicyActivated()
 		this->activatedPolicies.emplace(pa.policy, std::move(pa));
 	}
 
-	DEBUG(VIST, activatedPolicies.size() << "- activated-policies synced.");
+	DEBUG(VIST) << activatedPolicies.size() << "- activated-policies synced.";
 }
 
 std::string PolicyStorage::getScript(const std::string& name)
@@ -133,7 +133,7 @@ std::string PolicyStorage::getScript(const std::string& name)
 void PolicyStorage::define(const std::string& policy, int ivalue)
 {
 	if (definitions.find(policy) != definitions.end()) {
-		INFO(VIST, "Policy is already defined: " + policy);
+		INFO(VIST) << "Policy is already defined: " << policy;
 		return;
 	}
 
@@ -152,14 +152,14 @@ void PolicyStorage::define(const std::string& policy, int ivalue)
 
 void PolicyStorage::enroll(const std::string& name)
 {
-	INFO(VIST, "Enroll admin: " + name);
+	INFO(VIST) << "Enroll admin: " << name;
 	if (std::find(admins.begin(), admins.end(), name) != admins.end()) {
-		ERROR(VIST, "Admin is aleady enrolled.: " + name);
+		ERROR(VIST) << "Admin is aleady enrolled.: " << name;
 		return;
 	}
 
 	std::string query = adminTable.insert(&Admin::name);
-	DEBUG(VIST, "Enroll admin query statement: " + query);
+	DEBUG(VIST) << "Enroll admin query statement: " << query;
 	database::Statement stmt(*database, query);
 	stmt.bind(1, name);
 	if (!stmt.exec())
@@ -170,15 +170,16 @@ void PolicyStorage::enroll(const std::string& name)
 	syncPolicyActivated();
 
 	int count = activatedPolicies.size() / admins.size();
-	INFO(VIST, "Admin[" + name + "] manages " + std::to_string(count) + "-policies.");
+	INFO(VIST) << "Admin[" << name << "] manages "
+			   << std::to_string(count) << "-policies.";
 }
 
 void PolicyStorage::disenroll(const std::string& name)
 {
-	INFO(VIST, "Disenroll admin: " + name);
+	INFO(VIST) << "Disenroll admin: " << name;
 	auto iter = std::find(admins.begin(), admins.end(), name);
 	if (iter == admins.end()) {
-		ERROR(VIST, "Not exist admin: " + name);
+		ERROR(VIST) << "Not exist admin: " << name;
 		return;
 	} else {
 		admins.erase(iter);
@@ -195,8 +196,8 @@ void PolicyStorage::update(const std::string& admin,
 						   const std::string& policy,
 						   const PolicyValue& value)
 {
-	DEBUG(VIST, "Policy-update is called by admin: " + admin + ", about: " + policy +
-				", value: " + std::to_string(value));
+	DEBUG(VIST) << "Policy-update is called by admin: " << admin
+				<< ", about: " << policy << ", value: " << std::to_string(value);
 
 	if (std::find(admins.begin(), admins.end(), admin) == admins.end())
 		throw std::runtime_error("Not exist admin: " + admin);
@@ -236,8 +237,8 @@ PolicyValue PolicyStorage::strictest(const std::string& policy)
 		else
 			strictestPtr->value = (*strictestPtr < value) ? strictestPtr->value : value;
 
-		DEBUG(VIST, "The strictest of policy[" + policy +
-				    "] : " + std::to_string(strictestPtr->value));
+		DEBUG(VIST) << "The strictest of policy[" << policy
+					<< "] : " + std::to_string(strictestPtr->value);
 	}
 
 	if (strictestPtr == nullptr)

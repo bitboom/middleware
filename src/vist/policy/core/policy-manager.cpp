@@ -28,12 +28,12 @@ PolicyManager::PolicyManager() : storage(DB_PATH)
 {
 	loadProviders(PLUGIN_INSTALL_DIR);
 	int cnt = loadPolicies();
-	INFO(VIST, std::to_string(cnt) + "-policies loaded");
+	INFO(VIST) << std::to_string(cnt) << "-policies loaded";
 }
 
 std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 {
-	INFO(VIST, "Load policies from :" << path);
+	INFO(VIST) << "Load policies from :" << path;
 	klay::File dir(path);
 	if (!dir.exists() || !dir.isDirectory())
 		throw std::invalid_argument("Plugin directory is wrong.: " + path);
@@ -46,7 +46,7 @@ std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 
 		try {
 			auto provider = PolicyLoader::load(iter->getPath());
-			DEBUG(VIST, "Loaded provider: " << provider->getName());
+			DEBUG(VIST) << "Loaded provider: " << provider->getName();
 
 			bool exist = false;
 			for (const auto& p : this->providers) {
@@ -60,14 +60,14 @@ std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 				this->providers.emplace_back(std::move(provider));
 		} catch (const std::exception& e) {
 			++failed;
-			ERROR(VIST, "Failed to load: " << iter->getPath() << e.what());
+			ERROR(VIST) << "Failed to load: " << iter->getPath() << e.what();
 			continue;
 		}
 
 		++passed;
 	}
 
-	INFO(VIST, "Loaded result >> passed: " << passed << ", failed: " << failed);
+	INFO(VIST) << "Loaded result >> passed: " << passed << ", failed: " << failed;
 	return std::make_pair(passed, failed);
 }
 
@@ -82,7 +82,7 @@ int PolicyManager::loadPolicies()
 
 			/// Check the policy is defined on policy-storage
 			if (!storage.exists(pair.first)) {
-				INFO(VIST, "Define policy: " << pair.first);
+				INFO(VIST) << "Define policy: " << pair.first;
 				storage.define(pair.first, pair.second->getInitial().value);
 				changed = true;
 			}

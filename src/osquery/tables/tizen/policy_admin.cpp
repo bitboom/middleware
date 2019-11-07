@@ -59,7 +59,7 @@ namespace osquery {
 namespace tables {
 
 QueryData genPolicyAdmin(QueryContext& context) try {
-	INFO(VIST, "Select query about policy-admin table.");
+	INFO(VIST) << "Select query about policy-admin table.";
 
 	QueryData results;
 	auto admins = vist::policy::API::Admin::GetAll();
@@ -68,49 +68,49 @@ QueryData genPolicyAdmin(QueryContext& context) try {
 		Row r;
 		r["name"] = SQL_TEXT(admin);
 
-		DEBUG(VIST, "Admin info [name]: " << r["name"]);
+		DEBUG(VIST) << "Admin info [name]: " << r["name"];
 		results.emplace_back(std::move(r));
 	}
 
 	return results;
 } catch (...) {
-	ERROR(VIST, "Failed to select query on policy-admin.");
+	ERROR(VIST) << "Failed to select query on policy-admin.";
 	Row r;
 	return { r };
 }
 
 QueryData insertPolicyAdmin(QueryContext& context, const PluginRequest& request) try {
-	INFO(VIST, "Insert query about policy-admin table.");
+	INFO(VIST) << "Insert query about policy-admin table.";
 	if (request.count("json_value_array") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
 	auto admin = parseAdmin(request.at("json_value_array"));
-	DEBUG(VIST, "Admin info [name]: " << admin);
+	DEBUG(VIST) << "Admin info [name]: " << admin;
 	vist::policy::API::Admin::Enroll(admin);
 
 	Row r;
 	r["status"] = "success";
 	return { r };
 } catch (...) {
-	ERROR(VIST, "Failed to insert query on policy-admin.");
+	ERROR(VIST) << "Failed to insert query on policy-admin.";
 	Row r;
 	return { r };
 }
 
 QueryData deletePolicyAdmin(QueryContext& context, const PluginRequest& request) try {
-	INFO(VIST, "Delete query about policy-admin table.");
+	INFO(VIST) << "Delete query about policy-admin table.";
 	if (request.count("json_value_array") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
 	auto admin = parseAdmin(request.at("json_value_array"), false);
-	DEBUG(VIST, "Admin info [name]: " << admin);
+	DEBUG(VIST) << "Admin info [name]: " << admin;
 	vist::policy::API::Admin::Disenroll(admin);
 
 	Row r;
 	r["status"] = "success";
 	return { r };
 } catch (...) {
-	ERROR(VIST, "Failed to delete query on policy-admin.");
+	ERROR(VIST) << "Failed to delete query on policy-admin.";
 	Row r;
 	return { r };
 }

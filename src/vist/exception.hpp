@@ -14,7 +14,10 @@
  *  limitations under the License
  */
 /*
+ * @brief Enum based exception handling
  * @usage
+ *  boilerplate : THROW(${ERROR_CODE: ENUM_TYPE}) << ${MESSAGE_STREAM}
+ *
  *  enum class ErrCode {
  *    LogicError = 1,
  *    RuntimeError
@@ -61,8 +64,8 @@ public:
 	{
 		std::stringstream ss;
 		ss << "[" << file << ":" << line << " " << function << "()]"
-		   << "[" << boost::core::demangle(typeid(ec).name())
-		   << "(" << static_cast<typename std::underlying_type_t<ErrCode>>(ec) << ")]";
+		   << "[" << boost::core::demangle(typeid(ec).name()) << "("
+		   << static_cast<typename std::underlying_type_t<ErrCode>>(ec) << ")] ";
 		message = ss.str();
 	}
 
@@ -79,7 +82,9 @@ public:
 	template<typename T>
 	Self& operator<<(const T& arg) noexcept
 	{
-		message += (static_cast<std::stringstream&>(std::stringstream() << arg)).str();
+		std::stringstream ss;
+		ss << arg;
+		message += ss.str();
 		return *this;
 	}
 

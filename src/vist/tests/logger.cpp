@@ -14,23 +14,16 @@
  *  limitations under the License
  */
 
-#include "query.hpp"
+#include <gtest/gtest.h>
 
 #include <vist/logger.hpp>
-#include <vist/ipc/client.hpp>
 
-namespace {
-	const std::string SOCK_ADDR = "/tmp/.vist";
-} // anonymous namespace
+class LoggerTests : public testing::Test {};
 
-namespace vist {
-
-Rows Query::Execute(const std::string& statement)
+TEST_F(LoggerTests, logging)
 {
-	INFO(VIST_CLIENT) << "Query execution: " << statement;
-	auto& client = ipc::Client::Instance(SOCK_ADDR);
-
-	return client->methodCall<Rows>("Vist::query", statement);
+	INFO(VIST) << "Info message" << 1;
+	DEBUG(VIST) << "Debug message" << 2 << 'a';
+	WARN(VIST) << "Warn message" << 3 << 'b' << true;
+	ERROR(VIST) << "Error message" << 4 << 'c' << false << 0.0f;
 }
-
-} // namespace vist

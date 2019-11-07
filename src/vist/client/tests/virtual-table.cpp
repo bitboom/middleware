@@ -38,16 +38,16 @@ TEST(VirtualTableTests, time_row_at) {
 	result.seconds = time.at(&Time::seconds);
 
 	/// Once query execution
-	INFO(VIST_CLIENT, "[Test] time table:");
-	INFO(VIST_CLIENT, "\t hour: " << result.hour);
-	INFO(VIST_CLIENT, "\t minutes: " << result.minutes);
-	INFO(VIST_CLIENT, "\t seconds: " << result.seconds);
+	INFO(VIST_CLIENT) << "[Test] time table:";
+	INFO(VIST_CLIENT) << "\t hour: " << result.hour;
+	INFO(VIST_CLIENT) << "\t minutes: " << result.minutes;
+	INFO(VIST_CLIENT) << "\t seconds: " << result.seconds;
 
 	/// Each query execution
-	INFO(VIST_CLIENT, "[Test] time table:");
-	INFO(VIST_CLIENT, "\t hour: " << VirtualRow<Time>().at(&Time::hour));
-	INFO(VIST_CLIENT, "\t minutes: " << VirtualRow<Time>().at(&Time::minutes));
-	INFO(VIST_CLIENT, "\t seconds: " <<  VirtualRow<Time>().at(&Time::seconds));
+	INFO(VIST_CLIENT) << "[Test] time table:";
+	INFO(VIST_CLIENT) << "\t hour: " << VirtualRow<Time>().at(&Time::hour);
+	INFO(VIST_CLIENT) << "\t minutes: " << VirtualRow<Time>().at(&Time::minutes);
+	INFO(VIST_CLIENT) << "\t seconds: " <<  VirtualRow<Time>().at(&Time::seconds);
 
 	EXPECT_NE(result.hour, -1);
 	EXPECT_NE(result.minutes, -1);
@@ -63,10 +63,10 @@ TEST(VirtualTableTests, time_row_arry_op) {
 	result.seconds = time[&Time::seconds];
 
 	/// Once query execution
-	INFO(VIST_CLIENT, "[Test] time table:");
-	INFO(VIST_CLIENT, "\t hour: " << result.hour);
-	INFO(VIST_CLIENT, "\t minutes: " << result.minutes);
-	INFO(VIST_CLIENT, "\t seconds: " << result.seconds);
+	INFO(VIST_CLIENT) << "[Test] time table:";
+	INFO(VIST_CLIENT) << "\t hour: " << result.hour;
+	INFO(VIST_CLIENT) << "\t minutes: " << result.minutes;
+	INFO(VIST_CLIENT) << "\t seconds: " << result.seconds;
 
 	EXPECT_NE(result.hour, -1);
 	EXPECT_NE(result.minutes, -1);
@@ -91,17 +91,17 @@ TEST(VirtualTableTests, processes_table) {
 		result.on_disk = p.at(&Processes::on_disk);
 		result.parent = p.at(&Processes::parent);
 
-		INFO(VIST_CLIENT, "[Test] Processes table:");
-		INFO(VIST_CLIENT, "\t pid: " << result.pid);
-		INFO(VIST_CLIENT, "\t name: " << result.name);
-		INFO(VIST_CLIENT, "\t path: " << result.path);
-		INFO(VIST_CLIENT, "\t cmdline: " << result.cmdline);
-		INFO(VIST_CLIENT, "\t uid: " << result.uid);
-		INFO(VIST_CLIENT, "\t gid: " << result.gid);
-		INFO(VIST_CLIENT, "\t euid: " << result.euid);
-		INFO(VIST_CLIENT, "\t egid: " << result.egid);
-		INFO(VIST_CLIENT, "\t on_disk: " << result.on_disk);
-		INFO(VIST_CLIENT, "\t parent: " << result.parent);
+		INFO(VIST_CLIENT) << "[Test] Processes table:";
+		INFO(VIST_CLIENT) << "\t pid: " << result.pid;
+		INFO(VIST_CLIENT) << "\t name: " << result.name;
+		INFO(VIST_CLIENT) << "\t path: " << result.path;
+		INFO(VIST_CLIENT) << "\t cmdline: " << result.cmdline;
+		INFO(VIST_CLIENT) << "\t uid: " << result.uid;
+		INFO(VIST_CLIENT) << "\t gid: " << result.gid;
+		INFO(VIST_CLIENT) << "\t euid: " << result.euid;
+		INFO(VIST_CLIENT) << "\t egid: " << result.egid;
+		INFO(VIST_CLIENT) << "\t on_disk: " << result.on_disk;
+		INFO(VIST_CLIENT) << "\t parent: " << result.parent;
 	}
 }
 
@@ -112,8 +112,8 @@ TEST(VirtualTableTests, policy_table) {
 	for(const auto& row : table) {
 		Policy policy = { row[&Policy::name], row[&Policy::value] };
 
-		INFO(VIST_CLIENT, "[Test] Policy table:");
-		INFO(VIST_CLIENT, "\t name: " << policy.name);
-		INFO(VIST_CLIENT, "\t value: " << policy.value);
+		INFO(VIST_CLIENT) << "[Test] Policy table:";
+		INFO(VIST_CLIENT) << "\t name: " << policy.name;
+		INFO(VIST_CLIENT) << "\t value: " << policy.value;
 	}
 }

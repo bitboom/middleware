@@ -39,7 +39,7 @@ Vist::Vist()
 
 void Vist::start()
 {
-	INFO(VIST, "Vist daemon starts.");
+	INFO(VIST) << "Vist daemon starts.";
 	auto& server = ipc::Server::Instance(SOCK_ADDR);
 
 	server->expose(this, "", (QUERY_RET_TYPE)(Vist::query)(std::string));

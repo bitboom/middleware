@@ -13,44 +13,113 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+/*
+ * @brief Logging macro for dlog
+ * @usage
+ *  boilerplate : ${LEVEL}(${TAG}) << ${MESSAGE_STREAM}
+ *
+ *  INFO(VIST) << "Info message" << 1;
+ *  DEBUG(VIST) << "Debug message" << 2 << 'a';
+ *  WARN(VIST) << "Warning message" << 3 << 'b' << true;
+ *  ERROR(VIST) << "Error message" << 4 << 'c' << false << 0.0f;
+ */
 
 #pragma once
 
-#include <klay/audit/dlog-sink.h>
-#include <klay/audit/logger.h>
-
+#include <cstring>
 #include <memory>
+#include <sstream>
+#include <string>
 
-#define VIST vist::Logger::Instance()
-#define VIST_CLIENT vist::Logger::ClientInstance()
+#include <dlog.h>
 
 namespace vist {
 
-class Logger final {
-public:
-	Logger(const Logger&) = delete;
-	Logger& operator=(const Logger&) = delete;
+enum class LogLevel {
+	Info,
+	Debug,
+	Warn,
+	Error
+};
 
-	Logger(Logger&&) = default;
-	Logger& operator=(Logger&&) = default;
+struct LogRecord {
+	LogLevel level = LogLevel::Debug;
+	std::string tag;
+	std::string file;
+	unsigned int line = 0;
+	std::string func;
+	std::string message;
+};
 
-	static klay::LogSink* Instance()
+class LogStream final {
+public :
+	LogStream(LogRecord record) noexcept : record(std::move(record)) {}
+	~LogStream() noexcept
 	{
-		static Logger instance("VIST");
-		return &instance.logSink;
+		std::stringstream format;
+		format << "[" << record.file << ":" << record.line
+			   << " " << record.func << "()] ";
+
+		record.message += (format.str() + stream.str());
+		log();
 	}
 
-	static klay::LogSink* ClientInstance()
+	LogStream(const LogStream&) = delete;
+	LogStream& operator=(const LogStream&) = delete;
+
+	LogStream(LogStream&&) = default;
+	LogStream& operator=(LogStream&&) = default;
+
+	template<typename T>
+	LogStream& operator<<(const T& arg)
 	{
-		static Logger instance("VIST_CLIENT");
-		return &instance.logSink;
+		stream << arg;
+		return *this;
 	}
 
 private:
-	explicit Logger(const std::string& tag) : logSink(tag) {}
-	~Logger() = default;
+	inline void log() const noexcept
+	{
+		switch (record.level) {
+		case LogLevel::Info:
+			SLOG(LOG_INFO, record.tag.c_str(), "%s", record.message.c_str());
+			return;
+		case LogLevel::Debug:
+			SLOG(LOG_DEBUG, record.tag.c_str(), "%s", record.message.c_str());
+			return;
+		case LogLevel::Warn:
+			SLOG(LOG_WARN, record.tag.c_str(), "%s", record.message.c_str());
+			return;
+		case LogLevel::Error:
+			SLOG(LOG_ERROR, record.tag.c_str(), "%s", record.message.c_str());
+			return;
+		}
+	}
 
-	klay::DlogLogSink logSink;
+	LogRecord record;
+	std::ostringstream stream;
 };
+
+#ifndef __FILENAME__
+#define __FILENAME__ \
+(::strrchr(__FILE__, '/') ? ::strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
+
+#define LOG(level, tag) vist::LogStream(LOGCAT(vist::LogLevel::level, #tag))
+#define LOGCAT(level, tag) \
+	vist::LogRecord {level, tag, __FILENAME__, __LINE__, __func__}
+
+#define NULLSTREAM std::ostringstream()
+
+#define INFO(tag)  LOG(Info, tag)
+#define ERROR(tag) LOG(Error, tag)
+
+#if !defined(NDEBUG)
+#define DEBUG(tag) LOG(Debug, tag)
+#define WARN(tag)  LOG(Warn, tag)
+#else
+#define DEBUG(tag) NULLSTREAM
+#define WARN(tag) NULLSTREAM
+#endif /// NDEBUG
 
 } // namespace vist

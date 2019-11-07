@@ -19,7 +19,8 @@ BuildRequires: libuuid-devel
 BuildRequires: pkgconfig(libprocps)
 BuildRequires: pkgconfig(libsystemd)
 BuildRequires: pkgconfig(openssl)
-# policyd BRs
+# vist BRs
+BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(klay)
 BuildRequires: pkgconfig(libtzplatform-config)
 Requires: glog
