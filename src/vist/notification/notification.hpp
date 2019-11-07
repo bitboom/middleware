@@ -14,23 +14,37 @@
  *  limitations under the License
  */
 
-#include "query.hpp"
+#pragma once
 
-#include <vist/logger.hpp>
-#include <vist/ipc/client.hpp>
+#include <map>
+#include <vector>
 
-namespace {
-	const std::string SOCK_ADDR = "/tmp/.vist";
-} // anonymous namespace
+#include <osquery/status.h>
 
 namespace vist {
 
-Rows Query::Execute(const std::string& statement)
-{
-	INFO(VIST_CLIENT, "Query execution: " << statement);
-	auto& client = ipc::Client::Instance(SOCK_ADDR);
+using Row = std::map<std::string, std::string>;
+using Rows = std::vector<Row>;
 
-	return client->methodCall<Rows>("Vist::query", statement);
-}
+using Callback = std::function<void(const Row&)>;
+
+using NotifyCallback = Callback;
+
+class Notification final {
+public:
+	static Notification& instance();
+
+	Notification(const Notification&) = delete;
+	Notification& operator=(const Notification&) = delete;
+
+	osquery::Status add(const std::string& table, const NotifyCallback& callback);
+	osquery::Status emit(const std::string& table, const Row& result) const;
+
+private:
+	Notification() = default;
+	~Notification() = default;
+
+	std::multimap<std::string, NotifyCallback> callbacks;
+};
 
 } // namespace vist

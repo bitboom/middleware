@@ -14,18 +14,16 @@
  *  limitations under the License
  */
 
-#include "service/vist.h"
+#include <vist/service/vist.hpp>
 
 #include <cstdlib>
 #include <stdexcept>
 
 using namespace vist;
 
-int main() try
-{
+int main() try {
 	Vist::Instance().start();
 	return EXIT_SUCCESS;
-} catch(const std::exception&)
-{
+} catch(const std::exception&) {
 	return EXIT_FAILURE;
 }

@@ -13,13 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file notification.cpp
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief Implementation of notification
- */
 
-#include "notification.h"
+#include "notification.hpp"
 
 #include <mutex>
 

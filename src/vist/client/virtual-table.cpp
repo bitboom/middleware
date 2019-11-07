@@ -13,28 +13,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file virtual-table.cpp
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief Implementation of virtual object
- */
 
-#include "virtual-table.h"
-#include "query.h" 
+#include "virtual-table.hpp"
 
-#include "schema/time.h"
-#include "schema/policy.h"
-#include "schema/processes.h"
+#include <vist/client/query.hpp>
+#include <vist/client/schema/policy.hpp>
+#include <vist/client/schema/processes.hpp>
+#include <vist/client/schema/time.hpp>
 
-#include <vist/common/audit/logger.h>
-
-#include <tsqb.hxx>
+#include <vist/logger.hpp>
+#include <vist/query-builder.hpp>
 
 #include <boost/lexical_cast.hpp>
 
 namespace {
 
-using namespace tsqb;
+using namespace vist::tsqb;
 using namespace vist::schema;
 
 auto time = make_table("time",

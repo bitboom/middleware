@@ -14,19 +14,19 @@
  *  limitations under the License
  */
 
-#include "policy-storage.h"
+#include "policy-storage.hpp"
 
-#include <vist/common/audit/logger.h>
+#include <vist/logger.hpp>
+#include <vist/query-builder.hpp>
 
 #include <klay/db/column.h>
-#include <klay/db/query-builder.h>
 #include <klay/db/statement.h>
 #include <klay/exception.h>
 
-#include <fstream>
 #include <algorithm>
+#include <fstream>
 
-using namespace query_builder;
+using namespace vist::tsqb;
 using namespace vist::policy::schema;
 
 namespace {

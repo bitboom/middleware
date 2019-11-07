@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2017-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,10 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+/*
+ * @brief namespace TSQB means type-safe query builder
+ */
 
-#include <gtest/gtest.h>
+#pragma once
 
-int main(int argc, char* argv[]) {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
-}
+#include "query-builder/column.hpp"
+#include "query-builder/condition.hpp"
+#include "query-builder/database.hpp"
+#include "query-builder/expression.hpp"
+#include "query-builder/table.hpp"
+#include "query-builder/util.hpp"

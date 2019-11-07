@@ -18,8 +18,8 @@
 #include <bluetooth-api.h>
 #include <bluetooth_internal.h>
 
-#include <vist/policy/sdk/policy-model.h>
-#include <vist/policy/sdk/policy-provider.h>
+#include <vist/policy/sdk/policy-model.hpp>
+#include <vist/policy/sdk/policy-provider.hpp>
 
 #include <memory>
 

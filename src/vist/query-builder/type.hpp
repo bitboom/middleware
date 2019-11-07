@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2017-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,9 +14,32 @@
  *  limitations under the License
  */
 
-#include <gtest/gtest.h>
+#pragma once
 
-int main(int argc, char* argv[]) {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+#include <type_traits>
+
+namespace vist {
+namespace tsqb {
+namespace type {
+
+template<typename L, typename R>
+bool cast_compare(L l, R r)
+{
+	return l == reinterpret_cast<L>(r);
 }
+
+template<typename L, typename R>
+bool compare(L l, R r)
+{
+	return std::is_same<L, R>::value;
+}
+
+template<typename L, typename R>
+void assert_compare(L l, R r)
+{
+	static_assert(std::is_same<L, R>::value, "Type is unsafe.");
+}
+
+} // namespace type
+} // namespace tsqb
+} // namespace vist

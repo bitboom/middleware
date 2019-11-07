@@ -14,10 +14,10 @@
  *  limitations under the License
  */
 
-#include "policy-manager.h"
-#include "policy-loader.h"
+#include "policy-manager.hpp"
+#include "policy-loader.hpp"
 
-#include <vist/common/audit/logger.h>
+#include <vist/logger.hpp>
 
 #include <klay/filesystem.h>
 

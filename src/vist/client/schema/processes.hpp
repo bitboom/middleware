@@ -14,9 +14,26 @@
  *  limitations under the License
  */
 
-#include <gtest/gtest.h>
+#pragma once
 
-int main(int argc, char* argv[]) {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
-}
+#include <string>
+
+namespace vist {
+namespace schema {
+
+struct Processes {
+	long long int pid;
+	std::string name;
+	std::string path;
+	std::string cmdline;
+	long long int uid;
+	long long int gid;
+	long long int euid;
+	long long int egid;
+	int on_disk;
+	long long int resident_size;
+	long long int parent;
+};
+
+} // namesapce schema
+} // namesapce vist

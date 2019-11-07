@@ -14,9 +14,9 @@
  *  limitations under the License
  */
 
-#include <vist/policy/api.h>
+#include <vist/policy/api.hpp>
 
-#include "policy-manager.h"
+#include "policy-manager.hpp"
 
 namespace vist {
 namespace policy {

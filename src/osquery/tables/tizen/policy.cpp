@@ -21,8 +21,8 @@
 #include <osquery/sql.h>
 #include <osquery/tables.h>
 
-#include <vist/policy/api.h>
-#include <vist/common/audit/logger.h>
+#include <vist/policy/api.hpp>
+#include <vist/logger.hpp>
 
 namespace osquery {
 namespace tables {

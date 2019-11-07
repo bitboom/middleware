@@ -14,9 +14,29 @@
  *  limitations under the License
  */
 
-#include <gtest/gtest.h>
+#pragma once
 
-int main(int argc, char* argv[]) {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
-}
+#include <string>
+
+namespace vist {
+namespace policy {
+namespace schema {
+
+struct Admin {
+	std::string name;
+};
+
+struct PolicyActivated {
+	std::string admin;
+	std::string policy;
+	int value = -1;
+};
+
+struct PolicyDefinition {
+	std::string name;
+	int ivalue = -1;
+};
+
+} // namespace schema
+} // namespace policy
+} // namespace vist

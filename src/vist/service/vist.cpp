@@ -14,10 +14,10 @@
  *  limitations under the License
  */
 
-#include "vist.h"
+#include "vist.hpp"
 
-#include <vist/common/ipc/server.h>
-#include <vist/common/audit/logger.h>
+#include <vist/ipc/server.hpp>
+#include <vist/logger.hpp>
 
 #include <stdexcept>
 

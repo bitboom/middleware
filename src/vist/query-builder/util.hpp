@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2017-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,9 +14,24 @@
  *  limitations under the License
  */
 
-#include <gtest/gtest.h>
+#pragma once
 
-int main(int argc, char* argv[]) {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+#include <string>
+#include <algorithm>
+#include <cctype>
+
+namespace vist {
+namespace tsqb {
+namespace util {
+
+inline std::string rtrim(std::string&& s)
+{
+	auto predicate = [](unsigned char c){ return !std::isspace(c); };
+	auto base = std::find_if(s.rbegin(), s.rend(), predicate).base();
+	s.erase(base, s.end());
+	return s;
 }
+
+} // namespace util
+} // namespace tsqb
+} // namespace vist

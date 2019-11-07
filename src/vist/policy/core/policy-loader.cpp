@@ -14,7 +14,7 @@
  *  limitations under the License
  */
 
-#include "policy-loader.h"
+#include "policy-loader.hpp"
 
 namespace vist {
 namespace policy {

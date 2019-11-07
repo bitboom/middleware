@@ -14,9 +14,30 @@
  *  limitations under the License
  */
 
-#include <gtest/gtest.h>
+#pragma once
 
-int main(int argc, char* argv[]) {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
-}
+#include <vist/policy/sdk/policy-value.hpp>
+
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+namespace vist {
+namespace policy {
+
+struct API {
+	static PolicyValue Get(const std::string& policy);
+	static std::unordered_map<std::string, PolicyValue> GetAll();
+
+	struct Admin {
+		static void Set(const std::string& policy, const PolicyValue& value);
+
+		static void Enroll(const std::string& admin);
+		static void Disenroll(const std::string& admin);
+
+		static std::vector<std::string> GetAll();
+	};
+};
+
+} // namespace policy
+} // namespace vist
