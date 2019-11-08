@@ -14,7 +14,7 @@
  *  limitations under the License
  */
 /*
- * @brief Enum based exception handling
+ * @brief Enum based exception handling.
  * @usage
  *  boilerplate : THROW(${ERROR_CODE: ENUM_TYPE}) << ${MESSAGE_STREAM}
  *

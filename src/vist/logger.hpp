@@ -14,7 +14,7 @@
  *  limitations under the License
  */
 /*
- * @brief Logging macro for dlog
+ * @brief Logging macro for dlog.
  * @usage
  *  boilerplate : ${LEVEL}(${TAG}) << ${MESSAGE_STREAM}
  *
