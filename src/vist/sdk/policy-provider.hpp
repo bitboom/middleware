@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <vist/policy/sdk/policy-model.hpp>
+#include <vist/sdk/policy-model.hpp>
 
 #include <cstddef>
 #include <memory>

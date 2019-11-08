@@ -17,8 +17,8 @@
 #include <arpa/inet.h>
 #include <wifi-manager.h>
 
-#include <vist/policy/sdk/policy-model.hpp>
-#include <vist/policy/sdk/policy-provider.hpp>
+#include <vist/sdk/policy-model.hpp>
+#include <vist/sdk/policy-provider.hpp>
 
 #include <klay/dbus/connection.h>
 

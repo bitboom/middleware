@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <vist/policy/sdk/policy-provider.hpp>
+#include <vist/sdk/policy-provider.hpp>
 
 #include <memory>
 #include <stdexcept>

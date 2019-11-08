@@ -16,7 +16,7 @@
 
 #include <gtest/gtest.h>
 
-#include <vist/policy/core/policy-manager.hpp>
+#include <vist/policy/policy-manager.hpp>
 
 namespace vist {
 namespace policy {

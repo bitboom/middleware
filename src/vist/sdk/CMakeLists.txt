@@ -13,21 +13,5 @@
 # limitations under the License.
 #
 
-SET(${TARGET_VIST_POLICY_LIB}_SRCS "")
-
-PKG_CHECK_MODULES(VIST_POLICY_DEPS REQUIRED klay dlog)
-
-INCLUDE_DIRECTORIES(SYSTEM . ${VIST_POLICY_DEPS_INCLUDE_DIRS})
-
-ADD_VIST_POLICY_LIBRARY(vist_policy_core api.cpp
-										 policy-manager.cpp
-										 policy-loader.cpp
-										 policy-storage.cpp)
-
-FILE(GLOB POLICY_CORE_TESTS "tests/*.cpp")
-ADD_VIST_TEST(${POLICY_CORE_TESTS})
-
-ADD_LIBRARY(${TARGET_VIST_POLICY_LIB} STATIC ${${TARGET_VIST_POLICY_LIB}_SRCS})
-TARGET_LINK_LIBRARIES(${TARGET_VIST_POLICY_LIB} ${VIST_POLICY_DEPS_LIBRARIES}
-												pthread
-												dl)
+FILE(GLOB POLICY_SDK_TESTS "tests/*.cpp")
+ADD_VIST_TEST(${POLICY_SDK_TESTS})

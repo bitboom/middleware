@@ -17,7 +17,7 @@
 #include <gtest/gtest.h>
 
 #include <vist/service/vist.hpp>
-#include <vist/policy/core/policy-manager.hpp>
+#include <vist/policy/api.hpp>
 
 #include <iostream>
 #include <chrono>
@@ -42,8 +42,7 @@ TEST_F(CoreTests, query_select)
 
 TEST_F(CoreTests, query_update)
 {
-	auto& manager = policy::PolicyManager::Instance();
-	manager.enroll("admin");
+	policy::API::Admin::Enroll("admin");
 
 	std::string statement = "SELECT * FROM policy WHERE name = 'bluetooth'";
 	auto rows = Vist::Query(statement);
@@ -58,5 +57,5 @@ TEST_F(CoreTests, query_update)
 	rows = Vist::Query(statement);
 	EXPECT_EQ(rows[0]["value"], std::to_string(3));
 
-	manager.disenroll("admin");
+	policy::API::Admin::Disenroll("admin");
 }

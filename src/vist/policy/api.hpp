@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <vist/policy/sdk/policy-value.hpp>
+#include <vist/sdk/policy-value.hpp>
 
 #include <string>
 #include <unordered_map>

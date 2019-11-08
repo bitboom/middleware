@@ -18,7 +18,7 @@
 
 #include <memory>
 
-#include <vist/policy/core/policy-storage.hpp>
+#include <vist/policy/policy-storage.hpp>
 
 using namespace vist::policy;
 
