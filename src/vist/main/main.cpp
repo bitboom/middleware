@@ -16,14 +16,20 @@
 
 #include <vist/service/vist.hpp>
 
+#include <vist/exception.hpp>
+#include <vist/logger.hpp>
+
 #include <cstdlib>
-#include <stdexcept>
 
 using namespace vist;
 
 int main() try {
 	Vist::Instance().start();
 	return EXIT_SUCCESS;
-} catch(const std::exception&) {
+} catch(const Exception<ErrCode>& e) {
+	ERROR(VIST) << "Failed while daemon is running." << e.what();
+	return EXIT_FAILURE;
+} catch(const std::exception& e) {
+	ERROR(VIST) << "Failed while daemon is running." << e.what();
 	return EXIT_FAILURE;
 }

@@ -18,8 +18,9 @@
 
 #include <vist/sdk/policy-provider.hpp>
 
+#include <vist/exception.hpp>
+
 #include <memory>
-#include <stdexcept>
 #include <string>
 
 #include <dlfcn.h>
@@ -48,7 +49,7 @@ void PluginLoader::load(const std::string& name, T& symbol)
 {
 	symbol = reinterpret_cast<T>(::dlsym(handle.get(), name.c_str()));
 	if (symbol == nullptr)
-		throw std::runtime_error("Failed to load: " + name);
+		THROW(ErrCode::RuntimeError) << "Failed to load: " << name;
 }
 
 } // namespace policy

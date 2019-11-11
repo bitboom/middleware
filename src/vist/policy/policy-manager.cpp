@@ -17,6 +17,7 @@
 #include "policy-manager.hpp"
 #include "policy-loader.hpp"
 
+#include <vist/exception.hpp>
 #include <vist/logger.hpp>
 
 #include <klay/filesystem.h>
@@ -36,7 +37,7 @@ std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 	INFO(VIST) << "Load policies from :" << path;
 	klay::File dir(path);
 	if (!dir.exists() || !dir.isDirectory())
-		throw std::invalid_argument("Plugin directory is wrong.: " + path);
+		THROW(ErrCode::LogicError) << "Plugin directory is wrong.: " << path;
 
 	int passed = 0, failed = 0;
 	klay::DirectoryIterator end;

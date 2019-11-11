@@ -16,6 +16,7 @@
 
 #include "policy-storage.hpp"
 
+#include <vist/exception.hpp>
 #include <vist/logger.hpp>
 #include <vist/query-builder.hpp>
 
@@ -120,12 +121,12 @@ std::string PolicyStorage::getScript(const std::string& name)
 	std::string path = SCRIPT_BASE + "/" + name + ".sql";
 	std::ifstream is(path);
 	if (is.fail())
-		throw std::invalid_argument("Failed to open script: " + path); 
+		THROW(ErrCode::LogicError) << "Failed to open script: " << path; 
 
 	std::istreambuf_iterator<char> begin(is), end;
 	auto content = std::string(begin, end);
 	if (content.empty())
-		throw std::runtime_error("Failed to read script: " + path); 
+		THROW(ErrCode::LogicError) << "Failed to read script: " << path; 
 
 	return content;
 }
@@ -147,7 +148,7 @@ void PolicyStorage::define(const std::string& policy, int ivalue)
 	stmt.bind(1, pd.name);
 	stmt.bind(2, pd.ivalue);
 	if (!stmt.exec())
-		throw std::runtime_error("Failed to define policy: " + pd.name);
+		THROW(ErrCode::RuntimeError) << "Failed to define policy: " << pd.name;
 }
 
 void PolicyStorage::enroll(const std::string& name)
@@ -163,7 +164,7 @@ void PolicyStorage::enroll(const std::string& name)
 	database::Statement stmt(*database, query);
 	stmt.bind(1, name);
 	if (!stmt.exec())
-		throw std::runtime_error("Failed to enroll admin: " + name);
+		THROW(ErrCode::RuntimeError) << "Failed to enroll admin: " << name;
 
 	admins.push_back(name);
 	/// PolicyActivated is triggered by enrolling admin.
@@ -189,7 +190,7 @@ void PolicyStorage::disenroll(const std::string& name)
 	database::Statement stmt(*database, query);
 	stmt.bind(1, name);
 	if (!stmt.exec())
-		throw std::runtime_error("Failed to disenroll admin: " + name);
+		THROW(ErrCode::RuntimeError) << "Failed to disenroll admin: " << name;
 }
 
 void PolicyStorage::update(const std::string& admin,
@@ -200,10 +201,10 @@ void PolicyStorage::update(const std::string& admin,
 				<< ", about: " << policy << ", value: " << std::to_string(value);
 
 	if (std::find(admins.begin(), admins.end(), admin) == admins.end())
-		throw std::runtime_error("Not exist admin: " + admin);
+		THROW(ErrCode::LogicError) << "Not exist admin: " << admin;
 
 	if (definitions.find(policy) == definitions.end())
-		throw std::runtime_error("Not exist policy: " + policy);
+		THROW(ErrCode::LogicError) << "Not exist policy: " << policy;
 
 	int policyValue = value;
 	std::string query = polActivatedTable.update(&PolicyActivated::value)
@@ -214,7 +215,7 @@ void PolicyStorage::update(const std::string& admin,
 	stmt.bind(2, admin);
 	stmt.bind(3, policy);
 	if (!stmt.exec())
-		throw runtime::Exception("Failed to update policy:" + policy);
+		THROW(ErrCode::RuntimeError) << "Failed to update policy:" << policy;
 
 	syncPolicyActivated();
 }
@@ -222,7 +223,7 @@ void PolicyStorage::update(const std::string& admin,
 PolicyValue PolicyStorage::strictest(const std::string& policy)
 {
 	if (definitions.find(policy) == definitions.end())
-		throw std::runtime_error("Not exist policy: " + policy);
+		THROW(ErrCode::LogicError) << "Not exist policy: " << policy;
 
 	// There is no enrolled admins.
 	if (activatedPolicies.size() == 0)
@@ -242,7 +243,7 @@ PolicyValue PolicyStorage::strictest(const std::string& policy)
 	}
 
 	if (strictestPtr == nullptr)
-		throw std::runtime_error("Not exist managed policy: " + policy);
+		THROW(ErrCode::RuntimeError) << "Not exist managed policy: " << policy;
 
 	return std::move(*strictestPtr);
 }

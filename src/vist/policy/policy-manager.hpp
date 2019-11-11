@@ -21,7 +21,6 @@
 
 #include "policy-storage.hpp"
 
-#include <exception>
 #include <memory>
 #include <string>
 #include <unordered_map>

@@ -17,7 +17,6 @@
 #pragma once
 
 #include <map>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -42,7 +41,6 @@ public:
 private:
 	KeyValuePair data;
 };
-
 
 template <typename T>
 class VirtualTable final {

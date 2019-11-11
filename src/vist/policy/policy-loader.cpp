@@ -25,11 +25,13 @@ PolicyProvider* PolicyLoader::load(const std::string& path)
 	PolicyProvider::FactoryType factory = nullptr;
 	loader.load(PolicyProvider::getFactoryName(), factory);
 	if (factory == nullptr)
-		std::runtime_error("Failed to load symbol. " + PolicyProvider::getFactoryName());
+		THROW(ErrCode::RuntimeError) << "Failed to load factory: "
+									 << PolicyProvider::getFactoryName();
 
 	auto provider = (*factory)();
 	if (provider == nullptr)
-		std::runtime_error("Failed to make provider. " + PolicyProvider::getFactoryName());
+		THROW(ErrCode::RuntimeError) << "Failed to make provider: "
+									 << PolicyProvider::getFactoryName();
 
 	return provider;
 }
@@ -41,7 +43,7 @@ PluginLoader::PluginLoader(const std::string& path, int flag)
 //	: handle(::dlopen(path.c_str(), flag), ::dlclose)
 {
 	if (handle == nullptr)
-		throw std::invalid_argument("Failed to open: " + path);
+		THROW(ErrCode::LogicError) << "Failed to open: " << path;
 }
 
 } // namespace policy

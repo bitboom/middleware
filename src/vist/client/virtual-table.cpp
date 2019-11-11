@@ -21,6 +21,7 @@
 #include <vist/client/schema/processes.hpp>
 #include <vist/client/schema/time.hpp>
 
+#include <vist/exception.hpp>
 #include <vist/logger.hpp>
 #include <vist/query-builder.hpp>
 
@@ -76,11 +77,11 @@ template<typename Struct, typename Member>
 Member VirtualRow<T>::at(Member Struct::* field) const
 {
 	if (this->data.size() == 0)
-		throw std::runtime_error("Data is not exist.");
+		THROW(ErrCode::RuntimeError) << "Data is not exist.";
 
 	std::string key = metaDB.getColumnName(field);
 	if (key.empty())
-		throw std::runtime_error("Key is not exist.");
+		THROW(ErrCode::RuntimeError) << "Column is not exist.";
 
 	/// Convert "table.column" to "column"
 	std::size_t pos = key.find(".");
@@ -89,14 +90,14 @@ Member VirtualRow<T>::at(Member Struct::* field) const
 
 	std::string value = this->data.at(key);
 	if (value.empty()) {
-		ERROR(VIST) << "The value of key[" << key << "] is not exist.";
+		ERROR(VIST) << "The value of column[" << key << "] is empty.";
 		return Member();
 	}
 
 	try {
 		return boost::lexical_cast<Member>(value);
 	} catch (...) {
-		ERROR(VIST) << "Failed to casting [key]: " << key;
+		THROW(ErrCode::BadCast) << "Failed to casting [key]: " << key;
 		return Member();
 	}
 }

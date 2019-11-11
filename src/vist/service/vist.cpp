@@ -18,8 +18,7 @@
 
 #include <vist/ipc/server.hpp>
 #include <vist/logger.hpp>
-
-#include <stdexcept>
+#include <vist/exception.hpp>
 
 #include <osquery/registry_interface.h>
 #include <osquery/sql.h>
@@ -50,7 +49,7 @@ Rows Vist::query(const std::string& statement)
 {
 	osquery::SQL sql(statement, true);
 	if (!sql.ok())
-		throw std::runtime_error("Faild to execute query: " + sql.getMessageString());
+		THROW(ErrCode::RuntimeError) << "Faild to execute query: " << sql.getMessageString();
 
 	return std::move(sql.rows());
 }

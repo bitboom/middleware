@@ -52,6 +52,12 @@
 
 namespace vist {
 
+enum class ErrCode {
+	LogicError = 0, /// Includes invalid_argument
+	RuntimeError,
+	BadCast
+};
+
 template <typename ErrCode>
 class Exception final : public std::exception {
 public:
