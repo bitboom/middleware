@@ -70,9 +70,19 @@ Summary:  Certification service (tests)
 Group:    Security/Testing
 Requires: ca-certificates-tizen
 Requires: %{name} = %{version}-%{release}
+Requires: %{name}-test-binaries = %{version}-%{release}
 
 %description test
 Certification service (tests)
+
+%package test-binaries
+Summary:  Certification service (test binaries)
+Group:    Security/Testing
+AutoReq:  no
+Requires: %{name}-test = %{version}-%{release}
+
+%description test-binaries
+Certification service (test binaries)
 %endif
 
 %prep
@@ -180,10 +190,15 @@ fi
 %if 0%{?certsvc_test_build}
 %files test
 %bin_dir/cert-svc-test*
-%cert_svc_tests
+%dir %cert_svc_tests
+%cert_svc_tests/p12
+%cert_svc_tests/certs
 %_libdir/libcert-svc-validator-plugin.so
 
 %bin_dir/cert-svc-example*
 %cert_svc_examples
+
+%files test-binaries
+%cert_svc_tests/apps
 
 %endif
