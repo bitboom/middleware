@@ -12,8 +12,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_VIST_LIBRARY(vist_client query.cpp
-							 virtual-table.cpp)
+SET(${TARGET_VIST_CLIENT_LIB}_SRCS "")
+
+PKG_CHECK_MODULES(VIST_CLIENT_DEPS REQUIRED gflags klay dlog)
+
+INCLUDE_DIRECTORIES(SYSTEM . ${VIST_CLIENT_DEPS_INCLUDE_DIRS})
+
+ADD_VIST_CLIENT_LIBRARY(vist_client query.cpp
+									virtual-table.cpp)
 
 FILE(GLOB CLIENT_TESTS "tests/*.cpp")
 ADD_VIST_TEST(${CLIENT_TESTS})
+
+ADD_LIBRARY(${TARGET_VIST_CLIENT_LIB} STATIC ${${TARGET_VIST_CLIENT_LIB}_SRCS})
+TARGET_LINK_LIBRARIES(${TARGET_VIST_CLIENT_LIB} ${VIST_CLIENT_DEPS_LIBRARIES}
+												pthread)

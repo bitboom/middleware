@@ -32,23 +32,27 @@ TEST(ClientTests, query) {
 }
 
 TEST(ClientTests, admin_enrollment) {
-	auto rows = Query::Execute("INSERT INTO policy_admin (name) VALUES ('testAdmin')");
+	/// Default policy admin is always exist.
+	auto rows = Query::Execute("SELECT * FROM policy_admin");
+	EXPECT_EQ(rows.size(), 1);
+
+	rows = Query::Execute("INSERT INTO policy_admin (name) VALUES ('testAdmin')");
 	EXPECT_EQ(rows.size(), 0);
 
 	rows = Query::Execute("SELECT * FROM policy_admin");
-	EXPECT_EQ(rows.size(), 1);
+	EXPECT_EQ(rows.size(), 2);
 
 	Query::Execute("INSERT INTO policy_admin (name) VALUES ('testAdmin2')");
 	rows = Query::Execute("SELECT * FROM policy_admin");
-	EXPECT_EQ(rows.size(), 2);
+	EXPECT_EQ(rows.size(), 3);
 
 	rows = Query::Execute("DELETE FROM policy_admin WHERE name = 'testAdmin'");
 	EXPECT_EQ(rows.size(), 0);
 
 	rows = Query::Execute("SELECT * FROM policy_admin");
-	EXPECT_EQ(rows.size(), 1);
+	EXPECT_EQ(rows.size(), 2);
 
 	Query::Execute("DELETE FROM policy_admin WHERE name = 'testAdmin2'");
 	rows = Query::Execute("SELECT * FROM policy_admin");
-	EXPECT_EQ(rows.size(), 0);
+	EXPECT_EQ(rows.size(), 1);
 }

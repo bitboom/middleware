@@ -30,6 +30,8 @@ PolicyManager::PolicyManager() : storage(DB_PATH)
 	loadProviders(PLUGIN_INSTALL_DIR);
 	int cnt = loadPolicies();
 	INFO(VIST) << std::to_string(cnt) << "-policies loaded";
+
+	this->storage.enroll(DEFAULT_ADMIN_PATH);
 }
 
 std::pair<int, int> PolicyManager::loadProviders(const std::string& path)

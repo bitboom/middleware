@@ -84,7 +84,7 @@ void PolicyStorage::syncPolicyDefinition()
 		this->definitions.emplace(pd.name, std::move(pd));
 	}
 
-	DEBUG(VIST) << definitions.size() << "- policies synced.";
+	DEBUG(VIST) << definitions.size() << "-policies synced.";
 }
 
 void PolicyStorage::syncAdmin()
@@ -113,7 +113,7 @@ void PolicyStorage::syncPolicyActivated()
 		this->activatedPolicies.emplace(pa.policy, std::move(pa));
 	}
 
-	DEBUG(VIST) << activatedPolicies.size() << "- activated-policies synced.";
+	DEBUG(VIST) << activatedPolicies.size() << "-activated-policies synced.";
 }
 
 std::string PolicyStorage::getScript(const std::string& name)
@@ -160,7 +160,6 @@ void PolicyStorage::enroll(const std::string& name)
 	}
 
 	std::string query = adminTable.insert(&Admin::name);
-	DEBUG(VIST) << "Enroll admin query statement: " << query;
 	database::Statement stmt(*database, query);
 	stmt.bind(1, name);
 	if (!stmt.exec())
@@ -177,6 +176,9 @@ void PolicyStorage::enroll(const std::string& name)
 
 void PolicyStorage::disenroll(const std::string& name)
 {
+	if (name == DEFAULT_ADMIN_PATH)
+		THROW(ErrCode::RuntimeError) << "Cannot disenroll default admin.";
+
 	INFO(VIST) << "Disenroll admin: " << name;
 	auto iter = std::find(admins.begin(), admins.end(), name);
 	if (iter == admins.end()) {
@@ -208,8 +210,8 @@ void PolicyStorage::update(const std::string& admin,
 
 	int policyValue = value;
 	std::string query = polActivatedTable.update(&PolicyActivated::value)
-									   .where(expr(&PolicyActivated::admin) == admin &&
-											  expr(&PolicyActivated::policy) == policy);
+										 .where(expr(&PolicyActivated::admin) == admin &&
+										  expr(&PolicyActivated::policy) == policy);
 	database::Statement stmt(*database, query);
 	stmt.bind(1, policyValue);
 	stmt.bind(2, admin);
@@ -220,6 +222,7 @@ void PolicyStorage::update(const std::string& admin,
 	syncPolicyActivated();
 }
 
+/// TODO(sangwan.kwon) Re-design strictest logic  
 PolicyValue PolicyStorage::strictest(const std::string& policy)
 {
 	if (definitions.find(policy) == definitions.end())
@@ -232,18 +235,22 @@ PolicyValue PolicyStorage::strictest(const std::string& policy)
 	std::shared_ptr<PolicyValue> strictestPtr = nullptr;
 	auto range = activatedPolicies.equal_range(policy);
 	for (auto iter = range.first; iter != range.second; iter++) {
+		DEBUG(VIST) << "Admin: " << iter->second.admin << ", "
+					<< "Policy: " << iter->second.policy  << ", "
+					<< "Value: " << std::to_string(iter->second.value);
+
 		int value = iter->second.value;
 		if (strictestPtr == nullptr)
 			strictestPtr = std::make_shared<PolicyValue>(value);
 		else
-			strictestPtr->value = (*strictestPtr < value) ? strictestPtr->value : value;
-
-		DEBUG(VIST) << "The strictest of policy[" << policy
-					<< "] : " + std::to_string(strictestPtr->value);
+			strictestPtr->value = (strictestPtr->value > value) ? strictestPtr->value : value;
 	}
 
 	if (strictestPtr == nullptr)
 		THROW(ErrCode::RuntimeError) << "Not exist managed policy: " << policy;
+
+	DEBUG(VIST) << "The strictest value of [" << policy
+				<< "] is " << std::to_string(strictestPtr->value);
 
 	return std::move(*strictestPtr);
 }

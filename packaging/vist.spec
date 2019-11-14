@@ -70,6 +70,7 @@ cp %SOURCE1 .
 		 -DUSER_NAME=%{user_name} \
 		 -DGROUP_NAME=%{group_name} \
 		 -DSMACK_LABEL=%{smack_label} \
+		 -DDEFAULT_ADMIN_PATH=%{_bindir}/vist-cli \
 		 -DDB_INSTALL_DIR:PATH=%{vist_db_dir} \
 		 -DPLUGIN_INSTALL_DIR:PATH=%{vist_plugin_dir} \
 		 -DSCRIPT_INSTALL_DIR:PATH=%{vist_script_dir}
@@ -92,6 +93,7 @@ rm -rf %{buildroot}
 %license LICENSE-Apache-2.0
 %license LICENSE-GPL-2.0
 %license LICENSE-MIT
+%{_bindir}/vist-cli
 %{_bindir}/vistd
 %{vist_script_dir}/*.sql
 %dir %attr(-, %{user_name}, %{group_name}) %{vist_db_dir}

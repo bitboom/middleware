@@ -13,8 +13,9 @@
 #  limitations under the License
 
 SET(TARGET_OSQUERY_LIB osquery)
-SET(TARGET_VIST_POLICY_LIB vist-policy)
+SET(TARGET_VIST_CLIENT_LIB vist-client)
 SET(TARGET_VIST_LIB vist)
+SET(TARGET_VIST_POLICY_LIB vist-policy)
 
 ADD_SUBDIRECTORY(osquery)
 

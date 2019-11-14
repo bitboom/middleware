@@ -45,7 +45,7 @@ TEST_F(PolicyStorageTests, initialize)
 	try {
 		// DB is maden at run-time
 		PolicyStorage storage("/tmp/dummy");
-	} catch (const std::exception&) {
+	} catch (const std::exception& e) {
 		isRaised = true;
 	}
 
@@ -55,7 +55,8 @@ TEST_F(PolicyStorageTests, initialize)
 TEST_F(PolicyStorageTests, enrollment)
 {
 	auto storage = getStorage();
-	EXPECT_FALSE(storage->isActivated());
+	/// Since default admin exists, storage is always activated.
+	EXPECT_TRUE(storage->isActivated());
 
 	storage->enroll("testAdmin0");
 	storage->enroll("testAdmin1");
@@ -65,7 +66,7 @@ TEST_F(PolicyStorageTests, enrollment)
 	EXPECT_TRUE(storage->isActivated());
 
 	storage->disenroll("testAdmin1");
-	EXPECT_FALSE(storage->isActivated());
+	EXPECT_TRUE(storage->isActivated());
 }
 
 TEST_F(PolicyStorageTests, update)
@@ -117,7 +118,7 @@ TEST_F(PolicyStorageTests, strictest)
 	EXPECT_TRUE(isRaised);
 
 	auto policy = storage->strictest("bluetooth");
-	EXPECT_EQ(policy.value, 3);
+	EXPECT_EQ(policy.value, 6);
 
 	storage->disenroll("testAdmin0");
 	storage->disenroll("testAdmin1");
@@ -139,21 +140,36 @@ TEST_F(PolicyStorageTests, admin_list)
 	auto storage = getStorage();
 
 	auto admins = storage->getAdmins();
-	EXPECT_EQ(admins.size(), 0);
+	EXPECT_EQ(admins.size(), 1);
 
 	storage->enroll("testAdmin1");
 	admins = storage->getAdmins();
-	EXPECT_EQ(admins.size(), 1);
+	EXPECT_EQ(admins.size(), 2);
 
 	storage->enroll("testAdmin2");
 	admins = storage->getAdmins();
-	EXPECT_EQ(admins.size(), 2);
+	EXPECT_EQ(admins.size(), 3);
 
 	storage->disenroll("testAdmin2");
 	admins = storage->getAdmins();
-	EXPECT_EQ(admins.size(), 1);
+	EXPECT_EQ(admins.size(), 2);
 
 	storage->disenroll("testAdmin1");
 	admins = storage->getAdmins();
-	EXPECT_EQ(admins.size(), 0);
+	EXPECT_EQ(admins.size(), 1);
+}
+
+TEST_F(PolicyStorageTests, default_admin)
+{
+	auto storage = getStorage();
+	bool isRaised = false;
+
+	/// Cannot disenroll default admin
+	try {
+		storage->disenroll(DEFAULT_ADMIN_PATH);
+	} catch (const std::exception& e) {
+		isRaised = true;
+	}
+
+	EXPECT_TRUE(isRaised);
 }

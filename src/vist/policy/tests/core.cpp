@@ -43,7 +43,7 @@ TEST_F(PolicyCoreTests, policy_set_get) {
 
 	/// Manager should return the strongest policy.
 	policy = manager.get("bluetooth");
-	EXPECT_EQ(policy.value, 5);
+	EXPECT_EQ(policy.value, 10);
 
 	manager.disenroll("testAdmin");
 	manager.disenroll("testAdmin1");

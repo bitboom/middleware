@@ -74,7 +74,7 @@ private:
 	/// DB Cache objects
 	/// TODO(Sangwan): add locking mechanism
 	std::vector<std::string> admins;
-	std::unordered_map<std::string, PolicyActivated> activatedPolicies;
+	std::unordered_multimap<std::string, PolicyActivated> activatedPolicies;
 	std::unordered_map<std::string, PolicyDefinition> definitions;
 };
 
