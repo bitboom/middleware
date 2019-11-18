@@ -13,7 +13,4 @@
 # limitations under the License.
 #
 
-ADD_VIST_COMMON_LIBRARY(vist_sdk sdk.cpp)
-
-FILE(GLOB POLICY_SDK_TESTS "tests/*.cpp")
-ADD_VIST_TEST(${POLICY_SDK_TESTS})
+ADD_VIST_COMMON_LIBRARY(vist_ipc ipc.cpp)
