@@ -36,14 +36,14 @@ TEST_F(PolicyCoreTests, policy_set_get) {
 	manager.set("bluetooth", PolicyValue(5), "testAdmin");
 
 	auto policy = manager.get("bluetooth");
-	EXPECT_EQ(policy.value, 5);
+	EXPECT_EQ((int)policy, 5);
 
 	manager.enroll("testAdmin1");
 	manager.set("bluetooth", PolicyValue(10), "testAdmin1");
 
 	/// Manager should return the strongest policy.
 	policy = manager.get("bluetooth");
-	EXPECT_EQ(policy.value, 10);
+	EXPECT_EQ((int)policy, 10);
 
 	manager.disenroll("testAdmin");
 	manager.disenroll("testAdmin1");

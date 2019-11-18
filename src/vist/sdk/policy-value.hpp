@@ -16,32 +16,66 @@
 
 #pragma once
 
+#include <vist/archive.hpp>
+
+#include <string>
+
 namespace vist {
 namespace policy {
 
 // TODO: Support various value type
 struct PolicyValue final {
-	explicit PolicyValue(int value) noexcept : value(value) {}
+	enum class Type {
+		Integer,
+		String,
+		None
+	};
+
+	explicit PolicyValue(int value) : type(Type::Integer)
+	{
+		this->buffer << value;
+	}
+
+	explicit PolicyValue(const std::string& value) : type(Type::String)
+	{
+		this->buffer << value;
+	}
+
 	explicit PolicyValue() noexcept = default;
 	~PolicyValue() = default;
 
-	PolicyValue(const PolicyValue&) noexcept = default;
-	PolicyValue& operator=(const PolicyValue&) noexcept = default;
+	PolicyValue(const PolicyValue&) = default;
+	PolicyValue& operator=(const PolicyValue&) = default;
 
 	PolicyValue(PolicyValue&&) noexcept = default;
 	PolicyValue& operator=(PolicyValue&&) noexcept = default;
 
-	PolicyValue& operator=(int val) {
-		value = val;
-		return *this;
+	inline Type getType() const noexcept
+	{
+		return this->type;
 	}
 
-	operator int() const { return value; }
-	bool operator==(const PolicyValue& rhs) const { return value == rhs.value; }
-	bool operator!=(const PolicyValue& rhs) const { return value != rhs.value; }
-	bool operator<(const PolicyValue& rhs) const { return value < rhs.value; }
+	operator int() const
+	{
+		auto clone = this->buffer;
+		int out;
+		clone >> out;
 
-	int value = -1;
+		return out;
+	}
+
+	operator std::string() const
+	{
+		auto clone = this->buffer;
+		std::string out;
+		clone >> out;
+
+		return out;
+	}
+
+private:
+	Archive buffer;
+	Type type = Type::None;
 };
 
 } // namespace policy

@@ -118,7 +118,7 @@ TEST_F(PolicyStorageTests, strictest)
 	EXPECT_TRUE(isRaised);
 
 	auto policy = storage->strictest("bluetooth");
-	EXPECT_EQ(policy.value, 6);
+	EXPECT_EQ((int)policy, 6);
 
 	storage->disenroll("testAdmin0");
 	storage->disenroll("testAdmin1");

@@ -42,10 +42,8 @@ using IsFundamental = typename std::enable_if<std::is_fundamental<T>::value, int
 template<typename T>
 using IsArchival = typename std::enable_if<std::is_base_of<Archival, T>::value, int>::type;
 
-class Archive {
+class Archive final {
 public:
-	virtual ~Archive() = default;
-
 	template<typename Front, typename... Rest>
 	void pack(const Front& front, const Rest&... rest);
 	inline void pack(void) {}

@@ -38,17 +38,14 @@ public:
 
 	inline void set(const PolicyValue& value)
 	{
-		auto rollback = current;
-		current = value;
-		ready = true;
-
 		try {
 			this->onChanged(value);
 		} catch (const std::exception& e) {
-			current = rollback;
-			ready = false;
 			std::rethrow_exception(std::current_exception());
 		}
+
+		this->current = value;
+		this->ready = true;
 	}
 
 	inline const PolicyValue& get() const
@@ -62,7 +59,7 @@ public:
 	virtual void onChanged(const PolicyValue& value) = 0;
 
 	const std::string& getName() const noexcept { return name; }
-	const PolicyValue& getInitial() const noexcept { return initial; }
+	PolicyValue& getInitial() noexcept { return initial; }
 
 protected:
 	std::string name;

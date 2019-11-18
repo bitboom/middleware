@@ -199,8 +199,9 @@ void PolicyStorage::update(const std::string& admin,
 						   const std::string& policy,
 						   const PolicyValue& value)
 {
+	int policyValue = value;
 	DEBUG(VIST) << "Policy-update is called by admin: " << admin
-				<< ", about: " << policy << ", value: " << std::to_string(value);
+				<< ", about: " << policy << ", value: " << policyValue;
 
 	if (std::find(admins.begin(), admins.end(), admin) == admins.end())
 		THROW(ErrCode::LogicError) << "Not exist admin: " << admin;
@@ -208,7 +209,6 @@ void PolicyStorage::update(const std::string& admin,
 	if (definitions.find(policy) == definitions.end())
 		THROW(ErrCode::LogicError) << "Not exist policy: " << policy;
 
-	int policyValue = value;
 	std::string query = polActivatedTable.update(&PolicyActivated::value)
 										 .where(expr(&PolicyActivated::admin) == admin &&
 										  expr(&PolicyActivated::policy) == policy);
@@ -235,22 +235,26 @@ PolicyValue PolicyStorage::strictest(const std::string& policy)
 	std::shared_ptr<PolicyValue> strictestPtr = nullptr;
 	auto range = activatedPolicies.equal_range(policy);
 	for (auto iter = range.first; iter != range.second; iter++) {
+		int value = iter->second.value;
 		DEBUG(VIST) << "Admin: " << iter->second.admin << ", "
 					<< "Policy: " << iter->second.policy  << ", "
-					<< "Value: " << std::to_string(iter->second.value);
+					<< "Value: " << value;
 
-		int value = iter->second.value;
-		if (strictestPtr == nullptr)
+		if (strictestPtr == nullptr) {
 			strictestPtr = std::make_shared<PolicyValue>(value);
-		else
-			strictestPtr->value = (strictestPtr->value > value) ? strictestPtr->value : value;
+		} else {
+			int strictestValue = *strictestPtr;
+			if (strictestValue < value)
+				strictestPtr.reset(new PolicyValue(value));
+		}
 	}
 
 	if (strictestPtr == nullptr)
 		THROW(ErrCode::RuntimeError) << "Not exist managed policy: " << policy;
 
+	int strictestValue = *strictestPtr;
 	DEBUG(VIST) << "The strictest value of [" << policy
-				<< "] is " << std::to_string(strictestPtr->value);
+				<< "] is " << strictestValue; 
 
 	return std::move(*strictestPtr);
 }

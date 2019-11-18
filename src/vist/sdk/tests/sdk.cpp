@@ -27,8 +27,6 @@ namespace {
 
 using namespace vist::policy;
 
-class PolicySDKTests : public testing::Test {};
-
 class TestPolicyModel : public PolicyModel {
 public:
 	TestPolicyModel() : PolicyModel("test_policy", PolicyValue(1)) {}
@@ -49,7 +47,21 @@ public:
 	}
 };
 
-TEST_F(PolicySDKTests, policy_model)
+TEST(PolicySDKTests, policy_value_int)
+{
+	PolicyValue value(1);
+	EXPECT_EQ(PolicyValue::Type::Integer, value.getType());
+	EXPECT_EQ((int)value, 1);
+}
+
+TEST(PolicySDKTests, policy_value_string)
+{
+	PolicyValue value(std::string("text"));
+	EXPECT_EQ(PolicyValue::Type::String, value.getType());
+	EXPECT_EQ((std::string)value, "text");
+}
+
+TEST(PolicySDKTests, policy_model)
 {
 	TestPolicyModel policy;
 
@@ -71,7 +83,7 @@ TEST_F(PolicySDKTests, policy_model)
 	EXPECT_EQ(3, policy.get());
 }
 
-TEST_F(PolicySDKTests, policy_model_failed)
+TEST(PolicySDKTests, policy_model_failed)
 {
 	TestPolicyModelFailed policy;
 
@@ -88,7 +100,7 @@ TEST_F(PolicySDKTests, policy_model_failed)
 	EXPECT_TRUE(isRaised);
 }
 
-TEST_F(PolicySDKTests, policy_provider)
+TEST(PolicySDKTests, policy_provider)
 {
 	PolicyProvider provider("testProvider");
 	provider.add(std::make_shared<TestPolicyModel>());

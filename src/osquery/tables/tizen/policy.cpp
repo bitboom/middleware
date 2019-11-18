@@ -35,19 +35,22 @@ QueryData genPolicy(QueryContext& context) try {
 		auto names = context.constraints["name"].getAll(EQUALS);
 		for (const auto& name : names) {
 			auto ret = vist::policy::API::Get(name);
+			int value = ret;
 
 			Row r;
 			r["name"] = TEXT(name);
-			r["value"] = TEXT(ret.value);
+			r["value"] = TEXT(value);
 
 			results.emplace_back(std::move(r));
 		}
 	} else { /// select *;
 		auto policies = vist::policy::API::GetAll();
 		for (auto& policy : policies) {
+			int value = policy.second;
+
 			Row r;
 			r["name"] = TEXT(policy.first);
-			r["value"] = TEXT(policy.second);
+			r["value"] = TEXT(value);
 
 			results.emplace_back(std::move(r));
 		}

@@ -86,7 +86,8 @@ int PolicyManager::loadPolicies()
 			/// Check the policy is defined on policy-storage
 			if (!storage.exists(pair.first)) {
 				INFO(VIST) << "Define policy: " << pair.first;
-				storage.define(pair.first, pair.second->getInitial().value);
+				int value = pair.second->getInitial();
+				storage.define(pair.first, value);
 				changed = true;
 			}
 		}
