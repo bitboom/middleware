@@ -310,3 +310,21 @@ TEST(ArchiveTests, parameter_pack_transform_empty)
 	Archive archive;
 	archive.transform(tuple);
 }
+
+TEST(ArchiveTests, string_conversion)
+{
+	int input1 = std::numeric_limits<int>::lowest();
+	int input2 = std::numeric_limits<int>::max();
+
+	Archive archive;
+	archive << input1 << input2;
+
+	std::string flatten = archive;
+	Archive restore(flatten);
+
+	int output1, output2;
+	restore >> output1 >> output2;
+
+	EXPECT_EQ(input1, output1);
+	EXPECT_EQ(input2, output2);
+}

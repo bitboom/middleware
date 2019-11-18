@@ -44,6 +44,12 @@ using IsArchival = typename std::enable_if<std::is_base_of<Archival, T>::value, 
 
 class Archive final {
 public:
+	explicit Archive() = default;
+	/// Use only when flatten data comes from Archive (by casting to string)
+	explicit Archive(const std::string& flatten) : buffer(flatten.cbegin(), flatten.cend())
+	{
+	}
+
 	template<typename Front, typename... Rest>
 	void pack(const Front& front, const Rest&... rest);
 	inline void pack(void) {}
@@ -55,7 +61,7 @@ public:
 	template<typename... Ts>
 	void transform(std::tuple<Ts...>& tuple);
 
-	// serialize method
+	/// serialize method
 	template<typename T, IsFundamental<T> = 0>
 	Archive& operator<<(const T& value);
 	template<typename T, IsArchival<T> = 0>
@@ -67,7 +73,7 @@ public:
 	Archive& operator<<(const std::string& value);
 	Archive& operator<<(const Archive& archive);
 
-	// deserialize method
+	/// deserialize method
 	template<typename T, IsFundamental<T> = 0>
 	Archive& operator>>(T& value);
 	template<typename T, IsArchival<T> = 0>
@@ -83,9 +89,15 @@ public:
 	std::size_t size(void) const noexcept;
 	void reserve(std::size_t size) noexcept;
 
+	/// It is not safe when Archive includes binary formats.
+	operator std::string() const
+	{
+		return std::string(this->buffer.begin(), this->buffer.end());
+	}
+
 protected:
-	virtual void save(const void* bytes, std::size_t size);
-	virtual void load(void* bytes, std::size_t size);
+	void save(const void* bytes, std::size_t size);
+	void load(void* bytes, std::size_t size);
 
 private:
 	template<typename T>
