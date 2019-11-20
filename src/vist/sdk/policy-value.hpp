@@ -16,32 +16,17 @@
 
 #pragma once
 
-#include <vist/archive.hpp>
+#include <vist/stringfy.hpp>
 
 #include <string>
 
 namespace vist {
 namespace policy {
 
-// TODO: Support various value type
 struct PolicyValue final {
-	enum class Type {
-		Integer,
-		String,
-		None
-	};
-
-	explicit PolicyValue(int value) : type(Type::Integer)
-	{
-		this->buffer << value;
-	}
-
-	explicit PolicyValue(const std::string& value) : type(Type::String)
-	{
-		this->buffer << value;
-	}
-
 	explicit PolicyValue() noexcept = default;
+	explicit PolicyValue(int value) : stringfied(Stringfy::Dump(value)) {}
+	explicit PolicyValue(const std::string& value) : stringfied(Stringfy::Dump(value)) {}
 	~PolicyValue() = default;
 
 	PolicyValue(const PolicyValue&) = default;
@@ -50,32 +35,28 @@ struct PolicyValue final {
 	PolicyValue(PolicyValue&&) noexcept = default;
 	PolicyValue& operator=(PolicyValue&&) noexcept = default;
 
-	inline Type getType() const noexcept
+	inline std::string dump() const noexcept
 	{
-		return this->type;
+		return this->stringfied;
+	}
+
+	inline Stringfy::Type getType() const
+	{
+		return Stringfy::GetType(this->stringfied);
 	}
 
 	operator int() const
 	{
-		auto clone = this->buffer;
-		int out;
-		clone >> out;
-
-		return out;
+		return Stringfy::Restore(this->stringfied);
 	}
 
 	operator std::string() const
 	{
-		auto clone = this->buffer;
-		std::string out;
-		clone >> out;
-
-		return out;
+		return Stringfy::Restore(this->stringfied);
 	}
 
 private:
-	Archive buffer;
-	Type type = Type::None;
+	std::string stringfied;
 };
 
 } // namespace policy

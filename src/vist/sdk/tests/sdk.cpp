@@ -25,6 +25,7 @@ namespace {
 	int g_value = -1;
 } // anonymous namespace
 
+using namespace vist;
 using namespace vist::policy;
 
 class TestPolicyModel : public PolicyModel {
@@ -50,15 +51,24 @@ public:
 TEST(PolicySDKTests, policy_value_int)
 {
 	PolicyValue value(1);
-	EXPECT_EQ(PolicyValue::Type::Integer, value.getType());
-	EXPECT_EQ((int)value, 1);
+	EXPECT_EQ(Stringfy::Type::Integer, value.getType());
+	EXPECT_EQ(static_cast<int>(value), 1);
 }
 
 TEST(PolicySDKTests, policy_value_string)
 {
-	PolicyValue value(std::string("text"));
-	EXPECT_EQ(PolicyValue::Type::String, value.getType());
-	EXPECT_EQ((std::string)value, "text");
+	PolicyValue value("TEXT");
+	EXPECT_EQ(Stringfy::Type::String, value.getType());
+	EXPECT_EQ(static_cast<std::string>(value), "TEXT");
+}
+
+TEST(PolicySDKTests, policy_value_dump)
+{
+	PolicyValue intValue(1);
+	EXPECT_EQ("I/1", intValue.dump());
+
+	PolicyValue strValue("TEXT");
+	EXPECT_EQ("S/TEXT", strValue.dump());
 }
 
 TEST(PolicySDKTests, policy_model)
