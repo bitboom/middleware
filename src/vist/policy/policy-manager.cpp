@@ -76,27 +76,20 @@ std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 
 int PolicyManager::loadPolicies()
 {
-	bool changed = false;
-
 	/// Make policy-provider map for performance
 	for (const auto& provider : providers) {
 		for (const auto& pair : provider->policies) {
-			policies[pair.first] = provider->getName();
+			std::string policy = pair.first;
+			this->policies[policy] = provider->getName();
 
 			/// Check the policy is defined on policy-storage
 			if (!storage.exists(pair.first)) {
-				INFO(VIST) << "Define policy: " << pair.first;
-				int value = pair.second->getInitial();
-				storage.define(pair.first, value);
-				changed = true;
+				storage.define(pair.first, pair.second->getInitial());
 			}
 		}
 	}
 
-	if (changed)
-		storage.syncPolicyDefinition();
-
-	return policies.size();
+	return this->policies.size();
 }
 
 void PolicyManager::enroll(const std::string& admin)
@@ -114,14 +107,15 @@ void PolicyManager::set(const std::string& policy,
 						const std::string& admin)
 {
 	if (this->policies.find(policy) == this->policies.end())
-		std::runtime_error("Not exist policy: " + policy);
+		THROW(ErrCode::RuntimeError) << "Not exist policy: " << policy;
 
-	storage.update(admin, policy, value);
+	this->storage.update(admin, policy, value);
 
 	for (auto& p : providers) {
 		if (p->getName() != this->policies[policy])
 			continue;
 
+		/// dispatch callback written by provider
 		if (p->policies.find(policy) != p->policies.end()) {
 			p->policies[policy]->set(value);
 			return;
@@ -131,6 +125,9 @@ void PolicyManager::set(const std::string& policy,
 
 PolicyValue PolicyManager::get(const std::string& policy)
 {
+	if (this->policies.find(policy) == this->policies.end())
+		THROW(ErrCode::RuntimeError) << "Not exist policy: " << policy;
+
 	return storage.strictest(policy);
 }
 

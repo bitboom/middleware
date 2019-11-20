@@ -29,12 +29,12 @@ struct Admin {
 struct PolicyActivated {
 	std::string admin;
 	std::string policy;
-	int value = -1;
+	std::string value;
 };
 
 struct PolicyDefinition {
 	std::string name;
-	int ivalue = -1;
+	std::string ivalue;
 };
 
 } // namespace schema

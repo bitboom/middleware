@@ -79,7 +79,7 @@ void PolicyStorage::syncPolicyDefinition()
 	while (stmt.step()) {
 		PolicyDefinition pd;
 		pd.name = std::string(stmt.getColumn(0));
-		pd.ivalue = stmt.getColumn(1);
+		pd.ivalue = std::string(stmt.getColumn(1));
 		DEBUG(VIST) << "Defined policy:" << pd.name;
 		this->definitions.emplace(pd.name, std::move(pd));
 	}
@@ -109,7 +109,7 @@ void PolicyStorage::syncPolicyActivated()
 		PolicyActivated pa;
 		pa.admin = std::string(stmt.getColumn(0));
 		pa.policy = std::string(stmt.getColumn(1));
-		pa.value = stmt.getColumn(2);
+		pa.value = std::string(stmt.getColumn(2));
 		this->activatedPolicies.emplace(pa.policy, std::move(pa));
 	}
 
@@ -121,26 +121,26 @@ std::string PolicyStorage::getScript(const std::string& name)
 	std::string path = SCRIPT_BASE + "/" + name + ".sql";
 	std::ifstream is(path);
 	if (is.fail())
-		THROW(ErrCode::LogicError) << "Failed to open script: " << path; 
+		THROW(ErrCode::LogicError) << "Failed to open script: " << path;
 
 	std::istreambuf_iterator<char> begin(is), end;
 	auto content = std::string(begin, end);
 	if (content.empty())
-		THROW(ErrCode::LogicError) << "Failed to read script: " << path; 
+		THROW(ErrCode::LogicError) << "Failed to read script: " << path;
 
 	return content;
 }
 
-void PolicyStorage::define(const std::string& policy, int ivalue)
+void PolicyStorage::define(const std::string& policy, const PolicyValue& ivalue)
 {
-	if (definitions.find(policy) != definitions.end()) {
+	if (this->definitions.find(policy) != this->definitions.end()) {
 		INFO(VIST) << "Policy is already defined: " << policy;
 		return;
 	}
 
 	PolicyDefinition pd;
 	pd.name = policy;
-	pd.ivalue = ivalue;
+	pd.ivalue = ivalue.dump();
 
 	std::string query = polDefinitionTable.insert(&PolicyDefinition::name,
 												  &PolicyDefinition::ivalue);
@@ -149,6 +149,9 @@ void PolicyStorage::define(const std::string& policy, int ivalue)
 	stmt.bind(2, pd.ivalue);
 	if (!stmt.exec())
 		THROW(ErrCode::RuntimeError) << "Failed to define policy: " << pd.name;
+
+	INFO(VIST) << "Policy defined >> name: " << pd.name << ", ivalue" << pd.ivalue;
+	this->definitions.emplace(pd.name, std::move(pd));
 }
 
 void PolicyStorage::enroll(const std::string& name)
@@ -199,53 +202,55 @@ void PolicyStorage::update(const std::string& admin,
 						   const std::string& policy,
 						   const PolicyValue& value)
 {
-	int policyValue = value;
 	DEBUG(VIST) << "Policy-update is called by admin: " << admin
-				<< ", about: " << policy << ", value: " << policyValue;
+				<< ", about: " << policy << ", value: " << value.dump();
 
-	if (std::find(admins.begin(), admins.end(), admin) == admins.end())
+	if (std::find(this->admins.begin(), this->admins.end(), admin) == this->admins.end())
 		THROW(ErrCode::LogicError) << "Not exist admin: " << admin;
 
-	if (definitions.find(policy) == definitions.end())
+	if (this->definitions.find(policy) == this->definitions.end())
 		THROW(ErrCode::LogicError) << "Not exist policy: " << policy;
 
 	std::string query = polActivatedTable.update(&PolicyActivated::value)
 										 .where(expr(&PolicyActivated::admin) == admin &&
 										  expr(&PolicyActivated::policy) == policy);
-	database::Statement stmt(*database, query);
-	stmt.bind(1, policyValue);
+	database::Statement stmt(*this->database, query);
+	stmt.bind(1, value.dump());
 	stmt.bind(2, admin);
 	stmt.bind(3, policy);
 	if (!stmt.exec())
 		THROW(ErrCode::RuntimeError) << "Failed to update policy:" << policy;
 
-	syncPolicyActivated();
+	/// TODO: Fix to sync without db i/o
+	this->syncPolicyActivated();
 }
 
-/// TODO(sangwan.kwon) Re-design strictest logic  
+/// TODO(sangwan.kwon) Re-design strictest logic
+/// PolicyValue PolicyStorage::strictest(const PolicyValue& policy)
 PolicyValue PolicyStorage::strictest(const std::string& policy)
 {
-	if (definitions.find(policy) == definitions.end())
+	if (this->definitions.find(policy) == this->definitions.end())
 		THROW(ErrCode::LogicError) << "Not exist policy: " << policy;
 
-	// There is no enrolled admins.
-	if (activatedPolicies.size() == 0)
-		return PolicyValue(definitions[policy].ivalue);
+	/// There is no enrolled admins.
+	/// Make PolicyValue by dumped string.
+	if (this->activatedPolicies.size() == 0)
+		return PolicyValue(definitions[policy].ivalue, true);
 
 	std::shared_ptr<PolicyValue> strictestPtr = nullptr;
 	auto range = activatedPolicies.equal_range(policy);
 	for (auto iter = range.first; iter != range.second; iter++) {
-		int value = iter->second.value;
 		DEBUG(VIST) << "Admin: " << iter->second.admin << ", "
 					<< "Policy: " << iter->second.policy  << ", "
-					<< "Value: " << value;
+					<< "Value: " << iter->second.value;
 
 		if (strictestPtr == nullptr) {
-			strictestPtr = std::make_shared<PolicyValue>(value);
+			strictestPtr = std::make_shared<PolicyValue>(iter->second.value, true);
 		} else {
+			/// TODO: Support String type
 			int strictestValue = *strictestPtr;
-			if (strictestValue < value)
-				strictestPtr.reset(new PolicyValue(value));
+			if (strictestValue < PolicyValue(iter->second.value, true))
+				strictestPtr.reset(new PolicyValue(iter->second.value, true));
 		}
 	}
 

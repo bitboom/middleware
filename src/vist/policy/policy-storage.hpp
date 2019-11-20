@@ -55,7 +55,7 @@ public:
 	void enroll(const std::string& admin);
 	void disenroll(const std::string& admin);
 
-	void define(const std::string& policy, int ivalue);
+	void define(const std::string& policy, const PolicyValue& ivalue);
 	void update(const std::string& admin,
 				const std::string& policy,
 				const PolicyValue& value);

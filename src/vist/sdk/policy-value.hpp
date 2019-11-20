@@ -26,7 +26,8 @@ namespace policy {
 struct PolicyValue final {
 	explicit PolicyValue() noexcept = default;
 	explicit PolicyValue(int value) : stringfied(Stringfy::Dump(value)) {}
-	explicit PolicyValue(const std::string& value) : stringfied(Stringfy::Dump(value)) {}
+	explicit PolicyValue(const std::string& value, bool dumped = false)
+		: stringfied(dumped ? value : Stringfy::Dump(value)) {}
 	~PolicyValue() = default;
 
 	PolicyValue(const PolicyValue&) = default;
