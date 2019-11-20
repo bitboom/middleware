@@ -55,7 +55,8 @@ namespace vist {
 enum class ErrCode {
 	LogicError = 0, /// Includes invalid_argument
 	RuntimeError,
-	BadCast
+	BadCast,
+	TypeUnsafed
 };
 
 template <typename ErrCode>

@@ -17,7 +17,8 @@ PKG_CHECK_MODULES(VIST_COMMON_DEPS REQUIRED gflags klay dlog)
 INCLUDE_DIRECTORIES(SYSTEM . ${VIST_COMMON_DEPS_INCLUDE_DIRS})
 
 ADD_VIST_COMMON_LIBRARY(vist_common archive.cpp
-									common.cpp)
+									common.cpp
+									stringfy.cpp)
 
 FILE(GLOB COMMON_TESTS "tests/*.cpp")
 ADD_VIST_TEST(${COMMON_TESTS})

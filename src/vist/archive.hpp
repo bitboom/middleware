@@ -14,8 +14,6 @@
  *  limitations under the License
  */
 /*
- * @file    archive.hpp
- * @author  Sangwan Kwon (sangwan.kwon@samsung.com)
  * @brief   Define archive interface for serializer and parameter-pack.
  * @details 1. Serializer: Serialize/deserialize below types.
  *             (fundamental types, archival object, unique_ptr, shared_ptr)
@@ -84,8 +82,8 @@ public:
 	void reserve(std::size_t size) noexcept;
 
 protected:
-	virtual void save(const void* bytes, std::size_t size);
-	virtual void load(void* bytes, std::size_t size);
+	void save(const void* bytes, std::size_t size);
+	void load(void* bytes, std::size_t size);
 
 private:
 	template<typename T>
