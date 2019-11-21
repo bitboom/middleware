@@ -17,11 +17,30 @@
 #include <gtest/gtest.h>
 
 #include <vist/logger.hpp>
+#include <vist/logger/dlog.hpp>
 
-class LoggerTests : public testing::Test {};
+using namespace vist;
 
-TEST_F(LoggerTests, logging)
+TEST(LoggerTests, default_)
 {
+	INFO(VIST) << "Info message" << 1;
+	DEBUG(VIST) << "Debug message" << 2 << 'a';
+	WARN(VIST) << "Warn message" << 3 << 'b' << true;
+	ERROR(VIST) << "Error message" << 4 << 'c' << false << 0.0f;
+}
+
+TEST(LoggerTests, console)
+{
+	LogStream::Init(std::make_shared<Console>());
+	INFO(VIST) << "Info message" << 1;
+	DEBUG(VIST) << "Debug message" << 2 << 'a';
+	WARN(VIST) << "Warn message" << 3 << 'b' << true;
+	ERROR(VIST) << "Error message" << 4 << 'c' << false << 0.0f;
+}
+
+TEST(LoggerTests, dlog)
+{
+	LogStream::Init(std::make_shared<Dlog>());
 	INFO(VIST) << "Info message" << 1;
 	DEBUG(VIST) << "Debug message" << 2 << 'a';
 	WARN(VIST) << "Warn message" << 3 << 'b' << true;

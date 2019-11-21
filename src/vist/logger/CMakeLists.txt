@@ -12,9 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_VIST_COMMON_LIBRARY(vist_common archive.cpp
-									common.cpp
-									stringfy.cpp)
+ADD_VIST_COMMON_LIBRARY(vist_logger dlog.cpp
+									logger.cpp)
 
-FILE(GLOB COMMON_TESTS "tests/*.cpp")
-ADD_VIST_TEST(${COMMON_TESTS})
+FILE(GLOB LOGGER_TESTS "tests/*.cpp")
+ADD_VIST_TEST(${LOGGER_TESTS})

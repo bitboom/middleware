@@ -14,5 +14,21 @@
  *  limitations under the License
  */
 
-#include <vist/exception.hpp>
-#include <vist/result.hpp>
+#include <vist/logger.hpp>
+
+#include <memory>
+
+namespace vist {
+
+class Dlog final : public LogBackend {
+public:
+	void info(const LogRecord& record) const noexcept override;
+	void debug(const LogRecord& record) const noexcept override;
+	void warn(const LogRecord& record) const noexcept override;
+	void error(const LogRecord& record) const noexcept override;
+
+private:
+	static std::shared_ptr<LogBackend> backend;
+};
+
+} // namespace vist

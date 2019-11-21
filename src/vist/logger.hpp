@@ -14,12 +14,12 @@
  *  limitations under the License
  */
 /*
- * @brief Logging macro for dlog.
+ * @brief Header Only Library for logging.
  * @usage
  *  boilerplate : ${LEVEL}(${TAG}) << ${MESSAGE_STREAM}
  *
- *  INFO(VIST) << "Info message" << 1;
- *  DEBUG(VIST) << "Debug message" << 2 << 'a';
+ *  INFO("vist") << "Info message" << 1;
+ *  DEBUG("vist") << "Debug message" << 2 << 'a';
  *  WARN(VIST) << "Warning message" << 3 << 'b' << true;
  *  ERROR(VIST) << "Error message" << 4 << 'c' << false << 0.0f;
  */
@@ -30,8 +30,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
-
-#include <dlog.h>
+#include <iostream>
 
 namespace vist {
 
@@ -49,6 +48,74 @@ struct LogRecord {
 	unsigned int line = 0;
 	std::string func;
 	std::string message;
+};
+
+struct LogBackend {
+	LogBackend() = default;
+	virtual ~LogBackend() = default;
+
+	LogBackend(const LogBackend&) = delete;
+	LogBackend& operator=(const LogBackend&) = delete;
+
+	LogBackend(LogBackend&&) = default;
+	LogBackend& operator=(LogBackend&&) = default;
+
+	virtual void info(const LogRecord& record) const noexcept = 0;
+	virtual void debug(const LogRecord& record) const noexcept = 0;
+	virtual void warn(const LogRecord& record) const noexcept = 0;
+	virtual void error(const LogRecord& record) const noexcept = 0;
+};
+
+struct Console final : public LogBackend {
+	enum class ColorCode {
+		Black = 30,
+		Red = 31,
+		Green = 32,
+		Yellow = 33,
+		Blue = 34,
+		Magenta = 35,
+		Cyan = 36,
+		White = 37,
+		Default = 39
+	};
+
+	struct Colorize {
+		explicit Colorize(ColorCode code = ColorCode::Default) : code(code) {}
+
+		friend std::ostream& operator<<(std::ostream& os, const Colorize& c)
+		{
+			return os << "\033[" << static_cast<int>(c.code) << "m";
+		}
+
+		ColorCode code;
+	};
+
+	void info(const LogRecord& record) const noexcept override
+	{
+		std::cout << Colorize(ColorCode::Green);
+		std::cout << "[I][" << record.tag << "]" << record.message << std::endl;
+		std::cout << Colorize(ColorCode::Default);
+	}
+
+	void debug(const LogRecord& record) const noexcept override
+	{
+		std::cout << Colorize(ColorCode::Default);
+		std::cout << "[D][" << record.tag << "]" << record.message << std::endl;
+	}
+
+	void warn(const LogRecord& record) const noexcept override
+	{
+		std::cout << Colorize(ColorCode::Magenta);
+		std::cout << "[W][" << record.tag << "]" << record.message << std::endl;
+		std::cout << Colorize(ColorCode::Default);
+	}
+
+	void error(const LogRecord& record) const noexcept override
+	{
+		std::cout << Colorize(ColorCode::Red);
+		std::cout << "[E][" << record.tag << "]" << record.message << std::endl;
+		std::cout << Colorize(ColorCode::Default);
+	}
 };
 
 class LogStream final {
@@ -77,21 +144,31 @@ public :
 		return *this;
 	}
 
+	static std::shared_ptr<LogBackend> Init(std::shared_ptr<LogBackend>&& backend = nullptr)
+	{
+		static std::shared_ptr<LogBackend> base = std::make_shared<Console>();
+		if (backend != nullptr)
+			base = backend;
+
+		return base;
+	}
+
 private:
 	inline void log() const noexcept
 	{
+		auto backend = Init();
 		switch (record.level) {
 		case LogLevel::Info:
-			SLOG(LOG_INFO, record.tag.c_str(), "%s", record.message.c_str());
+			backend->info(this->record);
 			return;
 		case LogLevel::Debug:
-			SLOG(LOG_DEBUG, record.tag.c_str(), "%s", record.message.c_str());
+			backend->debug(this->record);
 			return;
 		case LogLevel::Warn:
-			SLOG(LOG_WARN, record.tag.c_str(), "%s", record.message.c_str());
+			backend->warn(this->record);
 			return;
 		case LogLevel::Error:
-			SLOG(LOG_ERROR, record.tag.c_str(), "%s", record.message.c_str());
+			backend->error(this->record);
 			return;
 		}
 	}

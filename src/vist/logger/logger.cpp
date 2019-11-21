@@ -14,5 +14,4 @@
  *  limitations under the License
  */
 
-#include <vist/exception.hpp>
-#include <vist/result.hpp>
+#include <vist/logger.hpp>
