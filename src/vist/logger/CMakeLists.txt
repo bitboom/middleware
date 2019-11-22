@@ -13,6 +13,7 @@
 #  limitations under the License
 
 ADD_VIST_COMMON_LIBRARY(vist_logger dlog.cpp
+									glog.cpp
 									logger.cpp)
 
 FILE(GLOB LOGGER_TESTS "tests/*.cpp")

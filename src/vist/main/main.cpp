@@ -18,12 +18,14 @@
 
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
+#include <vist/logger/dlog.hpp>
 
 #include <cstdlib>
 
 using namespace vist;
 
 int main() try {
+	LogStream::Init(std::make_shared<Dlog>());
 	Vist::Instance().start();
 	return EXIT_SUCCESS;
 } catch(const Exception<ErrCode>& e) {

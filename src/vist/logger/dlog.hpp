@@ -28,6 +28,7 @@ public:
 	void error(const LogRecord& record) const noexcept override;
 
 private:
+	/// Make default logger backend as Dlog.
 	static std::shared_ptr<LogBackend> backend;
 };
 

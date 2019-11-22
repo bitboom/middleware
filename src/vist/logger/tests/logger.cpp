@@ -18,6 +18,7 @@
 
 #include <vist/logger.hpp>
 #include <vist/logger/dlog.hpp>
+#include <vist/logger/glog.hpp>
 
 using namespace vist;
 
@@ -32,6 +33,15 @@ TEST(LoggerTests, default_)
 TEST(LoggerTests, console)
 {
 	LogStream::Init(std::make_shared<Console>());
+	INFO(VIST) << "Info message" << 1;
+	DEBUG(VIST) << "Debug message" << 2 << 'a';
+	WARN(VIST) << "Warn message" << 3 << 'b' << true;
+	ERROR(VIST) << "Error message" << 4 << 'c' << false << 0.0f;
+}
+
+TEST(LoggerTests, glog)
+{
+	LogStream::Init(std::make_shared<Glog>());
 	INFO(VIST) << "Info message" << 1;
 	DEBUG(VIST) << "Debug message" << 2 << 'a';
 	WARN(VIST) << "Warn message" << 3 << 'b' << true;

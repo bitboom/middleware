@@ -14,35 +14,22 @@
  *  limitations under the License
  */
 
-#include <vist/logger/dlog.hpp>
-
-#include <dlog.h>
+#include <vist/logger.hpp>
 
 #include <memory>
+#include <string>
 
 namespace vist {
 
-/// Make default logger backend as Dlog.
-std::shared_ptr<LogBackend> Dlog::backend = LogStream::Init(std::make_shared<Dlog>());
+class Glog final : public LogBackend {
+public:
+	explicit Glog();
+	~Glog();
 
-void Dlog::info(const LogRecord& record) const noexcept
-{
-	SLOG(LOG_INFO, record.tag.c_str(), "%s", record.message.c_str());
-}
-
-void Dlog::debug(const LogRecord& record) const noexcept
-{
-	SLOG(LOG_DEBUG, record.tag.c_str(), "%s", record.message.c_str());
-}
-
-void Dlog::warn(const LogRecord& record) const noexcept
-{
-	SLOG(LOG_WARN, record.tag.c_str(), "%s", record.message.c_str());
-}
-
-void Dlog::error(const LogRecord& record) const noexcept
-{
-	SLOG(LOG_ERROR, record.tag.c_str(), "%s", record.message.c_str());
-}
+	void info(const LogRecord& record) const noexcept override;
+	void debug(const LogRecord& record) const noexcept override;
+	void warn(const LogRecord& record) const noexcept override;
+	void error(const LogRecord& record) const noexcept override;
+};
 
 } // namespace vist
