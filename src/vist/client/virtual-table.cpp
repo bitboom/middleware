@@ -22,6 +22,7 @@
 #include <vist/client/schema/time.hpp>
 
 #include <vist/exception.hpp>
+#include <vist/stringfy.hpp>
 #include <vist/logger.hpp>
 #include <vist/query-builder.hpp>
 
@@ -50,8 +51,8 @@ auto processes = make_table("processes",
 							make_column("parent", &Processes::parent));
 
 auto policy = make_table("policy",
-						 make_column("name", &Policy::name),
-						 make_column("value", &Policy::value));
+						 make_column("name", &Policy<int>::name),
+						 make_column("value", &Policy<int>::value));
 
 auto metaDB = make_database("db", time, processes, policy);
 
@@ -94,6 +95,9 @@ Member VirtualRow<T>::at(Member Struct::* field) const
 		return Member();
 	}
 
+	if (std::is_same<T, Policy<int>>::value && key == "value")
+		return static_cast<Member>(Stringfy::Restore(value));
+
 	try {
 		return boost::lexical_cast<Member>(value);
 	} catch (...) {
@@ -103,7 +107,7 @@ Member VirtualRow<T>::at(Member Struct::* field) const
 }
 
 template <typename T>
-template<typename Struct, typename Member>
+template <typename Struct, typename Member>
 Member VirtualRow<T>::operator[](Member Struct::*field) const
 {
 	return this->at(field);
@@ -132,9 +136,13 @@ template long long int VirtualRow<Processes>::operator[](long long int Processes
 template std::string VirtualRow<Processes>::at(std::string Processes::*) const;
 template std::string VirtualRow<Processes>::operator[](std::string Processes::*) const;
 
-template class VirtualTable<Policy>;
-template class VirtualRow<Policy>;
-template std::string VirtualRow<Policy>::at(std::string Policy::*) const;
-template std::string VirtualRow<Policy>::operator[](std::string Policy::*) const;
+template class VirtualTable<Policy<int>>;
+template class VirtualRow<Policy<int>>;
+/// name column
+template std::string VirtualRow<Policy<int>>::at(std::string Policy<int>::*) const;
+template std::string VirtualRow<Policy<int>>::operator[](std::string Policy<int>::*) const;
+/// value<T> column
+template int VirtualRow<Policy<int>>::at(int Policy<int>::*) const;
+template int VirtualRow<Policy<int>>::operator[](int Policy<int>::*) const;
 
 } // namespace vist

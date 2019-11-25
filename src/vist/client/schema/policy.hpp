@@ -21,9 +21,10 @@
 namespace vist {
 namespace schema {
 
+template <typename T>
 struct Policy {
 	std::string	name;
-	std::string value;
+	T value;
 };
 
 } // namesapce schema

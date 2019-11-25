@@ -35,22 +35,20 @@ QueryData genPolicy(QueryContext& context) try {
 		auto names = context.constraints["name"].getAll(EQUALS);
 		for (const auto& name : names) {
 			auto ret = vist::policy::API::Get(name);
-			int value = ret;
 
 			Row r;
 			r["name"] = TEXT(name);
-			r["value"] = TEXT(value);
+			r["value"] = TEXT(ret.dump());
 
 			results.emplace_back(std::move(r));
 		}
 	} else { /// select *;
 		auto policies = vist::policy::API::GetAll();
 		for (auto& policy : policies) {
-			int value = policy.second;
-
 			Row r;
+			INFO(VIST) << "***";
 			r["name"] = TEXT(policy.first);
-			r["value"] = TEXT(value);
+			r["value"] = TEXT(policy.second.dump());
 
 			results.emplace_back(std::move(r));
 		}
@@ -78,9 +76,9 @@ QueryData updatePolicy(QueryContext& context, const PluginRequest& request) try 
 		throw std::runtime_error("Wrong request format.");
 
 	std::string name = document[0].GetString();
-	int value = std::stoi(document[1].GetString());
+	std::string dumpedValue = document[1].GetString();
 
-	vist::policy::API::Admin::Set(name, vist::policy::PolicyValue(value));
+	vist::policy::API::Admin::Set(name, vist::policy::PolicyValue(dumpedValue, true));
 
 	Row r;
 	r["status"] = "success";

@@ -47,15 +47,15 @@ TEST_F(CoreTests, query_update)
 	std::string statement = "SELECT * FROM policy WHERE name = 'bluetooth'";
 	auto rows = Vist::Query(statement);
 	/// Initial policy value
-	EXPECT_EQ(rows[0]["value"], std::to_string(1));
+	EXPECT_EQ(rows[0]["value"], "I/1");
 
-	statement = "UPDATE policy SET value = '3' WHERE name = 'bluetooth'";
+	statement = "UPDATE policy SET value = 'I/3' WHERE name = 'bluetooth'";
 	rows = Vist::Query(statement);
 	EXPECT_EQ(rows.size(), 0);
 
 	statement = "SELECT * FROM policy WHERE name = 'bluetooth'";
 	rows = Vist::Query(statement);
-	EXPECT_EQ(rows[0]["value"], std::to_string(3));
+	EXPECT_EQ(rows[0]["value"], "I/3");
 
 	policy::API::Admin::Disenroll("admin");
 }

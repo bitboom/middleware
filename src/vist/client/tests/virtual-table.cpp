@@ -106,11 +106,11 @@ TEST(VirtualTableTests, processes_table) {
 }
 
 TEST(VirtualTableTests, policy_table) {
-	VirtualTable<Policy> table;
+	VirtualTable<Policy<int>> table;
 	EXPECT_TRUE(table.size() > 0);
 
 	for(const auto& row : table) {
-		Policy policy = { row[&Policy::name], row[&Policy::value] };
+		Policy<int> policy = { row[&Policy<int>::name], row[&Policy<int>::value] };
 
 		INFO(VIST_CLIENT) << "[Test] Policy table:";
 		INFO(VIST_CLIENT) << "\t name: " << policy.name;

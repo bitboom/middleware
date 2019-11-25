@@ -8,5 +8,5 @@ implementation("tizen/policy@genPolicy")
 implementation_update("tizen/policy@updatePolicy")
 examples([
   "select * from policy where name = 'bluetooth'",
-  "update policy set value = 1 where name = 'bluetooth'",
+  "update policy set value = 'I/1' where name = 'bluetooth'",
 ])
