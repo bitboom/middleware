@@ -227,18 +227,18 @@ void PolicyStorage::update(const std::string& admin,
 
 /// TODO(sangwan.kwon) Re-design strictest logic
 /// PolicyValue PolicyStorage::strictest(const PolicyValue& policy)
-PolicyValue PolicyStorage::strictest(const std::string& policy)
+PolicyValue PolicyStorage::strictest(const std::shared_ptr<PolicyModel>& policy)
 {
-	if (this->definitions.find(policy) == this->definitions.end())
-		THROW(ErrCode::LogicError) << "Not exist policy: " << policy;
+	if (this->definitions.find(policy->getName()) == this->definitions.end())
+		THROW(ErrCode::LogicError) << "Not exist policy: " << policy->getName();
 
-	/// There is no enrolled admins.
-	/// Make PolicyValue by dumped string.
-	if (this->activatedPolicies.size() == 0)
-		return PolicyValue(definitions[policy].ivalue, true);
+	if (this->activatedPolicies.size() == 0) {
+		INFO(VIST) << "There is no enrolled admin. Return policy initial value.";
+		return policy->getInitial();
+	}
 
 	std::shared_ptr<PolicyValue> strictestPtr = nullptr;
-	auto range = activatedPolicies.equal_range(policy);
+	auto range = activatedPolicies.equal_range(policy->getName());
 	for (auto iter = range.first; iter != range.second; iter++) {
 		DEBUG(VIST) << "Admin: " << iter->second.admin << ", "
 					<< "Policy: " << iter->second.policy  << ", "
@@ -247,9 +247,7 @@ PolicyValue PolicyStorage::strictest(const std::string& policy)
 		if (strictestPtr == nullptr) {
 			strictestPtr = std::make_shared<PolicyValue>(iter->second.value, true);
 		} else {
-			/// TODO: Support String type
-			int strictestValue = *strictestPtr;
-			if (strictestValue < PolicyValue(iter->second.value, true))
+			if (policy->compare(*strictestPtr, PolicyValue(iter->second.value, true)) > 0)
 				strictestPtr.reset(new PolicyValue(iter->second.value, true));
 		}
 	}
@@ -257,24 +255,10 @@ PolicyValue PolicyStorage::strictest(const std::string& policy)
 	if (strictestPtr == nullptr)
 		THROW(ErrCode::RuntimeError) << "Not exist managed policy: " << policy;
 
-	int strictestValue = *strictestPtr;
-	DEBUG(VIST) << "The strictest value of [" << policy
-				<< "] is " << strictestValue; 
+	DEBUG(VIST) << "The strictest value of [" << policy->getName()
+				<< "] is " << strictestPtr->dump();
 
 	return std::move(*strictestPtr);
-}
-
-std::unordered_map<std::string, PolicyValue> PolicyStorage::strictest()
-{
-	std::unordered_map<std::string, PolicyValue> policies;
-	for (const auto& pair : definitions) {
-		std::string name = pair.first;
-		auto value = this->strictest(name);
-
-		policies.emplace(std::move(name), std::move(value));
-	}
-
-	return policies;
 }
 
 const std::vector<std::string>& PolicyStorage::getAdmins() const noexcept

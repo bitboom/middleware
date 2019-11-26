@@ -56,6 +56,20 @@ public:
 		return current;
 	}
 
+	/// Default compare function for int type
+	virtual int compare(const PolicyValue& lhs, const PolicyValue& rhs) const
+	{
+		int lvalue = lhs;
+		int rvalue = rhs;
+
+		if (lvalue < rvalue)
+			return 1;
+		else if (lvalue == rvalue)
+			return 0;
+		else
+			return -1;
+	}
+
 	virtual void onChanged(const PolicyValue& value) = 0;
 
 	const std::string& getName() const noexcept { return name; }

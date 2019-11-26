@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <vist/sdk/policy-model.hpp>
 #include <vist/sdk/policy-value.hpp>
 
 #include "db-schema.hpp"
@@ -60,9 +61,7 @@ public:
 				const std::string& policy,
 				const PolicyValue& value);
 
-	PolicyValue strictest(const std::string& policy);
-	/// Return all strictest policy values
-	std::unordered_map<std::string, PolicyValue> strictest();
+	PolicyValue strictest(const std::shared_ptr<PolicyModel>& policy);
 
 	const std::vector<std::string>& getAdmins() const noexcept;
 

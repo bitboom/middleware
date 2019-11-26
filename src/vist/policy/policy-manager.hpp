@@ -66,10 +66,13 @@ private:
 	PolicyStorage storage;
 	std::vector<std::unique_ptr<PolicyProvider>> providers;
 
+	const std::shared_ptr<PolicyModel>& getPolicy(const std::string& name);
+
 	/// Policy-Provider
 	std::unordered_map<std::string, std::string> policies;
 
 	FRIEND_TEST(PolicyCoreTests, policy_loader);
+	FRIEND_TEST(PolicyCoreTests, policy_get_policy);
 };
 
 } // namespace policy

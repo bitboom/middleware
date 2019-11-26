@@ -100,41 +100,6 @@ TEST_F(PolicyStorageTests, update)
 	storage->disenroll("testAdmin");
 }
 
-TEST_F(PolicyStorageTests, strictest)
-{
-	auto storage = getStorage();
-	storage->enroll("testAdmin0");
-	storage->enroll("testAdmin1");
-
-	storage->update("testAdmin0", "bluetooth", PolicyValue(3));
-	storage->update("testAdmin1", "bluetooth", PolicyValue(6));
-
-	bool isRaised = false;
-	try {
-		auto value = storage->strictest("FakePolicy");
-	} catch (const std::exception&) {
-		isRaised = true;
-	}
-	EXPECT_TRUE(isRaised);
-
-	auto policy = storage->strictest("bluetooth");
-	EXPECT_EQ((int)policy, 6);
-
-	storage->disenroll("testAdmin0");
-	storage->disenroll("testAdmin1");
-}
-
-TEST_F(PolicyStorageTests, strictest_all)
-{
-	auto storage = getStorage();
-	storage->enroll("testAdmin");
-
-	auto policies = storage->strictest();
-	EXPECT_TRUE(policies.size() > 0);
-
-	storage->disenroll("testAdmin");
-}
-
 TEST_F(PolicyStorageTests, admin_list)
 {
 	auto storage = getStorage();

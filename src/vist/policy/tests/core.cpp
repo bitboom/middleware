@@ -21,32 +21,50 @@
 namespace vist {
 namespace policy {
 
-class PolicyCoreTests : public testing::Test {};
-
-TEST_F(PolicyCoreTests, policy_loader) {
+TEST(PolicyCoreTests, policy_loader) {
 	auto& manager = PolicyManager::Instance();
 
 	EXPECT_TRUE(manager.providers.size() > 0);
 	EXPECT_TRUE(manager.policies.size() > 0);
 }
 
-TEST_F(PolicyCoreTests, policy_set_get) {
+TEST(PolicyCoreTests, policy_set_get) {
 	auto& manager = PolicyManager::Instance();
 	manager.enroll("testAdmin");
 	manager.set("bluetooth", PolicyValue(5), "testAdmin");
 
 	auto policy = manager.get("bluetooth");
-	EXPECT_EQ((int)policy, 5);
+	EXPECT_EQ(static_cast<int>(policy), 5);
 
 	manager.enroll("testAdmin1");
 	manager.set("bluetooth", PolicyValue(10), "testAdmin1");
 
 	/// Manager should return the strongest policy.
 	policy = manager.get("bluetooth");
-	EXPECT_EQ((int)policy, 10);
+	EXPECT_EQ(static_cast<int>(policy), 10);
 
 	manager.disenroll("testAdmin");
 	manager.disenroll("testAdmin1");
+}
+
+TEST(PolicyCoreTests, policy_get_all) {
+	auto& manager = PolicyManager::Instance();
+	auto policies = manager.getAll();
+	EXPECT_TRUE(policies.size() > 0);
+}
+
+TEST(PolicyCoreTests, policy_get_policy) {
+	auto& manager = PolicyManager::Instance();
+	const auto& policy = manager.getPolicy("bluetooth");
+	EXPECT_EQ(policy->getName(), "bluetooth");
+
+	bool raised = false;
+	try {
+		manager.getPolicy("fakePolicy");
+	} catch (const vist::Exception<ErrCode>&) {
+		raised = true;
+	}
+	EXPECT_TRUE(raised);
 }
 
 } // namespace policy

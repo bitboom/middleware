@@ -22,6 +22,8 @@
 
 #include <klay/filesystem.h>
 
+#include <algorithm>
+
 namespace vist {
 namespace policy {
 
@@ -106,39 +108,48 @@ void PolicyManager::set(const std::string& policy,
 						const PolicyValue& value,
 						const std::string& admin)
 {
-	if (this->policies.find(policy) == this->policies.end())
-		THROW(ErrCode::RuntimeError) << "Not exist policy: " << policy;
-
 	this->storage.update(admin, policy, value);
-
-	for (auto& p : providers) {
-		if (p->getName() != this->policies[policy])
-			continue;
-
-		/// dispatch callback written by provider
-		if (p->policies.find(policy) != p->policies.end()) {
-			p->policies[policy]->set(value);
-			return;
-		}
-	}
+	this->getPolicy(policy)->set(value);
 }
 
 PolicyValue PolicyManager::get(const std::string& policy)
 {
-	if (this->policies.find(policy) == this->policies.end())
-		THROW(ErrCode::RuntimeError) << "Not exist policy: " << policy;
-
-	return storage.strictest(policy);
+	return storage.strictest(this->getPolicy(policy));
 }
 
 std::unordered_map<std::string, PolicyValue> PolicyManager::getAll()
 {
-	return storage.strictest();
+	std::unordered_map<std::string, PolicyValue> policies;
+	for (const auto& pair : this->policies) {
+		std::string policyName = pair.first;
+		auto value = this->get(policyName);
+
+		policies.emplace(std::move(policyName), std::move(value));
+	}
+
+	return policies;
 }
 
 std::vector<std::string> PolicyManager::getAdmins()
 {
 	return storage.getAdmins();
+}
+
+const std::shared_ptr<PolicyModel>& PolicyManager::getPolicy(const std::string& name)
+{
+	if (this->policies.find(name) == this->policies.end())
+		THROW(ErrCode::RuntimeError) << "Not exist policy: " << name;
+
+	auto provider = this->policies[name];
+	auto iter = std::find_if(this->providers.begin(), this->providers.end(),
+							 [&provider](const std::unique_ptr<PolicyProvider>& p) {
+								 return p->getName() == provider;
+							 });
+	if (iter == this->providers.end())
+		THROW(ErrCode::RuntimeError) << "Not exist provider[" << provider
+									 << "] about policy: " << name;
+
+	return (*iter)->policies[name];
 }
 
 } // namespace policy
