@@ -225,8 +225,6 @@ void PolicyStorage::update(const std::string& admin,
 	this->syncPolicyActivated();
 }
 
-/// TODO(sangwan.kwon) Re-design strictest logic
-/// PolicyValue PolicyStorage::strictest(const PolicyValue& policy)
 PolicyValue PolicyStorage::strictest(const std::shared_ptr<PolicyModel>& policy)
 {
 	if (this->definitions.find(policy->getName()) == this->definitions.end())

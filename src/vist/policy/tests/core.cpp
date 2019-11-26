@@ -28,20 +28,39 @@ TEST(PolicyCoreTests, policy_loader) {
 	EXPECT_TRUE(manager.policies.size() > 0);
 }
 
-TEST(PolicyCoreTests, policy_set_get) {
+TEST(PolicyCoreTests, policy_set_get_int) {
 	auto& manager = PolicyManager::Instance();
 	manager.enroll("testAdmin");
-	manager.set("bluetooth", PolicyValue(5), "testAdmin");
+	manager.set("sample-int-policy", PolicyValue(5), "testAdmin");
 
-	auto policy = manager.get("bluetooth");
+	auto policy = manager.get("sample-int-policy");
 	EXPECT_EQ(static_cast<int>(policy), 5);
 
 	manager.enroll("testAdmin1");
-	manager.set("bluetooth", PolicyValue(10), "testAdmin1");
+	manager.set("sample-int-policy", PolicyValue(10), "testAdmin1");
 
 	/// Manager should return the strongest policy.
-	policy = manager.get("bluetooth");
+	policy = manager.get("sample-int-policy");
 	EXPECT_EQ(static_cast<int>(policy), 10);
+
+	manager.disenroll("testAdmin");
+	manager.disenroll("testAdmin1");
+}
+
+TEST(PolicyCoreTests, policy_set_get_str) {
+	auto& manager = PolicyManager::Instance();
+	manager.enroll("testAdmin");
+	manager.set("sample-str-policy", PolicyValue("AAA"), "testAdmin");
+
+	auto policy = manager.get("sample-str-policy");
+	EXPECT_EQ(static_cast<std::string>(policy), "AAA");
+
+	manager.enroll("testAdmin1");
+	manager.set("sample-str-policy", PolicyValue("BBB"), "testAdmin1");
+
+	/// Manager should return the strongest policy.
+	policy = manager.get("sample-str-policy");
+	EXPECT_EQ(static_cast<std::string>(policy), "AAA");
 
 	manager.disenroll("testAdmin");
 	manager.disenroll("testAdmin1");
@@ -55,8 +74,8 @@ TEST(PolicyCoreTests, policy_get_all) {
 
 TEST(PolicyCoreTests, policy_get_policy) {
 	auto& manager = PolicyManager::Instance();
-	const auto& policy = manager.getPolicy("bluetooth");
-	EXPECT_EQ(policy->getName(), "bluetooth");
+	const auto& policy = manager.getPolicy("sample-int-policy");
+	EXPECT_EQ(policy->getName(), "sample-int-policy");
 
 	bool raised = false;
 	try {
