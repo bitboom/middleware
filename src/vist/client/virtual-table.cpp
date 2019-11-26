@@ -50,11 +50,15 @@ auto processes = make_table("processes",
 							make_column("on_disk", &Processes::on_disk),
 							make_column("parent", &Processes::parent));
 
-auto policy = make_table("policy",
+auto policyInt = make_table("policy",
 						 make_column("name", &Policy<int>::name),
 						 make_column("value", &Policy<int>::value));
 
-auto metaDB = make_database("db", time, processes, policy);
+auto policyStr = make_table("policy",
+							make_column("name", &Policy<std::string>::name),
+							make_column("value", &Policy<std::string>::value));
+
+auto metaDB = make_database("db", time, processes, policyInt, policyStr);
 
 } // anonymous namespace
 
@@ -117,8 +121,16 @@ template <typename T>
 VirtualTable<T>::VirtualTable()
 {
 	auto results = Query::Execute(metaDB.selectAll<T>());
-	for (auto& r : results)
-		this->dataset.emplace_back(VirtualRow<T>(std::move(r)));
+	for (auto& row : results) {
+		/// Filter unsafe(unmatched) type
+		if (std::is_same<T, Policy<int>>::value && row["value"].find("I/") == std::string::npos)
+			continue;
+		else if (std::is_same<T, Policy<std::string>>::value &&
+				 row["value"].find("S/") == std::string::npos)
+			continue;
+
+		this->dataset.emplace_back(VirtualRow<T>(std::move(row)));
+	}
 }
 
 /// Explicit instantiation
@@ -144,5 +156,12 @@ template std::string VirtualRow<Policy<int>>::operator[](std::string Policy<int>
 /// value<T> column
 template int VirtualRow<Policy<int>>::at(int Policy<int>::*) const;
 template int VirtualRow<Policy<int>>::operator[](int Policy<int>::*) const;
+
+template class VirtualTable<Policy<std::string>>;
+template class VirtualRow<Policy<std::string>>;
+template
+std::string VirtualRow<Policy<std::string>>::at(std::string Policy<std::string>::*) const;
+template
+std::string VirtualRow<Policy<std::string>>::operator[](std::string Policy<std::string>::*) const;
 
 } // namespace vist

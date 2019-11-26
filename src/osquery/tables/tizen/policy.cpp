@@ -25,6 +25,20 @@
 #include <vist/logger.hpp>
 
 namespace osquery {
+
+namespace {
+
+Row convert(const std::string& name, const vist::policy::PolicyValue& value)
+{
+	Row r;
+	r["name"] = name;
+	r["value"] = value.dump();
+
+	return r;
+}
+
+} // anonymous namespace
+
 namespace tables {
 
 QueryData genPolicy(QueryContext& context) try {
@@ -34,23 +48,17 @@ QueryData genPolicy(QueryContext& context) try {
 	if (context.constraints["name"].exists(EQUALS)) { /// where clause
 		auto names = context.constraints["name"].getAll(EQUALS);
 		for (const auto& name : names) {
-			auto ret = vist::policy::API::Get(name);
+			auto value = vist::policy::API::Get(name);
+			auto row = convert(name, value);
 
-			Row r;
-			r["name"] = TEXT(name);
-			r["value"] = TEXT(ret.dump());
-
-			results.emplace_back(std::move(r));
+			results.emplace_back(std::move(row));
 		}
 	} else { /// select *;
 		auto policies = vist::policy::API::GetAll();
 		for (auto& policy : policies) {
-			Row r;
-			INFO(VIST) << "***";
-			r["name"] = TEXT(policy.first);
-			r["value"] = TEXT(policy.second.dump());
+			auto row = convert(policy.first, policy.second);
 
-			results.emplace_back(std::move(r));
+			results.emplace_back(std::move(row));
 		}
 	}
 
