@@ -22,11 +22,12 @@
 
 #include "eventfd.hpp"
 
+#include <vist/exception.hpp>
+
 #include <sys/types.h>
 #include <unistd.h>
 
 #include <cstdint>
-#include <stdexcept>
 
 namespace vist {
 namespace event {
@@ -35,7 +36,7 @@ EventFD::EventFD(unsigned int initval, int flags)
 	: fd(::eventfd(initval, flags))
 {
 	if (this->fd == -1)
-		throw std::runtime_error("Failed to create eventfd.");
+		THROW(ErrCode::RuntimeError) << "Failed to create eventfd.";
 }
 
 EventFD::~EventFD()
@@ -47,14 +48,14 @@ void EventFD::send(void)
 {
 	const std::uint64_t val = 1;
 	if (::write(this->fd, &val, sizeof(val)) == -1)
-		throw std::runtime_error("Failed to write to eventfd.");
+		THROW(ErrCode::RuntimeError) << "Failed to write to eventfd.";
 }
 
 void EventFD::receive(void)
 {
 	std::uint64_t val;
 	if (::read(this->fd, &val, sizeof(val)) == -1)
-		throw std::runtime_error("Failed to read from eventfd.");
+		THROW(ErrCode::RuntimeError) << "Failed to read from eventfd.";
 }
 
 int EventFD::getFd(void) const noexcept

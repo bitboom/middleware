@@ -22,11 +22,11 @@
 #pragma once
 
 #include <vist/archive.hpp>
+#include <vist/exception.hpp>
 #include <vist/klass/function.hpp>
 
 #include <functional>
 #include <memory>
-#include <stdexcept>
 #include <unordered_map>
 
 namespace vist {
@@ -139,7 +139,7 @@ template<typename R, typename K, typename... Ps>
 Functor<R, K, Ps...> make_functor(std::shared_ptr<K> instance, R (K::* member)(Ps...))
 {
 	if (instance == nullptr)
-		throw std::invalid_argument("Instance can't be nullptr.");
+		THROW(ErrCode::LogicError) << "Instance can't be nullptr.";
 
 	return Functor<R, K, Ps...>(instance, make_function(member));
 }
@@ -149,7 +149,7 @@ std::shared_ptr<Functor<R, K, Ps...>> make_functor_ptr(K* instance,
 													   R (K::* member)(Ps...))
 {
 	if (instance == nullptr)
-		throw std::invalid_argument("Instance can't be nullptr.");
+		THROW(ErrCode::LogicError) << "Instance can't be nullptr.";
 
 	std::shared_ptr<K> smartPtr(instance);
 	return std::make_shared<Functor<R, K, Ps...>>(smartPtr, make_function(member));
@@ -160,7 +160,7 @@ std::shared_ptr<Functor<R, K, Ps...>> make_functor_ptr(std::shared_ptr<K> instan
 													   R (K::* member)(Ps...))
 {
 	if (instance == nullptr)
-		throw std::invalid_argument("Instance can't be nullptr.");
+		THROW(ErrCode::LogicError) << "Instance can't be nullptr.";
 
 	return std::make_shared<Functor<R, K, Ps...>>(instance, make_function(member));
 }

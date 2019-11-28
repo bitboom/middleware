@@ -22,6 +22,7 @@
 
 #include "server.hpp"
 
+#include <vist/exception.hpp>
 #include <vist/logger.hpp>
 #include <vist/transport/message.hpp>
 
@@ -62,7 +63,7 @@ void Server::listen(const std::string& socketPath)
 void Server::onAccept(std::shared_ptr<Connection>&& connection)
 {
 	if (connection == nullptr)
-		throw std::invalid_argument("Wrong connection.");
+		THROW(ErrCode::LogicError) << "Wrong connection.";
 
 	auto onRead = [this, connection]() {
 		std::shared_ptr<Connection> conn;
@@ -71,7 +72,7 @@ void Server::onAccept(std::shared_ptr<Connection>&& connection)
 
 		auto iter = this->connectionMap.find(connection->getFd());
 		if (iter == this->connectionMap.end())
-			throw std::runtime_error("Faild to find connection.");
+			THROW(ErrCode::RuntimeError) << "Faild to find connection.";
 
 		conn = iter->second;
 
@@ -98,14 +99,14 @@ void Server::onAccept(std::shared_ptr<Connection>&& connection)
 void Server::onClose(const std::shared_ptr<Connection>& connection)
 {
 	if (connection == nullptr)
-		throw std::invalid_argument("Wrong connection.");
+		THROW(ErrCode::LogicError) << "Wrong connection.";
 
 	{
 		std::lock_guard<std::mutex> lock(this->connectionMutex);
 
 		auto iter = this->connectionMap.find(connection->getFd());
 		if (iter == this->connectionMap.end())
-			throw std::runtime_error("Faild to find connection.");
+			THROW(ErrCode::RuntimeError) << "Faild to find connection.";
 
 		this->mainloop.removeHandler(iter->first);
 		INFO(VIST) << "Connection is closed. fd: " << iter->first;
@@ -123,7 +124,7 @@ void Server::dispatch(const std::shared_ptr<Connection>& connection)
 
 		auto iter = this->functorMap.find(funcName);
 		if (iter == this->functorMap.end())
-			throw std::runtime_error("Faild to find function.");
+			THROW(ErrCode::RuntimeError) << "Faild to find function.";
 
 		DEBUG(VIST) << "Remote method invokation: " << funcName;
 

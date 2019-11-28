@@ -16,10 +16,11 @@
 
 #pragma once
 
+#include <vist/exception.hpp>
 #include <vist/sdk/policy-value.hpp>
 
-#include <string>
 #include <stdexcept>
+#include <string>
 
 namespace vist {
 namespace policy {
@@ -51,7 +52,7 @@ public:
 	inline const PolicyValue& get() const
 	{
 		if (!ready)
-			throw std::runtime_error("Policy value should be set once before use.");
+			THROW(ErrCode::RuntimeError) << "Policy value should be set once before use.";
 
 		return current;
 	}

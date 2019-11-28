@@ -22,6 +22,7 @@
 #include "mainloop.hpp"
 
 #include <vist/logger.hpp>
+#include <vist/exception.hpp>
 
 #include <errno.h>
 #include <unistd.h>
@@ -36,7 +37,7 @@ Mainloop::Mainloop() :
 	stopped(false)
 {
 	if (epollFd == -1)
-		throw std::runtime_error("Failed to create epoll instance.");
+		THROW(ErrCode::RuntimeError) << "Failed to create epoll instance.";
 }
 
 Mainloop::~Mainloop()
@@ -49,7 +50,7 @@ void Mainloop::addHandler(const int fd, OnEvent&& onEvent, OnError&& onError)
 	std::lock_guard<Mutex> lock(mutex);
 
 	if (this->listener.find(fd) != this->listener.end())
-		throw std::runtime_error("Event is already registered.");
+		THROW(ErrCode::RuntimeError) << "Event is already registered.";
 
 	::epoll_event event;
 	std::memset(&event, 0, sizeof(epoll_event));
@@ -58,7 +59,7 @@ void Mainloop::addHandler(const int fd, OnEvent&& onEvent, OnError&& onError)
 	event.data.fd = fd;
 
 	if (::epoll_ctl(this->epollFd, EPOLL_CTL_ADD, fd, &event) == -1)
-		throw std::runtime_error("Failed to add event source.");
+		THROW(ErrCode::RuntimeError) << "Failed to add event source.";
 
 	auto onEventPtr = std::make_shared<OnEvent>(onEvent);
 	auto onErrorPtr = (onError != nullptr) ? std::make_shared<OnError>(onError) : nullptr;

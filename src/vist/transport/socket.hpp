@@ -22,11 +22,12 @@
 
 #pragma once
 
+#include <vist/exception.hpp>
+
 #include <errno.h>
 #include <unistd.h>
 
 #include <cstddef>
-#include <stdexcept>
 #include <string>
 
 namespace vist {
@@ -73,7 +74,7 @@ void Socket::send(const T *buffer, const std::size_t size) const
 		else if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)
 			continue;
 		else
-			std::runtime_error("Failed to write.");
+			THROW(ErrCode::RuntimeError) << "Failed to write to socket.";
 	}
 }
 

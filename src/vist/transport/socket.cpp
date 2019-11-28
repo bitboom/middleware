@@ -38,7 +38,7 @@ namespace {
 void set_cloexec(int fd)
 {
 	if (::fcntl(fd, F_SETFD, FD_CLOEXEC) == -1)
-		throw std::runtime_error("Failed to set CLOSEXEC.");
+		THROW(ErrCode::RuntimeError) << "Failed to set CLOSEXEC.";
 }
 
 } // anonymous namespace
@@ -50,11 +50,11 @@ Socket::Socket(int fd) noexcept : fd(fd)
 Socket::Socket(const std::string& path)
 {
 	if (path.size() >= sizeof(::sockaddr_un::sun_path))
-		throw std::invalid_argument("Socket path size is wrong.");
+		THROW(ErrCode::LogicError) << "Socket path size is wrong.";
 
 	int fd = ::socket(AF_UNIX, SOCK_STREAM, 0);
 	if (fd == -1)
-		throw std::runtime_error("Failed to create socket.");
+		THROW(ErrCode::RuntimeError) << "Failed to create socket.";
 
 	set_cloexec(fd);
 
@@ -68,16 +68,16 @@ Socket::Socket(const std::string& path)
 	struct stat buf;
 	if (::stat(path.c_str(), &buf) == 0)
 		if (::unlink(path.c_str()) == -1)
-			throw std::runtime_error("Failed to remove exist socket.");
+			THROW(ErrCode::RuntimeError) << "Failed to remove exist socket.";
 
 	if (::bind(fd, reinterpret_cast<::sockaddr*>(&addr), sizeof(::sockaddr_un)) == -1) {
 		::close(fd);
-		throw std::runtime_error("Failed to bind.");
+		THROW(ErrCode::RuntimeError) << "Failed to bind.";
 	}
 
 	if (::listen(fd, MAX_BACKLOG_SIZE) == -1) {
 		::close(fd);
-		throw std::runtime_error("Failed to liten.");
+		THROW(ErrCode::RuntimeError) << "Failed to listen.";
 	}
 
 	this->fd = fd;
@@ -109,7 +109,7 @@ Socket Socket::accept(void) const
 {
 	int fd = ::accept(this->fd, nullptr, nullptr);
 	if (fd == -1)
-		throw std::runtime_error("Failed to accept.");
+		THROW(ErrCode::RuntimeError) << "Failed to accept.";
 
 	set_cloexec(fd);
 
@@ -119,11 +119,11 @@ Socket Socket::accept(void) const
 Socket Socket::connect(const std::string& path)
 {
 	if (path.size() >= sizeof(::sockaddr_un::sun_path))
-		throw std::invalid_argument("Socket path size is wrong.");
+		THROW(ErrCode::LogicError) << "Socket path size is wrong.";
 
 	int fd = ::socket(AF_UNIX, SOCK_STREAM, 0);
 	if (fd == -1)
-		throw std::runtime_error("Failed to create socket.");
+		THROW(ErrCode::RuntimeError) << "Failed to create socket.";
 
 	set_cloexec(fd);
 
@@ -136,7 +136,7 @@ Socket Socket::connect(const std::string& path)
 
 	if (::connect(fd, reinterpret_cast<::sockaddr*>(&addr), sizeof(sockaddr_un)) == -1) {
 		::close(fd);
-		throw std::runtime_error("Failed to connect.");
+		THROW(ErrCode::RuntimeError) << "Failed to connect.";
 	}
 
 	return Socket(fd);
