@@ -27,6 +27,8 @@ using Rows = std::vector<Row>;
 
 class Vist final {
 public:
+	~Vist() = default;
+
 	Vist(const Vist&) = delete;
 	Vist& operator=(const Vist&) = delete;
 
@@ -51,7 +53,6 @@ public:
 
 private:
 	explicit Vist();
-	~Vist() = default;
 };
 
 } // namespace vist

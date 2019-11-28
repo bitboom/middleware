@@ -145,6 +145,17 @@ Functor<R, K, Ps...> make_functor(std::shared_ptr<K> instance, R (K::* member)(P
 }
 
 template<typename R, typename K, typename... Ps>
+std::shared_ptr<Functor<R, K, Ps...>> make_functor_ptr(K* instance,
+													   R (K::* member)(Ps...))
+{
+	if (instance == nullptr)
+		throw std::invalid_argument("Instance can't be nullptr.");
+
+	std::shared_ptr<K> smartPtr(instance);
+	return std::make_shared<Functor<R, K, Ps...>>(smartPtr, make_function(member));
+}
+
+template<typename R, typename K, typename... Ps>
 std::shared_ptr<Functor<R, K, Ps...>> make_functor_ptr(std::shared_ptr<K> instance,
 													   R (K::* member)(Ps...))
 {

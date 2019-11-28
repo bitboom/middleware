@@ -24,11 +24,12 @@
 
 #include <vist/index-sequence.hpp>
 
+#include <map>
+#include <memory>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <vector>
-#include <memory>
-#include <tuple>
 
 namespace vist {
 
@@ -59,6 +60,10 @@ public:
 	template<typename T, IsArchival<T> = 0>
 	Archive& operator<<(const T& object);
 	template<typename T>
+	Archive& operator<<(const std::vector<T>& values);
+	template<typename K, typename V>
+	Archive& operator<<(const std::map<K, V>& map);
+	template<typename T>
 	Archive& operator<<(const std::unique_ptr<T>& pointer);
 	template<typename T>
 	Archive& operator<<(const std::shared_ptr<T>& pointer);
@@ -70,6 +75,10 @@ public:
 	Archive& operator>>(T& value);
 	template<typename T, IsArchival<T> = 0>
 	Archive& operator>>(T& object);
+	template<typename T>
+	Archive& operator>>(std::vector<T>& values);
+	template<typename K, typename V>
+	Archive& operator>>(std::map<K, V>& map);
 	template<typename T>
 	Archive& operator>>(std::unique_ptr<T>& pointer);
 	template<typename T>
@@ -144,6 +153,28 @@ Archive& Archive::operator<<(const T& value)
 }
 
 template<typename T>
+Archive& Archive::operator<<(const std::vector<T>& values)
+{
+	*this << values.size();
+	for (const T& value : values)
+		*this << value;
+
+	return *this;
+}
+
+template<typename K, typename V>
+Archive& Archive::operator<<(const std::map<K, V>& map)
+{
+	*this << map.size();
+	for (const auto& pair : map) {
+		*this << pair.first;
+		*this << pair.second;
+	}
+
+	return *this;
+}
+
+template<typename T>
 Archive& Archive::operator<<(const std::unique_ptr<T>& pointer)
 {
 	return *this << *pointer;
@@ -167,6 +198,38 @@ template<typename T, IsFundamental<T>>
 Archive& Archive::operator>>(T& value)
 {
 	this->load(reinterpret_cast<void*>(&value), sizeof(value));
+
+	return *this;
+}
+
+template<typename T>
+Archive& Archive::operator>>(std::vector<T>& values)
+{
+	std::size_t size;
+	*this >> size;
+	values.resize(size);
+
+	for (T& value : values)
+		*this >> value;
+
+	return *this;
+}
+
+template<typename K, typename V>
+Archive& Archive::operator>>(std::map<K, V>& map)
+{
+	std::size_t size;
+	*this >> size;
+
+	while (size--) {
+		K key;
+		V value;
+
+		*this >> key;
+		*this >> value;
+
+		map[key] = value;
+	}
 
 	return *this;
 }

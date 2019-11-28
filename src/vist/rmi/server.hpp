@@ -81,7 +81,7 @@ private:
 template<typename O, typename F>
 void Server::expose(O&& object, const std::string& name, F&& func)
 {
-	auto functor = make_functor_ptr(std::forward<O>(object), std::forward<F>(func));
+	auto functor = klass::make_functor_ptr(std::forward<O>(object), std::forward<F>(func));
 	this->functorMap[name] = functor;
 }
 

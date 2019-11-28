@@ -16,14 +16,12 @@
 
 #include "vist.hpp"
 
-#include <vist/ipc/server.hpp>
+#include <vist/rmi/server.hpp>
 #include <vist/logger.hpp>
 #include <vist/exception.hpp>
 
 #include <osquery/registry_interface.h>
 #include <osquery/sql.h>
-
-#define QUERY_RET_TYPE std::vector<std::map<std::string, std::string>>
 
 namespace {
 	const std::string SOCK_ADDR = "/tmp/.vist";
@@ -39,10 +37,11 @@ Vist::Vist()
 void Vist::start()
 {
 	INFO(VIST) << "Vist daemon starts.";
-	auto& server = ipc::Server::Instance(SOCK_ADDR);
+	rmi::Server server;
+	server.listen(SOCK_ADDR);
 
-	server->expose(this, "", (QUERY_RET_TYPE)(Vist::query)(std::string));
-	server->start();
+	server.expose(this, "Vist::query", &Vist::query);
+	server.start();
 }
 
 Rows Vist::query(const std::string& statement)
