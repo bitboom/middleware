@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <vist/database/connection.hpp>
 #include <vist/sdk/policy-model.hpp>
 #include <vist/sdk/policy-value.hpp>
 
@@ -25,7 +26,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include <klay/db/connection.h>
 
 namespace vist {
 namespace policy {
@@ -68,7 +68,7 @@ public:
 private:
 	std::string getScript(const std::string& name);
 
-	std::shared_ptr<klay::database::Connection> database;
+	std::shared_ptr<database::Connection> database;
 
 	/// DB Cache objects
 	/// TODO(Sangwan): add locking mechanism

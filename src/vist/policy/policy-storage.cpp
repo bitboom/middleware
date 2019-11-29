@@ -16,13 +16,11 @@
 
 #include "policy-storage.hpp"
 
+#include <vist/database/column.hpp>
+#include <vist/database/statement.hpp>
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
 #include <vist/query-builder.hpp>
-
-#include <klay/db/column.h>
-#include <klay/db/statement.h>
-#include <klay/exception.h>
 
 #include <algorithm>
 #include <fstream>
@@ -52,9 +50,7 @@ namespace vist {
 namespace policy {
 
 PolicyStorage::PolicyStorage(const std::string& path) :
-	database(std::make_shared<database::Connection>(path,
-													database::Connection::ReadWrite |
-													database::Connection::Create))
+	database(std::make_shared<database::Connection>(path))
 {
 	database->exec("PRAGMA foreign_keys = ON;");
 	database->exec(getScript(SCRIPT_CREATE_SCHEMA));

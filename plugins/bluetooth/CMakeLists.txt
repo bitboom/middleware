@@ -17,7 +17,8 @@ SET(TARGET "vist-plugin-bluetooth")
 SET(PLUGIN_SOURCES "bluetooth.cpp")
 
 SET(DEPENDENCY bluetooth-api
-			   capi-network-bluetooth)
+			   capi-network-bluetooth
+			   klay)
 
 PKG_CHECK_MODULES(PLUGIN_DEPS REQUIRED ${DEPENDENCY})
 
