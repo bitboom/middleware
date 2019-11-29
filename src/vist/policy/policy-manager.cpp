@@ -20,7 +20,7 @@
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
 
-#include <klay/filesystem.h>
+#include <boost/filesystem.hpp>
 
 #include <algorithm>
 
@@ -39,18 +39,17 @@ PolicyManager::PolicyManager() : storage(DB_PATH)
 std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 {
 	INFO(VIST) << "Load policies from :" << path;
-	klay::File dir(path);
-	if (!dir.exists() || !dir.isDirectory())
+	using namespace boost::filesystem;
+	if (!is_directory(path))
 		THROW(ErrCode::LogicError) << "Plugin directory is wrong.: " << path;
 
 	int passed = 0, failed = 0;
-	klay::DirectoryIterator end;
-	for (klay::DirectoryIterator iter(path); iter != end; ++iter) {
-		if (!iter->isFile())
+	for (directory_entry& entry : directory_iterator(path)) {
+		if (!is_regular_file(entry.path().string()))
 			continue;
 
 		try {
-			auto provider = PolicyLoader::load(iter->getPath());
+			auto provider = PolicyLoader::load(entry.path().string());
 			DEBUG(VIST) << "Loaded provider: " << provider->getName();
 
 			bool exist = false;
@@ -65,7 +64,7 @@ std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 				this->providers.emplace_back(std::move(provider));
 		} catch (const std::exception& e) {
 			++failed;
-			ERROR(VIST) << "Failed to load: " << iter->getPath() << e.what();
+			ERROR(VIST) << "Failed to load: " << entry.path().string() << e.what();
 			continue;
 		}
 
