@@ -76,14 +76,14 @@ TEST_F(PolicyStorageTests, update)
 
 	bool isRaised = false;
 	try {
-		storage->update("fakeAdmin", "bluetooth", PolicyValue(0));
+		storage->update("fakeAdmin", "sample-int-policy", PolicyValue(0));
 	} catch (const std::exception&) {
 		isRaised = true;
 	}
 
 	isRaised = false;
 	try {
-		storage->update("testAdmin", "bluetooth", PolicyValue(0));
+		storage->update("testAdmin", "sample-int-policy", PolicyValue(0));
 	} catch (const std::exception&) {
 		isRaised = true;
 	}

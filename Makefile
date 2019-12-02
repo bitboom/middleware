@@ -6,8 +6,8 @@ clean:
 	rm -rf build
 
 docker_run:
-	docker build --network=host --tag tizen-osquery ./.docker
-	docker run --rm -it --net=host --privileged -v $(shell pwd):/usr/src tizen-osquery
+	docker build --network=host --tag vist ./.docker
+	docker run --rm -it --net=host --privileged -v $(shell pwd):/usr/src/vist vist
 
 gbs_run:
 	gbs lb -A armv7l --include-all --define="build_type DEBUG" -P standard

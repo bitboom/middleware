@@ -22,6 +22,7 @@ BuildRequires: pkgconfig(openssl)
 # vist BRs
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(klay)
+BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(libtzplatform-config)
 Requires: glog
 Requires: gflag

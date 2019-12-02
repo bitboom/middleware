@@ -33,8 +33,9 @@ TEST(PolicyCoreTests, policy_set_get_int) {
 	manager.enroll("testAdmin");
 	manager.set("sample-int-policy", PolicyValue(5), "testAdmin");
 
+	/// Default Admin's policy is more strict. (Because of initial value: 7)
 	auto policy = manager.get("sample-int-policy");
-	EXPECT_EQ(static_cast<int>(policy), 5);
+	EXPECT_EQ(static_cast<int>(policy), 7);
 
 	manager.enroll("testAdmin1");
 	manager.set("sample-int-policy", PolicyValue(10), "testAdmin1");

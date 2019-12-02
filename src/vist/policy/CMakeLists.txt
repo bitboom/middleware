@@ -15,10 +15,6 @@
 
 SET(${TARGET_VIST_POLICY_LIB}_SRCS "")
 
-PKG_CHECK_MODULES(VIST_POLICY_DEPS REQUIRED dlog)
-
-INCLUDE_DIRECTORIES(SYSTEM . ${VIST_POLICY_DEPS_INCLUDE_DIRS})
-
 ADD_VIST_POLICY_LIBRARY(vist_policy_core api.cpp
 										 policy-manager.cpp
 										 policy-loader.cpp

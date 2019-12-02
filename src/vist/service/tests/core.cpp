@@ -33,29 +33,29 @@ TEST_F(CoreTests, query_select)
 
 	EXPECT_TRUE(rows.size() > 0);
 
-	std::string statement = "SELECT * FROM policy WHERE name = 'bluetooth'";
+	std::string statement = "SELECT * FROM policy WHERE name = 'sample-int-policy'";
 	rows = Vist::Query(statement);
 
 	EXPECT_EQ(rows.size(), 1);
-	EXPECT_EQ(rows[0]["name"], "bluetooth");
+	EXPECT_EQ(rows[0]["name"], "sample-int-policy");
 }
 
 TEST_F(CoreTests, query_update)
 {
 	policy::API::Admin::Enroll("admin");
 
-	std::string statement = "SELECT * FROM policy WHERE name = 'bluetooth'";
+	std::string statement = "SELECT * FROM policy WHERE name = 'sample-int-policy'";
 	auto rows = Vist::Query(statement);
 	/// Initial policy value
-	EXPECT_EQ(rows[0]["value"], "I/1");
+	EXPECT_EQ(rows[0]["value"], "I/7");
 
-	statement = "UPDATE policy SET value = 'I/3' WHERE name = 'bluetooth'";
+	statement = "UPDATE policy SET value = 'I/10' WHERE name = 'sample-int-policy'";
 	rows = Vist::Query(statement);
 	EXPECT_EQ(rows.size(), 0);
 
-	statement = "SELECT * FROM policy WHERE name = 'bluetooth'";
+	statement = "SELECT * FROM policy WHERE name = 'sample-int-policy'";
 	rows = Vist::Query(statement);
-	EXPECT_EQ(rows[0]["value"], "I/3");
+	EXPECT_EQ(rows[0]["value"], "I/10");
 
 	policy::API::Admin::Disenroll("admin");
 }

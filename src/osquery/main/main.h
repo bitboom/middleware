@@ -9,6 +9,7 @@
 #pragma once
 
 #include <string>
+#include <functional>
 
 #include <osquery/utils/status/status.h>
 

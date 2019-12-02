@@ -12,9 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_VIST_COMMON_LIBRARY(vist_logger dlog.cpp
-									glog.cpp
+ADD_VIST_COMMON_LIBRARY(vist_logger glog.cpp
 									logger.cpp)
 
-FILE(GLOB LOGGER_TESTS "tests/*.cpp")
-ADD_VIST_TEST(${LOGGER_TESTS})
+IF(DEFINED GBS_BUILD)
+	ADD_VIST_COMMON_LIBRARY(vist_dlog dlog.cpp)
+	FILE(GLOB LOGGER_TESTS "tests/dlog.cpp")
+	ADD_VIST_TEST(${LOGGER_TESTS})
+ELSE(DEFINED GBS_BUILD)
+	FILE(GLOB LOGGER_TESTS "tests/logger.cpp")
+	ADD_VIST_TEST(${LOGGER_TESTS})
+ENDIF(DEFINED GBS_BUILD)
