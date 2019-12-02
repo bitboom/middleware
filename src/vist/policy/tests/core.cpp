@@ -87,5 +87,27 @@ TEST(PolicyCoreTests, policy_get_policy) {
 	EXPECT_TRUE(raised);
 }
 
+TEST(PolicyCoreTests, admin) {
+	auto& manager = PolicyManager::Instance();
+	manager.enroll("testAdmin");
+
+	try {
+		manager.activate("testAdmin", true);
+		manager.activate("testAdmin", false);
+	} catch (const vist::Exception<ErrCode>& e) {
+		EXPECT_TRUE(false) << e.what();
+	}
+
+	bool raised = false;
+	try {
+		manager.activate("fakeAdmin", true);
+	} catch (const vist::Exception<ErrCode>&) {
+		raised = true;
+	}
+	EXPECT_TRUE(raised);
+
+	manager.disenroll("testAdmin");
+}
+
 } // namespace policy
 } // namespace vist

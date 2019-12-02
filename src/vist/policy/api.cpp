@@ -47,6 +47,11 @@ void API::Admin::Disenroll(const std::string& admin)
 	PolicyManager::Instance().disenroll(admin);
 }
 
+void API::Admin::Activate(const std::string& admin, bool state)
+{
+	PolicyManager::Instance().activate(admin, state);
+}
+
 std::vector<std::string> API::Admin::GetAll()
 {
 	return PolicyManager::Instance().getAdmins();

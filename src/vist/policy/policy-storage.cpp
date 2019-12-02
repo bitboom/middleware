@@ -30,12 +30,13 @@ using namespace vist::policy::schema;
 
 namespace {
 
-auto adminTable = make_table("ADMIN", make_column("name", &Admin::name));
+auto adminTable = make_table("ADMIN", make_column("name", &Admin::name),
+									  make_column("activated", &Admin::activated));
 
-auto polActivatedTable = make_table("POLICY_ACTIVATED",
-									make_column("admin", &PolicyActivated::admin),
-									make_column("policy", &PolicyActivated::policy),
-									make_column("value", &PolicyActivated::value));
+auto polManagedTable = make_table("POLICY_MANAGED",
+									make_column("admin", &PolicyManaged::admin),
+									make_column("policy", &PolicyManaged::policy),
+									make_column("value", &PolicyManaged::value));
 
 auto polDefinitionTable = make_table("POLICY_DEFINITION",
 									 make_column("name", &PolicyDefinition::name),
@@ -62,7 +63,7 @@ void PolicyStorage::sync()
 {
 	DEBUG(VIST) << "Sync policy storage to cache object.";
 	syncAdmin();
-	syncPolicyActivated();
+	syncPolicyManaged();
 	syncPolicyDefinition();
 }
 
@@ -73,9 +74,7 @@ void PolicyStorage::syncPolicyDefinition()
 	database::Statement stmt(*database, query);
 
 	while (stmt.step()) {
-		PolicyDefinition pd;
-		pd.name = std::string(stmt.getColumn(0));
-		pd.ivalue = std::string(stmt.getColumn(1));
+		PolicyDefinition pd = { std::string(stmt.getColumn(0)), std::string(stmt.getColumn(1)) };
 		DEBUG(VIST) << "Defined policy:" << pd.name;
 		this->definitions.emplace(pd.name, std::move(pd));
 	}
@@ -89,27 +88,29 @@ void PolicyStorage::syncAdmin()
 	std::string query = adminTable.selectAll();
 	database::Statement stmt(*database, query);
 
-	while (stmt.step())
-		this->admins.emplace_back(std::string(stmt.getColumn(0)));
+	while (stmt.step()) {
+		Admin admin = { std::string(stmt.getColumn(0)), stmt.getColumn(1).getInt() };
+		this->admins.emplace(admin.name, std::move(admin));
+	}
 
 	DEBUG(VIST) << admins.size() << "-admins synced.";
 }
 
-void PolicyStorage::syncPolicyActivated()
+void PolicyStorage::syncPolicyManaged()
 {
-	this->activatedPolicies.clear();
-	std::string query = polActivatedTable.selectAll();
+	this->managedPolicies.clear();
+	std::string query = polManagedTable.selectAll();
 	database::Statement stmt(*database, query);
 
 	while (stmt.step()) {
-		PolicyActivated pa;
+		PolicyManaged pa;
 		pa.admin = std::string(stmt.getColumn(0));
 		pa.policy = std::string(stmt.getColumn(1));
 		pa.value = std::string(stmt.getColumn(2));
-		this->activatedPolicies.emplace(pa.policy, std::move(pa));
+		this->managedPolicies.emplace(pa.policy, std::move(pa));
 	}
 
-	DEBUG(VIST) << activatedPolicies.size() << "-activated-policies synced.";
+	DEBUG(VIST) << managedPolicies.size() << "-managed-policies synced.";
 }
 
 std::string PolicyStorage::getScript(const std::string& name)
@@ -134,9 +135,7 @@ void PolicyStorage::define(const std::string& policy, const PolicyValue& ivalue)
 		return;
 	}
 
-	PolicyDefinition pd;
-	pd.name = policy;
-	pd.ivalue = ivalue.dump();
+	PolicyDefinition pd = { policy, ivalue.dump() };
 
 	std::string query = polDefinitionTable.insert(&PolicyDefinition::name,
 												  &PolicyDefinition::ivalue);
@@ -153,22 +152,27 @@ void PolicyStorage::define(const std::string& policy, const PolicyValue& ivalue)
 void PolicyStorage::enroll(const std::string& name)
 {
 	INFO(VIST) << "Enroll admin: " << name;
-	if (std::find(admins.begin(), admins.end(), name) != admins.end()) {
-		ERROR(VIST) << "Admin is aleady enrolled.: " << name;
+	if (this->admins.find(name) != this->admins.end()) {
+		WARN(VIST) << "Admin is already enrolled.: " << name;
 		return;
 	}
 
-	std::string query = adminTable.insert(&Admin::name);
+	/// Make admin deactivated as default.
+	Admin admin = {name , 0};
+
+	std::string query = adminTable.insert(&Admin::name, &Admin::activated);
 	database::Statement stmt(*database, query);
-	stmt.bind(1, name);
+	stmt.bind(1, admin.name);
+	stmt.bind(2, admin.activated);
 	if (!stmt.exec())
 		THROW(ErrCode::RuntimeError) << "Failed to enroll admin: " << name;
 
-	admins.push_back(name);
-	/// PolicyActivated is triggered by enrolling admin.
-	syncPolicyActivated();
+	this->admins.emplace(admin.name, std::move(admin));
 
-	int count = activatedPolicies.size() / admins.size();
+	/// PolicyManaged is triggered by enrolling admin.
+	syncPolicyManaged();
+
+	int count = this->managedPolicies.size() / this->admins.size();
 	INFO(VIST) << "Admin[" << name << "] manages "
 			   << std::to_string(count) << "-policies.";
 }
@@ -179,12 +183,11 @@ void PolicyStorage::disenroll(const std::string& name)
 		THROW(ErrCode::RuntimeError) << "Cannot disenroll default admin.";
 
 	INFO(VIST) << "Disenroll admin: " << name;
-	auto iter = std::find(admins.begin(), admins.end(), name);
-	if (iter == admins.end()) {
+	if (this->admins.find(name) == this->admins.end()) {
 		ERROR(VIST) << "Not exist admin: " << name;
 		return;
 	} else {
-		admins.erase(iter);
+		this->admins.erase(name);
 	}
 
 	std::string query = adminTable.remove().where(expr(&Admin::name) == name);
@@ -192,6 +195,33 @@ void PolicyStorage::disenroll(const std::string& name)
 	stmt.bind(1, name);
 	if (!stmt.exec())
 		THROW(ErrCode::RuntimeError) << "Failed to disenroll admin: " << name;
+
+	/// TODO: add TC
+	this->syncPolicyManaged();
+}
+
+void PolicyStorage::activate(const std::string& admin, bool state)
+{
+	if (this->admins.find(admin) == this->admins.end())
+		THROW(ErrCode::LogicError) << "Not exist admin: " << admin;
+
+	std::string query = adminTable.update(&Admin::activated)
+										 .where(expr(&Admin::name) == admin);
+	database::Statement stmt(*this->database, query);
+	stmt.bind(1, static_cast<int>(state));
+	stmt.bind(2, admin);
+	if (!stmt.exec())
+		THROW(ErrCode::RuntimeError) << "Failed to activate admin: " << admin;
+
+	this->admins[admin].activated = state;
+}
+
+bool PolicyStorage::isActivated(const std::string& admin)
+{
+	if (this->admins.find(admin) == this->admins.end())
+		THROW(ErrCode::LogicError) << "Not exist admin: " << admin;
+
+	return this->admins[admin].activated;
 }
 
 void PolicyStorage::update(const std::string& admin,
@@ -201,15 +231,15 @@ void PolicyStorage::update(const std::string& admin,
 	DEBUG(VIST) << "Policy-update is called by admin: " << admin
 				<< ", about: " << policy << ", value: " << value.dump();
 
-	if (std::find(this->admins.begin(), this->admins.end(), admin) == this->admins.end())
+	if (this->admins.find(admin) == this->admins.end())
 		THROW(ErrCode::LogicError) << "Not exist admin: " << admin;
 
 	if (this->definitions.find(policy) == this->definitions.end())
 		THROW(ErrCode::LogicError) << "Not exist policy: " << policy;
 
-	std::string query = polActivatedTable.update(&PolicyActivated::value)
-										 .where(expr(&PolicyActivated::admin) == admin &&
-										  expr(&PolicyActivated::policy) == policy);
+	std::string query = polManagedTable.update(&PolicyManaged::value)
+									   .where(expr(&PolicyManaged::admin) == admin &&
+									    expr(&PolicyManaged::policy) == policy);
 	database::Statement stmt(*this->database, query);
 	stmt.bind(1, value.dump());
 	stmt.bind(2, admin);
@@ -218,7 +248,7 @@ void PolicyStorage::update(const std::string& admin,
 		THROW(ErrCode::RuntimeError) << "Failed to update policy:" << policy;
 
 	/// TODO: Fix to sync without db i/o
-	this->syncPolicyActivated();
+	this->syncPolicyManaged();
 }
 
 PolicyValue PolicyStorage::strictest(const std::shared_ptr<PolicyModel>& policy)
@@ -226,13 +256,13 @@ PolicyValue PolicyStorage::strictest(const std::shared_ptr<PolicyModel>& policy)
 	if (this->definitions.find(policy->getName()) == this->definitions.end())
 		THROW(ErrCode::LogicError) << "Not exist policy: " << policy->getName();
 
-	if (this->activatedPolicies.size() == 0) {
+	if (this->managedPolicies.size() == 0) {
 		INFO(VIST) << "There is no enrolled admin. Return policy initial value.";
 		return policy->getInitial();
 	}
 
 	std::shared_ptr<PolicyValue> strictestPtr = nullptr;
-	auto range = activatedPolicies.equal_range(policy->getName());
+	auto range = managedPolicies.equal_range(policy->getName());
 	for (auto iter = range.first; iter != range.second; iter++) {
 		DEBUG(VIST) << "Admin: " << iter->second.admin << ", "
 					<< "Policy: " << iter->second.policy  << ", "
@@ -255,9 +285,13 @@ PolicyValue PolicyStorage::strictest(const std::shared_ptr<PolicyModel>& policy)
 	return std::move(*strictestPtr);
 }
 
-const std::vector<std::string>& PolicyStorage::getAdmins() const noexcept
+std::vector<std::string> PolicyStorage::getAdmins() const noexcept
 {
-	return admins;
+	std::vector<std::string> tmp;
+	for (const auto& admin : this->admins)
+		tmp.push_back(admin.first);
+
+	return tmp;
 }
 
 } // namespace policy

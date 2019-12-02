@@ -48,6 +48,8 @@ public:
 	void enroll(const std::string& admin);
 	void disenroll(const std::string& admin);
 
+	void activate(const std::string& admin, bool state);
+
 	void set(const std::string& policy,
 			 const PolicyValue& value,
 			 const std::string& admin);

@@ -35,6 +35,8 @@ struct API {
 		static void Enroll(const std::string& admin);
 		static void Disenroll(const std::string& admin);
 
+		static void Activate(const std::string& admin, bool state = true);
+
 		static std::vector<std::string> GetAll();
 	};
 };

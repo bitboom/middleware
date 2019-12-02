@@ -52,23 +52,6 @@ TEST_F(PolicyStorageTests, initialize)
 	EXPECT_FALSE(isRaised);
 }
 
-TEST_F(PolicyStorageTests, enrollment)
-{
-	auto storage = getStorage();
-	/// Since default admin exists, storage is always activated.
-	EXPECT_TRUE(storage->isActivated());
-
-	storage->enroll("testAdmin0");
-	storage->enroll("testAdmin1");
-	EXPECT_TRUE(storage->isActivated());
-
-	storage->disenroll("testAdmin0");
-	EXPECT_TRUE(storage->isActivated());
-
-	storage->disenroll("testAdmin1");
-	EXPECT_TRUE(storage->isActivated());
-}
-
 TEST_F(PolicyStorageTests, update)
 {
 	auto storage = getStorage();
@@ -138,3 +121,38 @@ TEST_F(PolicyStorageTests, default_admin)
 
 	EXPECT_TRUE(isRaised);
 }
+
+TEST_F(PolicyStorageTests, activate)
+{
+	auto storage = getStorage();
+	EXPECT_FALSE(storage->isActivated(DEFAULT_ADMIN_PATH));
+
+	storage->activate(DEFAULT_ADMIN_PATH);
+	EXPECT_TRUE(storage->isActivated(DEFAULT_ADMIN_PATH));
+
+	storage->activate(DEFAULT_ADMIN_PATH, true);
+	EXPECT_TRUE(storage->isActivated(DEFAULT_ADMIN_PATH));
+
+	storage->activate(DEFAULT_ADMIN_PATH, false);
+	EXPECT_FALSE(storage->isActivated(DEFAULT_ADMIN_PATH));
+
+	storage->activate(DEFAULT_ADMIN_PATH);
+	EXPECT_TRUE(storage->isActivated(DEFAULT_ADMIN_PATH));
+
+	storage->activate(DEFAULT_ADMIN_PATH, false);
+}
+
+TEST_F(PolicyStorageTests, activate_failed)
+{
+	auto storage = getStorage();
+	bool isRaised = false;
+
+	try {
+		storage->activate("NOT_EXIST");
+	} catch (const std::exception& e) {
+		isRaised = true;
+	}
+
+	EXPECT_TRUE(isRaised);
+}
+

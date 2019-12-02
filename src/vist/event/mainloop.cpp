@@ -82,7 +82,7 @@ void Mainloop::removeHandler(const int fd)
 	::epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
 }
 
-bool Mainloop::prepare(void)
+void Mainloop::prepare(void)
 {
 	auto wakeup = [this]() {
 		this->wakeupSignal.receive();

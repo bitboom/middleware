@@ -24,9 +24,10 @@ namespace schema {
 
 struct Admin {
 	std::string name;
+	int activated = -1;
 };
 
-struct PolicyActivated {
+struct PolicyManaged {
 	std::string admin;
 	std::string policy;
 	std::string value;

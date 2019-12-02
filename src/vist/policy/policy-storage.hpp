@@ -40,7 +40,7 @@ public:
 	void sync();
 
 	void syncAdmin();
-	void syncPolicyActivated();
+	void syncPolicyManaged();
 	void syncPolicyDefinition();
 
 	inline bool exists(const std::string& policy) const noexcept
@@ -48,13 +48,10 @@ public:
 		return definitions.find(policy) != definitions.end();
 	}
 
-	inline bool isActivated() const noexcept
-	{
-		return admins.size() > 0 && activatedPolicies.size() > 0;
-	}
-
 	void enroll(const std::string& admin);
 	void disenroll(const std::string& admin);
+	void activate(const std::string& admin, bool state = true);
+	bool isActivated(const std::string& admin);
 
 	void define(const std::string& policy, const PolicyValue& ivalue);
 	void update(const std::string& admin,
@@ -63,7 +60,7 @@ public:
 
 	PolicyValue strictest(const std::shared_ptr<PolicyModel>& policy);
 
-	const std::vector<std::string>& getAdmins() const noexcept;
+	std::vector<std::string> getAdmins() const noexcept;
 
 private:
 	std::string getScript(const std::string& name);
@@ -72,8 +69,8 @@ private:
 
 	/// DB Cache objects
 	/// TODO(Sangwan): add locking mechanism
-	std::vector<std::string> admins;
-	std::unordered_multimap<std::string, PolicyActivated> activatedPolicies;
+	std::unordered_map<std::string, Admin> admins;
+	std::unordered_multimap<std::string, PolicyManaged> managedPolicies;
 	std::unordered_map<std::string, PolicyDefinition> definitions;
 };
 

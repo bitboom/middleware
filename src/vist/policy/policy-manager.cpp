@@ -103,6 +103,11 @@ void PolicyManager::disenroll(const std::string& admin)
 	this->storage.disenroll(admin);
 }
 
+void PolicyManager::activate(const std::string& admin, bool state)
+{
+	this->storage.activate(admin, state);
+}
+
 void PolicyManager::set(const std::string& policy,
 						const PolicyValue& value,
 						const std::string& admin)

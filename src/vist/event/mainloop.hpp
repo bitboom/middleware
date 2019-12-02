@@ -64,7 +64,7 @@ private:
 	using Handler = std::pair<std::shared_ptr<OnEvent>, std::shared_ptr<OnError>>;
 	using Listener = std::unordered_map<int, Handler>;
 
-	bool prepare(void);
+	void prepare(void);
 
 	bool dispatch(const int timeout) noexcept;
 

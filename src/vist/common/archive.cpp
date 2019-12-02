@@ -27,6 +27,8 @@ Archive& Archive::operator<<(const Archive& archive)
 	auto data = archive.buffer;
 	auto index = archive.current;
 	std::copy(data.begin() + index, data.end(), std::back_inserter(this->buffer));
+
+	return *this;
 }
 
 Archive& Archive::operator<<(const std::string& value)
@@ -43,6 +45,8 @@ Archive& Archive::operator>>(Archive& archive)
 	auto data = this->buffer;
 	auto index = this->current;
 	std::copy(data.begin() + index, data.end(), std::back_inserter(archive.buffer));
+
+	return *this;
 }
 
 Archive& Archive::operator>>(std::string& value)
