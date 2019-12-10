@@ -214,6 +214,7 @@ void PolicyStorage::activate(const std::string& admin, bool state)
 		THROW(ErrCode::RuntimeError) << "Failed to activate admin: " << admin;
 
 	this->admins[admin].activated = state;
+	INFO(VIST) << "Admin[" << admin << "]'s activated value is set: " << state; 
 }
 
 bool PolicyStorage::isActivated(const std::string& admin)
@@ -285,13 +286,13 @@ PolicyValue PolicyStorage::strictest(const std::shared_ptr<PolicyModel>& policy)
 	return std::move(*strictestPtr);
 }
 
-std::vector<std::string> PolicyStorage::getAdmins() const noexcept
+std::unordered_map<std::string, int> PolicyStorage::getAdmins() const noexcept
 {
-	std::vector<std::string> tmp;
+	std::unordered_map<std::string, int> ret;
 	for (const auto& admin : this->admins)
-		tmp.push_back(admin.first);
+		ret[admin.second.name] = admin.second.activated;
 
-	return tmp;
+	return ret;
 }
 
 } // namespace policy

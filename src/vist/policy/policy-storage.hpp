@@ -24,8 +24,6 @@
 
 #include <memory>
 #include <unordered_map>
-#include <vector>
-
 
 namespace vist {
 namespace policy {
@@ -60,7 +58,7 @@ public:
 
 	PolicyValue strictest(const std::shared_ptr<PolicyModel>& policy);
 
-	std::vector<std::string> getAdmins() const noexcept;
+	std::unordered_map<std::string, int> getAdmins() const noexcept;
 
 private:
 	std::string getScript(const std::string& name);

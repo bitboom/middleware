@@ -23,15 +23,17 @@
 
 using namespace vist;
 
-class ClientTests : public testing::Test {};
+class QueryTests : public testing::Test {};
 
-TEST(ClientTests, query) {
+TEST(QueryTests, query)
+{
 	auto rows = Query::Execute("SELECT * FROM policy");
 
 	EXPECT_TRUE(rows.size() > 0);
 }
 
-TEST(ClientTests, admin_enrollment) {
+TEST(QueryTests, admin_enrollment)
+{
 	/// Default policy admin is always exist.
 	auto rows = Query::Execute("SELECT * FROM policy_admin");
 	EXPECT_EQ(rows.size(), 1);
@@ -55,4 +57,26 @@ TEST(ClientTests, admin_enrollment) {
 	Query::Execute("DELETE FROM policy_admin WHERE name = 'testAdmin2'");
 	rows = Query::Execute("SELECT * FROM policy_admin");
 	EXPECT_EQ(rows.size(), 1);
+}
+
+TEST(QueryTests, admin_activation)
+{
+	/// Default policy admin is always exist.
+	auto rows = Query::Execute("SELECT * FROM policy_admin");
+	EXPECT_EQ(rows.size(), 1);
+
+	Query::Execute("INSERT INTO policy_admin (name) VALUES ('testAdmin')");
+	rows = Query::Execute("SELECT * FROM policy_admin WHERE name = 'testAdmin'");
+	EXPECT_EQ(rows.size(), 1);
+	EXPECT_EQ(rows[0]["name"], "testAdmin");
+	EXPECT_EQ(rows[0]["activated"], "0");
+
+	Query::Execute("UPDATE policy_admin SET activated = 1 where name = 'testAdmin'");
+	rows = Query::Execute("SELECT * FROM policy_admin WHERE name = 'testAdmin'");
+	EXPECT_EQ(rows.size(), 1);
+	EXPECT_EQ(rows[0]["name"], "testAdmin");
+	EXPECT_EQ(rows[0]["activated"], "1");
+
+	rows = Query::Execute("DELETE FROM policy_admin WHERE name = 'testAdmin'");
+	EXPECT_EQ(rows.size(), 0);
 }

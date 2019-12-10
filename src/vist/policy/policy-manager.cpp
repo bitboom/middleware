@@ -134,7 +134,7 @@ std::unordered_map<std::string, PolicyValue> PolicyManager::getAll()
 	return policies;
 }
 
-std::vector<std::string> PolicyManager::getAdmins()
+std::unordered_map<std::string, int> PolicyManager::getAdmins()
 {
 	return storage.getAdmins();
 }

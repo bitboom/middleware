@@ -20,7 +20,6 @@
 
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 namespace vist {
 namespace policy {
@@ -37,7 +36,7 @@ struct API {
 
 		static void Activate(const std::string& admin, bool state = true);
 
-		static std::vector<std::string> GetAll();
+		static std::unordered_map<std::string, int> GetAll();
 	};
 };
 

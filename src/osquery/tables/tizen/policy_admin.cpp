@@ -65,11 +65,29 @@ QueryData genPolicyAdmin(QueryContext& context) try {
 	auto admins = vist::policy::API::Admin::GetAll();
 
 	for (auto& admin : admins) {
-		Row r;
-		r["name"] = SQL_TEXT(admin);
+		if (context.constraints["name"].exists(EQUALS)) { /// where clause
+			auto names = context.constraints["name"].getAll(EQUALS);
+			for (const auto& name : names) {
+				if (name == admin.first) {
+					Row row;
+					row["name"] = admin.first;
+					row["activated"] = std::to_string(admin.second);
 
-		DEBUG(VIST) << "Admin info [name]: " << r["name"];
-		results.emplace_back(std::move(r));
+					DEBUG(VIST) << "Admin info [name]: " << row["name"]
+								<< ", [activated]:" << row["activated"];
+
+					results.emplace_back(std::move(row));
+				}
+			}
+		} else { /// select *;
+			Row row;
+			row["name"] = admin.first;
+			row["activated"] = std::to_string(admin.second);
+
+			DEBUG(VIST) << "Admin info [name]: " << row["name"]
+						<< ", [activated]:" << row["activated"];
+			results.emplace_back(std::move(row));
+		}
 	}
 
 	return results;
@@ -111,6 +129,34 @@ QueryData deletePolicyAdmin(QueryContext& context, const PluginRequest& request)
 	return { r };
 } catch (...) {
 	ERROR(VIST) << "Failed to delete query on policy-admin.";
+	Row r;
+	return { r };
+}
+
+QueryData updatePolicyAdmin(QueryContext& context, const PluginRequest& request) try {
+	INFO(VIST) << "Update query about policy-admin table.";
+	if (request.count("json_value_array") == 0)
+		throw std::runtime_error("Wrong request format. Not found json value.");
+
+	std::string str = request.at("json_value_array");
+	rapidjson::Document document;
+	document.Parse(str.c_str());
+	if (document.HasParseError() || !document.IsArray())
+		throw std::runtime_error("Cannot parse request.");
+
+	if (document.Size() != 2)
+		throw std::runtime_error("Wrong request format.");
+
+	std::string name = document[0].GetString();
+	int activated = document[1].GetInt();
+
+	vist::policy::API::Admin::Activate(name, activated);
+
+	Row r;
+	r["status"] = "success";
+	return { r };
+} catch (...) {
+	ERROR(VIST) << "Failed to insert query on policy-admin.";
 	Row r;
 	return { r };
 }

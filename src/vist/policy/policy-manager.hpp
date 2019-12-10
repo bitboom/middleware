@@ -56,7 +56,7 @@ public:
 	PolicyValue get(const std::string& policy);
 	std::unordered_map<std::string, PolicyValue> getAll();
 
-	std::vector<std::string> getAdmins();
+	std::unordered_map<std::string, int> getAdmins();
 
 private:
 	explicit PolicyManager();
