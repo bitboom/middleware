@@ -34,50 +34,47 @@ using namespace vist::transport;
 
 class Exposer::Impl {
 public:
-	explicit Impl(Exposer& exposer, const std::string& path);
+	explicit Impl(Exposer& exposer, const std::string& path)
+	{
+		auto dispatcher = [&exposer](Message message) -> Message {
+			std::string function = message.signature;
+			auto iter = exposer.functorMap.find(function);
+			if (iter == exposer.functorMap.end())
+				THROW(ErrCode::RuntimeError) << "Faild to find function.";
 
-	void start(void);
-	void stop(void);
+			DEBUG(VIST) << "Remote method invokation: " << function;
+
+			auto functor = iter->second;
+			auto result = functor->invoke(message.buffer);
+
+			Message reply(Message::Type::Reply, function);
+			reply.enclose(result);
+
+			return reply;
+		};
+
+		this->server = std::make_unique<Server>(path, dispatcher);
+	}
+
+	inline void start()
+	{
+		this->server->run();
+	}
+
+	inline void stop()
+	{
+		this->server->stop();
+	}
 
 private:
 	std::unique_ptr<Server> server;
 };
 
-Exposer::Impl::Impl(Exposer& exposer, const std::string& path)
-{
-	auto dispatcher = [&exposer](Message message) -> Message {
-		std::string function = message.signature;
-		auto iter = exposer.functorMap.find(function);
-		if (iter == exposer.functorMap.end())
-			THROW(ErrCode::RuntimeError) << "Faild to find function.";
-
-		DEBUG(VIST) << "Remote method invokation: " << function;
-
-		auto functor = iter->second;
-		auto result = functor->invoke(message.buffer);
-
-		Message reply(Message::Type::Reply, function);
-		reply.enclose(result);
-
-		return reply;
-	};
-	
-	this->server = std::make_unique<Server>(path, dispatcher);
-}
-
-void Exposer::Impl::start(void)
-{
-	this->server->run();
-}
-
-void Exposer::Impl::stop(void)
-{
-	this->server->stop();
-}
-
 Exposer::Exposer(const std::string& path) : pImpl(new Impl(*this, path))
 {
 }
+
+Exposer::~Exposer() = default;
 
 void Exposer::start(void)
 {
@@ -87,11 +84,6 @@ void Exposer::start(void)
 void Exposer::stop(void)
 {
 	this->pImpl->stop();
-}
-
-void Exposer::ImplDeleter::operator()(Impl* ptr)
-{
-	delete ptr;
 }
 
 } // namespace rmi

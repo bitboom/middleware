@@ -32,9 +32,16 @@ namespace rmi {
 
 using namespace vist::transport;
 
-class Remote {
+class Remote final {
 public:
 	explicit Remote(const std::string& path);
+	~Remote();
+
+	Remote(const Remote&) = delete;
+	Remote& operator=(const Remote&) = delete;
+
+	Remote(Remote&&) = default;
+	Remote& operator=(Remote&&) = default;
 
 	template<typename R, typename... Args>
 	R invoke(const std::string& name, Args&&... args);
@@ -43,13 +50,7 @@ private:
 	Message request(Message message);
 
 	class Impl;
-	/// Let compiler know how to destroy Impl
-	struct ImplDeleter
-	{
-		void operator()(Impl*);
-	};
-
-	std::unique_ptr<Impl, ImplDeleter> pImpl;
+	std::unique_ptr<Impl> pImpl;
 };
 
 template<typename R, typename... Args>

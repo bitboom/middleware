@@ -51,14 +51,11 @@ Remote::Remote(const std::string& path) : pImpl(new Impl(path))
 {
 }
 
+Remote::~Remote() = default;
+
 Message Remote::request(Message message)
 {
 	return pImpl->request(message);
-}
-
-void Remote::ImplDeleter::operator()(Impl* ptr)
-{
-	delete ptr;
 }
 
 } // namespace rmi

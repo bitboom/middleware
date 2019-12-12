@@ -33,6 +33,13 @@ namespace rmi {
 class Exposer final {
 public:
 	explicit Exposer(const std::string& path);
+	~Exposer();
+
+	Exposer(const Exposer&) = delete;
+	Exposer& operator=(const Exposer&) = delete;
+
+	Exposer(Exposer&&) = default;
+	Exposer& operator=(Exposer&&) = default;
 
 	void start(void);
 	void stop(void);
@@ -42,13 +49,9 @@ public:
 
 private:
 	class Impl;
-	struct ImplDeleter
-	{
-		void operator()(Impl*);
-	};
 
 	klass::FunctorMap functorMap;
-	std::unique_ptr<Impl, ImplDeleter> pImpl;
+	std::unique_ptr<Impl> pImpl;
 };
 
 template<typename O, typename F>
