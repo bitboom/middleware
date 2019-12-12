@@ -12,9 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_VIST_COMMON_LIBRARY(vist_rmi client.cpp
-								 server.cpp
-								 exposer.cpp
+ADD_VIST_COMMON_LIBRARY(vist_rmi exposer.cpp
 								 remote.cpp)
 
 FILE(GLOB RMI_TESTS "tests/*.cpp")

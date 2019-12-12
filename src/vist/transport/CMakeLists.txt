@@ -12,9 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_VIST_COMMON_LIBRARY(vist_transport connection.cpp
-									   socket.cpp
-									   message.cpp
+ADD_VIST_COMMON_LIBRARY(vist_transport message.cpp
 									   protocol.cpp)
 
 FILE(GLOB TRANSPORT_TESTS "tests/*.cpp")
