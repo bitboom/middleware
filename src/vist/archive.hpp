@@ -88,7 +88,8 @@ public:
 
 	unsigned char* get(void) noexcept;
 	std::size_t size(void) const noexcept;
-	void reserve(std::size_t size) noexcept;
+	void resize(std::size_t size);
+	std::vector<unsigned char>& getBuffer(void) noexcept;
 
 protected:
 	void save(const void* bytes, std::size_t size);

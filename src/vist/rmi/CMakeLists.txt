@@ -13,7 +13,9 @@
 #  limitations under the License
 
 ADD_VIST_COMMON_LIBRARY(vist_rmi client.cpp
-								 server.cpp)
+								 server.cpp
+								 exposer.cpp
+								 remote.cpp)
 
 FILE(GLOB RMI_TESTS "tests/*.cpp")
 ADD_VIST_TEST(${RMI_TESTS})

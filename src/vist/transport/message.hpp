@@ -63,6 +63,8 @@ struct Message final {
 	void disclose(Args&... args);
 
 	std::size_t size(void) const noexcept;
+	void resize(std::size_t size);
+	std::vector<unsigned char>& getBuffer(void) noexcept;
 
 	Header header;
 	std::string signature;

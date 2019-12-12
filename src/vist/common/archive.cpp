@@ -65,14 +65,19 @@ unsigned char* Archive::get(void) noexcept
 	return this->buffer.data();
 }
 
+std::vector<unsigned char>& Archive::getBuffer(void) noexcept
+{
+	return this->buffer;
+}
+
 std::size_t Archive::size(void) const noexcept
 {
 	return this->buffer.size();
 }
 
-void Archive::reserve(std::size_t size) noexcept
+void Archive::resize(std::size_t size)
 {
-	this->buffer.reserve(size);
+	this->buffer.resize(size);
 }
 
 void Archive::save(const void* bytes, std::size_t size)

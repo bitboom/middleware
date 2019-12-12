@@ -14,7 +14,8 @@
 
 ADD_VIST_COMMON_LIBRARY(vist_transport connection.cpp
 									   socket.cpp
-									   message.cpp)
+									   message.cpp
+									   protocol.cpp)
 
 FILE(GLOB TRANSPORT_TESTS "tests/*.cpp")
 ADD_VIST_TEST(${TRANSPORT_TESTS})

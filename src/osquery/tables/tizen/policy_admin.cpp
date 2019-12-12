@@ -44,9 +44,6 @@ std::string parseAdmin(const std::string& request, bool insert = true)
 	if (document.HasParseError() || !document.IsArray())
 		throw std::runtime_error("Cannot parse request.");
 
-	if (document.Size() != 1)
-		throw std::runtime_error("Wrong request format.");
-
 	if (insert)
 		return std::string(document[0].GetString());
 	else

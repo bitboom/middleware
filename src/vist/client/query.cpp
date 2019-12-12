@@ -17,7 +17,7 @@
 #include "query.hpp"
 
 #include <vist/logger.hpp>
-#include <vist/rmi/client.hpp>
+#include <vist/rmi/remote.hpp>
 
 namespace {
 	const std::string SOCK_ADDR = "/tmp/.vist";
@@ -28,9 +28,9 @@ namespace vist {
 Rows Query::Execute(const std::string& statement)
 {
 	INFO(VIST_CLIENT) << "Query execution: " << statement;
-	rmi::Client client(SOCK_ADDR);
+	rmi::Remote remote(SOCK_ADDR);
 
-	return client.invoke<Rows>("Vist::query", statement);
+	return remote.invoke<Rows>("Vist::query", statement);
 }
 
 } // namespace vist

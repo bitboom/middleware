@@ -56,7 +56,8 @@ enum class ErrCode {
 	LogicError = 0, /// Includes invalid_argument
 	RuntimeError,
 	BadCast,
-	TypeUnsafed
+	TypeUnsafed,
+	ProtocolBroken
 };
 
 template <typename ErrCode>

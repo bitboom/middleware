@@ -16,7 +16,7 @@
 
 #include "vist.hpp"
 
-#include <vist/rmi/server.hpp>
+#include <vist/rmi/exposer.hpp>
 #include <vist/logger.hpp>
 #include <vist/exception.hpp>
 
@@ -37,11 +37,10 @@ Vist::Vist()
 void Vist::start()
 {
 	INFO(VIST) << "Vist daemon starts.";
-	rmi::Server server;
-	server.listen(SOCK_ADDR);
+	rmi::Exposer exposer(SOCK_ADDR);
 
-	server.expose(this, "Vist::query", &Vist::query);
-	server.start();
+	exposer.expose(this, "Vist::query", &Vist::query);
+	exposer.start();
 }
 
 Rows Vist::query(const std::string& statement)

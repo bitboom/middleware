@@ -14,43 +14,52 @@
  *  limitations under the License
  */
 /*
- * @file   message.cpp
- * @author Jaemin Ryu (jm77.ryu@samsung.com)
+ * @file   remote.cpp
  * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief  Implementaion of message.
+ * @author Jaemin Ryu (jm77.ryu@samsung.com)
+ * @brief  Implementation of remote. 
  */
 
-#include "message.hpp"
+#include "remote.hpp"
+
+#include <vist/transport/client.hpp>
+
+#include <string>
+#include <mutex>
 
 namespace vist {
-namespace transport {
+namespace rmi {
 
-Message::Message(unsigned int type, const std::string& signature) :
-	header({0, type, signature.size()}),
-	signature(signature)
+using namespace vist::transport;
+
+class Remote::Impl {
+public:
+	explicit Impl(const std::string& path) : client(path)
+	{
+	}
+
+	Message request(Message message)
+	{
+		return this->client.request(message);
+	}
+
+private:
+	Client client;
+};
+
+Remote::Remote(const std::string& path) : pImpl(new Impl(path))
 {
-	this->enclose(signature);
 }
 
-Message::Message(Header header) : header(header)
+Message Remote::request(Message message)
 {
-	this->buffer.resize(this->header.length);
+	return pImpl->request(message);
 }
 
-std::size_t Message::size(void) const noexcept
+void Remote::ImplDeleter::operator()(Impl* ptr)
 {
-	return this->header.length;
+	delete ptr;
 }
 
-void Message::resize(std::size_t size)
-{
-	this->buffer.resize(size);
-}
-
-std::vector<unsigned char>& Message::getBuffer(void) noexcept
-{
-	return this->buffer.getBuffer();
-}
-
-} // namespace transport
+} // namespace rmi
 } // namespace vist

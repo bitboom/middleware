@@ -19,6 +19,8 @@
 #include <osquery/system.h>
 #include <osquery/utils/conversions/tryto.h>
 
+#include <osquery/logger.h>
+
 namespace osquery {
 
 FLAG(bool, enable_foreign, false, "Enable no-op foreign virtual tables");
