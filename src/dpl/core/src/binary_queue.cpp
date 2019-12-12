@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <malloc.h>
 #include <cstring>
+#include <functional>
 #include <new>
 
 namespace AuthPasswd {
