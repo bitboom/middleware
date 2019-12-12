@@ -15,6 +15,7 @@
  */
 
 #include <vist/exception.hpp>
+#include <vist/logger.hpp>
 
 #include <vist/database/column.hpp>
 #include <vist/database/statement.hpp>
@@ -188,6 +189,59 @@ TEST(DatabaseTests, column)
 			key.getText();
 			used.getInt();
 		}
+	} catch (const vist::Exception<ErrCode>& e) {
+		EXPECT_TRUE(false) << e.what();
+	}
+}
+
+TEST(DatabaseTests, no_transaction)
+{
+	std::string query = "INSERT INTO CLIENT VALUES (NULL, 'TP', 'TK', 0, 5001)";
+
+
+	try {
+		database::Connection db(TEST_DB_PATH);
+		int loop = 500;
+		while (loop--)
+		{
+			database::Statement(db, query).exec();
+		}
+	} catch (const vist::Exception<ErrCode>& e) {
+		EXPECT_TRUE(false) << e.what();
+	}
+}
+
+TEST(DatabaseTests, transaction)
+{
+	std::string query = "INSERT INTO CLIENT VALUES (NULL, 'TP', 'TK', 0, 5001)";
+
+	try {
+		database::Connection db(TEST_DB_PATH);
+		db.transactionBegin();
+		int loop = 500;
+		while (loop--)
+		{
+			database::Statement(db, query).exec();
+		}
+		db.transactionEnd();
+	} catch (const vist::Exception<ErrCode>& e) {
+		EXPECT_TRUE(false) << e.what();
+	}
+}
+
+TEST(DatabaseTests, transaction_RAW_STRING)
+{
+	std::string query = "INSERT INTO CLIENT VALUES (NULL, 'TP', 'TK', 0, 5001)";
+
+	try {
+		database::Connection db(TEST_DB_PATH);
+		db.exec("BEGIN TRANSACTION;");
+		int loop = 500;
+		while (loop--)
+		{
+			database::Statement(db, query).exec();
+		}
+		db.exec("END TRANSACTION;");
 	} catch (const vist::Exception<ErrCode>& e) {
 		EXPECT_TRUE(false) << e.what();
 	}

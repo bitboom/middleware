@@ -53,6 +53,16 @@ public:
 		return filename;
 	}
 
+	void transactionBegin()
+	{
+		this->exec("BEGIN TRANSACTION;");
+	}
+
+	void transactionEnd()
+	{
+		this->exec("END TRANSACTION;");
+	}
+
 	int getErrorCode() const
 	{
 		return ::sqlite3_errcode(handle);
