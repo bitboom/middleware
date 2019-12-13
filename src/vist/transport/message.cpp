@@ -37,6 +37,21 @@ Message::Message(Header header) : header(header)
 	this->buffer.resize(this->header.length);
 }
 
+bool Message::success() const noexcept
+{
+	return !error();
+}
+
+bool Message::error() const noexcept
+{
+	return this->header.type == Type::Error;
+}
+
+std::string Message::what() const noexcept
+{
+	return this->signature;
+}
+
 std::size_t Message::size(void) const noexcept
 {
 	return this->header.length;

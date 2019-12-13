@@ -97,9 +97,27 @@ void Protocol::Async::dispatch(const Task& task)
 
 void Protocol::Async::process(const Task& task)
 {
-	auto result = task(message);
-	/// catch
-	this->message = result;
+	bool raised = false;
+	std::string errMsg;
+	auto onError = [&raised, &errMsg](const std::string& message) {
+		ERROR(VIST) << "Failed to process task: " << message;
+		raised = true;
+		errMsg = message;
+	};
+
+	try {
+		/// Process dispatched task.
+		auto result = task(message);
+		this->message = result;
+	} catch (const vist::Exception<ErrCode>& e) {
+		onError(e.what());
+	} catch (const std::exception& e) {
+		onError(e.what());
+	}
+
+	if (raised)
+		this->message = Message(Message::Type::Error, errMsg);
+
 	auto self = shared_from_this();
 	const auto& headerBuffer = boost::asio::buffer(&this->message.header,
 												   sizeof(Message::Header));
@@ -113,7 +131,7 @@ void Protocol::Async::process(const Task& task)
 		if (written != self->message.size())
 			THROW(ErrCode::ProtocolBroken) << "Failed to send message content.";
 
-		// Re-dispatch for next request.
+		/// Re-dispatch for next request.
 		self->dispatch(task);
 	};
 

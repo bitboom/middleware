@@ -22,6 +22,7 @@
 
 #include "exposer.hpp"
 
+#include <vist/exception.hpp>
 #include <vist/transport/message.hpp>
 #include <vist/transport/server.hpp>
 
@@ -40,7 +41,7 @@ public:
 			std::string function = message.signature;
 			auto iter = exposer.functorMap.find(function);
 			if (iter == exposer.functorMap.end())
-				THROW(ErrCode::RuntimeError) << "Faild to find function.";
+				THROW(ErrCode::ProtocolBroken) << "Not found function: " << function;
 
 			DEBUG(VIST) << "Remote method invokation: " << function;
 

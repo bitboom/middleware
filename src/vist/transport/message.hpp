@@ -62,6 +62,10 @@ struct Message final {
 	template<typename... Args>
 	void disclose(Args&... args);
 
+	bool success() const noexcept;
+	bool error() const noexcept;
+	std::string what() const noexcept;
+
 	std::size_t size(void) const noexcept;
 	void resize(std::size_t size);
 	std::vector<unsigned char>& getBuffer(void) noexcept;

@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <vist/exception.hpp>
 #include <vist/transport/message.hpp>
 
 #include <string>
@@ -60,6 +61,9 @@ R Remote::invoke(const std::string& method, Args&&... args)
 	message.enclose(std::forward<Args>(args)...);
 
 	Message reply = this->request(message);
+	if (reply.error())
+		THROW(ErrCode::RuntimeError) << reply.what();
+
 	R result;
 	reply.disclose(result);
 

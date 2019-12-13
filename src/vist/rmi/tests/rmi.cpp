@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2018-present Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,6 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+/*
+ * @file   rmi.cpp
+ * @author Sangwan Kwon (sangwan.kwon@samsung.com)
+ * @brief  Testcases of rmi.
+ */
+
 
 #include <vist/rmi/exposer.hpp>
 #include <vist/rmi/remote.hpp>
@@ -42,6 +48,13 @@ struct Foo {
 	std::string name;
 };
 
+struct Bar {
+	int plusTwo(int number)
+	{
+		return number + 2;
+	}
+};
+
 TEST(RmiTests, positive)
 {
 	std::string sockPath = ("/tmp/test-exposer");
@@ -53,6 +66,9 @@ TEST(RmiTests, positive)
 	exposer.expose(foo, "Foo::setName", &Foo::setName);
 	exposer.expose(foo, "Foo::getName", &Foo::getName);
 
+	auto bar = std::make_shared<Bar>();
+	exposer.expose(bar, "Bar::plusTwo", &Bar::plusTwo);
+
 	auto client = std::thread([&]() {
 		// caller-side
 		Remote remote(sockPath);
@@ -63,6 +79,39 @@ TEST(RmiTests, positive)
 
 		std::string name = remote.invoke<std::string>("Foo::getName");
 		EXPECT_EQ(name, param);
+
+		int num = remote.invoke<int>("Bar::plusTwo", 3);
+		EXPECT_EQ(num, 5);
+
+		exposer.stop();
+	});
+
+	exposer.start();
+
+	if (client.joinable())
+		client.join();
+}
+
+TEST(RmiTests, not_exist_method)
+{
+	std::string sockPath = ("/tmp/test-exposer");
+
+	// exposer-side
+	Exposer exposer(sockPath);
+
+	auto client = std::thread([&]() {
+		// caller-side
+		Remote remote(sockPath);
+
+		std::string param = "RMI-TEST";
+
+		bool rasied = false;
+		try {
+			remote.invoke<bool>("Foo::NotExist", param);
+		} catch (const std::exception& e) {
+			rasied = true;
+		}
+		EXPECT_TRUE(rasied);
 
 		exposer.stop();
 	});
