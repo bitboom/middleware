@@ -35,7 +35,7 @@ struct Protocol {
 	using Context = boost::asio::io_service;
 	using Endpoint = boost::asio::local::stream_protocol::endpoint;
 	using Socket = boost::asio::local::stream_protocol::socket;
-	using Task = std::function<Message(Message)>;
+	using Task = std::function<Message(Message&)>;
 
 	static Message Recv(Socket& socket);
 	static void Send(Socket& socket, Message& message);

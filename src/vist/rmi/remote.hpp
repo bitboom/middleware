@@ -47,7 +47,7 @@ public:
 	R invoke(const std::string& name, Args&&... args);
 
 private:
-	Message request(Message message);
+	Message request(Message& message);
 
 	class Impl;
 	std::unique_ptr<Impl> pImpl;

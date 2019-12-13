@@ -115,7 +115,7 @@ TEST(ProtocolTests, async_server_sync_client)
 	auto async = std::make_shared<Protocol::Async>(context);
 	auto handler = [&](const auto& error) {
 		EXPECT_EQ(error, boost::system::errc::success);
-		auto task = [&](Message message) -> Message {
+		auto task = [&](auto& message) -> Message {
 			EXPECT_EQ(message.signature, requestSignature);
 
 			int recv1;

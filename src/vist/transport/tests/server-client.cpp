@@ -47,7 +47,7 @@ TEST(ServerClientTests, server)
 {
 	std::string sockPath = "vist-test.sock";
 
-	auto task = [&](Message message) -> Message {
+	auto task = [&](Message& message) -> Message {
 		EXPECT_EQ(message.signature, requestSignature);
 
 		int recv1;

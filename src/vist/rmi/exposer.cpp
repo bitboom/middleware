@@ -36,7 +36,7 @@ class Exposer::Impl {
 public:
 	explicit Impl(Exposer& exposer, const std::string& path)
 	{
-		auto dispatcher = [&exposer](Message message) -> Message {
+		auto dispatcher = [&exposer](auto& message) -> Message {
 			std::string function = message.signature;
 			auto iter = exposer.functorMap.find(function);
 			if (iter == exposer.functorMap.end())
