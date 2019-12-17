@@ -5,7 +5,7 @@ ViST(Virtual Security Table) is a security monitoring framework using SQL query.
 - Adopts a plug-in architecture and uses [osquery](https://osquery.io/) as the query analysis engine.
 
 # Architecture (Layered View)
-![vist-architecture](https://github.sec.samsung.net/storage/user/692/files/82d63880-fa6c-11e9-91d2-af36faed1869)
+<img src="https://github.sec.samsung.net/storage/user/692/files/9badb280-20db-11ea-8c37-a314f094a3aa" alt="layered architecture" width="650" height="650">
 
 # Programming Abstraction
 ViST provides three types of API.  
@@ -14,6 +14,30 @@ One is for data structure and the other is for functional.
 ## Schema API
 Schema API represents the data structure of Virtua Tables.  
 This is referred to by Client API and Admin API.
+```cpp
+/// policy schema API
+template <typename T>
+struct Policy {
+	std::string	name;
+	T value;
+};
+
+/// process schema API
+struct Processes {
+	long long int pid;
+	std::string name;
+	std::string path;
+	std::string cmdline;
+	long long int uid;
+	long long int gid;
+	long long int euid;
+	long long int egid;
+	int on_disk;
+	long long int resident_size;
+	long long int parent;
+};
+```
+
 
 ## Client API (SELECT)
 Client API is a functioanl API for monitoring Virtual Tables.  
@@ -21,9 +45,9 @@ Since Client API generates 'select query' by using query-builder, it doesn't nee
 
 ```cpp
   /// Querying device policies using Client API
-  vist::VirtualTable<Policy> table;
+  vist::VirtualTable<Policy<int>> table;
   for (const auto& row : table) {
-    vist::schema::Policy policy = { row[&Policy::name], row[&Policy::value] };
+    vist::schema::Policy<int> policy = { row[&Policy<int>::name], row[&Policy<int>::value] };
     std::cout << "Policy name: " << policy.name << ", ";
     std::cout << "Policy value: " << policy.value << "\n";
   }
@@ -34,13 +58,16 @@ Admin API is a functioanl API for manipulating Virtual Tables.
 This executes the query statement for the virtual table.
 ```cpp
    /// Registering policy admin using Admin API
-   vist::Query::Execute("INSERT INTO policy_admin (name, uid) VALUES ('admin', 0)");
+   vist::Query::Execute("INSERT INTO policy_admin (name) VALUES ('testAdmin')");
    
-   /// rows includes [name:admin, uid:0]
+   /// rows includes [name:testAdmin, activated:0]
    auto rows = vist::Query::Execute("SELECT * FROM policy_admin");
    
+   /// Activating policy admin
+   vist::Query::Execute("UPDATE policy_admin SET activated = 1 where name = 'testAdmin'");
+   
    /// Excluding policy admin using Admin API
-   vist::Query::Execute("DELETE FROM policy_admin WHERE name = 'testAdmin' AND uid = 1");
+   vist::Query::Execute("DELETE FROM policy_admin WHERE name = 'testAdmin'");
 ```
 
 # Contacts
