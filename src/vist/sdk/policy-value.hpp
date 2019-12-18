@@ -25,9 +25,9 @@ namespace policy {
 
 struct PolicyValue final {
 	explicit PolicyValue() noexcept = default;
-	explicit PolicyValue(int value) : stringfied(Stringfy::Dump(value)) {}
+	explicit PolicyValue(int value) : stringfied(Stringify::Dump(value)) {}
 	explicit PolicyValue(const std::string& value, bool dumped = false)
-		: stringfied(dumped ? value : Stringfy::Dump(value)) {}
+		: stringfied(dumped ? value : Stringify::Dump(value)) {}
 	~PolicyValue() = default;
 
 	PolicyValue(const PolicyValue&) = default;
@@ -41,19 +41,19 @@ struct PolicyValue final {
 		return this->stringfied;
 	}
 
-	inline Stringfy::Type getType() const
+	inline Stringify::Type getType() const
 	{
-		return Stringfy::GetType(this->stringfied);
+		return Stringify::GetType(this->stringfied);
 	}
 
 	operator int() const
 	{
-		return Stringfy::Restore(this->stringfied);
+		return Stringify::Restore(this->stringfied);
 	}
 
 	operator std::string() const
 	{
-		return Stringfy::Restore(this->stringfied);
+		return Stringify::Restore(this->stringfied);
 	}
 
 private:

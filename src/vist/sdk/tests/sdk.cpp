@@ -51,14 +51,14 @@ public:
 TEST(PolicySDKTests, policy_value_int)
 {
 	PolicyValue value(1);
-	EXPECT_EQ(Stringfy::Type::Integer, value.getType());
+	EXPECT_EQ(Stringify::Type::Integer, value.getType());
 	EXPECT_EQ(static_cast<int>(value), 1);
 }
 
 TEST(PolicySDKTests, policy_value_string)
 {
 	PolicyValue value("TEXT");
-	EXPECT_EQ(Stringfy::Type::String, value.getType());
+	EXPECT_EQ(Stringify::Type::String, value.getType());
 	EXPECT_EQ(static_cast<std::string>(value), "TEXT");
 }
 

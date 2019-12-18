@@ -14,7 +14,7 @@
  *  limitations under the License
  */
 /*
- * @file   exposer.hpp
+ * @file   gateway.hpp
  * @author Sangwan Kwon (sangwan.kwon@samsung.com)
  * @author Jaemin Ryu (jm77.ryu@samsung.com)
  * @brief  Server-side stub for exposing method. 
@@ -30,16 +30,16 @@
 namespace vist {
 namespace rmi {
 
-class Exposer final {
+class Gateway final {
 public:
-	explicit Exposer(const std::string& path);
-	~Exposer();
+	explicit Gateway(const std::string& path);
+	~Gateway();
 
-	Exposer(const Exposer&) = delete;
-	Exposer& operator=(const Exposer&) = delete;
+	Gateway(const Gateway&) = delete;
+	Gateway& operator=(const Gateway&) = delete;
 
-	Exposer(Exposer&&) = default;
-	Exposer& operator=(Exposer&&) = default;
+	Gateway(Gateway&&) = default;
+	Gateway& operator=(Gateway&&) = default;
 
 	void start(void);
 	void stop(void);
@@ -55,7 +55,7 @@ private:
 };
 
 template<typename O, typename F>
-void Exposer::expose(O&& object, const std::string& name, F&& func)
+void Gateway::expose(O&& object, const std::string& name, F&& func)
 {
 	auto functor = klass::make_functor_ptr(std::forward<O>(object), std::forward<F>(func));
 	this->functorMap[name] = functor;

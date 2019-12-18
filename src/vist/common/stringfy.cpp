@@ -18,54 +18,54 @@
 
 namespace vist {
 
-Stringfy::Stringfy(int origin) noexcept :
+Stringify::Stringify(int origin) noexcept :
 	type(Type::Integer), buffer(convert(origin))
 {
 }
 
-Stringfy::Stringfy(const std::string& origin) noexcept :
+Stringify::Stringify(const std::string& origin) noexcept :
 	type(Type::String), buffer(convert(origin))
 {
 }
 
-Stringfy Stringfy::Restore(const std::string& dumped)
+Stringify Stringify::Restore(const std::string& dumped)
 {
-	auto parsed = Stringfy::Parse(dumped);
+	auto parsed = Stringify::Parse(dumped);
 	switch (parsed.first) {
 	case Type::Integer:
-		return Stringfy(std::stoi(parsed.second));
+		return Stringify(std::stoi(parsed.second));
 	case Type::String:
-		return Stringfy(parsed.second);
+		return Stringify(parsed.second);
 	case Type::None:
 	default:
 		THROW(ErrCode::LogicError) << "Invalid format.";
 	}
 }
 
-Stringfy::Type Stringfy::GetType(const std::string& dumped)
+Stringify::Type Stringify::GetType(const std::string& dumped)
 {
-	return Stringfy::Parse(dumped).first;
+	return Stringify::Parse(dumped).first;
 }
 
-Stringfy::operator std::string() const
+Stringify::operator std::string() const
 {
-	auto parsed = Stringfy::Parse(this->buffer);
+	auto parsed = Stringify::Parse(this->buffer);
 	if (parsed.first != Type::String)
 		THROW(ErrCode::TypeUnsafed) << "Type is not safed.";
 
 	return parsed.second;
 }
 
-Stringfy::operator int() const
+Stringify::operator int() const
 {
-	auto parsed = Stringfy::Parse(this->buffer);
+	auto parsed = Stringify::Parse(this->buffer);
 	if (parsed.first != Type::Integer)
 		THROW(ErrCode::TypeUnsafed) << "Type is not safed.";
 
 	return std::stoi(parsed.second);
 }
 
-std::pair<Stringfy::Type, std::string> Stringfy::Parse(const std::string& dumped)
+std::pair<Stringify::Type, std::string> Stringify::Parse(const std::string& dumped)
 {
 	std::string type = dumped.substr(0, dumped.find('/'));
 	std::string data = dumped.substr(dumped.find('/') + 1);
@@ -75,7 +75,7 @@ std::pair<Stringfy::Type, std::string> Stringfy::Parse(const std::string& dumped
 	return std::make_pair(static_cast<Type>(type.at(0)), data);
 }
 
-std::string Stringfy::dump() const noexcept
+std::string Stringify::dump() const noexcept
 {
 	return this->buffer;
 }

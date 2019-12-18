@@ -100,7 +100,7 @@ Member VirtualRow<T>::at(Member Struct::* field) const
 	}
 
 	if (std::is_same<T, Policy<int>>::value && key == "value")
-		return static_cast<Member>(Stringfy::Restore(value));
+		return static_cast<Member>(Stringify::Restore(value));
 
 	try {
 		return boost::lexical_cast<Member>(value);

@@ -21,7 +21,7 @@
  *  EXPECT_EQ(dumped, "I/1000");
  *
  *  /// dumped string to origin type
- *  int origin = Stringfy::Restore(dumped);
+ *  int origin = Stringify::Restore(dumped);
  *  EXPECT_EQ(origin, "1000");
  */
 
@@ -33,7 +33,7 @@
 
 namespace vist {
 
-class Stringfy final {
+class Stringify final {
 public:
 	enum class Type : char {
 		Integer = 'I',
@@ -43,7 +43,7 @@ public:
 
 	template <typename T>
 	static std::string Dump(T origin);
-	static Stringfy Restore(const std::string& dumped);
+	static Stringify Restore(const std::string& dumped);
 
 	static Type GetType(const std::string& dumped);
 
@@ -51,8 +51,8 @@ public:
 	operator int() const;
 
 private:
-	explicit Stringfy(int origin) noexcept;
-	explicit Stringfy(const std::string& origin) noexcept;
+	explicit Stringify(int origin) noexcept;
+	explicit Stringify(const std::string& origin) noexcept;
 
 	static std::pair<Type, std::string> Parse(const std::string& dumped);
 
@@ -66,13 +66,13 @@ private:
 };
 
 template <typename T>
-std::string Stringfy::Dump(T origin)
+std::string Stringify::Dump(T origin)
 {
-	return Stringfy(origin).dump();
+	return Stringify(origin).dump();
 }
 
 template <typename T>
-std::string Stringfy::convert(const T& origin) const noexcept
+std::string Stringify::convert(const T& origin) const noexcept
 {
 	std::stringstream ss;
 	ss << static_cast<char>(this->type) << '/' << origin;

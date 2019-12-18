@@ -20,7 +20,7 @@
  */
 
 
-#include <vist/rmi/exposer.hpp>
+#include <vist/rmi/gateway.hpp>
 #include <vist/rmi/remote.hpp>
 
 #include <iostream>
@@ -32,7 +32,7 @@
 
 using namespace vist::rmi;
 
-// exposer side methods
+// gateway side methods
 struct Foo {
 	bool setName(const std::string& name)
 	{
@@ -57,17 +57,17 @@ struct Bar {
 
 TEST(RmiTests, positive)
 {
-	std::string sockPath = ("/tmp/test-exposer");
+	std::string sockPath = ("/tmp/test-gateway");
 
-	// exposer-side
-	Exposer exposer(sockPath);
+	// gateway-side
+	Gateway gateway(sockPath);
 
 	auto foo = std::make_shared<Foo>();
-	exposer.expose(foo, "Foo::setName", &Foo::setName);
-	exposer.expose(foo, "Foo::getName", &Foo::getName);
+	gateway.expose(foo, "Foo::setName", &Foo::setName);
+	gateway.expose(foo, "Foo::getName", &Foo::getName);
 
 	auto bar = std::make_shared<Bar>();
-	exposer.expose(bar, "Bar::plusTwo", &Bar::plusTwo);
+	gateway.expose(bar, "Bar::plusTwo", &Bar::plusTwo);
 
 	auto client = std::thread([&]() {
 		// caller-side
@@ -83,10 +83,10 @@ TEST(RmiTests, positive)
 		int num = remote.invoke<int>("Bar::plusTwo", 3);
 		EXPECT_EQ(num, 5);
 
-		exposer.stop();
+		gateway.stop();
 	});
 
-	exposer.start();
+	gateway.start();
 
 	if (client.joinable())
 		client.join();
@@ -94,10 +94,10 @@ TEST(RmiTests, positive)
 
 TEST(RmiTests, not_exist_method)
 {
-	std::string sockPath = ("/tmp/test-exposer");
+	std::string sockPath = ("/tmp/test-gateway");
 
-	// exposer-side
-	Exposer exposer(sockPath);
+	// gateway-side
+	Gateway gateway(sockPath);
 
 	auto client = std::thread([&]() {
 		// caller-side
@@ -113,10 +113,10 @@ TEST(RmiTests, not_exist_method)
 		}
 		EXPECT_TRUE(rasied);
 
-		exposer.stop();
+		gateway.stop();
 	});
 
-	exposer.start();
+	gateway.start();
 
 	if (client.joinable())
 		client.join();

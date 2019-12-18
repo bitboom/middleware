@@ -14,13 +14,13 @@
  *  limitations under the License
  */
 /*
- * @file   exposer.cpp
+ * @file   gateway.cpp
  * @author Sangwan Kwon (sangwan.kwon@samsung.com)
  * @author Jaemin Ryu (jm77.ryu@samsung.com)
  * @brief  Implementation of Server-side stub for exposing method. 
  */
 
-#include "exposer.hpp"
+#include "gateway.hpp"
 
 #include <vist/exception.hpp>
 #include <vist/transport/message.hpp>
@@ -33,14 +33,14 @@ namespace rmi {
 
 using namespace vist::transport;
 
-class Exposer::Impl {
+class Gateway::Impl {
 public:
-	explicit Impl(Exposer& exposer, const std::string& path)
+	explicit Impl(Gateway& gateway, const std::string& path)
 	{
-		auto dispatcher = [&exposer](auto& message) -> Message {
+		auto dispatcher = [&gateway](auto& message) -> Message {
 			std::string function = message.signature;
-			auto iter = exposer.functorMap.find(function);
-			if (iter == exposer.functorMap.end())
+			auto iter = gateway.functorMap.find(function);
+			if (iter == gateway.functorMap.end())
 				THROW(ErrCode::ProtocolBroken) << "Not found function: " << function;
 
 			DEBUG(VIST) << "Remote method invokation: " << function;
@@ -71,18 +71,18 @@ private:
 	std::unique_ptr<Server> server;
 };
 
-Exposer::Exposer(const std::string& path) : pImpl(new Impl(*this, path))
+Gateway::Gateway(const std::string& path) : pImpl(new Impl(*this, path))
 {
 }
 
-Exposer::~Exposer() = default;
+Gateway::~Gateway() = default;
 
-void Exposer::start(void)
+void Gateway::start(void)
 {
 	this->pImpl->start();
 }
 
-void Exposer::stop(void)
+void Gateway::stop(void)
 {
 	this->pImpl->stop();
 }

@@ -21,58 +21,58 @@
 
 using namespace vist;
 
-TEST(StringfyTests, integer_dump)
+TEST(StringifyTests, integer_dump)
 {
-	EXPECT_EQ("I/-11", Stringfy::Dump(-11));
-	EXPECT_EQ("I/-1", Stringfy::Dump(-1));
-	EXPECT_EQ("I/0", Stringfy::Dump(0));
-	EXPECT_EQ("I/1", Stringfy::Dump(1));
-	EXPECT_EQ("I/11", Stringfy::Dump(11));
+	EXPECT_EQ("I/-11", Stringify::Dump(-11));
+	EXPECT_EQ("I/-1", Stringify::Dump(-1));
+	EXPECT_EQ("I/0", Stringify::Dump(0));
+	EXPECT_EQ("I/1", Stringify::Dump(1));
+	EXPECT_EQ("I/11", Stringify::Dump(11));
 }
 
-TEST(StringfyTests, string_dump)
+TEST(StringifyTests, string_dump)
 {
-	EXPECT_EQ("S/", Stringfy::Dump(""));
-	EXPECT_EQ("S/TEXT", Stringfy::Dump("TEXT"));
+	EXPECT_EQ("S/", Stringify::Dump(""));
+	EXPECT_EQ("S/TEXT", Stringify::Dump("TEXT"));
 }
 
-TEST(StringfyTests, integer_restore)
+TEST(StringifyTests, integer_restore)
 {
-	auto dumped = Stringfy::Dump(-1);
-	EXPECT_EQ(-1, Stringfy::Restore(dumped));
+	auto dumped = Stringify::Dump(-1);
+	EXPECT_EQ(-1, Stringify::Restore(dumped));
 
-	dumped = Stringfy::Dump(0);
-	EXPECT_EQ(0, Stringfy::Restore(dumped));
+	dumped = Stringify::Dump(0);
+	EXPECT_EQ(0, Stringify::Restore(dumped));
 
-	dumped = Stringfy::Dump(1);
-	EXPECT_EQ(1, Stringfy::Restore(dumped));
+	dumped = Stringify::Dump(1);
+	EXPECT_EQ(1, Stringify::Restore(dumped));
 }
 
-TEST(StringfyTests, string_restore)
+TEST(StringifyTests, string_restore)
 {
-	auto dumped = Stringfy::Dump("");
-	EXPECT_EQ(std::string(""), static_cast<std::string>(Stringfy::Restore(dumped)));
+	auto dumped = Stringify::Dump("");
+	EXPECT_EQ(std::string(""), static_cast<std::string>(Stringify::Restore(dumped)));
 
-	dumped = Stringfy::Dump("TEXT");
-	EXPECT_EQ(std::string("TEXT"), static_cast<std::string>(Stringfy::Restore(dumped)));
+	dumped = Stringify::Dump("TEXT");
+	EXPECT_EQ(std::string("TEXT"), static_cast<std::string>(Stringify::Restore(dumped)));
 }
 
-TEST(StringfyTests, get_type)
+TEST(StringifyTests, get_type)
 {
-	auto dumped = Stringfy::Dump(0);
-	EXPECT_EQ(Stringfy::Type::Integer, Stringfy::GetType(dumped));
+	auto dumped = Stringify::Dump(0);
+	EXPECT_EQ(Stringify::Type::Integer, Stringify::GetType(dumped));
 
-	dumped = Stringfy::Dump("Text");
-	EXPECT_EQ(Stringfy::Type::String, Stringfy::GetType(dumped));
+	dumped = Stringify::Dump("Text");
+	EXPECT_EQ(Stringify::Type::String, Stringify::GetType(dumped));
 }
 
-TEST(StringfyTests, type_safety)
+TEST(StringifyTests, type_safety)
 {
 	bool raised = false;
-	auto dumped = Stringfy::Dump(1);
+	auto dumped = Stringify::Dump(1);
 
 	try {
-		auto failed = static_cast<std::string>(Stringfy::Restore(dumped));
+		auto failed = static_cast<std::string>(Stringify::Restore(dumped));
 	} catch (const vist::Exception<ErrCode>& e) {
 		raised = true;
 		EXPECT_EQ(e.get(), ErrCode::TypeUnsafed);
@@ -81,12 +81,12 @@ TEST(StringfyTests, type_safety)
 	EXPECT_TRUE(raised);
 }
 
-TEST(StringfyTests, restore_failed)
+TEST(StringifyTests, restore_failed)
 {
 	bool raised = false;
 
 	try {
-		auto failed = Stringfy::Restore("Not dumped message");
+		auto failed = Stringify::Restore("Not dumped message");
 	} catch (const vist::Exception<ErrCode>& e) {
 		raised = true;
 		EXPECT_EQ(e.get(), ErrCode::LogicError);
