@@ -39,7 +39,7 @@ void Vist::start()
 	INFO(VIST) << "Vist daemon starts.";
 	rmi::Gateway gateway(SOCK_ADDR);
 
-	gateway.expose(this, "Vist::query", &Vist::query);
+	EXPOSE(gateway, this, &Vist::query);
 	gateway.start();
 }
 

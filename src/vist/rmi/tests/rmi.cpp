@@ -66,8 +66,9 @@ TEST(RmiTests, positive)
 	gateway.expose(foo, "Foo::setName", &Foo::setName);
 	gateway.expose(foo, "Foo::getName", &Foo::getName);
 
+	// convenience macro
 	auto bar = std::make_shared<Bar>();
-	gateway.expose(bar, "Bar::plusTwo", &Bar::plusTwo);
+	EXPOSE(gateway, bar, &Bar::plusTwo);
 
 	auto client = std::thread([&]() {
 		// caller-side
@@ -80,7 +81,9 @@ TEST(RmiTests, positive)
 		std::string name = remote.invoke<std::string>("Foo::getName");
 		EXPECT_EQ(name, param);
 
-		int num = remote.invoke<int>("Bar::plusTwo", 3);
+		// convenience macro
+		auto plusTwo = REMOTE_METHOD(remote, &Bar::plusTwo);
+		int num = plusTwo.invoke<int>(3);
 		EXPECT_EQ(num, 5);
 
 		gateway.stop();

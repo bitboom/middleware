@@ -22,6 +22,8 @@
 
 #pragma once
 
+#define EXPOSE(gateway, object, function) gateway.expose(object, #function, function)
+
 #include <vist/klass/functor.hpp>
 
 #include <memory>

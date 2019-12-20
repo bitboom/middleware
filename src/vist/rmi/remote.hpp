@@ -28,6 +28,8 @@
 #include <string>
 #include <memory>
 
+#define REMOTE_METHOD(remote, method) vist::rmi::Remote::Method {remote, #method}
+
 namespace vist {
 namespace rmi {
 
@@ -46,6 +48,17 @@ public:
 
 	template<typename R, typename... Args>
 	R invoke(const std::string& name, Args&&... args);
+
+	struct Method {
+		Remote& remote;
+		std::string name;
+
+		template<typename R, typename... Args>
+		R invoke(Args&&... args)
+		{
+			return remote.invoke<R>(name, std::forward<Args>(args)...);
+		}
+	};
 
 private:
 	Message request(Message& message);
