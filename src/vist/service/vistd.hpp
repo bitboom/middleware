@@ -25,34 +25,34 @@ namespace vist {
 using Row = std::map<std::string, std::string>;
 using Rows = std::vector<Row>;
 
-class Vist final {
+class Vistd final {
 public:
-	~Vist() = default;
+	~Vistd() = default;
 
-	Vist(const Vist&) = delete;
-	Vist& operator=(const Vist&) = delete;
+	Vistd(const Vistd&) = delete;
+	Vistd& operator=(const Vistd&) = delete;
 
-	Vist(Vist&&) = default;
-	Vist& operator=(Vist&&) = default;
+	Vistd(Vistd&&) = default;
+	Vistd& operator=(Vistd&&) = default;
 
 	/// Exposed method (API)
 	Rows query(const std::string& statement);
 
-	static Vist& Instance()
+	static Vistd& Instance()
 	{
-		static Vist instance;
+		static Vistd instance;
 		return instance;
 	}
 
 	static Rows Query(const std::string& statement)
 	{
-		return Vist::Instance().query(statement);
+		return Vistd::Instance().query(statement);
 	}
 
 	void start();
 
 private:
-	explicit Vist();
+	explicit Vistd();
 };
 
 } // namespace vist

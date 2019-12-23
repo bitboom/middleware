@@ -14,17 +14,26 @@
  *  limitations under the License
  */
 
-#include <vist/service/vist.hpp>
+#include <vist/service/vistd.hpp>
 
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
 
 #include <cstdlib>
 
+#ifdef TIZEN
+#include <vist/logger/dlog.hpp>
+#endif
+
 using namespace vist;
 
 int main() try {
-	Vist::Instance().start();
+#ifdef TIZEN
+	LogStream::Init(std::make_shared<Dlog>());
+#endif
+
+	Vistd::Instance().start();
+
 	return EXIT_SUCCESS;
 } catch(const Exception<ErrCode>& e) {
 	ERROR(VIST) << "Failed while daemon is running." << e.what();

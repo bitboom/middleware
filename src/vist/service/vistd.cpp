@@ -14,7 +14,7 @@
  *  limitations under the License
  */
 
-#include "vist.hpp"
+#include "vistd.hpp"
 
 #include <vist/rmi/gateway.hpp>
 #include <vist/logger.hpp>
@@ -29,21 +29,21 @@ namespace {
 
 namespace vist {
 
-Vist::Vist()
+Vistd::Vistd()
 {
 	osquery::registryAndPluginInit();
 }
 
-void Vist::start()
+void Vistd::start()
 {
-	INFO(VIST) << "Vist daemon starts.";
+	INFO(VIST) << "Vistd daemon starts.";
 	rmi::Gateway gateway(SOCK_ADDR);
 
-	EXPOSE(gateway, this, &Vist::query);
+	EXPOSE(gateway, this, &Vistd::query);
 	gateway.start();
 }
 
-Rows Vist::query(const std::string& statement)
+Rows Vistd::query(const std::string& statement)
 {
 	osquery::SQL sql(statement, true);
 	if (!sql.ok())

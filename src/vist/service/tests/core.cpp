@@ -16,7 +16,7 @@
 
 #include <gtest/gtest.h>
 
-#include <vist/service/vist.hpp>
+#include <vist/service/vistd.hpp>
 #include <vist/policy/api.hpp>
 
 #include <iostream>
@@ -29,12 +29,12 @@ class CoreTests : public testing::Test {};
 
 TEST_F(CoreTests, query_select)
 {
-	auto rows = Vist::Query("SELECT * FROM policy");
+	auto rows = Vistd::Query("SELECT * FROM policy");
 
 	EXPECT_TRUE(rows.size() > 0);
 
 	std::string statement = "SELECT * FROM policy WHERE name = 'sample-int-policy'";
-	rows = Vist::Query(statement);
+	rows = Vistd::Query(statement);
 
 	EXPECT_EQ(rows.size(), 1);
 	EXPECT_EQ(rows[0]["name"], "sample-int-policy");
@@ -45,16 +45,16 @@ TEST_F(CoreTests, query_update)
 	policy::API::Admin::Enroll("admin");
 
 	std::string statement = "SELECT * FROM policy WHERE name = 'sample-int-policy'";
-	auto rows = Vist::Query(statement);
+	auto rows = Vistd::Query(statement);
 	/// Initial policy value
 	EXPECT_EQ(rows[0]["value"], "I/7");
 
 	statement = "UPDATE policy SET value = 'I/10' WHERE name = 'sample-int-policy'";
-	rows = Vist::Query(statement);
+	rows = Vistd::Query(statement);
 	EXPECT_EQ(rows.size(), 0);
 
 	statement = "SELECT * FROM policy WHERE name = 'sample-int-policy'";
-	rows = Vist::Query(statement);
+	rows = Vistd::Query(statement);
 	EXPECT_EQ(rows[0]["value"], "I/10");
 
 	policy::API::Admin::Disenroll("admin");

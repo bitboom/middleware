@@ -30,7 +30,7 @@ Rows Query::Execute(const std::string& statement)
 	INFO(VIST_CLIENT) << "Query execution: " << statement;
 	rmi::Remote remote(SOCK_ADDR);
 
-	auto query = REMOTE_METHOD(remote, &Vist::query);
+	auto query = REMOTE_METHOD(remote, &Vistd::query);
 	return query.invoke<Rows>(statement);
 }
 

@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_VIST_LIBRARY(vist_core vist.cpp)
+ADD_VIST_LIBRARY(vist_core vistd.cpp)
 
 FILE(GLOB CORE_TESTS "tests/*.cpp")
 ADD_VIST_TEST(${CORE_TESTS})
