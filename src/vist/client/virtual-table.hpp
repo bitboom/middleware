@@ -51,15 +51,23 @@ public:
 	using Iter = typename std::vector<VirtualRow<T>>::iterator;
 	using CIter = typename std::vector<VirtualRow<T>>::const_iterator;
 
-	inline Iter begin() { return dataset.begin(); }
-	inline CIter begin() const { return dataset.cbegin(); }
-	inline Iter end() { return dataset.end(); }
-	inline CIter end() const { return dataset.end(); }
+	inline Iter begin() { return rows.begin(); }
+	inline CIter begin() const { return rows.cbegin(); }
+	inline Iter end() { return rows.end(); }
+	inline CIter end() const { return rows.end(); }
 
-	inline std::size_t size() const { return dataset.size(); }
+	inline std::size_t size() const { return rows.size(); }
+
+	template<typename Struct, typename Member>
+	VirtualRow<T>& filter(Member Struct::*field, const std::string& value)
+	{
+		for (auto& row : this->rows)
+			if (row[field] == value)
+				return row;
+	}
 
 private:
-	std::vector<VirtualRow<T>> dataset;
+	std::vector<VirtualRow<T>> rows;
 };
 
 } // namespace vist

@@ -129,7 +129,7 @@ VirtualTable<T>::VirtualTable()
 				 row["value"].find("S/") == std::string::npos)
 			continue;
 
-		this->dataset.emplace_back(VirtualRow<T>(std::move(row)));
+		this->rows.emplace_back(VirtualRow<T>(std::move(row)));
 	}
 }
 

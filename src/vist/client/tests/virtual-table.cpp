@@ -29,7 +29,8 @@ using namespace vist::schema;
 
 class VirtualTableTests : public testing::Test {};
 
-TEST(VirtualTableTests, time_row_at) {
+TEST(VirtualTableTests, time_row_at)
+{
 	Time result = { -1, -1, -1 };
 
 	VirtualRow<Time> time;
@@ -54,7 +55,8 @@ TEST(VirtualTableTests, time_row_at) {
 	EXPECT_NE(result.seconds, -1);
 }
 
-TEST(VirtualTableTests, time_row_arry_op) {
+TEST(VirtualTableTests, time_row_arry_op)
+{
 	Time result = { -1, -1, -1 };
 
 	VirtualRow<Time> time;
@@ -73,7 +75,8 @@ TEST(VirtualTableTests, time_row_arry_op) {
 	EXPECT_NE(result.seconds, -1);
 }
 
-TEST(VirtualTableTests, processes_table) {
+TEST(VirtualTableTests, processes_table)
+{
 	Processes result;
 	VirtualTable<Processes> processes;
 	EXPECT_TRUE(processes.size() > 0);
@@ -105,7 +108,8 @@ TEST(VirtualTableTests, processes_table) {
 	}
 }
 
-TEST(VirtualTableTests, policy_int_table) {
+TEST(VirtualTableTests, policy_int_table)
+{
 	VirtualTable<Policy<int>> table;
 	EXPECT_TRUE(table.size() > 0);
 
@@ -118,7 +122,19 @@ TEST(VirtualTableTests, policy_int_table) {
 	}
 }
 
-TEST(VirtualTableTests, policy_str_table) {
+TEST(VirtualTableTests, policy_int_filter)
+{
+	VirtualTable<Policy<int>> table;
+	EXPECT_TRUE(table.size() > 0);
+
+	auto row = table.filter(&Policy<int>::name, "sample-int-policy");
+	auto value = row[&Policy<int>::value];
+	EXPECT_TRUE(value > 0);
+	EXPECT_EQ(row[&Policy<int>::name], "sample-int-policy");
+}
+
+TEST(VirtualTableTests, policy_str_table)
+{
 	VirtualTable<Policy<std::string>> table;
 	EXPECT_TRUE(table.size() > 0);
 
@@ -132,4 +148,15 @@ TEST(VirtualTableTests, policy_str_table) {
 		INFO(VIST_CLIENT) << "\t name: " << policy.name;
 		INFO(VIST_CLIENT) << "\t value: " << policy.value;
 	}
+}
+
+TEST(VirtualTableTests, policy_str_filter)
+{
+	VirtualTable<Policy<std::string>> table;
+	EXPECT_TRUE(table.size() > 0);
+
+	auto row = table.filter(&Policy<std::string>::name, "sample-str-policy");
+	auto value = row[&Policy<std::string>::value];
+	EXPECT_TRUE(!value.empty());
+	EXPECT_EQ(row[&Policy<std::string>::name], "sample-str-policy");
 }

@@ -145,7 +145,7 @@ void PolicyStorage::define(const std::string& policy, const PolicyValue& ivalue)
 	if (!stmt.exec())
 		THROW(ErrCode::RuntimeError) << "Failed to define policy: " << pd.name;
 
-	INFO(VIST) << "Policy defined >> name: " << pd.name << ", ivalue" << pd.ivalue;
+	INFO(VIST) << "Policy defined >> name: " << pd.name << ", ivalue: " << pd.ivalue;
 	this->definitions.emplace(pd.name, std::move(pd));
 }
 
