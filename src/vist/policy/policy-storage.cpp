@@ -54,7 +54,9 @@ PolicyStorage::PolicyStorage(const std::string& path) :
 	database(std::make_shared<database::Connection>(path))
 {
 	database->exec("PRAGMA foreign_keys = ON;");
+	database->transactionBegin();
 	database->exec(getScript(SCRIPT_CREATE_SCHEMA));
+	database->transactionEnd();
 
 	sync();
 }
@@ -131,7 +133,7 @@ std::string PolicyStorage::getScript(const std::string& name)
 void PolicyStorage::define(const std::string& policy, const PolicyValue& ivalue)
 {
 	if (this->definitions.find(policy) != this->definitions.end()) {
-		INFO(VIST) << "Policy is already defined: " << policy;
+		DEBUG(VIST) << "Policy is already defined: " << policy;
 		return;
 	}
 
@@ -143,7 +145,7 @@ void PolicyStorage::define(const std::string& policy, const PolicyValue& ivalue)
 	stmt.bind(1, pd.name);
 	stmt.bind(2, pd.ivalue);
 	if (!stmt.exec())
-		THROW(ErrCode::RuntimeError) << "Failed to define policy: " << pd.name;
+		THROW(ErrCode::RuntimeError) << stmt.getErrorMessage();
 
 	INFO(VIST) << "Policy defined >> name: " << pd.name << ", ivalue: " << pd.ivalue;
 	this->definitions.emplace(pd.name, std::move(pd));
@@ -165,7 +167,7 @@ void PolicyStorage::enroll(const std::string& name)
 	stmt.bind(1, admin.name);
 	stmt.bind(2, admin.activated);
 	if (!stmt.exec())
-		THROW(ErrCode::RuntimeError) << "Failed to enroll admin: " << name;
+		THROW(ErrCode::RuntimeError) << stmt.getErrorMessage();
 
 	this->admins.emplace(admin.name, std::move(admin));
 
@@ -194,7 +196,7 @@ void PolicyStorage::disenroll(const std::string& name)
 	database::Statement stmt(*database, query);
 	stmt.bind(1, name);
 	if (!stmt.exec())
-		THROW(ErrCode::RuntimeError) << "Failed to disenroll admin: " << name;
+		THROW(ErrCode::RuntimeError) << stmt.getErrorMessage();
 
 	/// TODO: add TC
 	this->syncPolicyManaged();
@@ -205,13 +207,14 @@ void PolicyStorage::activate(const std::string& admin, bool state)
 	if (this->admins.find(admin) == this->admins.end())
 		THROW(ErrCode::LogicError) << "Not exist admin: " << admin;
 
+	DEBUG(VIST) << "Activate admin: " << admin;
 	std::string query = adminTable.update(&Admin::activated)
 										 .where(expr(&Admin::name) == admin);
 	database::Statement stmt(*this->database, query);
 	stmt.bind(1, static_cast<int>(state));
 	stmt.bind(2, admin);
 	if (!stmt.exec())
-		THROW(ErrCode::RuntimeError) << "Failed to activate admin: " << admin;
+		THROW(ErrCode::RuntimeError) << stmt.getErrorMessage();
 
 	this->admins[admin].activated = state;
 	INFO(VIST) << "Admin[" << admin << "]'s activated value is set: " << state; 
@@ -246,7 +249,7 @@ void PolicyStorage::update(const std::string& admin,
 	stmt.bind(2, admin);
 	stmt.bind(3, policy);
 	if (!stmt.exec())
-		THROW(ErrCode::RuntimeError) << "Failed to update policy:" << policy;
+		THROW(ErrCode::RuntimeError) << stmt.getErrorMessage();
 
 	/// TODO: Fix to sync without db i/o
 	this->syncPolicyManaged();

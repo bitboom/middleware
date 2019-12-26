@@ -16,9 +16,10 @@
 
 #include "vistd.hpp"
 
-#include <vist/rmi/gateway.hpp>
-#include <vist/logger.hpp>
 #include <vist/exception.hpp>
+#include <vist/logger.hpp>
+#include <vist/policy/policy-manager.hpp>
+#include <vist/rmi/gateway.hpp>
 
 #include <osquery/registry_interface.h>
 #include <osquery/sql.h>
@@ -37,8 +38,10 @@ Vistd::Vistd()
 void Vistd::start()
 {
 	INFO(VIST) << "Vistd daemon starts.";
-	rmi::Gateway gateway(SOCK_ADDR);
 
+	policy::PolicyManager::Instance();
+
+	rmi::Gateway gateway(SOCK_ADDR);
 	EXPOSE(gateway, this, &Vistd::query);
 	gateway.start();
 }

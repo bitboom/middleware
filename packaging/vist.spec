@@ -21,7 +21,6 @@ BuildRequires: pkgconfig(libsystemd)
 BuildRequires: pkgconfig(openssl)
 # vist BRs
 BuildRequires: pkgconfig(dlog)
-BuildRequires: pkgconfig(klay)
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(libtzplatform-config)
 Requires: glog
@@ -29,7 +28,6 @@ Requires: gflag
 Requires: boost-regex boost-system boost-thread boost-filesystem
 Requires: procps-ng
 Requires: libsystemd
-Requires: klay
 
 %global osquery_version 4.0.0
 
@@ -74,7 +72,8 @@ cp %SOURCE1 .
 		 -DDEFAULT_ADMIN_PATH=%{_bindir}/vist-cli \
 		 -DDB_INSTALL_DIR:PATH=%{vist_db_dir} \
 		 -DPLUGIN_INSTALL_DIR:PATH=%{vist_plugin_dir} \
-		 -DSCRIPT_INSTALL_DIR:PATH=%{vist_script_dir}
+		 -DSCRIPT_INSTALL_DIR:PATH=%{vist_script_dir} \
+		 -DSYSTEMD_UNIT_DIR:PATH=%{_unitdir}
 
 make %{?jobs:-j%jobs}
 
@@ -86,8 +85,22 @@ mkdir -p %{buildroot}/%{vist_script_dir}
 
 cp data/script/*.sql %{buildroot}/%{vist_script_dir}
 
+%install_service sockets.target.wants %{name}.socket
+
 %clean
 rm -rf %{buildroot}
+
+%post
+rm -f %{vist_db_dir}/.%{name}.db*
+
+systemctl daemon-reload
+if [ $1 = 1 ]; then
+	systemctl start %{name}
+elif [ $1 = 2 ]; then
+	systemctl restart %{name}
+fi
+
+systemctl start %{name}
 
 %files
 %manifest %{name}.manifest
@@ -96,6 +109,9 @@ rm -rf %{buildroot}
 %license LICENSE-MIT
 %{_bindir}/vist-cli
 %{_bindir}/vistd
+%{_unitdir}/vist.service
+%{_unitdir}/vist.socket
+%{_unitdir}/sockets.target.wants/vist.socket
 %{vist_script_dir}/*.sql
 %dir %attr(-, %{user_name}, %{group_name}) %{vist_db_dir}
 %dir %attr(-, %{user_name}, %{group_name}) %{vist_plugin_dir}
@@ -110,6 +126,10 @@ Requires: gtest
 
 %description test 
 Provides internal testcases for ViST implementation.
+
+%post test
+systemctl stop %{name}.socket
+systemctl restart %{name}.service
 
 %files test
 %{_bindir}/osquery-test

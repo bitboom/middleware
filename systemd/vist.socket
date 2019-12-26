@@ -1,0 +1,11 @@
+[Unit]
+Description=Virtual Security Table socket
+
+[Socket]
+ListenStream=/tmp/.vist
+SocketMode=0777
+SmackLabelIPIn=*
+SmackLabelIPOut=@
+
+[Install]
+WantedBy=sockets.target
