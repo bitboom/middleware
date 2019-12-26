@@ -14,115 +14,93 @@
  *  limitations under the License
  */
 
-#include <arpa/inet.h>
-#include <wifi-manager.h>
+#include "wifi.hpp"
 
-#include <vist/sdk/policy-model.hpp>
-#include <vist/sdk/policy-provider.hpp>
+#include <vist/exception.hpp>
+#include <vist/logger.hpp>
 
 #include <klay/dbus/connection.h>
 
 #include <memory>
-
-#include "../dlog.h"
 
 #define NETCONFIG_INTERFACE		\
 	"net.netconfig",			\
 	"/net/netconfig/network",	\
 	"net.netconfig.network"
 
-using namespace vist::policy;
+namespace vist {
+namespace policy {
+namespace plugin {
 
-class ModeChange : public PolicyModel {
-public:
-	ModeChange() : PolicyModel("wifi", PolicyValue(1)) {}
+void WifiState::onChanged(const PolicyValue& value)
+{
+	int enable = value;
+	INFO(VIST_PLUGIN) << "Wifi state is changed to " << enable;
+	klay::dbus::Connection &systemDBus = klay::dbus::Connection::getSystem();
+	systemDBus.methodcall(NETCONFIG_INTERFACE,
+						  "DevicePolicySetWifi",
+						  -1,
+						  "",
+						  "(i)",
+						  enable);
+}
 
-	void onChanged(const PolicyValue& value) override
-	{
-		int enable = value;
-		klay::dbus::Connection &systemDBus = klay::dbus::Connection::getSystem();
-		systemDBus.methodcall(NETCONFIG_INTERFACE,
-							  "DevicePolicySetWifi",
-							  -1,
-							  "",
-							  "(i)",
-							  enable);
+void ProfileChange::onChanged(const PolicyValue& value)
+{
+	int enable = value;
+	INFO(VIST_PLUGIN) << "Wifi profile change state is changed to " << enable;
+	dbus::Connection &systemDBus = dbus::Connection::getSystem();
+	systemDBus.methodcall(NETCONFIG_INTERFACE,
+						  "DevicePolicySetWifiProfile",
+						  -1,
+						  "",
+						  "(i)",
+						  enable);
+}
+
+void Hotspot::onChanged(const PolicyValue& value)
+{
+	int enable = value;
+	INFO(VIST_PLUGIN) << "Wifi hotspot change state is changed to " << enable;
+}
+
+void SsidRestriction::onChanged(const PolicyValue& value)
+{
+	int enable = value;
+	INFO(VIST_PLUGIN) << "Wifi ssid restriction change state is changed to " << enable;
+}
+
+Wifi::Wifi(const std::string& name) : PolicyProvider(name)
+{
+	int ret = ::wifi_manager_initialize(&handle);
+	if (ret != WIFI_MANAGER_ERROR_NONE) {
+		if (ret == WIFI_MANAGER_ERROR_NOT_SUPPORTED)
+			ERROR("Wifi manager is not supported.");
+
+		THROW(ErrCode::RuntimeError) << "Failed to init WiFi Manager.";
 	}
-};
+}
 
-class ProfileChange : public PolicyModel {
-public:
-	ProfileChange() : PolicyModel("wifi-profile-change", PolicyValue(1)) {}
-
-	void onChanged(const PolicyValue& value) override
-	{
-		int enable = value;
-		dbus::Connection &systemDBus = dbus::Connection::getSystem();
-		systemDBus.methodcall(NETCONFIG_INTERFACE,
-							  "DevicePolicySetWifiProfile",
-							  -1,
-							  "",
-							  "(i)",
-							  enable);
-	}
-};
-
-class Hotspot : public PolicyModel {
-public:
-	Hotspot() : PolicyModel("wifi-hotspot", PolicyValue(1)) {}
-
-	void onChanged(const PolicyValue&) override
-	{
-		/// N/A
-	}
-};
-
-class SsidRestriction : public PolicyModel {
-public:
-	SsidRestriction() : PolicyModel("wifi-ssid-restriction", PolicyValue(0)) {}
-
-	void onChanged(const PolicyValue&) override
-	{
-		/// N/A
-	}
-};
-
-class Wifi : public PolicyProvider {
-public:
-	Wifi(const std::string& name) : PolicyProvider(name)
-	{
-		int ret = ::wifi_manager_initialize(&handle);
-		if (ret != WIFI_MANAGER_ERROR_NONE) {
-			if (ret == WIFI_MANAGER_ERROR_NOT_SUPPORTED)
-				return;
-
-			throw std::runtime_error("WiFi Manager initialization failed.");
-		}
-	}
-
-	~Wifi()
-	{
-		if (handle == nullptr)
-			return;
-
-		::wifi_manager_deinitialize(handle);
-	}
-
-private:
-	::wifi_manager_h handle = nullptr;
-};
+Wifi::~Wifi()
+{
+	::wifi_manager_deinitialize(handle);
+}
 
 // TODO(Sangwan): Add privilege to provider
 #define PRIVILEGE "http://tizen.org/privilege/dpm.wifi"
 
 extern "C" PolicyProvider* PolicyFactory()
 {
-	INFO(PLUGINS, "Wifi plugin loaded.");
+	INFO(VIST_PLUGIN) << "Wifi plugin loaded.";
 	Wifi* provider = new Wifi("wifi");
-	provider->add(std::make_shared<ModeChange>());
+	provider->add(std::make_shared<WifiState>());
 	provider->add(std::make_shared<ProfileChange>());
 	provider->add(std::make_shared<Hotspot>());
 	provider->add(std::make_shared<SsidRestriction>());
 
 	return provider;
 }
+
+} // namespace plugin
+} // namespace policy
+} // namespace vist

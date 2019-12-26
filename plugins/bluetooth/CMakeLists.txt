@@ -13,12 +13,12 @@
 # limitations under the License.
 #
 SET(TARGET "vist-plugin-bluetooth")
+SET(TARGET_TEST ${TARGET}-test)
 
 SET(PLUGIN_SOURCES "bluetooth.cpp")
 
 SET(DEPENDENCY bluetooth-api
-			   capi-network-bluetooth
-			   klay)
+			   capi-network-bluetooth)
 
 PKG_CHECK_MODULES(PLUGIN_DEPS REQUIRED ${DEPENDENCY})
 
@@ -26,8 +26,26 @@ INCLUDE_DIRECTORIES(SYSTEM ${PLUGIN_DEPS_INCLUDE_DIRS})
 
 ADD_LIBRARY(${TARGET} SHARED ${PLUGIN_SOURCES})
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES COMPILE_FLAGS "-fvisibility=default")
-TARGET_LINK_LIBRARIES(${TARGET} ${PLUGIN_DEPS_LIBRARIES})
+TARGET_LINK_LIBRARIES(${TARGET} ${PLUGIN_DEPS_LIBRARIES}
+								vist-common)
 
 INSTALL(FILES libvist-plugin-bluetooth.so
 		RENAME bluetooth
 		DESTINATION ${PLUGIN_INSTALL_DIR})
+
+ADD_EXECUTABLE(${TARGET_TEST} ../tests.cpp
+							  bluetooth.cpp
+							  bluetooth-test.cpp)
+TARGET_LINK_LIBRARIES(${TARGET_TEST} ${PLUGIN_DEPS_LIBRARIES}
+									 vist-common
+									 gtest
+									 pthread)
+INSTALL(TARGETS ${TARGET_TEST}
+		DESTINATION ${CMAKE_INSTALL_BINDIR}
+		PERMISSIONS OWNER_READ
+					OWNER_WRITE
+					OWNER_EXECUTE
+					GROUP_READ
+					GROUP_EXECUTE
+					WORLD_READ
+					WORLD_EXECUTE)

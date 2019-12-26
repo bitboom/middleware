@@ -120,18 +120,12 @@ Provides internal testcases for ViST implementation.
 %package plugins
 Summary: Virtaul Security Table (policy modules)
 Group: Security/Other
-## Common
-BuildRequires: pkgconfig(buxton2)
-BuildRequires: pkgconfig(dlog)
-BuildRequires: pkgconfig(capi-system-info)
-BuildRequires: pkgconfig(capi-base-common)
-BuildRequires: pkgconfig(klay)
-
 ## Bluetooth
 BuildRequires: pkgconfig(bluetooth-api)
 BuildRequires: pkgconfig(capi-network-bluetooth)
 
 ## Wifi
+BuildRequires: pkgconfig(klay)
 BuildRequires: pkgconfig(capi-network-wifi-manager)
 BuildRequires: pkgconfig(capi-network-connection)
 Requires: klay
@@ -143,3 +137,5 @@ Provides plugins for controlling policies.
 %manifest packaging/%{name}-plugins.manifest
 %{vist_plugin_dir}/bluetooth
 %{vist_plugin_dir}/wifi
+%{_bindir}/vist-plugin-bluetooth-test
+%{_bindir}/vist-plugin-wifi-test

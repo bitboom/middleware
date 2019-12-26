@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <vist/exception.hpp>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -59,11 +61,13 @@ public:
 	inline std::size_t size() const { return rows.size(); }
 
 	template<typename Struct, typename Member>
-	VirtualRow<T>& filter(Member Struct::*field, const std::string& value)
+	VirtualRow<T>& filter(Member Struct::*field, const std::string& name)
 	{
 		for (auto& row : this->rows)
-			if (row[field] == value)
+			if (row[field] == name)
 				return row;
+
+		THROW(ErrCode::RuntimeError) << "Not exist field: " << name;
 	}
 
 private:

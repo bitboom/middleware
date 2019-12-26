@@ -22,6 +22,7 @@
 #include <osquery/tables.h>
 
 #include <vist/policy/api.hpp>
+#include <vist/exception.hpp>
 #include <vist/logger.hpp>
 
 namespace osquery {
@@ -40,6 +41,8 @@ Row convert(const std::string& name, const vist::policy::PolicyValue& value)
 } // anonymous namespace
 
 namespace tables {
+
+using namespace vist;
 
 QueryData genPolicy(QueryContext& context) try {
 	INFO(VIST) << "Select query about policy table.";
@@ -63,8 +66,12 @@ QueryData genPolicy(QueryContext& context) try {
 	}
 
 	return results;
+} catch (const vist::Exception<ErrCode>& e) {
+	ERROR(VIST) << "Failed to query: " << e.what();
+	Row r;
+	return { r };
 } catch (...) {
-	ERROR(VIST) << "Failed to select query on policy.";
+	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return { r };
 }
@@ -91,8 +98,12 @@ QueryData updatePolicy(QueryContext& context, const PluginRequest& request) try 
 	Row r;
 	r["status"] = "success";
 	return { r };
+} catch (const vist::Exception<ErrCode>& e) {
+	ERROR(VIST) << "Failed to query: " << e.what();
+	Row r;
+	return { r };
 } catch (...) {
-	ERROR(VIST) << "Failed to update query on policy.";
+	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return { r };
 }

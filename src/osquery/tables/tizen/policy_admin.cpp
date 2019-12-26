@@ -22,7 +22,10 @@
 #include <osquery/tables.h>
 
 #include <vist/policy/api.hpp>
+#include <vist/exception.hpp>
 #include <vist/logger.hpp>
+
+namespace osquery {
 
 namespace {
 
@@ -52,8 +55,9 @@ std::string parseAdmin(const std::string& request, bool insert = true)
 
 } // anonymous namespace
 
-namespace osquery {
 namespace tables {
+
+using namespace vist;
 
 QueryData genPolicyAdmin(QueryContext& context) try {
 	INFO(VIST) << "Select query about policy-admin table.";
@@ -88,8 +92,12 @@ QueryData genPolicyAdmin(QueryContext& context) try {
 	}
 
 	return results;
+} catch (const vist::Exception<ErrCode>& e) {
+	ERROR(VIST) << "Failed to query: " << e.what();
+	Row r;
+	return { r };
 } catch (...) {
-	ERROR(VIST) << "Failed to select query on policy-admin.";
+	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return { r };
 }
@@ -106,8 +114,12 @@ QueryData insertPolicyAdmin(QueryContext& context, const PluginRequest& request)
 	Row r;
 	r["status"] = "success";
 	return { r };
+} catch (const vist::Exception<ErrCode>& e) {
+	ERROR(VIST) << "Failed to query: " << e.what();
+	Row r;
+	return { r };
 } catch (...) {
-	ERROR(VIST) << "Failed to insert query on policy-admin.";
+	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return { r };
 }
@@ -124,8 +136,12 @@ QueryData deletePolicyAdmin(QueryContext& context, const PluginRequest& request)
 	Row r;
 	r["status"] = "success";
 	return { r };
+} catch (const vist::Exception<ErrCode>& e) {
+	ERROR(VIST) << "Failed to query: " << e.what();
+	Row r;
+	return { r };
 } catch (...) {
-	ERROR(VIST) << "Failed to delete query on policy-admin.";
+	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return { r };
 }
@@ -152,11 +168,16 @@ QueryData updatePolicyAdmin(QueryContext& context, const PluginRequest& request)
 	Row r;
 	r["status"] = "success";
 	return { r };
+} catch (const vist::Exception<ErrCode>& e) {
+	ERROR(VIST) << "Failed to query: " << e.what();
+	Row r;
+	return { r };
 } catch (...) {
-	ERROR(VIST) << "Failed to insert query on policy-admin.";
+	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return { r };
 }
+
 
 } // namespace tables
 } // namespace osquery

@@ -14,100 +14,102 @@
  *  limitations under the License
  */
 
+#include "bluetooth.hpp"
+
 #include <bluetooth.h>
 #include <bluetooth-api.h>
 #include <bluetooth_internal.h>
 
-#include <vist/sdk/policy-model.hpp>
-#include <vist/sdk/policy-provider.hpp>
+#include <vist/exception.hpp>
+#include <vist/logger.hpp>
 
 #include <memory>
 
-#include "../dlog.h"
+namespace vist {
+namespace policy {
+namespace plugin {
 
-#define BT_FAILED(ret)                                       \
-	(((int)(ret) == BLUETOOTH_DPM_RESULT_ACCESS_DENIED) ||   \
-	 ((int)(ret) == BLUETOOTH_DPM_RESULT_FAIL))
+namespace {
 
-#define POLICY_IS_ALLOWED(enable)                            \
-	((int)(enable) ? BLUETOOTH_DPM_ALLOWED :                 \
-					 BLUETOOTH_DPM_RESTRICTED)
+bool failed(auto value)
+{
+	return value == BLUETOOTH_DPM_RESULT_ACCESS_DENIED || value == BLUETOOTH_DPM_RESULT_FAIL;
+}
 
-#define STATE_CHANGE_IS_ALLOWED(enable)                      \
-	((int)(enable) ? BLUETOOTH_DPM_BT_ALLOWED :              \
-					 BLUETOOTH_DPM_BT_RESTRICTED)
+auto allowed(int value)
+{
+	return value ? BLUETOOTH_DPM_ALLOWED : BLUETOOTH_DPM_RESTRICTED;
+}
 
-using namespace vist::policy;
+auto bt_allowed(int value)
+{
+	return value ? BLUETOOTH_DPM_BT_ALLOWED : BLUETOOTH_DPM_BT_RESTRICTED;
+}
 
-class ModeChange : public PolicyModel {
-public:
-	ModeChange() : PolicyModel("bluetooth", PolicyValue(1)) {}
+} // anonymous namespace
 
-	void onChanged(const PolicyValue& value) override
-	{
-		int ret = ::bluetooth_dpm_set_allow_mode(STATE_CHANGE_IS_ALLOWED(value));
-		if (BT_FAILED(ret))
-			throw std::runtime_error("Failed to set bluetooth.");
-	}
-};
+void BluetoothState::onChanged(const PolicyValue& value)
+{
+	auto enable = bt_allowed(value);
+	auto ret = ::bluetooth_dpm_set_allow_mode(enable);
+	if (failed(ret))
+		THROW(ErrCode::RuntimeError) << "Failed to change bluetooth state: " << ret;
 
-class DesktopConnectivity : public PolicyModel {
-public:
-	DesktopConnectivity() :
-		PolicyModel("bluetooth-desktop-connectivity", PolicyValue(1)) {}
+	INFO(VIST_PLUGIN) << "Bluetooth state is changed to " << enable;
+}
 
-	void onChanged(const PolicyValue& value) override
-	{
-		int ret = ::bluetooth_dpm_set_desktop_connectivity_state(POLICY_IS_ALLOWED(value));
-		if (BT_FAILED(ret))
-			throw std::runtime_error("Failed to set bt_desktop_connectivity.");
-	}
-};
+void DesktopConnectivity::onChanged(const PolicyValue& value)
+{
+	auto enable = allowed(value);
+	auto ret = ::bluetooth_dpm_set_desktop_connectivity_state(enable);
+	if (failed(ret))
+		THROW(ErrCode::RuntimeError) << "Failed to change bt_desktop_connectivity: " << ret;
 
-class Pairing: public PolicyModel {
-public:
-	Pairing() : PolicyModel("bluetooth-pairing", PolicyValue(1)) {}
+	INFO(VIST_PLUGIN) << "Bluetooth desktop connectivity state is changed to " << enable;
+}
 
-	void onChanged(const PolicyValue& value) override
-	{
-		int ret = ::bluetooth_dpm_set_pairing_state(POLICY_IS_ALLOWED(value));
-		if (BT_FAILED(ret))
-			throw std::runtime_error("Failed to set bt_pairing.");
-	}
-};
+void Pairing::onChanged(const PolicyValue& value)
+{
+	auto enable = allowed(value);
+	auto ret = ::bluetooth_dpm_set_pairing_state(enable);
+	if (failed(ret))
+		THROW(ErrCode::RuntimeError) << "Failed to change bluetooth pairing: " << ret;
 
-class Tethering: public PolicyModel {
-public:
-	Tethering() : PolicyModel("bluetooth-tethering", PolicyValue(1)) {}
+	INFO(VIST_PLUGIN) << "Bluetooth pairing state is changed to " << enable;
+}
 
-	void onChanged(const PolicyValue&) {}
-};
+void Tethering::onChanged(const PolicyValue& value)
+{
+	auto enable = value;
+	INFO(VIST_PLUGIN) << "Bluetooth tethering state is changed to " << enable;
+}
 
-class Bluetooth : public PolicyProvider {
-public:
-	Bluetooth(const std::string& name) : PolicyProvider(name)
-	{
-		if (::bt_initialize() != BT_ERROR_NONE)
-			ERROR(PLUGINS,"Bluetooth framework was not initilaized");
-	}
+Bluetooth::Bluetooth(const std::string& name) : PolicyProvider(name)
+{
+	if (::bt_initialize() != BT_ERROR_NONE)
+		THROW(ErrCode::RuntimeError) << "Failed to init bluetooth provider.";
+}
 
-	~Bluetooth()
-	{
-		::bt_deinitialize();
-	}
-};
+Bluetooth::~Bluetooth()
+{
+	::bt_deinitialize();
+}
 
 // TODO(Sangwan): Add privilege to provider
 #define PRIVILEGE "http://tizen.org/privilege/dpm.bluetooth"
 
 extern "C" PolicyProvider* PolicyFactory()
 {
-	INFO(PLUGINS, "Bluetooth plugin loaded.");
+	INFO(VIST_PLUGIN) << "Bluetooth plugin loaded.";
 	Bluetooth* provider = new Bluetooth("bluetooth");
-	provider->add(std::make_shared<ModeChange>());
+	provider->add(std::make_shared<BluetoothState>());
 	provider->add(std::make_shared<DesktopConnectivity>());
 	provider->add(std::make_shared<Pairing>());
 	provider->add(std::make_shared<Tethering>());
 
 	return provider;
 }
+
+} // namespace plugin
+} // namespace policy
+} // namespace vist
