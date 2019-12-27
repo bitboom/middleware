@@ -32,7 +32,7 @@ int main() try {
 	LogStream::Init(std::make_shared<Dlog>());
 #endif
 
-	Vistd::Instance().start();
+	Vistd::Instance().Start();
 
 	return EXIT_SUCCESS;
 } catch(const Exception<ErrCode>& e) {

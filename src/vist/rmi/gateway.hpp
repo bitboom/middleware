@@ -47,7 +47,7 @@ public:
 	void stop(void);
 
 	template<typename O, typename F>
-	void expose(O&& object, const std::string& name, F&& func);
+	void expose(O& object, const std::string& name, F&& func);
 
 private:
 	class Impl;
@@ -57,9 +57,9 @@ private:
 };
 
 template<typename O, typename F>
-void Gateway::expose(O&& object, const std::string& name, F&& func)
+void Gateway::expose(O& object, const std::string& name, F&& func)
 {
-	auto functor = klass::make_functor_ptr(std::forward<O>(object), std::forward<F>(func));
+	auto functor = klass::make_functor_ptr(object, std::forward<F>(func));
 	this->functorMap[name] = functor;
 }
 

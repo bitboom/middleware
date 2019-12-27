@@ -42,7 +42,8 @@ void Vistd::start()
 	policy::PolicyManager::Instance();
 
 	rmi::Gateway gateway(SOCK_ADDR);
-	EXPOSE(gateway, this, &Vistd::query);
+	EXPOSE(gateway, *this, &Vistd::query);
+
 	gateway.start();
 }
 

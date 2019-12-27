@@ -50,7 +50,7 @@ struct Foo {
 
 TEST(FunctorTests, functor)
 {
-	auto foo = std::make_shared<Foo>();
+	Foo foo;
 	auto fooSetName = make_functor(foo, &Foo::setName);
 	auto fooGetName = make_functor(foo, &Foo::getName);
 	auto fooEcho = make_functor(foo, &Foo::echo);
@@ -72,8 +72,7 @@ TEST(FunctorTests, functor)
 
 TEST(FunctorTests, functor_map)
 {
-	auto foo = std::make_shared<Foo>();
-
+	Foo foo;
 	FunctorMap fooMap;
 	fooMap["setName"] = make_functor_ptr(foo, &Foo::setName);
 	fooMap["getName"] = make_functor_ptr(foo, &Foo::getName);
@@ -99,8 +98,7 @@ TEST(FunctorTests, functor_map)
 
 TEST(FunctorTests, archive)
 {
-	auto foo = std::make_shared<Foo>();
-
+	Foo foo;
 	FunctorMap fooMap;
 	fooMap["echo"] = make_functor_ptr(foo, &Foo::echo);
 

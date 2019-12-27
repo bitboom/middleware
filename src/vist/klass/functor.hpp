@@ -50,7 +50,7 @@ public:
 	using MemFunc = Function<R, K, Ps...>;
 	using Invokable = std::function<R(K&, Ps...)>;
 
-	explicit Functor(std::shared_ptr<Klass> instance, MemFunc memFunc);
+	explicit Functor(Klass& instance, MemFunc memFunc);
 
 	template<typename... Args>
 	auto operator()(Args&&... args) -> typename MemFunc::Return;
@@ -65,7 +65,7 @@ private:
 	template<typename T, std::size_t... I>
 	auto operator()(T& tuple, IndexSequence<I...>) -> typename MemFunc::Return;
 
-	std::shared_ptr<Klass> instance;
+	Klass& instance;
 	MemFunc memFunc;
 };
 
@@ -87,7 +87,7 @@ Archive AbstractFunctor::invoke(Archive& archive)
 }
 
 template<typename R, typename K, typename... Ps>
-Functor<R, K, Ps...>::Functor(std::shared_ptr<Klass> instance, MemFunc memFunc)
+Functor<R, K, Ps...>::Functor(Klass& instance, MemFunc memFunc)
 	: instance(instance), memFunc(std::move(memFunc))
 {
 }
@@ -97,7 +97,7 @@ template<typename... Args>
 auto Functor<R, K, Ps...>::operator()(Args&&... args) -> typename MemFunc::Return
 {
 	const Invokable& invokable = this->memFunc.get();
-	return invokable(*this->instance, std::forward<Args>(args)...);
+	return invokable(this->instance, std::forward<Args>(args)...);
 }
 
 template<typename R, typename K, typename... Ps>
@@ -136,32 +136,15 @@ auto Functor<R, K, Ps...>::operator()(T& tuple,
 }
 
 template<typename R, typename K, typename... Ps>
-Functor<R, K, Ps...> make_functor(std::shared_ptr<K> instance, R (K::* member)(Ps...))
+Functor<R, K, Ps...> make_functor(K& instance, R (K::* member)(Ps...))
 {
-	if (instance == nullptr)
-		THROW(ErrCode::LogicError) << "Instance can't be nullptr.";
-
 	return Functor<R, K, Ps...>(instance, make_function(member));
 }
 
 template<typename R, typename K, typename... Ps>
-std::shared_ptr<Functor<R, K, Ps...>> make_functor_ptr(K* instance,
+std::shared_ptr<Functor<R, K, Ps...>> make_functor_ptr(K& instance,
 													   R (K::* member)(Ps...))
 {
-	if (instance == nullptr)
-		THROW(ErrCode::LogicError) << "Instance can't be nullptr.";
-
-	std::shared_ptr<K> smartPtr(instance);
-	return std::make_shared<Functor<R, K, Ps...>>(smartPtr, make_function(member));
-}
-
-template<typename R, typename K, typename... Ps>
-std::shared_ptr<Functor<R, K, Ps...>> make_functor_ptr(std::shared_ptr<K> instance,
-													   R (K::* member)(Ps...))
-{
-	if (instance == nullptr)
-		THROW(ErrCode::LogicError) << "Instance can't be nullptr.";
-
 	return std::make_shared<Functor<R, K, Ps...>>(instance, make_function(member));
 }
 

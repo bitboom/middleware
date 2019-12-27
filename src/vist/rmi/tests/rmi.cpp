@@ -62,12 +62,12 @@ TEST(RmiTests, positive)
 	// gateway-side
 	Gateway gateway(sockPath);
 
-	auto foo = std::make_shared<Foo>();
+	Foo foo;
 	gateway.expose(foo, "Foo::setName", &Foo::setName);
 	gateway.expose(foo, "Foo::getName", &Foo::getName);
 
 	// convenience macro
-	auto bar = std::make_shared<Bar>();
+	Bar bar;
 	EXPOSE(gateway, bar, &Bar::plusTwo);
 
 	auto client = std::thread([&]() {

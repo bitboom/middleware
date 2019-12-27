@@ -71,7 +71,7 @@ private:
 	std::unique_ptr<Server> server;
 };
 
-Gateway::Gateway(const std::string& path) : pImpl(new Impl(*this, path))
+Gateway::Gateway(const std::string& path) : pImpl(std::make_unique<Impl>(*this, path))
 {
 }
 

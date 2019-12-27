@@ -17,6 +17,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -25,10 +26,8 @@ namespace vist {
 using Row = std::map<std::string, std::string>;
 using Rows = std::vector<Row>;
 
-class Vistd final {
+class Vistd final : public std::enable_shared_from_this<Vistd> {
 public:
-	~Vistd() = default;
-
 	Vistd(const Vistd&) = delete;
 	Vistd& operator=(const Vistd&) = delete;
 
@@ -49,10 +48,16 @@ public:
 		return Vistd::Instance().query(statement);
 	}
 
-	void start();
+	static void Start()
+	{
+		Vistd::Instance().start();
+	}
 
 private:
 	explicit Vistd();
+	~Vistd() = default;
+
+	void start();
 };
 
 } // namespace vist
