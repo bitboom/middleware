@@ -153,6 +153,9 @@ Requires: klay
 %description plugins
 Provides plugins for controlling policies.
 
+%pre plugins
+rm -f %{vist_plugin_dir}/*
+
 %files plugins
 %manifest packaging/%{name}-plugins.manifest
 %{vist_plugin_dir}/bluetooth
