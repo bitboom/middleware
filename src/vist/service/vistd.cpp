@@ -45,6 +45,8 @@ void Vistd::start()
 	EXPOSE(gateway, *this, &Vistd::query);
 
 	gateway.start();
+
+	INFO(VIST) << "Vistd daemon stopped.";
 }
 
 Rows Vistd::query(const std::string& statement)

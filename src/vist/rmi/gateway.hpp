@@ -25,6 +25,7 @@
 #define EXPOSE(gateway, object, function) gateway.expose(object, #function, function)
 
 #include <vist/klass/functor.hpp>
+#include <vist/timer.hpp>
 
 #include <memory>
 #include <string>
@@ -43,7 +44,7 @@ public:
 	Gateway(Gateway&&) = default;
 	Gateway& operator=(Gateway&&) = default;
 
-	void start(void);
+	void start(unsigned int timeout = 0, Timer::Predicate condition = nullptr);
 	void stop(void);
 
 	template<typename O, typename F>

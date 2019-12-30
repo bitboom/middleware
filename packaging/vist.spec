@@ -95,12 +95,12 @@ rm -f %{vist_db_dir}/.%{name}.db*
 
 systemctl daemon-reload
 if [ $1 = 1 ]; then
-	systemctl start %{name}
+	systemctl start %{name}.socket
 elif [ $1 = 2 ]; then
-	systemctl restart %{name}
+	systemctl stop %{name}.socket
+	systemctl stop %{name}.service
+	systemctl restart %{name}.socket
 fi
-
-systemctl start %{name}
 
 %files
 %manifest %{name}.manifest
@@ -127,10 +127,6 @@ Requires: gtest
 %description test 
 Provides internal testcases for ViST implementation.
 
-%post test
-systemctl stop %{name}.socket
-systemctl restart %{name}.service
-
 %files test
 %{_bindir}/osquery-test
 %{_bindir}/vist-test
@@ -154,7 +150,8 @@ Requires: klay
 Provides plugins for controlling policies.
 
 %pre plugins
-rm -f %{vist_plugin_dir}/*
+rm -f %{vist_plugin_dir}/bluetooth
+rm -f %{vist_plugin_dir}/wifi
 
 %files plugins
 %manifest packaging/%{name}-plugins.manifest

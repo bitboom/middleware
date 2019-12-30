@@ -23,6 +23,7 @@
 
 #include <vist/transport/message.hpp>
 
+#include <atomic>
 #include <functional>
 
 #include <boost/asio.hpp>
@@ -47,8 +48,8 @@ struct Protocol {
 	class Async : public std::enable_shared_from_this<Async> {
 	public:
 		explicit Async(Context& context) : socket(context) {}
-		void dispatch(const Task& task);
-		void process(const Task& task);
+		void dispatch(const Task& task, std::atomic<bool>& polling);
+		void process(const Task& task, std::atomic<bool>& polling);
 
 		inline Socket& getSocket()
 		{
