@@ -105,7 +105,6 @@ TEST(ProtocolTests, sync_server_sync_client)
 		serverThread.join();
 }
 
-/* example without polling memeber variable
 TEST(ProtocolTests, async_server_sync_client)
 {
 	std::string sockPath = "vist-test.sock";
@@ -172,4 +171,3 @@ TEST(ProtocolTests, async_server_sync_client)
 	if (serverThread.joinable())
 		serverThread.join();
 }
-*/

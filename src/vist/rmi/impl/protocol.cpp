@@ -64,13 +64,12 @@ Message Protocol::Request(Socket& socket, Message& message)
 	return Protocol::Recv(socket);
 }
 
-void Protocol::Async::dispatch(const Task& task, std::atomic<bool>& polling)
+void Protocol::Async::dispatch(const Task& task)
 {
-	polling = true;
 	auto self = shared_from_this();
 	const auto& header = boost::asio::buffer(&this->message.header,
 											 sizeof(Message::Header));
-	auto handler = [self, task, &polling](const auto& error, std::size_t size) {
+	auto handler = [self, task](const auto& error, std::size_t size) {
 		if (error) {
 			if (error == boost::asio::error::eof) {
 				DEBUG(VIST) << "Socket EoF event occured.";
@@ -93,13 +92,13 @@ void Protocol::Async::dispatch(const Task& task, std::atomic<bool>& polling)
 				<< readen << ", " << self->message.size();
 
 		self->message.disclose(self->message.signature);
-		self->process(task, polling);
+		self->process(task);
 	};
 
 	boost::asio::async_read(self->socket, header, handler);
 }
 
-void Protocol::Async::process(const Task& task, std::atomic<bool>& polling)
+void Protocol::Async::process(const Task& task)
 {
 	bool raised = false;
 	std::string errMsg;
@@ -125,7 +124,7 @@ void Protocol::Async::process(const Task& task, std::atomic<bool>& polling)
 	auto self = shared_from_this();
 	const auto& headerBuffer = boost::asio::buffer(&this->message.header,
 												   sizeof(Message::Header));
-	auto handler = [self, task, &polling](const auto& error, std::size_t size) {
+	auto handler = [self, task](const auto& error, std::size_t size) {
 		if (error || size != sizeof(Message::Header))
 			THROW(ErrCode::ProtocolBroken) << "Failed to send message header: "
 										   << error.message();
@@ -136,7 +135,7 @@ void Protocol::Async::process(const Task& task, std::atomic<bool>& polling)
 			THROW(ErrCode::ProtocolBroken) << "Failed to send message content.";
 
 		/// Re-dispatch for next request.
-		self->dispatch(task, polling);
+		self->dispatch(task);
 	};
 
 	boost::asio::async_write(self->socket, headerBuffer, handler);

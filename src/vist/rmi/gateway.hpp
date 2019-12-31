@@ -19,7 +19,6 @@
 #define EXPOSE(gateway, object, function) gateway.expose(object, #function, function)
 
 #include <vist/klass/functor.hpp>
-#include <vist/timer.hpp>
 
 #include <memory>
 #include <string>
@@ -38,8 +37,8 @@ public:
 	Gateway(Gateway&&) = default;
 	Gateway& operator=(Gateway&&) = default;
 
-	void start(unsigned int timeout = 0, Timer::Predicate condition = nullptr);
-	void stop(void);
+	void start();
+	void stop();
 
 	template<typename O, typename F>
 	void expose(O& object, const std::string& name, F&& func);

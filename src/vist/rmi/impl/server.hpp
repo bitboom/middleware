@@ -18,11 +18,9 @@
 
 #include "protocol.hpp"
 
-#include <vist/timer.hpp>
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
 
-#include <atomic>
 #include <chrono>
 #include <memory>
 #include <thread>
@@ -36,7 +34,7 @@ namespace impl {
 
 class Server {
 public:
-	Server(const std::string& path, const Protocol::Task& task) : polling(false)
+	Server(const std::string& path, const Protocol::Task& task)
 	{
 		errno = 0;
 		if (::unlink(path.c_str()) == -1 && errno != ENOENT)
@@ -56,31 +54,15 @@ public:
 			if (error)
 				THROW(ErrCode::RuntimeError) << error.message();
 
-			asyncSession->dispatch(task, this->polling);
+			asyncSession->dispatch(task);
 
 			this->accept(task);
 		};
 		this->acceptor->async_accept(asyncSession->getSocket(), handler);
 	}
 
-	inline void run(unsigned int timeout = 0, Timer::Predicate condition = nullptr)
+	inline void run()
 	{
-		if (timeout > 0) {
-			auto stopper = [this]() {
-				INFO(VIST) << "There are no sessions. And timeout is occured.";
-				this->context.stop();
-			};
-
-			auto wrapper = [this, condition]() -> bool {
-				if (condition)
-					return condition() && polling == false;
-
-				return polling == false;
-			};
-
-			Timer::ExecOnce(stopper, wrapper, timeout);
-		}
-
 		this->context.run();
 	}
 
@@ -92,9 +74,6 @@ public:
 private:
 	Protocol::Context context;
 	std::unique_ptr<Protocol::Acceptor> acceptor;
-
-	/// check for session is maintained
-	std::atomic<bool> polling;
 };
 
 } // namespace impl

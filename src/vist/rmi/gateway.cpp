@@ -51,9 +51,9 @@ public:
 		this->server = std::make_unique<Server>(path, dispatcher);
 	}
 
-	inline void start(unsigned int timeout, Timer::Predicate condition)
+	inline void start()
 	{
-		this->server->run(timeout, condition);
+		this->server->run();
 	}
 
 	inline void stop()
@@ -71,9 +71,9 @@ Gateway::Gateway(const std::string& path) : pImpl(std::make_unique<Impl>(*this, 
 
 Gateway::~Gateway() = default;
 
-void Gateway::start(unsigned int timeout, Timer::Predicate condition)
+void Gateway::start()
 {
-	this->pImpl->start(timeout, condition);
+	this->pImpl->start();
 }
 
 void Gateway::stop(void)
