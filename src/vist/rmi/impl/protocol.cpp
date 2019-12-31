@@ -20,7 +20,8 @@
 #include <vist/logger.hpp>
 
 namespace vist {
-namespace transport {
+namespace rmi {
+namespace impl {
 
 Message Protocol::Recv(Socket& socket)
 {
@@ -141,5 +142,6 @@ void Protocol::Async::process(const Task& task, std::atomic<bool>& polling)
 	boost::asio::async_write(self->socket, headerBuffer, handler);
 }
 
-} // namespace transport
+} // namespace impl
+} // namespace rmi
 } // namespace vist

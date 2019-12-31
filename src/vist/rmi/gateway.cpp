@@ -13,25 +13,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file   gateway.cpp
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @author Jaemin Ryu (jm77.ryu@samsung.com)
- * @brief  Implementation of Server-side stub for exposing method. 
- */
 
 #include "gateway.hpp"
 
 #include <vist/exception.hpp>
-#include <vist/transport/message.hpp>
-#include <vist/transport/server.hpp>
+#include <vist/rmi/message.hpp>
+#include <vist/rmi/impl/server.hpp>
 
 #include <string>
 
 namespace vist {
 namespace rmi {
 
-using namespace vist::transport;
+using namespace vist::rmi::impl;
 
 class Gateway::Impl {
 public:

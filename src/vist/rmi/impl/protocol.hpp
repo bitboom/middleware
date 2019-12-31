@@ -13,15 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file   protocol.hpp
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief  Socket communication protocol between server and client.
- */
 
 #pragma once
 
-#include <vist/transport/message.hpp>
+#include <vist/rmi/message.hpp>
 
 #include <atomic>
 #include <functional>
@@ -29,7 +24,8 @@
 #include <boost/asio.hpp>
 
 namespace vist {
-namespace transport {
+namespace rmi {
+namespace impl {
 
 struct Protocol {
 	using Acceptor = boost::asio::local::stream_protocol::acceptor;
@@ -62,5 +58,6 @@ struct Protocol {
 	};
 };
 
-} // namespace transport
+} // namespace impl
+} // namespace rmi
 } // namespace vist

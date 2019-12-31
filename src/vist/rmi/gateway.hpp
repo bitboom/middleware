@@ -13,12 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file   gateway.hpp
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @author Jaemin Ryu (jm77.ryu@samsung.com)
- * @brief  Server-side stub for exposing method. 
- */
 
 #pragma once
 

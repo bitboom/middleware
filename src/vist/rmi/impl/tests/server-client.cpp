@@ -14,8 +14,9 @@
  *  limitations under the License
  */
 
-#include <vist/transport/server.hpp>
-#include <vist/transport/client.hpp>
+#include <vist/rmi/message.hpp>
+#include <vist/rmi/impl/server.hpp>
+#include <vist/rmi/impl/client.hpp>
 
 #include <string>
 #include <thread>
@@ -24,7 +25,8 @@
 
 #include <gtest/gtest.h>
 
-using namespace vist::transport;
+using namespace vist::rmi;
+using namespace vist::rmi::impl;
 using boost::asio::local::stream_protocol;
 
 namespace {

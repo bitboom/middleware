@@ -13,16 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file   remote.cpp
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @author Jaemin Ryu (jm77.ryu@samsung.com)
- * @brief  Implementation of remote. 
- */
 
 #include "remote.hpp"
 
-#include <vist/transport/client.hpp>
+#include <vist/rmi/impl/client.hpp>
 
 #include <string>
 #include <mutex>
@@ -30,7 +24,7 @@
 namespace vist {
 namespace rmi {
 
-using namespace vist::transport;
+using namespace vist::rmi::impl;
 
 class Remote::Impl {
 public:

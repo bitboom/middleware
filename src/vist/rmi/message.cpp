@@ -13,17 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file   message.cpp
- * @author Jaemin Ryu (jm77.ryu@samsung.com)
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief  Implementaion of message.
- */
 
 #include "message.hpp"
 
 namespace vist {
-namespace transport {
+namespace rmi {
 
 Message::Message(unsigned int type, const std::string& signature) :
 	header({0, type, signature.size()}),
@@ -67,5 +61,5 @@ std::vector<unsigned char>& Message::getBuffer(void) noexcept
 	return this->buffer.getBuffer();
 }
 
-} // namespace transport
+} // namespace rmi
 } // namespace vist

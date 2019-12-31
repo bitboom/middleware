@@ -13,12 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file   message.hpp
- * @author Jaemin Ryu (jm77.ryu@samsung.com)
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief  The unit of socket communication.
- */
 
 #pragma once
 
@@ -28,7 +22,7 @@
 #include <vist/archive.hpp>
 
 namespace vist {
-namespace transport {
+namespace rmi {
 
 struct Message final {
 	enum Type : unsigned int {
@@ -88,5 +82,5 @@ void Message::disclose(Args&... args)
 	this->buffer.unpack(args...);
 }
 
-} // namespace transport
+} // namespace rmi
 } // namespace vist

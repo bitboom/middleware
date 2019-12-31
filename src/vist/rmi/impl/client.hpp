@@ -13,20 +13,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file   client.hpp
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief  Protocol compliant client.
- */
 
 #pragma once
 
+#include "protocol.hpp"
+
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
-#include <vist/transport/protocol.hpp>
 
 namespace vist {
-namespace transport {
+namespace rmi {
+namespace impl {
 
 using boost::asio::local::stream_protocol;
 
@@ -52,5 +49,6 @@ private:
 	Protocol::Socket socket;
 };
 
-} // namespace transport
+} // namespace impl
+} // namespace rmi
 } // namespace vist

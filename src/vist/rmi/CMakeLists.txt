@@ -13,7 +13,13 @@
 #  limitations under the License
 
 ADD_VIST_COMMON_LIBRARY(vist_rmi gateway.cpp
-								 remote.cpp)
+								 remote.cpp
+								 message.cpp)
+
+ADD_VIST_COMMON_LIBRARY(vist_rmi_impl impl/protocol.cpp)
 
 FILE(GLOB RMI_TESTS "tests/*.cpp")
 ADD_VIST_TEST(${RMI_TESTS})
+
+FILE(GLOB RMI_IMPL_TESTS "impl/tests/*.cpp")
+ADD_VIST_TEST(${RMI_IMPL_TESTS})

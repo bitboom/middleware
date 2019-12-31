@@ -13,17 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file   remote.hpp
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @author Jaemin Ryu (jm77.ryu@samsung.com)
- * @brief  Client-side stub for invoking remote method.
- */
 
 #pragma once
 
 #include <vist/exception.hpp>
-#include <vist/transport/message.hpp>
+#include <vist/rmi/message.hpp>
 
 #include <string>
 #include <memory>
@@ -32,8 +26,6 @@
 
 namespace vist {
 namespace rmi {
-
-using namespace vist::transport;
 
 class Remote final {
 public:

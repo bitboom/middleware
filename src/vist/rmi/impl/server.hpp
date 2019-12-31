@@ -13,29 +13,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file   server.hpp
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief  Protocol compliant server.
- */
 
 #pragma once
+
+#include "protocol.hpp"
 
 #include <vist/timer.hpp>
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
-#include <vist/transport/protocol.hpp>
 
-#include <memory>
 #include <atomic>
-#include <thread>
 #include <chrono>
+#include <memory>
+#include <thread>
 
-#include <unistd.h>
 #include <errno.h>
+#include <unistd.h>
 
 namespace vist {
-namespace transport {
+namespace rmi {
+namespace impl {
 
 class Server {
 public:
@@ -100,5 +97,6 @@ private:
 	std::atomic<bool> polling;
 };
 
-} // namespace transport
+} // namespace impl
+} // namespace rmi
 } // namespace vist

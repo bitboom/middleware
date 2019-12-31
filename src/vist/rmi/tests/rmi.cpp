@@ -13,12 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @file   rmi.cpp
- * @author Sangwan Kwon (sangwan.kwon@samsung.com)
- * @brief  Testcases of rmi.
- */
-
 
 #include <vist/rmi/gateway.hpp>
 #include <vist/rmi/remote.hpp>
