@@ -16,7 +16,8 @@ SET(TARGET vist-rmi)
 SET(${TARGET}_SRCS gateway.cpp
 				   remote.cpp
 				   message.cpp
-				   impl/general/protocol.cpp)
+				   impl/general/protocol.cpp
+				   impl/ondemand/socket.cpp)
 
 ADD_LIBRARY(${TARGET} SHARED ${${TARGET}_SRCS})
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
@@ -43,3 +44,6 @@ ADD_VIST_TEST(${RMI_TESTS})
 
 FILE(GLOB RMI_GENERAL_TESTS "impl/general/tests/*.cpp")
 ADD_VIST_TEST(${RMI_GENERAL_TESTS})
+
+FILE(GLOB RMI_ONDEMAND_TESTS "impl/ondemand/tests/*.cpp")
+ADD_VIST_TEST(${RMI_ONDEMAND_TESTS})
