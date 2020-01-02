@@ -17,21 +17,20 @@
 #pragma once
 
 #include <vist/rmi/message.hpp>
-
-#include <functional>
+#include <vist/rmi/impl/server.hpp>
 
 #include <boost/asio.hpp>
 
 namespace vist {
 namespace rmi {
 namespace impl {
+namespace general {
 
 struct Protocol {
 	using Acceptor = boost::asio::local::stream_protocol::acceptor;
 	using Context = boost::asio::io_service;
 	using Endpoint = boost::asio::local::stream_protocol::endpoint;
 	using Socket = boost::asio::local::stream_protocol::socket;
-	using Task = std::function<Message(Message&)>;
 
 	static Message Recv(Socket& socket);
 	static void Send(Socket& socket, Message& message);
@@ -57,6 +56,7 @@ struct Protocol {
 	};
 };
 
+} // namespace general
 } // namespace impl
 } // namespace rmi
 } // namespace vist

@@ -16,7 +16,7 @@ SET(TARGET vist-rmi)
 SET(${TARGET}_SRCS gateway.cpp
 				   remote.cpp
 				   message.cpp
-				   impl/protocol.cpp)
+				   impl/general/protocol.cpp)
 
 ADD_LIBRARY(${TARGET} SHARED ${${TARGET}_SRCS})
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
@@ -41,5 +41,5 @@ TARGET_LINK_LIBRARIES(${TARGET} ${TARGET_VIST_COMMON_LIB}
 FILE(GLOB RMI_TESTS "tests/*.cpp")
 ADD_VIST_TEST(${RMI_TESTS})
 
-FILE(GLOB RMI_IMPL_TESTS "impl/tests/*.cpp")
-ADD_VIST_TEST(${RMI_IMPL_TESTS})
+FILE(GLOB RMI_GENERAL_TESTS "impl/general/tests/*.cpp")
+ADD_VIST_TEST(${RMI_GENERAL_TESTS})

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,34 +16,41 @@
 
 #pragma once
 
-#include <vist/rmi/message.hpp>
+#include "protocol.hpp"
 
-#include <functional>
+#include <vist/exception.hpp>
+#include <vist/logger.hpp>
 
 namespace vist {
 namespace rmi {
 namespace impl {
+namespace general {
 
-using Task = std::function<Message(Message&)>;
+using boost::asio::local::stream_protocol;
 
-class Server {
+class Client {
 public:
-	Server(const std::string&, const Task&) {}
-	virtual ~Server() = default;
+	Client(const std::string& path) : socket(this->context)
+	{
+		try {
+			this->socket.connect(Protocol::Endpoint(path));
+		}  catch(const std::exception& e) {
+			ERROR(VIST) << "Failed to connect socket: " << e.what();
+			std::rethrow_exception(std::current_exception());
+		}
+	}
 
-	Server(const Server&) = delete;
-	Server& operator=(const Server&) = delete;
-
-	Server(Server&&) = default;
-	Server& operator=(Server&&) = default;
-
-	virtual void run() = 0;
-	virtual void stop() = 0;
+	inline Message request(Message& message)
+	{
+		return Protocol::Request(this->socket, message);
+	}
 
 private:
-	virtual void accept(const Task& task) = 0;
+	Protocol::Context context;
+	Protocol::Socket socket;
 };
 
+} // namespace general
 } // namespace impl
 } // namespace rmi
 } // namespace vist

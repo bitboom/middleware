@@ -15,7 +15,7 @@
  */
 
 #include <vist/rmi/message.hpp>
-#include <vist/rmi/impl/protocol.hpp>
+#include <vist/rmi/impl/general/protocol.hpp>
 
 #include <string>
 #include <thread>
@@ -26,7 +26,7 @@
 #include <unistd.h>
 
 using namespace vist::rmi;
-using namespace vist::rmi::impl;
+using namespace vist::rmi::impl::general;
 using boost::asio::local::stream_protocol;
 
 namespace {

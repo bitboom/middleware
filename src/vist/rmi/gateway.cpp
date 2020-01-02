@@ -19,6 +19,7 @@
 #include <vist/exception.hpp>
 #include <vist/rmi/message.hpp>
 #include <vist/rmi/impl/server.hpp>
+#include <vist/rmi/impl/general/server.hpp>
 
 #include <string>
 
@@ -48,7 +49,7 @@ public:
 			return reply;
 		};
 
-		this->server = std::make_unique<Server>(path, dispatcher);
+		this->server = std::make_unique<general::Server>(path, dispatcher);
 	}
 
 	inline void start()
@@ -62,7 +63,7 @@ public:
 	}
 
 private:
-	std::unique_ptr<Server> server;
+	std::unique_ptr<impl::Server> server;
 };
 
 Gateway::Gateway(const std::string& path) : pImpl(std::make_unique<Impl>(*this, path))

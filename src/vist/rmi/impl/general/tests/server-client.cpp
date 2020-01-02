@@ -15,8 +15,8 @@
  */
 
 #include <vist/rmi/message.hpp>
-#include <vist/rmi/impl/server.hpp>
-#include <vist/rmi/impl/client.hpp>
+#include <vist/rmi/impl/general/server.hpp>
+#include <vist/rmi/impl/general/client.hpp>
 
 #include <string>
 #include <thread>
@@ -26,7 +26,7 @@
 #include <gtest/gtest.h>
 
 using namespace vist::rmi;
-using namespace vist::rmi::impl;
+using namespace vist::rmi::impl::general;
 using boost::asio::local::stream_protocol;
 
 namespace {

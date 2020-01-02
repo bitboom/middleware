@@ -16,7 +16,7 @@
 
 #include "remote.hpp"
 
-#include <vist/rmi/impl/client.hpp>
+#include <vist/rmi/impl/general/client.hpp>
 
 #include <string>
 #include <mutex>
@@ -24,7 +24,7 @@
 namespace vist {
 namespace rmi {
 
-using namespace vist::rmi::impl;
+using namespace vist::rmi::impl::general;
 
 class Remote::Impl {
 public:

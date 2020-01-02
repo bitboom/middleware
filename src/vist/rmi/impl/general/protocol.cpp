@@ -22,6 +22,7 @@
 namespace vist {
 namespace rmi {
 namespace impl {
+namespace general {
 
 Message Protocol::Recv(Socket& socket)
 {
@@ -141,6 +142,7 @@ void Protocol::Async::process(const Task& task)
 	boost::asio::async_write(self->socket, headerBuffer, handler);
 }
 
+} // namespace general
 } // namespace impl
 } // namespace rmi
 } // namespace vist
