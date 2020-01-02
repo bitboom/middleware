@@ -12,11 +12,27 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_VIST_COMMON_LIBRARY(vist_rmi gateway.cpp
-								 remote.cpp
-								 message.cpp)
+SET(TARGET vist-rmi)
+SET(${TARGET}_SRCS gateway.cpp
+				   remote.cpp
+				   message.cpp
+				   impl/protocol.cpp)
 
-ADD_VIST_COMMON_LIBRARY(vist_rmi_impl impl/protocol.cpp)
+ADD_LIBRARY(${TARGET} SHARED ${${TARGET}_SRCS})
+#SET_TARGET_PROPERTIES(${TARGET} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
+
+TARGET_LINK_LIBRARIES(${TARGET} ${TARGET_VIST_COMMON_LIB}
+								boost_system
+								pthread)
+INSTALL(TARGETS ${TARGET}
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		PERMISSIONS OWNER_READ
+					OWNER_WRITE
+					OWNER_EXECUTE
+					GROUP_READ
+					GROUP_EXECUTE
+					WORLD_READ
+					WORLD_EXECUTE)
 
 FILE(GLOB RMI_TESTS "tests/*.cpp")
 ADD_VIST_TEST(${RMI_TESTS})

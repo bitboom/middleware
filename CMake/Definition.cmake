@@ -18,6 +18,8 @@ SET(OSQUERY_VERSION "4.0.0")
 SET(RO_DIR "/usr/share")
 SET(RW_DIR "/opt/data")
 
+SET(CMAKE_INSTALL_PREFIX /usr)
+
 SET(VIST_RO_DIR "${RO_DIR}/vist")
 SET(VIST_RW_DIR "${RW_DIR}/vist")
 

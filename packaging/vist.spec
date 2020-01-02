@@ -110,6 +110,7 @@ fi
 %license LICENSE-MIT
 %{_bindir}/vist-cli
 %{_bindir}/vistd
+%{_libdir}/libvist-rmi.so
 %{_unitdir}/vist.service
 %{_unitdir}/vist.socket
 %{_unitdir}/sockets.target.wants/vist.socket
