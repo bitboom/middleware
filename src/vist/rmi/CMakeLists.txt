@@ -17,7 +17,10 @@ SET(${TARGET}_SRCS gateway.cpp
 				   remote.cpp
 				   message.cpp
 				   impl/general/protocol.cpp
-				   impl/ondemand/socket.cpp)
+				   impl/ondemand/socket.cpp
+				   impl/ondemand/eventfd.cpp
+				   impl/ondemand/mainloop.cpp
+				   impl/ondemand/connection.cpp)
 
 ADD_LIBRARY(${TARGET} SHARED ${${TARGET}_SRCS})
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
