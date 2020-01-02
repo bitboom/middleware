@@ -20,11 +20,12 @@
 #include <vector>
 
 #include <vist/archive.hpp>
+#include <vist/macro.hpp>
 
 namespace vist {
 namespace rmi {
 
-struct Message final {
+struct VIST_API Message final {
 	enum Type : unsigned int {
 		Invalid,
 		MethodCall,

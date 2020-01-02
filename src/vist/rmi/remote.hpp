@@ -17,6 +17,7 @@
 #pragma once
 
 #include <vist/exception.hpp>
+#include <vist/macro.hpp>
 #include <vist/rmi/message.hpp>
 
 #include <string>
@@ -27,7 +28,7 @@
 namespace vist {
 namespace rmi {
 
-class Remote final {
+class VIST_API Remote final {
 public:
 	explicit Remote(const std::string& path);
 	~Remote();

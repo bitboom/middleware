@@ -19,6 +19,7 @@
 #define EXPOSE(gateway, object, function) gateway.expose(object, #function, function)
 
 #include <vist/klass/functor.hpp>
+#include <vist/macro.hpp>
 
 #include <memory>
 #include <string>
@@ -26,7 +27,7 @@
 namespace vist {
 namespace rmi {
 
-class Gateway final {
+class VIST_API Gateway final {
 public:
 	explicit Gateway(const std::string& path);
 	~Gateway();
