@@ -64,6 +64,7 @@ void Mainloop::addHandler(const int fd, OnEvent&& onEvent, OnError&& onError)
 	auto handler = std::make_pair(std::move(onEventPtr), std::move(onErrorPtr));
 
 	this->listener.insert({fd, handler});
+	DEBUG(VIST) << "FD[" << fd << "] listens to events.";
 }
 
 void Mainloop::removeHandler(const int fd)
@@ -83,10 +84,11 @@ bool Mainloop::prepare(void)
 {
 	auto wakeup = [this]() {
 		this->wakeupSignal.receive();
-		this->removeHandler(wakeupSignal.getFd());
+		this->removeHandler(this->wakeupSignal.getFd());
 		this->stopped = true;
 	};
 
+	DEBUG(VIST) << "Add eventfd to mainloop for wakeup: " << this->wakeupSignal.getFd();
 	this->addHandler(this->wakeupSignal.getFd(), wakeup);
 }
 
@@ -120,13 +122,14 @@ bool Mainloop::dispatch(int timeout) noexcept
 
 		try {
 			if ((event[i].events & (EPOLLHUP | EPOLLRDHUP))) {
+				WARN(VIST) << "Connected client might be disconnected.";
 				if (onError != nullptr)
 					(*onError)();
 			} else {
 				(*onEvent)();
 			}
 
-		} catch (std::exception& e) {
+		} catch (const std::exception& e) {
 			ERROR(VIST) << e.what();
 		}
 	}

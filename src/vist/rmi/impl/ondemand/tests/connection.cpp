@@ -74,8 +74,8 @@ TEST(ConnectionTests, socket_communication)
 	Message msg(Message::Type::Signal, requestSignature);
 	msg.enclose(request1, request2, request3);
 
-	int repeat = 3;
-	while (repeat--) {
+	/// Do not request multiple times. (The above sever only processes once.)
+	{
 		Message reply = conn.request(msg);
 		EXPECT_EQ(reply.signature, responseSignature);
 

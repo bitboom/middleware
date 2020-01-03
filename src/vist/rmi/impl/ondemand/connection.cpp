@@ -32,12 +32,11 @@ Connection::Connection(Socket&& socket) noexcept : socket(std::move(socket))
 Connection::Connection(const std::string& path) :
 	socket(Socket::connect(path))
 {
+	DEBUG(VIST) << "Connect to " << path << " by fd: " << socket.getFd();
 }
 
 void Connection::send(Message& message)
 {
-	DEBUG(VIST) << "Send to socket[" << this->socket.getFd()
-				<< "] Header: " << message.signature;
 	std::lock_guard<std::mutex> lock(this->sendMutex);
 
 	message.header.id = this->sequence++;
@@ -56,8 +55,6 @@ Message Connection::recv(void) const
 	this->socket.recv(message.getBuffer().data(), message.size());
 	message.disclose(message.signature);
 
-	DEBUG(VIST) << "Send to socket[" << this->socket.getFd()
-				<< "] Header: " << message.signature;
 	return message;
 }
 

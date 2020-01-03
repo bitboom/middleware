@@ -16,6 +16,8 @@
 
 #include "socket.hpp"
 
+#include <vist/logger.hpp>
+
 #include <fstream>
 #include <iostream>
 #include <fcntl.h>
@@ -34,7 +36,7 @@ namespace {
 void set_cloexec(int fd)
 {
 	if (::fcntl(fd, F_SETFD, FD_CLOEXEC) == -1)
-		throw std::runtime_error("Failed to set CLOSEXEC.");
+		THROW(ErrCode::RuntimeError) << "Failed to set CLOSEXEC.";
 }
 
 } // anonymous namespace
@@ -46,11 +48,11 @@ Socket::Socket(int fd) noexcept : fd(fd)
 Socket::Socket(const std::string& path)
 {
 	if (path.size() >= sizeof(::sockaddr_un::sun_path))
-		throw std::invalid_argument("Socket path size is wrong.");
+		THROW(ErrCode::LogicError) << "Socket path size is wrong.";
 
 	int fd = ::socket(AF_UNIX, SOCK_STREAM, 0);
 	if (fd == -1)
-		throw std::runtime_error("Failed to create socket.");
+		THROW(ErrCode::RuntimeError) << "Failed to create socket.";
 
 	set_cloexec(fd);
 
@@ -64,19 +66,21 @@ Socket::Socket(const std::string& path)
 	struct stat buf;
 	if (::stat(path.c_str(), &buf) == 0)
 		if (::unlink(path.c_str()) == -1)
-			throw std::runtime_error("Failed to remove exist socket.");
+			THROW(ErrCode::RuntimeError) << "Failed to remove exist socket.";
 
 	if (::bind(fd, reinterpret_cast<::sockaddr*>(&addr), sizeof(::sockaddr_un)) == -1) {
 		::close(fd);
-		throw std::runtime_error("Failed to bind.");
+		THROW(ErrCode::RuntimeError) << "Failed to bind.";
 	}
 
 	if (::listen(fd, MAX_BACKLOG_SIZE) == -1) {
 		::close(fd);
-		throw std::runtime_error("Failed to liten.");
+		THROW(ErrCode::RuntimeError) << "Failed to liten.";
 	}
 
 	this->fd = fd;
+
+	DEBUG(VIST) << "Socket is created: " << path << ", and is listening.. fd[" << fd << "]";
 }
 
 Socket::Socket(Socket&& that) : fd(that.fd)
@@ -116,7 +120,7 @@ Socket Socket::accept(void) const
 Socket Socket::connect(const std::string& path)
 {
 	if (path.size() >= sizeof(::sockaddr_un::sun_path))
-		throw std::invalid_argument("Socket path size is wrong.");
+		THROW(ErrCode::LogicError) << "Socket path size is wrong.";
 
 	int fd = ::socket(AF_UNIX, SOCK_STREAM, 0);
 	if (fd == -1)
@@ -131,10 +135,12 @@ Socket Socket::connect(const std::string& path)
 	if (addr.sun_path[0] == '@')
 		addr.sun_path[0] = '\0';
 
+	DEBUG(VIST) << "Start to connect: " << path;
 	errno = 0;
 	if (::connect(fd, reinterpret_cast<::sockaddr*>(&addr), sizeof(sockaddr_un)) == -1) {
 		::close(fd);
-		THROW(ErrCode::RuntimeError) << "Failed to read connect to: " << path
+		ERROR(VIST) << "Failed to connect to: " << path;
+		THROW(ErrCode::RuntimeError) << "Failed to connect to: " << path
 									 << ", with: " << errno;
 	}
 
