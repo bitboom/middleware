@@ -21,6 +21,10 @@
 #include <vist/rmi/impl/ondemand/mainloop.hpp>
 #include <vist/rmi/impl/ondemand/socket.hpp>
 
+#ifdef TIZEN
+#include <vist/rmi/impl/ondemand/systemd-socket.hpp>
+#endif
+
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
 
@@ -39,7 +43,11 @@ class Server : public interface::Server {
 public:
 	Server(const std::string& path, const interface::Task& task) :
 		interface::Server(path, task),
+#ifdef TIZEN
+		socket(SystemdSocket::Create(path))
+#else
 		socket(path)
+#endif
 	{
 		this->accept(task);
 	}

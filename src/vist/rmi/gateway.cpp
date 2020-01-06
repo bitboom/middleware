@@ -19,7 +19,12 @@
 #include <vist/exception.hpp>
 #include <vist/rmi/message.hpp>
 #include <vist/rmi/impl/server.hpp>
+
+#ifdef TIZEN
+#include <vist/rmi/impl/ondemand/server.hpp>
+#else
 #include <vist/rmi/impl/general/server.hpp>
+#endif
 
 #include <memory>
 #include <string>
@@ -48,9 +53,13 @@ public:
 			reply.enclose(result);
 
 			return reply;
-		};
+	};
 
+#ifdef TIZEN
+		this->server = std::make_unique<ondemand::Server>(path, dispatcher);
+#else
 		this->server = std::make_unique<general::Server>(path, dispatcher);
+#endif
 	}
 
 	inline void start()
