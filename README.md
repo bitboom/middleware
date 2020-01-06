@@ -1,3 +1,13 @@
+Project ViST is inspired by [osquery](https://osquery.io/).  
+osquery views operating system as table 
+from the perspective of the system administrator. 
+
+We view operating system as table 
+from the perspective of the system programmar.  
+We want to provide them more compact and 
+more efficient library from this different perspective.
+
+
 # ViST, Virtual Security Table
 ViST(Virtual Security Table) is a security monitoring framework using SQL query.
 - Provides APIs for monitoring and controlling security resources.
@@ -18,23 +28,23 @@ This is referred to by Client API and Admin API.
 /// policy schema API
 template <typename T>
 struct Policy {
-	std::string	name;
-	T value;
+  std::string name;
+  T value;
 };
 
 /// process schema API
 struct Processes {
-	long long int pid;
-	std::string name;
-	std::string path;
-	std::string cmdline;
-	long long int uid;
-	long long int gid;
-	long long int euid;
-	long long int egid;
-	int on_disk;
-	long long int resident_size;
-	long long int parent;
+  long long int pid;
+  std::string name;
+  std::string path;
+  std::string cmdline;
+  long long int uid;
+  long long int gid;
+  long long int euid;
+  long long int egid;
+  int on_disk;
+  long long int resident_size;
+  long long int parent;
 };
 ```
 
