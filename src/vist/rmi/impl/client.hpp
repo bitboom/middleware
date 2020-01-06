@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,39 +16,28 @@
 
 #pragma once
 
-#include "protocol.hpp"
-
-#include <vist/exception.hpp>
-#include <vist/logger.hpp>
+#include <string>
 
 namespace vist {
 namespace rmi {
 namespace impl {
-
-using boost::asio::local::stream_protocol;
+namespace interface {
 
 class Client {
 public:
-	Client(const std::string& path) : socket(this->context)
-	{
-		try {
-			this->socket.connect(Protocol::Endpoint(path));
-		}  catch(const std::exception& e) {
-			ERROR(VIST) << "Failed to connect socket: " << e.what();
-			std::rethrow_exception(std::current_exception());
-		}
-	}
+	Client(const std::string&) {}
+	virtual ~Client() = default;
 
-	inline Message request(Message& message)
-	{
-		return Protocol::Request(this->socket, message);
-	}
+	Client(const Client&) = delete;
+	Client& operator=(const Client&) = delete;
 
-private:
-	Protocol::Context context;
-	Protocol::Socket socket;
+	Client(Client&&) = default;
+	Client& operator=(Client&&) = default;
+
+	virtual Message request(Message& message) = 0;
 };
 
+} // namespace interface
 } // namespace impl
 } // namespace rmi
 } // namespace vist

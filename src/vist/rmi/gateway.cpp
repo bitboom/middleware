@@ -21,6 +21,7 @@
 #include <vist/rmi/impl/server.hpp>
 #include <vist/rmi/impl/general/server.hpp>
 
+#include <memory>
 #include <string>
 
 namespace vist {
@@ -63,7 +64,7 @@ public:
 	}
 
 private:
-	std::unique_ptr<impl::Server> server;
+	std::unique_ptr<interface::Server> server;
 };
 
 Gateway::Gateway(const std::string& path) : pImpl(std::make_unique<Impl>(*this, path))

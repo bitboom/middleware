@@ -19,16 +19,18 @@
 #include <vist/rmi/message.hpp>
 
 #include <functional>
+#include <string>
 
 namespace vist {
 namespace rmi {
 namespace impl {
+namespace interface {
 
 using Task = std::function<Message(Message&)>;
 
 class Server {
 public:
-	Server(const std::string&, const Task&) {}
+	explicit Server(const std::string&, const Task&) {}
 	virtual ~Server() = default;
 
 	Server(const Server&) = delete;
@@ -44,6 +46,7 @@ private:
 	virtual void accept(const Task& task) = 0;
 };
 
+} // namespace interface
 } // namespace impl
 } // namespace rmi
 } // namespace vist

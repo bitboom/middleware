@@ -21,9 +21,7 @@
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
 
-#include <chrono>
 #include <memory>
-#include <thread>
 
 #include <errno.h>
 #include <unistd.h>
@@ -33,9 +31,9 @@ namespace rmi {
 namespace impl {
 namespace general {
 
-class Server : public impl::Server {
+class Server : public interface::Server {
 public:
-	Server(const std::string& path, const Task& task) : impl::Server(path, task)
+	Server(const std::string& path, const interface::Task& task) : interface::Server(path, task)
 	{
 		errno = 0;
 		if (::unlink(path.c_str()) == -1 && errno != ENOENT)
@@ -64,7 +62,7 @@ public:
 	}
 
 private:
-	void accept(const Task& task) override
+	void accept(const interface::Task& task) override
 	{
 		auto asyncSession = std::make_shared<Protocol::Async>(this->context);
 		auto handler = [this, asyncSession, task](const auto& error) {

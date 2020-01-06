@@ -42,8 +42,8 @@ struct Protocol {
 	class Async : public std::enable_shared_from_this<Async> {
 	public:
 		explicit Async(Context& context) : socket(context) {}
-		void dispatch(const Task& task);
-		void process(const Task& task);
+		void dispatch(const interface::Task& task);
+		void process(const interface::Task& task);
 
 		inline Socket& getSocket()
 		{

@@ -35,9 +35,11 @@ namespace rmi {
 namespace impl {
 namespace ondemand {
 
-class Server : public impl::Server {
+class Server : public interface::Server {
 public:
-	Server(const std::string& path, const Task& task) : impl::Server(path, task), socket(path)
+	Server(const std::string& path, const interface::Task& task) :
+		interface::Server(path, task),
+		socket(path)
 	{
 		this->accept(task);
 	}
@@ -62,7 +64,7 @@ public:
 	}
 
 private:
-	void accept(const Task& task) override
+	void accept(const interface::Task& task) override
 	{
 		auto handler = [this, task]() {
 			DEBUG(VIST) << "New session is accepted.";

@@ -16,7 +16,8 @@
 
 #pragma once
 
-#include "protocol.hpp"
+#include <vist/rmi/impl/client.hpp>
+#include <vist/rmi/impl/general/protocol.hpp>
 
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
@@ -28,9 +29,9 @@ namespace general {
 
 using boost::asio::local::stream_protocol;
 
-class Client {
+class Client : public interface::Client {
 public:
-	Client(const std::string& path) : socket(this->context)
+	Client(const std::string& path) : interface::Client(path), socket(this->context)
 	{
 		try {
 			this->socket.connect(Protocol::Endpoint(path));
@@ -40,7 +41,7 @@ public:
 		}
 	}
 
-	inline Message request(Message& message)
+	Message request(Message& message) override
 	{
 		return Protocol::Request(this->socket, message);
 	}

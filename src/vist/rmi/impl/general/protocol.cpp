@@ -65,7 +65,7 @@ Message Protocol::Request(Socket& socket, Message& message)
 	return Protocol::Recv(socket);
 }
 
-void Protocol::Async::dispatch(const Task& task)
+void Protocol::Async::dispatch(const interface::Task& task)
 {
 	auto self = shared_from_this();
 	const auto& header = boost::asio::buffer(&this->message.header,
@@ -99,7 +99,7 @@ void Protocol::Async::dispatch(const Task& task)
 	boost::asio::async_read(self->socket, header, handler);
 }
 
-void Protocol::Async::process(const Task& task)
+void Protocol::Async::process(const interface::Task& task)
 {
 	bool raised = false;
 	std::string errMsg;

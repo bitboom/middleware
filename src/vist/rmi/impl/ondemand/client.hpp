@@ -17,6 +17,7 @@
 #pragma once
 
 #include <vist/logger.hpp>
+#include <vist/rmi/impl/client.hpp>
 #include <vist/rmi/impl/ondemand/connection.hpp>
 
 namespace vist {
@@ -24,14 +25,15 @@ namespace rmi {
 namespace impl {
 namespace ondemand {
 
-class Client {
+class Client : public interface::Client {
 public:
-	Client(const std::string& path) : connection(path)
+	Client(const std::string& path) : interface::Client(path), connection(path)
 	{
-		DEBUG(VIST) << "Success to connect to : " << path << " by fd[" << connection.getFd() << "]";
+		DEBUG(VIST) << "Success to connect to : " << path
+					<< " by fd[" << connection.getFd() << "]";
 	}
 
-	inline Message request(Message& message)
+	Message request(Message& message) override
 	{
 		return this->connection.request(message);
 	}

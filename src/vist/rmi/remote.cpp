@@ -16,29 +16,31 @@
 
 #include "remote.hpp"
 
+#include <vist/rmi/impl/client.hpp>
 #include <vist/rmi/impl/general/client.hpp>
 
-#include <string>
+#include <memory>
 #include <mutex>
+#include <string>
 
 namespace vist {
 namespace rmi {
 
-using namespace vist::rmi::impl::general;
+using namespace vist::rmi::impl;
 
 class Remote::Impl {
 public:
-	explicit Impl(const std::string& path) : client(path)
+	explicit Impl(const std::string& path) : client(std::make_unique<general::Client>(path))
 	{
 	}
 
 	Message request(Message& message)
 	{
-		return this->client.request(message);
+		return this->client->request(message);
 	}
 
 private:
-	Client client;
+	std::unique_ptr<interface::Client> client;
 };
 
 Remote::Remote(const std::string& path) : pImpl(new Impl(path))
