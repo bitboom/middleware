@@ -79,6 +79,8 @@ private:
 					connection->send(reply);
 				} catch (const std::exception& e) {
 					ERROR(VIST) << e.what();
+					Message reply = Message(Message::Type::Error, e.what());
+					connection->send(reply);
 				}
 			};
 
