@@ -19,6 +19,7 @@
 #include <vist/rmi/impl/ondemand/eventfd.hpp>
 
 #include <atomic>
+#include <array>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -61,9 +62,12 @@ private:
 	using Handler = std::pair<std::shared_ptr<OnEvent>, std::shared_ptr<OnError>>;
 	using Listener = std::unordered_map<int, Handler>;
 
+	Handler getHandler(const int fd);
+
 	bool prepare(void);
 
-	bool dispatch(const int timeout) noexcept;
+	void wait(int timeout);
+	void dispatch(int size);
 
 	Mutex mutex;
 	Listener listener;
@@ -72,7 +76,8 @@ private:
 	int epollFd;
 	std::atomic<bool> stopped;
 
-	const int MAX_EPOLL_EVENTS = 16;
+	static constexpr int MAX_EVENTS = 16;
+	std::array<::epoll_event, MAX_EVENTS> events;
 };
 
 } // namespace ondemand

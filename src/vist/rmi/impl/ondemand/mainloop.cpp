@@ -73,11 +73,22 @@ void Mainloop::removeHandler(const int fd)
 
 	auto iter = this->listener.find(fd);
 	if (iter == this->listener.end())
-		return;
+		THROW(ErrCode::RuntimeError) << "Not found file descriptor.";
 
 	this->listener.erase(iter);
 
 	::epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
+}
+
+Mainloop::Handler Mainloop::getHandler(const int fd)
+{
+	std::lock_guard<Mutex> lock(mutex);
+
+	auto iter = this->listener.find(fd);
+	if (iter == this->listener.end())
+		THROW(ErrCode::RuntimeError) << "Not found file descriptor.";
+
+	return std::make_pair(iter->second.first, iter->second.second);
 }
 
 bool Mainloop::prepare(void)
@@ -92,36 +103,36 @@ bool Mainloop::prepare(void)
 	this->addHandler(this->wakeupSignal.getFd(), wakeup);
 }
 
-bool Mainloop::dispatch(int timeout) noexcept
+void Mainloop::wait(int timeout)
 {
-	int nfds;
-	::epoll_event event[MAX_EPOLL_EVENTS];
-
+	int nfds = 0;
 	do {
 		errno = 0;
-		nfds = ::epoll_wait(epollFd, event, MAX_EPOLL_EVENTS, timeout);
+		nfds = ::epoll_wait(this->epollFd, this->events.data(), MAX_EVENTS, timeout);
+		if (errno == EINTR)
+			WARN(VIST) << "The call was interrupted by a signal handler.";
 	} while ((nfds == -1) && (errno == EINTR));
 
-	if (nfds <= 0)
-		return false;
+	if (nfds == 0) {
+		DEBUG(VIST) << "Mainloop is stopped by timeout.";
+		this->stopped = true;
+		return;
+	}
 
-	for (int i = 0; i < nfds; i++) {
-		std::shared_ptr<OnEvent> onEvent;
-		std::shared_ptr<OnError> onError;
+	if (nfds < 0)
+		THROW(ErrCode::RuntimeError) << "Failed to wait epoll events: " << errno;
 
-		{
-			std::lock_guard<Mutex> lock(mutex);
+	this->dispatch(nfds);
+}
 
-			auto iter = this->listener.find(event[i].data.fd);
-			if (iter == this->listener.end())
-				continue;
-
-			onEvent = iter->second.first;
-			onError = iter->second.second;
-		}
+void Mainloop::dispatch(int size) {
+	for (int i = 0; i < size; i++) {
+		auto handler = this->getHandler(this->events[i].data.fd);
+		auto onEvent = handler.first;
+		auto onError = handler.second;
 
 		try {
-			if ((event[i].events & (EPOLLHUP | EPOLLRDHUP))) {
+			if ((this->events[i].events & (EPOLLHUP | EPOLLRDHUP))) {
 				WARN(VIST) << "Connected client might be disconnected.";
 				if (onError != nullptr)
 					(*onError)();
@@ -133,19 +144,14 @@ bool Mainloop::dispatch(int timeout) noexcept
 			ERROR(VIST) << e.what();
 		}
 	}
-
-	return true;
 }
 
 void Mainloop::run(int timeout)
 {
-	bool done = false;
 	this->stopped = false;
-
 	this->prepare();
-
-	while (!this->stopped && !done)
-		done = !dispatch(timeout);
+	while (!this->stopped)
+		this->wait(timeout);
 }
 
 void Mainloop::stop(void)
