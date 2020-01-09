@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #include <vist/klass/functor.hpp>
 #include <vist/macro.hpp>
 
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -38,7 +39,7 @@ public:
 	Gateway(Gateway&&) = default;
 	Gateway& operator=(Gateway&&) = default;
 
-	void start();
+	void start(int timeout = -1, std::function<bool()> stopper = nullptr);
 	void stop();
 
 	template<typename O, typename F>

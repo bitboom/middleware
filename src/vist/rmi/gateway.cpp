@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public:
 			reply.enclose(result);
 
 			return reply;
-	};
+		};
 
 #ifdef TIZEN
 		this->server = std::make_unique<ondemand::Server>(path, dispatcher);
@@ -62,9 +62,9 @@ public:
 #endif
 	}
 
-	inline void start()
+	inline void start(int timeout, std::function<bool()> stopper)
 	{
-		this->server->run();
+		this->server->run(timeout, stopper);
 	}
 
 	inline void stop()
@@ -82,9 +82,9 @@ Gateway::Gateway(const std::string& path) : pImpl(std::make_unique<Impl>(*this, 
 
 Gateway::~Gateway() = default;
 
-void Gateway::start()
+void Gateway::start(int timeout, std::function<bool()> stopper)
 {
-	this->pImpl->start();
+	this->pImpl->start(timeout, stopper);
 }
 
 void Gateway::stop(void)

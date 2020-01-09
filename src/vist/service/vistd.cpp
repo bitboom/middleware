@@ -39,12 +39,13 @@ void Vistd::start()
 {
 	INFO(VIST) << "Vistd daemon starts.";
 
-	policy::PolicyManager::Instance();
-
 	rmi::Gateway gateway(SOCK_ADDR);
 	EXPOSE(gateway, *this, &Vistd::query);
 
-	gateway.start();
+	auto& pm = policy::PolicyManager::Instance();
+
+	/// Shutdown service if timeout is occured without activated admin
+	gateway.start(3000, [&pm]() -> bool { return !pm.isActivated(); });
 
 	INFO(VIST) << "Vistd daemon stopped.";
 }
