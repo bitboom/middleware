@@ -60,9 +60,9 @@ public:
 	Server(Server&&) = default;
 	Server& operator=(Server&&) = default;
 
-	void run(void) override
+	void run(int timeout = -1, interface::Stopper stopper = nullptr) override
 	{
-		this->mainloop.run();
+		this->mainloop.run(timeout, stopper);
 	}
 
 	void stop(void) override

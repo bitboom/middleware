@@ -51,8 +51,11 @@ public:
 	Server(Server&&) = default;
 	Server& operator=(Server&&) = default;
 
-	void run() override
+	/// boost-based service does not support timeout and stopper.
+	void run(int timeout = -1, interface::Stopper stopper = nullptr) override
 	{
+		(void) timeout;
+		(void) stopper;
 		this->context.run();
 	}
 

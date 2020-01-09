@@ -27,6 +27,7 @@ namespace impl {
 namespace interface {
 
 using Task = std::function<Message(Message&)>;
+using Stopper = std::function<bool(void)>;
 
 class Server {
 public:
@@ -39,7 +40,7 @@ public:
 	Server(Server&&) = default;
 	Server& operator=(Server&&) = default;
 
-	virtual void run() = 0;
+	virtual void run(int timeout = -1, Stopper stopper = nullptr) = 0;
 	virtual void stop() = 0;
 
 private:
