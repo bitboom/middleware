@@ -109,5 +109,28 @@ TEST(PolicyCoreTests, admin) {
 	manager.disenroll("testAdmin");
 }
 
+TEST(PolicyCoreTests, is_activated) {
+	auto& manager = PolicyManager::Instance();
+	manager.enroll("testAdmin1");
+	manager.enroll("testAdmin2");
+
+	EXPECT_FALSE(manager.isActivated());
+
+	manager.activate("testAdmin1", true);
+	EXPECT_TRUE(manager.isActivated());
+
+	manager.activate("testAdmin2", true);
+	EXPECT_TRUE(manager.isActivated());
+
+	manager.activate("testAdmin1", false);
+	EXPECT_TRUE(manager.isActivated());
+
+	manager.activate("testAdmin2", false);
+	EXPECT_FALSE(manager.isActivated());
+
+	manager.disenroll("testAdmin1");
+	manager.disenroll("testAdmin2");
+}
+
 } // namespace policy
 } // namespace vist

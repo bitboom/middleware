@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -50,6 +50,11 @@ void API::Admin::Disenroll(const std::string& admin)
 void API::Admin::Activate(const std::string& admin, bool state)
 {
 	PolicyManager::Instance().activate(admin, state);
+}
+
+bool API::Admin::IsActivated()
+{
+	return PolicyManager::Instance().isActivated();
 }
 
 std::unordered_map<std::string, int> API::Admin::GetAll()

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -50,6 +50,8 @@ public:
 	void disenroll(const std::string& admin);
 	void activate(const std::string& admin, bool state = true);
 	bool isActivated(const std::string& admin);
+	/// Check that none of admins are activated.
+	bool isActivated();
 
 	void define(const std::string& policy, const PolicyValue& ivalue);
 	void update(const std::string& admin,
