@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2018 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2018-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -46,8 +46,10 @@ void Mainloop::addHandler(const int fd, OnEvent&& onEvent, OnError&& onError)
 {
 	std::lock_guard<Mutex> lock(mutex);
 
-	if (this->listener.find(fd) != this->listener.end())
-		THROW(ErrCode::RuntimeError) << "Event is already registered.";
+	if (this->listener.find(fd) != this->listener.end()) {
+		WARN(VIST) << "Event is already registered.";
+		return;
+	}
 
 	::epoll_event event;
 	std::memset(&event, 0, sizeof(epoll_event));
@@ -103,7 +105,7 @@ bool Mainloop::prepare(void)
 	this->addHandler(this->wakeupSignal.getFd(), wakeup);
 }
 
-void Mainloop::wait(int timeout)
+void Mainloop::wait(int timeout, Stopper stopper)
 {
 	int nfds = 0;
 	do {
@@ -115,7 +117,10 @@ void Mainloop::wait(int timeout)
 
 	if (nfds == 0) {
 		DEBUG(VIST) << "Mainloop is stopped by timeout.";
-		this->stopped = true;
+
+		if (stopper())
+			this->stopped = true;
+
 		return;
 	}
 
@@ -146,12 +151,16 @@ void Mainloop::dispatch(int size) {
 	}
 }
 
-void Mainloop::run(int timeout)
+void Mainloop::run(int timeout, Stopper stopper)
 {
 	this->stopped = false;
 	this->prepare();
+
+	if (stopper == nullptr)
+		stopper = []() -> bool { return true; };
+
 	while (!this->stopped)
-		this->wait(timeout);
+		this->wait(timeout, stopper);
 }
 
 void Mainloop::stop(void)

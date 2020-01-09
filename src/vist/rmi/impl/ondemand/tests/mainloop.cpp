@@ -116,3 +116,14 @@ TEST(MainloopTests, multiflexing)
 		if (client.joinable())
 			client.join();
 }
+
+TEST(MainloopTests, stopper)
+{
+	auto stopper = []() -> bool { return true; };
+	Mainloop mainloop;
+	mainloop.run(1000, stopper);
+	EXPECT_TRUE(true);
+
+	mainloop.run(1000);
+	EXPECT_TRUE(true);
+}

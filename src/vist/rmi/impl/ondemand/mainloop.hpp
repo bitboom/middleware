@@ -38,6 +38,7 @@ class Mainloop {
 public:
 	using OnEvent = std::function<void(void)>;
 	using OnError = std::function<void(void)>;
+	using Stopper = std::function<bool(void)>;
 
 	Mainloop();
 	virtual ~Mainloop();
@@ -51,7 +52,9 @@ public:
 	void addHandler(const int fd, OnEvent&& onEvent, OnError&& = nullptr);
 	void removeHandler(const int fd);
 
-	void run(int timeout = -1);
+	/// Stopper is a predicate what returns a condition to stop mainloop
+	/// when timeout is occured.
+	void run(int timeout = -1, Stopper = nullptr);
 	void stop(void);
 
 private:
@@ -66,7 +69,7 @@ private:
 
 	bool prepare(void);
 
-	void wait(int timeout);
+	void wait(int timeout, Stopper stopper);
 	void dispatch(int size);
 
 	Mutex mutex;
