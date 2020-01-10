@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019 Samsung Electronics Co., Ltd. All rights reserved
+ * Copyright (c) 2016-2020 Samsung Electronics Co., Ltd. All rights reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fstream>
+#include <functional>
 #include <memory>
 #include <limits.h>
 #include <sys/types.h>
