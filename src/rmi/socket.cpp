@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2015-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -252,7 +252,8 @@ int Socket::createRegularSocket(const std::string& path)
 
 	::sockaddr_un addr;
 	addr.sun_family = AF_UNIX;
-	::strncpy(addr.sun_path, path.c_str(), sizeof(sockaddr_un::sun_path));
+	::strncpy(addr.sun_path, path.c_str(), sizeof(sockaddr_un::sun_path) - 1);
+	addr.sun_path[sizeof(sockaddr_un::sun_path) - 1] = '\0';
 
 	if (addr.sun_path[0] == '@') {
 		addr.sun_path[0] = '\0';
@@ -307,7 +308,8 @@ Socket Socket::connect(const std::string& path)
 
 	sockaddr_un addr;
 	addr.sun_family = AF_UNIX;
-	::strncpy(addr.sun_path, path.c_str(), sizeof(sockaddr_un::sun_path));
+	::strncpy(addr.sun_path, path.c_str(), sizeof(sockaddr_un::sun_path) - 1);
+	addr.sun_path[sizeof(sockaddr_un::sun_path) - 1] = '\0';
 
 	if (addr.sun_path[0] == '@') {
 		addr.sun_path[0] = '\0';
