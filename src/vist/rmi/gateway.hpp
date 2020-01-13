@@ -30,7 +30,12 @@ namespace rmi {
 
 class VIST_API Gateway final {
 public:
-	explicit Gateway(const std::string& path);
+	enum class ServiceType {
+		General,
+		OnDemand
+	};
+
+	explicit Gateway(const std::string& path, ServiceType type = ServiceType::General);
 	~Gateway();
 
 	Gateway(const Gateway&) = delete;

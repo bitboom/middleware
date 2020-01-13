@@ -54,7 +54,7 @@ TEST(RmiTests, positive)
 	std::string sockPath = ("/tmp/test-gateway");
 
 	// gateway-side
-	Gateway gateway(sockPath);
+	Gateway gateway(sockPath, Gateway::ServiceType::General);
 
 	Foo foo;
 	gateway.expose(foo, "Foo::setName", &Foo::setName);

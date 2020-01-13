@@ -19,12 +19,8 @@
 #include <vist/exception.hpp>
 #include <vist/rmi/message.hpp>
 #include <vist/rmi/impl/server.hpp>
-
-#ifdef TIZEN
-#include <vist/rmi/impl/ondemand/server.hpp>
-#else
 #include <vist/rmi/impl/general/server.hpp>
-#endif
+#include <vist/rmi/impl/ondemand/server.hpp>
 
 #include <memory>
 #include <string>
@@ -36,7 +32,7 @@ using namespace vist::rmi::impl;
 
 class Gateway::Impl {
 public:
-	explicit Impl(Gateway& gateway, const std::string& path)
+	explicit Impl(Gateway& gateway, const std::string& path, Gateway::ServiceType type)
 	{
 		auto dispatcher = [&gateway](auto& message) -> Message {
 			std::string function = message.signature;
@@ -55,11 +51,15 @@ public:
 			return reply;
 		};
 
-#ifdef TIZEN
-		this->server = std::make_unique<ondemand::Server>(path, dispatcher);
-#else
-		this->server = std::make_unique<general::Server>(path, dispatcher);
-#endif
+		switch (type) {
+		case ServiceType::OnDemand:
+			this->server = std::make_unique<ondemand::Server>(path, dispatcher);
+			break;
+		case ServiceType::General: /// fall through
+		default:
+			this->server = std::make_unique<general::Server>(path, dispatcher);
+			break;
+		}
 	}
 
 	inline void start(int timeout, std::function<bool()> stopper)
@@ -76,7 +76,8 @@ private:
 	std::unique_ptr<interface::Server> server;
 };
 
-Gateway::Gateway(const std::string& path) : pImpl(std::make_unique<Impl>(*this, path))
+Gateway::Gateway(const std::string& path, ServiceType type) :
+	pImpl(std::make_unique<Impl>(*this, path, type))
 {
 }
 

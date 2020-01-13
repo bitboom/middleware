@@ -45,6 +45,7 @@ std::string response3 = "response argument";
 
 } // anonymous namespace
 
+#ifndef TIZEN
 TEST(ServerClientTests, server)
 {
 	std::string sockPath = "vist-test.sock";
@@ -100,3 +101,4 @@ TEST(ServerClientTests, server)
 	if (serverThread.joinable())
 		serverThread.join();
 }
+#endif

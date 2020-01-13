@@ -108,8 +108,8 @@ fi
 %license LICENSE-Apache-2.0
 %license LICENSE-GPL-2.0
 %license LICENSE-MIT
-%{_bindir}/vist-cli
-%{_bindir}/vistd
+%attr(-, %{user_name}, %{group_name}) %{_bindir}/vist-cli
+%attr(-, %{user_name}, %{group_name}) %{_bindir}/vistd
 %{_libdir}/libvist-rmi.so
 %{_unitdir}/vist.service
 %{_unitdir}/vist.socket
@@ -130,11 +130,12 @@ Requires: gtest
 Provides internal testcases for ViST implementation.
 
 %files test
+%manifest packaging/%{name}-test.manifest
 %{_bindir}/osquery-test
-%{_bindir}/vist-test
-%{vist_plugin_dir}/sample
+%attr(4755 %{user_name}, %{group_name}) %{_bindir}/vist-test
+%dir %attr(-, %{user_name}, %{group_name}) %{vist_plugin_dir}/sample
 
-## ViST Plugins - ###########################################################
+## ViST Plugins #############################################################
 %package plugins
 Summary: Virtaul Security Table (policy modules)
 Group: Security/Other

@@ -39,7 +39,12 @@ void Vistd::start()
 {
 	INFO(VIST) << "Vistd daemon starts.";
 
-	rmi::Gateway gateway(SOCK_ADDR);
+	rmi::Gateway::ServiceType type = rmi::Gateway::ServiceType::General;
+#ifdef TIZEN
+	type = rmi::Gateway::ServiceType::OnDemand;
+#endif
+
+	rmi::Gateway gateway(SOCK_ADDR, type);
 	EXPOSE(gateway, *this, &Vistd::query);
 
 	auto& pm = policy::PolicyManager::Instance();
