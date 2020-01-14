@@ -12,7 +12,6 @@
 #include <boost/format.hpp>
 #include <boost/io/detail/quoted_manip.hpp>
 
-#include <osquery/config/config.h>
 #include <osquery/core.h>
 #include <osquery/data_logger.h>
 #include <osquery/database.h>
@@ -23,7 +22,6 @@
 
 #include "osquery/dispatcher/scheduler.h"
 #include "osquery/sql/sqlite_util.h"
-#include "osquery/plugins/config/parsers/decorators.h"
 
 namespace osquery {
 
@@ -63,7 +61,6 @@ SQLInternal monitor(const std::string& name, const ScheduledQuery& query) {
                             EQUALS,
                             pid);
   auto t0 = getUnixTime();
-  Config::get().recordQueryStart(name);
   SQLInternal sql(query.query, true);
   // Snapshot the performance after, and compare.
   auto t1 = getUnixTime();
@@ -72,17 +69,12 @@ SQLInternal monitor(const std::string& name, const ScheduledQuery& query) {
                             "pid",
                             EQUALS,
                             pid);
-  if (r0.size() > 0 && r1.size() > 0) {
-    // Always called while processes table is working.
-    Config::get().recordQueryPerformance(name, t1 - t0, r0[0], r1[0]);
-  }
   return sql;
 }
 
 Status launchQuery(const std::string& name, const ScheduledQuery& query) {
   // Execute the scheduled query and create a named query object.
   LOG(INFO) << "Executing scheduled query " << name << ": " << query.query;
-  runDecorators(DECORATE_ALWAYS);
 
   auto sql = monitor(name, query);
   if (!sql.getStatus().ok()) {
@@ -102,7 +94,6 @@ Status launchQuery(const std::string& name, const ScheduledQuery& query) {
   item.time = osquery::getUnixTime();
   item.epoch = FLAGS_schedule_epoch;
   item.calendar_time = osquery::getAsciiTime();
-  getDecorations(item.decorations);
 
   if (query.options.count("snapshot") && query.options.at("snapshot")) {
     // This is a snapshot query, emit results with a differential or state.
@@ -162,18 +153,6 @@ void SchedulerRunner::start() {
   auto i = osquery::getUnixTime();
   for (; (timeout_ == 0) || (i <= timeout_); ++i) {
     auto start_time_point = std::chrono::steady_clock::now();
-    Config::get().scheduledQueries(
-        ([&i](const std::string& name, const ScheduledQuery& query) {
-          if (query.splayed_interval > 0 && i % query.splayed_interval == 0) {
-            TablePlugin::kCacheInterval = query.splayed_interval;
-            TablePlugin::kCacheStep = i;
-            const auto status = launchQuery(name, query);
-          }
-        }));
-    // Configuration decorators run on 60 second intervals only.
-    if ((i % 60) == 0) {
-      runDecorators(DECORATE_INTERVAL, i);
-    }
     if (FLAGS_schedule_reload > 0 && (i % FLAGS_schedule_reload) == 0) {
       if (FLAGS_schedule_reload_sql) {
         SQLiteDBManager::resetPrimary();

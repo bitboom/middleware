@@ -13,7 +13,6 @@
 
 #include <gtest/gtest.h>
 
-#include <osquery/config/config.h>
 #include <osquery/core.h>
 #include <osquery/core/sql/row.h>
 #include <osquery/database.h>
@@ -46,10 +45,6 @@ class EventsDatabaseTests : public ::testing::Test {
     FLAGS_disable_database = true;
     DatabasePlugin::setAllowOpen(true);
     DatabasePlugin::initPlugin();
-
-    RegistryFactory::get().registry("config_parser")->setUp();
-    optimize_ = FLAGS_events_optimize;
-    FLAGS_events_optimize = false;
 
     std::vector<std::string> event_keys;
     scanDatabaseKeys(kEvents, event_keys);
@@ -355,7 +350,7 @@ TEST_F(EventsDatabaseTests, test_optimize) {
   FLAGS_events_optimize = true;
 
   // Must also define an executing query.
-  setDatabaseValue(kPersistentSettings, kExecutingQuery, "events_db_test");
+  setDatabaseValue(kPersistentSettings, "", "events_db_test");
 
   auto t = getUnixTime();
   auto results = genRows(sub.get());

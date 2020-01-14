@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include <osquery/config/config.h>
 #include <osquery/core.h>
 #include <osquery/database.h>
 #include <osquery/events.h>

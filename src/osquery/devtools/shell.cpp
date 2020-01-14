@@ -33,7 +33,6 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
-#include <osquery/config/config.h>
 #include <osquery/database.h>
 #include <osquery/devtools/devtools.h>
 #include <osquery/filesystem/filesystem.h>
@@ -73,8 +72,6 @@ SHELL_FLAG(string, A, "", "Select all from a table");
 DECLARE_string(nullvalue);
 DECLARE_string(logger_plugin);
 DECLARE_string(logger_path);
-DECLARE_string(config_plugin);
-DECLARE_string(config_path);
 DECLARE_string(database_path);
 } // namespace osquery
 
@@ -1146,14 +1143,6 @@ inline void meta_show(struct callback_data* p) {
 
   fprintf(p->out, "\nGeneral settings:\n");
   fprintf(p->out, "%13.13s: %s\n", "Flagfile", FLAGS_flagfile.c_str());
-  // Show helpful config-related settings.
-  fprintf(
-      p->out, "%13.13s: %s", "Config", osquery::FLAGS_config_plugin.c_str());
-  if (std::strcmp(osquery::FLAGS_config_plugin.c_str(), "filesystem") == 0) {
-    fprintf(p->out, " (%s)\n", osquery::FLAGS_config_path.c_str());
-  } else {
-    fprintf(p->out, "\n");
-  }
 
   // Show helpful logger-related settings.
   fprintf(
@@ -1644,24 +1633,6 @@ int runQuery(struct callback_data* data, const char* query) {
 
 int runPack(struct callback_data* data) {
   int rc = 0;
-
-  // Check every pack for a name matching the requested --pack flag.
-  Config::get().packs([data, &rc](const Pack& pack) {
-    if (pack.getName() != FLAGS_pack) {
-      return;
-    }
-
-    for (const auto& query : pack.getSchedule()) {
-      rc = runQuery(data, query.second.query.c_str());
-      if (rc != 0) {
-        fprintf(stderr,
-                "Could not execute query %s: %s\n",
-                query.first.c_str(),
-                query.second.query.c_str());
-        return;
-      }
-    }
-  });
   return rc;
 }
 

@@ -11,7 +11,6 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 
-#include <osquery/config/config.h>
 #include <osquery/database.h>
 #include <osquery/events.h>
 #include <osquery/registry_factory.h>
@@ -446,45 +445,6 @@ TEST_F(EventsTests, test_event_subscriber_context) {
   EXPECT_TRUE(status.ok());
   status = EventFactory::deregisterEventPublisher(pub->type());
   EXPECT_TRUE(status.ok());
-}
-
-TEST_F(EventsTests, test_event_subscriber_configure) {
-  auto sub = std::make_shared<FakeEventSubscriber>();
-  // Register this subscriber (within the RegistryFactory), so it receives
-  // configure/reconfigure events.
-  auto& rf = RegistryFactory::get();
-  rf.registry("event_subscriber")->add("fake_events", sub);
-
-  // Register it within the event factory too.
-  auto status = EventFactory::registerEventSubscriber(sub);
-  EXPECT_TRUE(status.ok());
-
-  // Assure we start from a base state.
-  EXPECT_EQ(sub->timesConfigured, 0U);
-  // Force the config into a loaded state.
-  Config::get().loaded_ = true;
-  Config::get().update({{"data", "{}"}});
-  EXPECT_EQ(sub->timesConfigured, 1U);
-
-  // Now update the config to contain sets of scheduled queries.
-  Config::get().update(
-      {{"data",
-        "{\"schedule\": {\"1\": {\"query\": \"select * from fake_events\", "
-        "\"interval\": 10}, \"2\":{\"query\": \"select * from time, "
-        "fake_events\", \"interval\": 19}, \"3\":{\"query\": \"select * "
-        "from fake_events, fake_events\", \"interval\": 5}}}"}});
-
-  // This will become 19 * 3, rounded up 60.
-  EXPECT_EQ(sub->min_expiration_, 60U);
-  EXPECT_EQ(sub->query_count_, 3U);
-
-  // Register it within the event factory too.
-  EventFactory::deregisterEventSubscriber(sub->getName());
-  rf.registry("event_subscriber")->remove(sub->getName());
-
-  // Final check to make sure updates are not effecting this subscriber.
-  Config::get().update({{"data", "{}"}});
-  EXPECT_EQ(sub->timesConfigured, 2U);
 }
 
 TEST_F(EventsTests, test_fire_event) {

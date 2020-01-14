@@ -14,7 +14,6 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <osquery/config/config.h>
 #include <osquery/database.h>
 #include <osquery/events.h>
 #include <osquery/flags.h>
@@ -68,7 +67,7 @@ static inline void getOptimizeData(EventTime& o_time,
                                    std::string& query_name,
                                    const std::string& publisher) {
   // Read the optimization time for the current executing query.
-  getDatabaseValue(kPersistentSettings, kExecutingQuery, query_name);
+  getDatabaseValue(kPersistentSettings, "", query_name);
   if (query_name.empty()) {
     o_time = 0;
     o_eid = 0;
@@ -93,7 +92,7 @@ static inline void setOptimizeData(EventTime time,
                                    const std::string& publisher) {
   // Store the optimization time and eid.
   std::string query_name;
-  getDatabaseValue(kPersistentSettings, kExecutingQuery, query_name);
+  getDatabaseValue(kPersistentSettings, "", query_name);
   if (query_name.empty()) {
     return;
   }
@@ -607,32 +606,6 @@ void EventFactory::configUpdate() {
   // Scan the schedule for queries that touch "_events" tables.
   // We will count the queries
   std::map<std::string, SubscriberExpirationDetails> subscriber_details;
-  Config::get().scheduledQueries(
-      [&subscriber_details](std::string name, const ScheduledQuery& query) {
-        std::vector<std::string> tables;
-        // Convert query string into a list of virtual tables effected.
-        if (!getQueryTables(query.query, tables)) {
-          VLOG(1) << "Cannot get tables from query: " << name;
-          return;
-        }
-
-        // Remove duplicates and select only the subscriber tables.
-        std::set<std::string> subscribers;
-        for (const auto& table : tables) {
-          if (Registry::get().exists("event_subscriber", table)) {
-            subscribers.insert(table);
-          }
-        }
-
-        for (const auto& subscriber : subscribers) {
-          auto& details = subscriber_details[subscriber];
-          details.max_interval = (query.interval > details.max_interval)
-                                     ? query.interval
-                                     : details.max_interval;
-          details.query_count++;
-        }
-      });
-
   auto& ef = EventFactory::getInstance();
   for (const auto& details : subscriber_details) {
     if (!ef.exists(details.first)) {
@@ -795,30 +768,6 @@ Status EventFactory::registerEventSubscriber(const PluginRef& sub) {
   if (name.empty()) {
     // This subscriber did not override its name.
     return Status(1, "Subscribers must have set a name");
-  }
-
-  auto plugin = Config::get().getParser("events");
-  if (plugin != nullptr && plugin.get() != nullptr) {
-    const auto& data = plugin->getData().doc();
-    // First perform explicit enabling.
-    if (data["events"].HasMember("enable_subscribers")) {
-      for (const auto& item : data["events"]["enable_subscribers"].GetArray()) {
-        if (item.GetString() == name) {
-          VLOG(1) << "Enabling event subscriber: " << name;
-          specialized_sub->disabled = false;
-        }
-      }
-    }
-    // Then use explicit disabling as an ultimate override.
-    if (data["events"].HasMember("disable_subscribers")) {
-      for (const auto& item :
-           data["events"]["disable_subscribers"].GetArray()) {
-        if (item.GetString() == name) {
-          VLOG(1) << "Disabling event subscriber: " << name;
-          specialized_sub->disabled = true;
-        }
-      }
-    }
   }
 
   if (specialized_sub->state() != EventState::EVENT_NONE) {

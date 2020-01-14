@@ -33,7 +33,6 @@
 
 #include "osquery/utils/config/default_paths.h"
 #include "osquery/utils/info/platform_type.h"
-#include <osquery/config/config.h>
 #include <osquery/core.h>
 #include <osquery/data_logger.h>
 #include <osquery/dispatcher.h>
@@ -152,7 +151,6 @@ DECLARE_string(flagfile);
 
 namespace osquery {
 
-DECLARE_string(config_plugin);
 DECLARE_string(logger_plugin);
 DECLARE_bool(config_check);
 DECLARE_bool(config_dump);
@@ -237,8 +235,6 @@ Initializer::Initializer(int& argc,
   // Initialize random number generated based on time.
   std::srand(static_cast<unsigned int>(
       chrono_clock::now().time_since_epoch().count()));
-  // The config holds the initialization time for easy access.
-  Config::setStartTime(getUnixTime());
 
   // osquery can function as the daemon or shell depending on argv[0].
   if (tool == ToolType::SHELL_DAEMON) {
@@ -382,11 +378,6 @@ void Initializer::initDaemon() const {
     return;
   }
 
-  if (FLAGS_config_check) {
-    // No need to daemonize, emit log lines, or create process mutexes.
-    return;
-  }
-
 #if !defined(__APPLE__) && !defined(WIN32)
   // OS X uses launchd to daemonize.
   if (osquery::FLAGS_daemonize) {
@@ -487,37 +478,12 @@ void Initializer::start() const {
   }
 
 
-  // Then set the config plugin, which uses a single/active plugin.
-  initActivePlugin("config", FLAGS_config_plugin);
-
   // Run the setup for all lazy registries (tables, SQL).
   Registry::setUp();
-
-  if (FLAGS_config_check) {
-    // The initiator requested an initialization and config check.
-    auto s = Config::get().load();
-    if (!s.ok()) {
-      std::cerr << "Error reading config: " << s.toString() << "\n";
-    }
-    // A configuration check exits the application.
-    // Make sure to request a shutdown as plugins may have created services.
-    requestShutdown(s.getCode());
-  }
 
   if (FLAGS_database_dump) {
     dumpDatabase();
     requestShutdown();
-  }
-
-  // Load the osquery config using the default/active config plugin.
-  auto s = Config::get().load();
-  if (!s.ok()) {
-    auto message = "Error reading config: " + s.toString();
-    if (isDaemon()) {
-      LOG(WARNING) << message;
-    } else {
-      VLOG(1) << message;
-    }
   }
 
   // Initialize the status and result plugin logger.

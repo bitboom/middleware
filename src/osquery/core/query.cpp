@@ -21,8 +21,6 @@ namespace rj = rapidjson;
 
 namespace osquery {
 
-DECLARE_bool(decorations_top_level);
-
 /// Log numeric values as numbers (in JSON syntax)
 FLAG(bool,
      log_numerics_as_numbers,
@@ -210,14 +208,10 @@ inline void addLegacyFieldsAndDecorations(const QueryLogItem& item,
   if (!item.decorations.empty()) {
     auto dec_obj = doc.getObject();
     auto target_obj = std::ref(dec_obj);
-    if (FLAGS_decorations_top_level) {
-      target_obj = std::ref(obj);
-    }
+    target_obj = std::ref(obj);
+
     for (const auto& name : item.decorations) {
       doc.addRef(name.first, name.second, target_obj);
-    }
-    if (!FLAGS_decorations_top_level) {
-      doc.add("decorations", dec_obj, obj);
     }
   }
 }
