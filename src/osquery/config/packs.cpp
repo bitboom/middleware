@@ -10,7 +10,6 @@
 #include <random>
 
 #include <osquery/database.h>
-#include <osquery/hashing/hashing.h>
 #include <osquery/logger.h>
 #include <osquery/packs.h>
 #include <osquery/sql.h>
@@ -61,28 +60,6 @@ size_t splayValue(size_t original, size_t splayPercent) {
       std::chrono::high_resolution_clock::now().time_since_epoch().count()));
   std::uniform_int_distribution<size_t> distribution(min_value, max_value);
   return distribution(generator);
-}
-
-size_t getMachineShard(const std::string& hostname = "", bool force = false) {
-  static size_t shard = 0;
-  if (shard > 0 && !force) {
-    return shard;
-  }
-
-  // An optional input hostname may override hostname detection for testing.
-  auto hn = (hostname.empty()) ? getHostname() : hostname;
-
-  Hash hash(HASH_TYPE_SHA1);
-  hash.update(hn.c_str(), hn.size());
-  auto hn_hash = hash.digest();
-
-  if (hn_hash.size() >= 2) {
-    auto const hn_num = tryTo<long>(hn_hash.substr(0, 2), 16);
-    if (hn_num.isValue()) {
-      shard = (hn_num.get() * 100) / 255;
-    }
-  }
-  return shard;
 }
 
 size_t restoreSplayedValue(const std::string& name, size_t interval) {
@@ -141,14 +118,6 @@ void Pack::initialize(const std::string& name,
     oncall = "unknown";
   }
 
-  // Apply the shard, platform, and version checking.
-  // It is important to set each value such that the packs meta-table can report
-  // each of the restrictions.
-  if ((shard_ > 0 && shard_ < getMachineShard()) || !checkPlatform() ||
-      !checkVersion()) {
-    return;
-  }
-
   discovery_queries_.clear();
   if (obj.HasMember("discovery") && obj["discovery"].IsArray()) {
     for (const auto& item : obj["discovery"].GetArray()) {
@@ -177,13 +146,6 @@ void Pack::initialize(const std::string& name,
     if (!q.value.IsObject()) {
       VLOG(1) << "The pack " << name << " must contain a dictionary of queries";
       continue;
-    }
-
-    if (q.value.HasMember("shard")) {
-      auto shard = JSON::valueToSize(q.value["shard"]);
-      if (shard > 0 && shard < getMachineShard()) {
-        continue;
-      }
     }
 
     if (q.value.HasMember("platform") && q.value["platform"].IsString()) {

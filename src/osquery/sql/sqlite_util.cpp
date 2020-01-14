@@ -279,7 +279,6 @@ static inline void openOptimized(sqlite3*& db) {
   registerStringExtensions(db);
 #endif
   registerFilesystemExtensions(db);
-  registerHashingExtensions(db);
   registerEncodingExtensions(db);
 }
 

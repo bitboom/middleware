@@ -22,7 +22,6 @@
 #include <osquery/events.h>
 #include <osquery/flagalias.h>
 #include <osquery/flags.h>
-#include <osquery/hashing/hashing.h>
 #include <osquery/logger.h>
 #include <osquery/packs.h>
 #include <osquery/registry.h>
@@ -589,13 +588,6 @@ void Config::backupConfig(const ConfigMap& config) {
 
 Status Config::updateSource(const std::string& source,
                             const std::string& json) {
-  // Compute a 'synthesized' hash using the content before it is parsed.
-  if (!hashSource(source, json)) {
-    // This source did not change, the returned status allows the caller to
-    // choose to reconfigure if any sources had changed.
-    return Status(2);
-  }
-
   {
     RecursiveLock lock(config_schedule_mutex_);
     // Remove all packs from this source.
@@ -935,51 +927,6 @@ void Config::getPerformanceStats(
     RecursiveLock lock(config_performance_mutex_);
     predicate(performance_.at(name));
   }
-}
-
-bool Config::hashSource(const std::string& source, const std::string& content) {
-  Hash hash(HASH_TYPE_SHA1);
-  hash.update(content.c_str(), content.size());
-  auto new_hash = hash.digest();
-
-  WriteLock wlock(config_hash_mutex_);
-  if (hash_[source] == new_hash) {
-    return false;
-  }
-  hash_[source] = new_hash;
-  return true;
-}
-
-Status Config::genHash(std::string& hash) const {
-  WriteLock lock(config_hash_mutex_);
-  if (!valid_) {
-    return Status(1, "Current config is not valid");
-  }
-
-  std::vector<char> buffer;
-  buffer.reserve(hash_.size() * 32);
-  auto add = [&buffer](const std::string& text) {
-    for (const auto& c : text) {
-      buffer.push_back(c);
-    }
-  };
-  for (const auto& it : hash_) {
-    add(it.second);
-  }
-
-  Hash new_hash(HASH_TYPE_SHA1);
-  new_hash.update(buffer.data(), buffer.size());
-  hash = new_hash.digest();
-
-  return Status::success();
-}
-
-std::string Config::getHash(const std::string& source) const {
-  WriteLock lock(config_hash_mutex_);
-  if (!hash_.count(source)) {
-    return std::string();
-  }
-  return hash_.at(source);
 }
 
 const std::shared_ptr<ConfigParserPlugin> Config::getParser(

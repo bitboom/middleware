@@ -107,25 +107,6 @@ class Config : private boost::noncopyable {
    */
   void recordQueryStart(const std::string& name);
 
-  /**
-   * @brief Calculate the hash of the osquery config
-   *
-   * @return The SHA1 hash of the osquery config
-   */
-  Status genHash(std::string& hash) const;
-
-  /// Retrieve the hash of a named source.
-  std::string getHash(const std::string& source) const;
-
-  /**
-   * @brief Hash a source's config data
-   *
-   * @param source is the place where the config content came from
-   * @param content is the content of the config data for a given source
-   * @return false if the source did not change, otherwise true
-   */
-  bool hashSource(const std::string& source, const std::string& content);
-
   /// Whether or not the last loaded config was valid.
   bool isValid() const {
     return valid_;

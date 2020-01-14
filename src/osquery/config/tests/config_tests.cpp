@@ -285,35 +285,6 @@ TEST_F(ConfigTests, test_pack_removal) {
   EXPECT_EQ(pack_count, 0U);
 }
 
-TEST_F(ConfigTests, test_content_update) {
-  const std::string source{"awesome"};
-
-  // Read config content manually.
-  std::string content;
-  readFile(getTestConfigDirectory() / "test_parse_items.conf", content);
-
-  // Create the output of a `genConfig`.
-  std::map<std::string, std::string> config_data;
-  config_data[source] = content;
-
-  // Update, then clear, packs should have been cleared.
-  get().update(config_data);
-  auto source_hash = get().getHash(source);
-  EXPECT_EQ("fb0973b39c70db16655effbca532d4aa93381e59", source_hash);
-
-  size_t count = 0;
-  auto packCounter = [&count](const Pack& pack) { count++; };
-  get().packs(packCounter);
-  EXPECT_GT(count, 0U);
-
-  // Now clear.
-  config_data[source] = "";
-  get().update(config_data);
-  count = 0;
-  get().packs(packCounter);
-  EXPECT_EQ(count, 0U);
-}
-
 TEST_F(ConfigTests, test_get_scheduled_queries) {
   std::vector<std::string> query_names;
   get().addPack("unrestricted_pack", "", getUnrestrictedPack().doc());

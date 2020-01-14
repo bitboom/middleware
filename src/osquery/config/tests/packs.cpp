@@ -31,9 +31,6 @@ namespace osquery {
 
 DECLARE_bool(disable_database);
 
-extern size_t getMachineShard(const std::string& hostname = "",
-                              bool force = false);
-
 class PacksTests : public testing::Test {
  public:
   PacksTests() {
@@ -77,17 +74,6 @@ TEST_F(PacksTests, test_platform) {
 TEST_F(PacksTests, test_version) {
   Pack fpack("discovery_pack", getPackWithDiscovery().doc());
   EXPECT_EQ(fpack.getVersion(), "1.5.0");
-}
-
-TEST_F(PacksTests, test_sharding) {
-  auto shard1 = getMachineShard("localhost.localdomain");
-  auto shard2 = getMachineShard("not.localhost.localdomain");
-  // Expect some static caching.
-  EXPECT_EQ(shard1, shard2);
-
-  // Bypass the caching.
-  shard2 = getMachineShard("not.localhost.localdomain", true);
-  EXPECT_NE(shard1, shard2);
 }
 
 TEST_F(PacksTests, test_check_platform) {
