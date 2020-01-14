@@ -31,7 +31,14 @@ Rows Query::Execute(const std::string& statement)
 	rmi::Remote remote(SOCK_ADDR);
 
 	auto query = REMOTE_METHOD(remote, &Vistd::query);
-	return query.invoke<Rows>(statement);
+	auto rows = query.invoke<Rows>(statement);
+
+	DEBUG(VIST_CLIENT) << "Row's size: " << rows.size();
+	for (const auto& row : rows)
+		for (const auto& col : row)
+			DEBUG(VIST_CLIENT) << col.first << ", " << col.second;
+
+	return rows;
 }
 
 } // namespace vist

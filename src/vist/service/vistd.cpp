@@ -67,7 +67,7 @@ Rows Vistd::query(const std::string& statement)
 	if (!sql.ok())
 		THROW(ErrCode::RuntimeError) << "Faild to execute query: " << sql.getMessageString();
 
-	return std::move(sql.rows());
+	return sql.rows();
 }
 
 } // namespace vist

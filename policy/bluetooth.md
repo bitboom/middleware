@@ -3,7 +3,7 @@
 | Table  | Column | Type | Value |
 |---|---|---|---|
 | bluetooth | state | int | 0 = off , 1 = on |
-|   | desktop_connectivity | int | 0 = off , 1 = on |
+|   | desktopConnectivity | int | 0 = off , 1 = on |
 |   | tethering | int | 0 = off , 1 = on |
 |   | pairing | int | 0 = off , 1 = on |
 
@@ -11,7 +11,7 @@
 ```sql
   SELECT * FROM bluetooth
   SELECT state FROM bluetooth
-  SELECT desktop_connectivity FROM bluetooth
+  SELECT desktopConnectivity FROM bluetooth
   SELECT pairing FROM bluetooth
   SELECT tethering FROM bluetooth
 ```
@@ -19,7 +19,7 @@
 ## Set bluetooth policies
 ```sql
   UPDATE bluetooth SET state = 1 # on
-  UPDATE bluetooth SET desktop_connectivity = 0 # off
+  UPDATE bluetooth SET desktopConnectivity = 0 # off
   UPDATE bluetooth SET pairing = 1 # on
   UPDATE bluetooth SET tethering = 0 # off
   UPDATE bluetooth SET state = 1, pairing = 0
@@ -35,7 +35,7 @@
     int tethering; 
 
     DECLARE_COLUMN(State, "state", &Bluetooth::state);
-    DECLARE_COLUMN(DesktopConnectivity, "desktop_connectivity", &Bluetooth::DesktopConnectivity);
+    DECLARE_COLUMN(DesktopConnectivity, "desktopConnectivity", &Bluetooth::DesktopConnectivity);
     DECLARE_COLUMN(Pairing, "pairing", &Bluetooth::pairing);
     DECLARE_COLUMN(Tethering, "tethering", &Bluetooth::tethering);
   };
