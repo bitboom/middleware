@@ -14,7 +14,6 @@
 
 #include <osquery/core.h>
 #include <osquery/database.h>
-#include <osquery/events.h>
 #include <osquery/filesystem/filesystem.h>
 
 namespace osquery {
@@ -66,8 +65,5 @@ extern const char* kExpectedExtensionArgs[];
 extern const size_t kExpectedExtensionArgsCount;
 
 ScheduledQuery getOsqueryScheduledQuery();
-
-// Helper function to generate all rows from a generator-based table.
-TableRows genRows(EventSubscriberPlugin* sub);
 
 } // namespace osquery

@@ -26,8 +26,6 @@ DECLARE_int32(logger_min_status);
 DECLARE_int32(logger_min_stderr);
 DECLARE_bool(logger_secondary_status_only);
 DECLARE_bool(logger_status_sync);
-DECLARE_bool(logger_event_type);
-DECLARE_bool(logger_snapshot_event_type);
 DECLARE_bool(disable_logging);
 DECLARE_bool(log_numerics_as_numbers);
 
@@ -284,10 +282,8 @@ TEST_F(LoggerTests, test_logger_snapshots) {
   logSnapshotQuery(item);
   EXPECT_EQ(2U, LoggerTests::snapshot_rows_added);
 
-  FLAGS_logger_snapshot_event_type = true;
   logSnapshotQuery(item);
   EXPECT_EQ(4U, LoggerTests::snapshot_rows_added);
-  FLAGS_logger_snapshot_event_type = false;
 }
 
 class SecondTestLoggerPlugin : public LoggerPlugin {
@@ -357,11 +353,9 @@ TEST_F(LoggerTests, test_logger_scheduled_query) {
   EXPECT_EQ(1U, LoggerTests::log_lines.size());
 
   // The entire removed/added is one event when result events is false.
-  FLAGS_logger_event_type = false;
   item.results.removed.push_back({{"test_column", "test_new_value\n"}});
   logQueryLogItem(item);
   EXPECT_EQ(2U, LoggerTests::log_lines.size());
-  FLAGS_logger_event_type = true;
 
   // Now the two removed will be individual events.
   logQueryLogItem(item);

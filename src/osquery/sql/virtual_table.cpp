@@ -31,8 +31,6 @@ FLAG(uint64,
 
 SHELL_FLAG(bool, planner, false, "Enable osquery runtime planner output");
 
-DECLARE_bool(disable_events);
-
 RecursiveMutex kAttachMutex;
 
 namespace tables {
@@ -844,8 +842,7 @@ static int xFilter(sqlite3_vtab_cursor* pVtabCursor,
 
   // For event-based tables, help the caller if events are disabled.
   bool events_satisfied =
-      ((content->attributes & TableAttributes::EVENT_BASED) == 0 ||
-       !FLAGS_disable_events);
+      ((content->attributes & TableAttributes::EVENT_BASED) == 0);
 
   std::map<std::string, ColumnOptions> options;
   for (size_t i = 0; i < content->columns.size(); ++i) {

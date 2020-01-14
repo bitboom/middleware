@@ -37,7 +37,6 @@
 #include "osquery/utils/info/platform_type.h"
 #include <osquery/core.h>
 #include <osquery/data_logger.h>
-#include <osquery/events.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
 #include <osquery/registry.h>
@@ -155,7 +154,6 @@ DECLARE_bool(config_dump);
 DECLARE_bool(database_dump);
 DECLARE_string(database_path);
 DECLARE_bool(disable_database);
-DECLARE_bool(disable_events);
 DECLARE_bool(disable_logging);
 
 CLI_FLAG(bool, S, false, "Run as a shell process");
@@ -298,7 +296,6 @@ Initializer::Initializer(int& argc,
     // The shell is transient, rewrite config-loaded paths.
     FLAGS_disable_logging = true;
     // The shell never will not fork a worker.
-    FLAGS_disable_events = true;
   }
 
   if (default_flags && isReadable(kBackupDefaultFlagfile)) {
@@ -471,10 +468,6 @@ void Initializer::start() const {
     initActivePlugin("logger", FLAGS_logger_plugin);
     initLogger(binary_);
   }
-
-  // Start event threads.
-  osquery::attachEvents();
-  EventFactory::delay();
 }
 
 void Initializer::waitForShutdown() {
@@ -489,9 +482,6 @@ void Initializer::waitForShutdown() {
       shutdown();
     }
   }
-
-  // End any event type run loops.
-  EventFactory::end(true);
 
   // Hopefully release memory used by global string constructors in gflags.
   GFLAGS_NAMESPACE::ShutDownCommandLineFlags();

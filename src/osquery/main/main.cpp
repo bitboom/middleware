@@ -91,7 +91,6 @@ int startShell(osquery::Initializer& runner, int argc, char* argv[]) {
       !osquery::FLAGS_A.empty() || !osquery::FLAGS_pack.empty() ||
       osquery::FLAGS_L || osquery::FLAGS_profile > 0) {
     // A query was set as a positional argument, via stdin, or profiling is on.
-    osquery::FLAGS_disable_events = true;
     osquery::FLAGS_disable_caching = true;
   }
 

@@ -26,9 +26,6 @@ DECLARE_string(A);
 /// The shell may request execution of all queries in a pack immediately.
 DECLARE_string(pack);
 
-/// The shell may need to disable events for fast operations.
-DECLARE_bool(disable_events);
-
 /**
  * @brief Run an interactive SQL query shell.
  *

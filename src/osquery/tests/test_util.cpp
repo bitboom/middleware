@@ -130,12 +130,4 @@ ScheduledQuery getOsqueryScheduledQuery() {
   return sq;
 }
 
-TableRows genRows(EventSubscriberPlugin* sub) {
-  auto vtc = std::make_shared<VirtualTableContent>();
-  QueryContext context(vtc);
-
-  TableRows results;
-  return results;
-}
-
 } // namespace osquery
