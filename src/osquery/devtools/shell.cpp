@@ -38,7 +38,6 @@
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
 #include <osquery/packs.h>
-#include <osquery/process/process.h>
 #include <osquery/registry_factory.h>
 #include <osquery/sql/virtual_table.h>
 #include <osquery/utils/chars.h>

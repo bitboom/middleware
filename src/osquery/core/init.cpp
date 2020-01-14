@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#include <osquery/system.h>
+
 #ifdef WIN32
 
 #include <osquery/utils/system/system.h>
@@ -38,7 +40,6 @@
 #include <osquery/events.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
-#include <osquery/process/process.h>
 #include <osquery/registry.h>
 #include <osquery/utils/info/version.h>
 #include <osquery/utils/system/time.h>
@@ -251,9 +252,6 @@ Initializer::Initializer(int& argc,
   // The 'main' thread is that which executes the initializer.
   kMainThreadId = std::this_thread::get_id();
 
-  // Maintain a legacy thread id for Windows service stops.
-  kLegacyThreadId = platformGetTid();
-
 #ifndef WIN32
   // Set the max number of open files.
   struct rlimit nofiles;
@@ -350,19 +348,6 @@ Initializer::Initializer(int& argc,
       std::signal(SIGHUP, signalHandler);
       std::signal(SIGALRM, signalHandler);
     }
-  }
-
-  // Initialize the status and results logger.
-  initStatusLogger(binary_, init_glog);
-  if (isWorker()) {
-    VLOG(1) << "osquery worker initialized [watcher="
-            << PlatformProcess::getLauncherProcess()->pid() << "]";
-  } else {
-    VLOG(1) << "osquery initialized [version=" << kVersion << "]";
-  }
-
-  if (default_flags) {
-    VLOG(1) << "Using default flagfile: " << kBackupDefaultFlagfile;
   }
 
   // Initialize the COM libs
@@ -463,8 +448,6 @@ void Initializer::start() const {
       auto retcode = (isWorker()) ? EXIT_CATASTROPHIC : EXIT_FAILURE;
       requestShutdown(retcode);
     }
-
-    sleepFor(kDatabaseRetryDelay);
   }
 
   // Ensure the database results version is up to date before proceeding

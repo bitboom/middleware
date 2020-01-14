@@ -19,7 +19,6 @@
 
 #include <osquery/flags.h>
 #include <osquery/logger.h>
-#include <osquery/process/process.h>
 #include <osquery/system.h>
 
 #include <osquery/utils/info/platform_type.h>
@@ -448,16 +447,6 @@ TEST_F(FilesystemTests, test_user_namespace_parser) {
   EXPECT_EQ(namespace_inode, static_cast<ino_t>(112233));
 }
 #endif
-
-TEST_F(FilesystemTests, test_read_proc) {
-  std::string content;
-
-  if (isPlatform(PlatformType::TYPE_LINUX)) {
-    fs::path stat_path("/proc/" + std::to_string(platformGetPid()) + "/stat");
-    EXPECT_TRUE(readFile(stat_path, content).ok());
-    EXPECT_GT(content.size(), 0U);
-  }
-}
 
 TEST_F(FilesystemTests, test_read_symlink) {
   std::string content;

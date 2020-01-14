@@ -26,7 +26,6 @@
 #include <osquery/utils/system/time.h>
 #include <osquery/utils/conversions/tryto.h>
 
-#include <osquery/process/process.h>
 #include <osquery/tests/test_util.h>
 #include <osquery/utils/info/platform_type.h>
 
@@ -96,7 +95,7 @@ void initTesting() {
 
   // Set safe default values for path-based flags.
   // Specific unittests may edit flags temporarily.
-  kTestWorkingDirectory += std::to_string(platformGetUid()) + "/";
+  kTestWorkingDirectory += std::to_string(1234) + "/";
   kFakeDirectory = kTestWorkingDirectory + kFakeDirectoryName;
 
   fs::remove_all(kTestWorkingDirectory);

@@ -21,7 +21,6 @@
 #include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/main/main.h>
-#include <osquery/process/process.h>
 #include <osquery/registry_factory.h>
 #include <osquery/sql/sqlite_util.h>
 #include <osquery/system.h>
@@ -57,10 +56,6 @@ int profile(int argc, char* argv[]) {
     query = std::string(argv[1]);
   }
 
-  if (osquery::FLAGS_profile_delay > 0) {
-    osquery::sleepFor(osquery::FLAGS_profile_delay * 1000);
-  }
-
   // Perform some duplication from Initializer with respect to database setup.
   osquery::DatabasePlugin::setAllowOpen(true);
   osquery::RegistryFactory::get().setActive("database", "ephemeral");
@@ -75,10 +70,6 @@ int profile(int argc, char* argv[]) {
                 << "): " << status.what() << std::endl;
       return status.getCode();
     }
-  }
-
-  if (osquery::FLAGS_profile_delay > 0) {
-    osquery::sleepFor(osquery::FLAGS_profile_delay * 1000);
   }
 
   return 0;
