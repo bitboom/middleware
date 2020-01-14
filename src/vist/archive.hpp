@@ -135,7 +135,7 @@ void Archive::transform(std::tuple<Ts...>& tuple)
 }
 
 template<typename T>
-void Archive::transformImpl(T& tuple, EmptySequence)
+void Archive::transformImpl(T&, EmptySequence)
 {
 }
 

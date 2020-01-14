@@ -75,7 +75,7 @@ private:
 	int epollFd;
 	std::atomic<bool> stopped;
 
-	const int MAX_EPOLL_EVENTS = 16;
+	constexpr static int MAX_EPOLL_EVENTS = 16;
 };
 
 } // namespace event

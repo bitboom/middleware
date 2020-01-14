@@ -42,7 +42,7 @@ class TestPolicyModelFailed : public PolicyModel {
 public:
 	TestPolicyModelFailed() : PolicyModel("test_policy_failed", PolicyValue(1)) {}
 
-	virtual void onChanged(const PolicyValue& value)
+	virtual void onChanged(const PolicyValue&)
 	{
 		throw std::runtime_error("Intended exception for test.");
 	}

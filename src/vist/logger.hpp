@@ -184,7 +184,7 @@ private:
 
 #define LOG(level, tag) vist::LogStream(LOGCAT(vist::LogLevel::level, #tag))
 #define LOGCAT(level, tag) \
-	vist::LogRecord {level, tag, __FILENAME__, __LINE__, __func__}
+	vist::LogRecord {level, tag, __FILENAME__, __LINE__, __func__, ""}
 
 #define NULLSTREAM std::ostringstream()
 

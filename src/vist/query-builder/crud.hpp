@@ -160,7 +160,7 @@ T& Crud<T>::update(ColumnTypes&&... cts)
 	ss << "UPDATE " << static_cast<T*>(this)->name << " ";
 	ss << "SET ";
 
-	int i = 0;
+	unsigned int i = 0;
 	for (const auto& c : columnNames) {
 		ss << c << " = ?";
 

@@ -29,13 +29,13 @@ bool cast_compare(L l, R r)
 }
 
 template<typename L, typename R>
-bool compare(L l, R r)
+bool compare(L, R)
 {
 	return std::is_same<L, R>::value;
 }
 
 template<typename L, typename R>
-void assert_compare(L l, R r)
+void assert_compare(L, R)
 {
 	static_assert(std::is_same<L, R>::value, "Type is unsafe.");
 }

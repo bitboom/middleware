@@ -67,7 +67,7 @@ private:
 
 	Handler getHandler(const int fd);
 
-	bool prepare(void);
+	void prepare(void);
 
 	void wait(int timeout, Stopper stopper);
 	void dispatch(int size);

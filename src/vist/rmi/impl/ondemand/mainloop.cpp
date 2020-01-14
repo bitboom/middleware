@@ -93,7 +93,7 @@ Mainloop::Handler Mainloop::getHandler(const int fd)
 	return std::make_pair(iter->second.first, iter->second.second);
 }
 
-bool Mainloop::prepare(void)
+void Mainloop::prepare(void)
 {
 	auto wakeup = [this]() {
 		this->wakeupSignal.receive();

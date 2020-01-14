@@ -121,7 +121,7 @@ Archive Functor<R, K, Ps...>::dispatch(Archive& archive)
 
 template<typename R, typename K, typename... Ps>
 template<typename T>
-auto Functor<R, K, Ps...>::operator()(T& tuple,
+auto Functor<R, K, Ps...>::operator()(T&,
 									  EmptySequence) -> typename MemFunc::Return
 {
 	return (*this)();
