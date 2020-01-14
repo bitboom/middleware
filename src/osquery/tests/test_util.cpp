@@ -42,10 +42,8 @@ std::string kTestWorkingDirectory;
 /// The relative path within the source repo to find test content.
 std::string kTestDataPath{"../../../tools/tests/"};
 
-DECLARE_string(database_path);
 DECLARE_string(enroll_tls_endpoint);
 DECLARE_bool(disable_logging);
-DECLARE_bool(disable_database);
 
 using chrono_clock = std::chrono::high_resolution_clock;
 
@@ -100,22 +98,13 @@ void initTesting() {
 
   fs::remove_all(kTestWorkingDirectory);
   fs::create_directories(kTestWorkingDirectory);
-  FLAGS_database_path = kTestWorkingDirectory + "unittests.db";
 
   FLAGS_disable_logging = true;
-  FLAGS_disable_database = true;
-
-  // Tests need a database plugin.
-  // Set up the database instance for the unittests.
-  DatabasePlugin::setAllowOpen(true);
-  DatabasePlugin::initPlugin();
 
   Initializer::platformSetup();
 }
 
 void shutdownTesting() {
-  DatabasePlugin::shutdown();
-
   Initializer::platformTeardown();
 }
 

@@ -33,7 +33,6 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
-#include <osquery/database.h>
 #include <osquery/devtools/devtools.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
@@ -71,7 +70,6 @@ SHELL_FLAG(string, A, "", "Select all from a table");
 DECLARE_string(nullvalue);
 DECLARE_string(logger_plugin);
 DECLARE_string(logger_path);
-DECLARE_string(database_path);
 } // namespace osquery
 
 static char zHelp[] =
@@ -1148,14 +1146,6 @@ inline void meta_show(struct callback_data* p) {
       p->out, "%13.13s: %s", "Logger", osquery::FLAGS_logger_plugin.c_str());
   if (osquery::FLAGS_logger_plugin == "filesystem") {
     fprintf(p->out, " (%s)\n", osquery::FLAGS_logger_path.c_str());
-  } else {
-    fprintf(p->out, "\n");
-  }
-
-  auto database = osquery::RegistryFactory::get().getActive("database");
-  fprintf(p->out, "%13.13s: %s", "Database", database.c_str());
-  if (database == "rocksdb") {
-    fprintf(p->out, " (%s)\n", osquery::FLAGS_database_path.c_str());
   } else {
     fprintf(p->out, "\n");
   }

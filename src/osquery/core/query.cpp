@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include <osquery/database.h>
 #include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/query.h>
@@ -28,46 +27,19 @@ FLAG(bool,
      "Use numeric JSON syntax for numeric values");
 
 uint64_t Query::getPreviousEpoch() const {
-  uint64_t epoch = 0;
-  std::string raw;
-  auto status = getDatabaseValue(kQueries, name_ + "epoch", raw);
-  if (status.ok()) {
-    epoch = std::stoull(raw);
-  }
-  return epoch;
+  return 0;
 }
 
 uint64_t Query::getQueryCounter(bool new_query) const {
-  uint64_t counter = 0;
-  if (new_query) {
-    return counter;
-  }
-
-  std::string raw;
-  auto status = getDatabaseValue(kQueries, name_ + "counter", raw);
-  if (status.ok()) {
-    counter = std::stoull(raw) + 1;
-  }
-  return counter;
+  return 0;
 }
 
 Status Query::getPreviousQueryResults(QueryDataSet& results) const {
-  std::string raw;
-  auto status = getDatabaseValue(kQueries, name_, raw);
-  if (!status.ok()) {
-    return status;
-  }
-
-  status = deserializeQueryDataJSON(raw, results);
-  if (!status.ok()) {
-    return status;
-  }
   return Status::success();
 }
 
 std::vector<std::string> Query::getStoredQueryNames() {
   std::vector<std::string> results;
-  scanDatabaseKeys(kQueries, results);
   return results;
 }
 
@@ -78,13 +50,10 @@ bool Query::isQueryNameInDatabase() const {
 
 static inline void saveQuery(const std::string& name,
                              const std::string& query) {
-  setDatabaseValue(kQueries, "query." + name, query);
 }
 
 bool Query::isNewQuery() const {
-  std::string query;
-  getDatabaseValue(kQueries, "query." + name_, query);
-  return (query != query_);
+  return true;
 }
 
 Status Query::addNewResults(QueryDataTyped qd,
@@ -140,32 +109,6 @@ Status Query::addNewResults(QueryDataTyped current_qd,
     target_gd = &dr.added;
   }
 
-  counter = getQueryCounter(fresh_results || new_query);
-  auto status =
-      setDatabaseValue(kQueries, name_ + "counter", std::to_string(counter));
-  if (!status.ok()) {
-    return status;
-  }
-
-  if (update_db) {
-    // Replace the "previous" query data with the current.
-    std::string json;
-    status = serializeQueryDataJSON(*target_gd, json, true);
-    if (!status.ok()) {
-      return status;
-    }
-
-    status = setDatabaseValue(kQueries, name_, json);
-    if (!status.ok()) {
-      return status;
-    }
-
-    status = setDatabaseValue(
-        kQueries, name_ + "epoch", std::to_string(current_epoch));
-    if (!status.ok()) {
-      return status;
-    }
-  }
   return Status::success();
 }
 

@@ -5,6 +5,3 @@
 # the LICENSE file found in the root directory of this source tree.
 
 ADD_OSQUERY_LIBRARY(osquery_pluing_logger logger/filesystem_logger.cpp)
-
-ADD_OSQUERY_LIBRARY(osquery_plugin_db database/ephemeral.cpp
-									  database/sqlite.cpp)

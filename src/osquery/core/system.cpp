@@ -46,7 +46,6 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include <osquery/core.h>
-#include <osquery/database.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
 #include <osquery/logger.h>
@@ -224,16 +223,9 @@ std::string generateHostUUID() {
 }
 
 Status getInstanceUUID(std::string& ident) {
-  // Lookup the instance identifier (UUID) previously generated and stored.
-  auto status =
-      getDatabaseValue(kPersistentSettings, "instance_uuid_v1", ident);
-  if (ident.size() == 0) {
-    // There was no UUID stored in the database, generate one and store it.
-    ident = osquery::generateNewUUID();
-    return setDatabaseValue(kPersistentSettings, "instance_uuid_v1", ident);
-  }
+  ident = osquery::generateNewUUID();
 
-  return status;
+  return Status(-1, "Not supported");
 }
 
 Status getEphemeralUUID(std::string& ident) {
@@ -244,14 +236,7 @@ Status getEphemeralUUID(std::string& ident) {
 }
 
 Status getHostUUID(std::string& ident) {
-  // Lookup the host identifier (UUID) previously generated and stored.
-  auto status = getDatabaseValue(kPersistentSettings, "host_uuid_v3", ident);
-  if (ident.size() == 0) {
-    // There was no UUID stored in the database, generate one and store it.
-    ident = osquery::generateHostUUID();
-    return setDatabaseValue(kPersistentSettings, "host_uuid_v3", ident);
-  }
-  return status;
+  return Status(-1, "Not supported");
 }
 
 Status getSpecifiedUUID(std::string& ident) {

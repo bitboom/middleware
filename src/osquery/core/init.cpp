@@ -42,7 +42,6 @@
 #include <osquery/registry.h>
 #include <osquery/utils/info/version.h>
 #include <osquery/utils/system/time.h>
-#include <osquery/database.h>
 
 #ifdef __linux__
 #include <sys/syscall.h>
@@ -151,16 +150,11 @@ namespace osquery {
 DECLARE_string(logger_plugin);
 DECLARE_bool(config_check);
 DECLARE_bool(config_dump);
-DECLARE_bool(database_dump);
-DECLARE_string(database_path);
-DECLARE_bool(disable_database);
 DECLARE_bool(disable_logging);
 
 CLI_FLAG(bool, S, false, "Run as a shell process");
 CLI_FLAG(bool, D, false, "Run as a daemon process");
 CLI_FLAG(bool, daemonize, false, "Attempt to daemonize (POSIX only)");
-
-FLAG(bool, ephemeral, false, "Skip pidfile and database state checks");
 
 ToolType kToolType{ToolType::UNKNOWN};
 
@@ -176,28 +170,8 @@ unsigned long kLegacyThreadId;
 /// When no flagfile is provided via CLI, attempt to read flag 'defaults'.
 const std::string kBackupDefaultFlagfile{OSQUERY_HOME "osquery.flags.default"};
 
-const size_t kDatabaseMaxRetryCount{25};
-const size_t kDatabaseRetryDelay{200};
 std::function<void()> Initializer::shutdown_{nullptr};
 RecursiveMutex Initializer::shutdown_mutex_;
-
-namespace {
-
-void initWorkDirectories() {
-  if (!FLAGS_disable_database) {
-    auto const recursive = true;
-    auto const ignore_existence = true;
-    auto const status = createDirectory(
-        boost::filesystem::path(FLAGS_database_path).parent_path(),
-        recursive,
-        ignore_existence);
-    if (!status.ok()) {
-      LOG(ERROR) << "Could not initialize db directory: " << status.what();
-    }
-  }
-}
-
-} // namespace
 
 static inline void printUsage(const std::string& binary, ToolType tool) {
   // Parse help options before gflags. Only display osquery-related options.
@@ -315,21 +289,9 @@ Initializer::Initializer(int& argc,
   // Initialize registries and plugins
   registryAndPluginInit();
 
-  if (isShell() || FLAGS_ephemeral) {
-    if (Flag::isDefault("database_path") &&
-        Flag::isDefault("disable_database")) {
-      // The shell should not use a database by default, but should use the DB
-      // specified by database_path if it is set
-      FLAGS_disable_database = true;
-    }
-  }
-
   if (isShell()) {
     // Initialize the shell after setting modified defaults and parsing flags.
     initShell();
-  }
-  if (isDaemon()) {
-    initWorkDirectories();
   }
 
   if (FLAGS_enable_signal_handler) {
@@ -368,32 +330,11 @@ void Initializer::initDaemon() const {
 
   // Print the version to the OS system log.
   systemLog(binary_ + " started [version=" + kVersion + "]");
-
-  if (!FLAGS_ephemeral) {
-    // Create a process mutex around the daemon.
-    auto pid_status = createPidFile();
-    if (!pid_status.ok()) {
-      LOG(ERROR) << binary_ << " initialize failed: " << pid_status.toString();
-      shutdown(EXIT_FAILURE);
-    }
-  }
 }
 
 void Initializer::initShell() const {
   // Get the caller's home dir for temporary storage/state management.
   auto homedir = osqueryHomeDirectory();
-  if (osquery::pathExists(homedir).ok()) {
-    // Only apply user/shell-specific paths if not overridden by CLI flag.
-    if (Flag::isDefault("database_path")) {
-      osquery::FLAGS_database_path =
-          (fs::path(homedir) / "shell.db").make_preferred().string();
-    }
-  } else {
-    fprintf(
-        stderr, "Cannot access or create osquery home: %s", homedir.c_str());
-    FLAGS_disable_database = true;
-  }
-
   if (Flag::isDefault("hash_delay")) {
     // The hash_delay is designed for daemons only.
     Flag::updateValue("hash_delay", "0");
@@ -430,38 +371,8 @@ void Initializer::installShutdown(std::function<void()>& handler) {
 }
 
 void Initializer::start() const {
-  DatabasePlugin::setAllowOpen(true);
-  // A daemon must always have R/W access to the database.
-  DatabasePlugin::setRequireWrite(isDaemon());
-
-  for (size_t i = 1; i <= kDatabaseMaxRetryCount; i++) {
-    if (DatabasePlugin::initPlugin().ok()) {
-      break;
-    }
-
-    if (i == kDatabaseMaxRetryCount) {
-      LOG(ERROR) << RLOG(1629) << binary_
-                 << " initialize failed: Could not initialize database";
-      auto retcode = (isWorker()) ? EXIT_CATASTROPHIC : EXIT_FAILURE;
-      requestShutdown(retcode);
-    }
-  }
-
-  // Ensure the database results version is up to date before proceeding
-  if (!upgradeDatabase()) {
-    LOG(ERROR) << "Failed to upgrade database";
-    auto retcode = (isWorker()) ? EXIT_CATASTROPHIC : EXIT_FAILURE;
-    requestShutdown(retcode);
-  }
-
-
   // Run the setup for all lazy registries (tables, SQL).
   Registry::setUp();
-
-  if (FLAGS_database_dump) {
-    dumpDatabase();
-    requestShutdown();
-  }
 
   // Initialize the status and result plugin logger.
   if (!FLAGS_disable_logging) {
@@ -485,7 +396,6 @@ void Initializer::waitForShutdown() {
 
   // Hopefully release memory used by global string constructors in gflags.
   GFLAGS_NAMESPACE::ShutDownCommandLineFlags();
-  DatabasePlugin::shutdown();
 
   auto excode = (kExitCode != 0) ? kExitCode : EXIT_SUCCESS;
   exit(excode);

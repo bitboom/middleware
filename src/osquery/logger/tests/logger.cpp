@@ -11,7 +11,6 @@
 #include <gtest/gtest.h>
 
 #include <osquery/data_logger.h>
-#include <osquery/database.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/plugins/logger.h>
 #include <osquery/registry_factory.h>
@@ -21,7 +20,6 @@
 
 namespace osquery {
 
-DECLARE_bool(disable_database);
 DECLARE_int32(logger_min_status);
 DECLARE_int32(logger_min_stderr);
 DECLARE_bool(logger_secondary_status_only);
@@ -34,9 +32,6 @@ class LoggerTests : public testing::Test {
   void SetUp() override {
     Initializer::platformSetup();
     registryAndPluginInit();
-    FLAGS_disable_database = true;
-    DatabasePlugin::setAllowOpen(true);
-    DatabasePlugin::initPlugin();
 
     // Backup the logging status, then disable.
     FLAGS_disable_logging = false;

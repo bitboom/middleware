@@ -8,7 +8,6 @@
 
 #include <osquery/utils/json/json.h>
 
-#include <osquery/database.h>
 #include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/registry_factory.h>
@@ -226,12 +225,7 @@ bool TablePlugin::isCached(size_t step, const QueryContext& ctx) const {
 }
 
 TableRows TablePlugin::getCache() const {
-  VLOG(1) << "Retrieving results from cache for table: " << getName();
-  // Lookup results from database and deserialize.
-  std::string content;
-  getDatabaseValue(kQueries, "cache." + getName(), content);
   TableRows results;
-  deserializeTableRowsJSON(content, results);
   return results;
 }
 
@@ -239,17 +233,7 @@ void TablePlugin::setCache(size_t step,
                            size_t interval,
                            const QueryContext& ctx,
                            const TableRows& results) {
-  if (FLAGS_disable_caching || !cacheAllowed(columns(), ctx)) {
-    return;
-  }
-
-  // Serialize QueryData and save to database.
-  std::string content;
-  if (serializeTableRowsJSON(results, content)) {
-    last_cached_ = step;
-    last_interval_ = interval;
-    setDatabaseValue(kQueries, "cache." + getName(), content);
-  }
+  return;
 }
 
 std::string columnDefinition(const TableColumns& columns, bool is_extension) {

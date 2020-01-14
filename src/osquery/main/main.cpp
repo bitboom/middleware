@@ -15,7 +15,6 @@
 #include <boost/algorithm/string/predicate.hpp>
 
 #include <osquery/core.h>
-#include <osquery/database.h>
 #include <osquery/devtools/devtools.h>
 #include <osquery/filesystem/fileops.h>
 #include <osquery/flags.h>
@@ -55,10 +54,6 @@ int profile(int argc, char* argv[]) {
   } else {
     query = std::string(argv[1]);
   }
-
-  // Perform some duplication from Initializer with respect to database setup.
-  osquery::DatabasePlugin::setAllowOpen(true);
-  osquery::RegistryFactory::get().setActive("database", "ephemeral");
 
   auto dbc = osquery::SQLiteDBManager::get();
   for (size_t i = 0; i < static_cast<size_t>(osquery::FLAGS_profile); ++i) {
