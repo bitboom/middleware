@@ -20,9 +20,9 @@
 #include <gtest/gtest_prod.h>
 
 #include <osquery/core.h>
-#include <osquery/dispatcher.h>
 #include <osquery/tables.h>
 #include <osquery/utils/status/status.h>
+#include <osquery/utils/mutex.h>
 
 namespace osquery {
 
@@ -216,7 +216,6 @@ class Eventer {
 };
 
 class EventPublisherPlugin : public Plugin,
-                             public InterruptableRunnable,
                              public Eventer {
  public:
   /**
@@ -260,16 +259,6 @@ class EventPublisherPlugin : public Plugin,
   virtual Status run() {
     return Status(1, "No run loop required");
   }
-
-  /**
-   * @brief Allow the EventFactory to interrupt the run loop.
-   *
-   * Assume the main thread may ask the run loop to stop at anytime.
-   * Before end is called the publisher's `isEnding` is set and the EventFactory
-   * run loop manager will exit the stepping loop and fall through to a call
-   * to tearDown followed by a removal of the publisher.
-   */
-  void stop() override {}
 
   /// This is a plugin type and must implement a call method.
   Status call(const PluginRequest& /*request*/,

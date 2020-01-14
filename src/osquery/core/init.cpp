@@ -35,7 +35,6 @@
 #include "osquery/utils/info/platform_type.h"
 #include <osquery/core.h>
 #include <osquery/data_logger.h>
-#include <osquery/dispatcher.h>
 #include <osquery/events.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
@@ -123,8 +122,6 @@ void signalHandler(int num) {
 
       // Restore the default signal handler.
       std::signal(num, SIG_DFL);
-
-      osquery::Dispatcher::stopServices();
     }
   }
 
@@ -510,8 +507,6 @@ void Initializer::waitForShutdown() {
     }
   }
 
-  // Attempt to be the only place in code where a join is attempted.
-  Dispatcher::joinServices();
   // End any event type run loops.
   EventFactory::end(true);
 
@@ -537,7 +532,6 @@ void Initializer::requestShutdown(int retcode) {
     // it is NOT waiting for a shutdown.
     // Exceptions include: tight request / wait in an exception handler or
     // custom signal handling.
-    Dispatcher::stopServices();
     waitForShutdown();
   }
 }

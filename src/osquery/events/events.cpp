@@ -658,7 +658,6 @@ Status EventFactory::run(const std::string& type_id) {
   } else if (publisher->hasStarted()) {
     return Status(1, "Cannot restart an event publisher");
   }
-  setThreadName(publisher->name());
   VLOG(1) << "Starting event publisher run loop: " + type_id;
   publisher->hasStarted(true);
 
@@ -670,10 +669,6 @@ Status EventFactory::run(const std::string& type_id) {
       break;
     }
     publisher->restart_count_++;
-    // This is a 'default' cool-off implemented in InterruptableRunnable.
-    // If a publisher fails to perform some sort of interruption point, this
-    // prevents the thread from thrashing through exiting checks.
-    publisher->pause(std::chrono::milliseconds(200));
   }
   if (!status.ok()) {
     // The runloop status is not reflective of the event type's.
@@ -881,8 +876,6 @@ Status EventFactory::deregisterEventPublisher(const std::string& type_id) {
       // If the run loop did run the tear down and erase will happen in the
       // event thread wrapper when isEnding is next checked.
       ef.event_pubs_.erase(type_id);
-    } else {
-      publisher->stop();
     }
   }
   return Status::success();

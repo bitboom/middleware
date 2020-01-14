@@ -17,7 +17,6 @@
 #include <osquery/core.h>
 #include <osquery/database.h>
 #include <osquery/devtools/devtools.h>
-#include <osquery/dispatcher/scheduler.h>
 #include <osquery/filesystem/fileops.h>
 #include <osquery/flags.h>
 #include <osquery/logger.h>
@@ -87,9 +86,6 @@ int profile(int argc, char* argv[]) {
 
 int startDaemon(Initializer& runner) {
   runner.start();
-
-  // Begin the schedule runloop.
-  startScheduler();
 
 //  osquery::events::init_syscall_tracing();
 
