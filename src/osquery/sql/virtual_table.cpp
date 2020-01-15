@@ -12,7 +12,6 @@
 #include <osquery/core.h>
 #include <osquery/flags.h>
 #include <osquery/logger.h>
-#include <osquery/process/process.h>
 #include <osquery/registry_factory.h>
 #include <osquery/sql/dynamic_table_row.h>
 #include <osquery/sql/virtual_table.h>
@@ -31,8 +30,6 @@ FLAG(uint64,
      "Add an optional microsecond delay between table scans");
 
 SHELL_FLAG(bool, planner, false, "Enable osquery runtime planner output");
-
-DECLARE_bool(disable_events);
 
 RecursiveMutex kAttachMutex;
 
@@ -822,10 +819,6 @@ static int xFilter(sqlite3_vtab_cursor* pVtabCursor,
   BaseCursor* pCur = (BaseCursor*)pVtabCursor;
   auto* pVtab = (VirtualTable*)pVtabCursor->pVtab;
   auto content = pVtab->content;
-  if (FLAGS_table_delay > 0 && pVtab->instance->tableCalled(*content)) {
-    // Apply an optional sleep between table calls.
-    sleepFor(FLAGS_table_delay);
-  }
   pVtab->instance->addAffectedTable(content);
 
   pCur->row = 0;
@@ -845,12 +838,11 @@ static int xFilter(sqlite3_vtab_cursor* pVtabCursor,
   // for UID. This may be represented in the requirements, but otherwise
   // would benefit from specific notification to the caller.
   bool user_based_satisfied = !(
-      (content->attributes & TableAttributes::USER_BASED) > 0 && isUserAdmin());
+      (content->attributes & TableAttributes::USER_BASED) > 0);
 
   // For event-based tables, help the caller if events are disabled.
   bool events_satisfied =
-      ((content->attributes & TableAttributes::EVENT_BASED) == 0 ||
-       !FLAGS_disable_events);
+      ((content->attributes & TableAttributes::EVENT_BASED) == 0);
 
   std::map<std::string, ColumnOptions> options;
   for (size_t i = 0; i < content->columns.size(); ++i) {

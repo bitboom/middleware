@@ -26,7 +26,6 @@
 #include <osquery/utils/system/time.h>
 #include <osquery/utils/conversions/tryto.h>
 
-#include <osquery/process/process.h>
 #include <osquery/tests/test_util.h>
 #include <osquery/utils/info/platform_type.h>
 
@@ -43,16 +42,12 @@ std::string kTestWorkingDirectory;
 /// The relative path within the source repo to find test content.
 std::string kTestDataPath{"../../../tools/tests/"};
 
-DECLARE_string(database_path);
 DECLARE_string(enroll_tls_endpoint);
 DECLARE_bool(disable_logging);
-DECLARE_bool(disable_database);
 
 using chrono_clock = std::chrono::high_resolution_clock;
 
 void initTesting() {
-  Config::setStartTime(getUnixTime());
-
   kToolType = ToolType::TEST;
   if (osquery::isPlatform(PlatformType::TYPE_OSX)) {
     kTestWorkingDirectory = "/private/tmp/osquery-tests";
@@ -98,27 +93,18 @@ void initTesting() {
 
   // Set safe default values for path-based flags.
   // Specific unittests may edit flags temporarily.
-  kTestWorkingDirectory += std::to_string(platformGetUid()) + "/";
+  kTestWorkingDirectory += std::to_string(1234) + "/";
   kFakeDirectory = kTestWorkingDirectory + kFakeDirectoryName;
 
   fs::remove_all(kTestWorkingDirectory);
   fs::create_directories(kTestWorkingDirectory);
-  FLAGS_database_path = kTestWorkingDirectory + "unittests.db";
 
   FLAGS_disable_logging = true;
-  FLAGS_disable_database = true;
-
-  // Tests need a database plugin.
-  // Set up the database instance for the unittests.
-  DatabasePlugin::setAllowOpen(true);
-  DatabasePlugin::initPlugin();
 
   Initializer::platformSetup();
 }
 
 void shutdownTesting() {
-  DatabasePlugin::shutdown();
-
   Initializer::platformTeardown();
 }
 
@@ -131,14 +117,6 @@ ScheduledQuery getOsqueryScheduledQuery() {
   sq.interval = 5;
 
   return sq;
-}
-
-TableRows genRows(EventSubscriberPlugin* sub) {
-  auto vtc = std::make_shared<VirtualTableContent>();
-  QueryContext context(vtc);
-
-  TableRows results;
-  return results;
 }
 
 } // namespace osquery

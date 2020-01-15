@@ -18,8 +18,6 @@
 #include <boost/noncopyable.hpp>
 
 #include <osquery/data_logger.h>
-#include <osquery/database.h>
-#include <osquery/events.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
 #include <osquery/plugins/logger.h>
@@ -42,15 +40,6 @@ FLAG(bool, verbose, false, "Enable verbose informational messages");
 FLAG(bool, disable_logging, false, "Disable ERROR/INFO logging");
 
 FLAG(string, logger_plugin, "filesystem", "Logger plugin name");
-
-/// Log each added or removed line individually, as an "event".
-FLAG(bool, logger_event_type, true, "Log scheduled results as events");
-
-/// Log each row from a snapshot query individually, as an "event".
-FLAG(bool,
-     logger_snapshot_event_type,
-     false,
-     "Log scheduled snapshot results as events");
 
 /// Alias for the minloglevel used internally by GLOG.
 FLAG(int32, logger_min_status, 0, "Minimum level for status log recording");
@@ -274,10 +263,6 @@ void initLogger(const std::string& name) {
       // return a success status after initialization.
       BufferedLogSink::get().addPlugin(logger);
     }
-
-    if ((status.getCode() & LOGGER_FEATURE_LOGEVENT) > 0) {
-      EventFactory::addForwarder(logger);
-    }
   }
 
   if (forward) {
@@ -408,13 +393,10 @@ Status logQueryLogItem(const QueryLogItem& results,
 
   std::vector<std::string> json_items;
   Status status;
-  if (FLAGS_logger_event_type) {
-    status = serializeQueryLogItemAsEventsJSON(results, json_items);
-  } else {
-    std::string json;
-    status = serializeQueryLogItemJSON(results, json);
-    json_items.emplace_back(json);
-  }
+  std::string json;
+  status = serializeQueryLogItemJSON(results, json);
+  json_items.emplace_back(json);
+
   if (!status.ok()) {
     return status;
   }
@@ -432,13 +414,10 @@ Status logSnapshotQuery(const QueryLogItem& item) {
 
   std::vector<std::string> json_items;
   Status status;
-  if (FLAGS_logger_snapshot_event_type) {
-    status = serializeQueryLogItemAsEventsJSON(item, json_items);
-  } else {
-    std::string json;
-    status = serializeQueryLogItemJSON(item, json);
-    json_items.emplace_back(json);
-  }
+  std::string json;
+  status = serializeQueryLogItemJSON(item, json);
+  json_items.emplace_back(json);
+
   if (!status.ok()) {
     return status;
   }
@@ -470,7 +449,7 @@ size_t queuedSenders() {
 }
 
 void relayStatusLogs(bool async) {
-  if (FLAGS_disable_logging || !DatabasePlugin::kDBInitialized) {
+  if (FLAGS_disable_logging) {
     // The logger plugins may not be setUp if logging is disabled.
     // If the database is not setUp, or is in a reset, status logs continue
     // to buffer.

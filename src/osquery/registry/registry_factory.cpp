@@ -13,7 +13,6 @@
 #include <sstream>
 
 #include <osquery/logger.h>
-#include <osquery/process/process.h>
 #include <osquery/flags.h>
 #include <osquery/registry.h>
 #include <osquery/utils/conversions/split.h>

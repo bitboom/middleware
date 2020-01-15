@@ -7,7 +7,6 @@
  */
 
 #include <osquery/core/database/in_memory_database.h>
-#include <osquery/database.h>
 #include <osquery/logger.h>
 
 #include <boost/algorithm/string.hpp>
@@ -61,9 +60,6 @@ ExpectedSuccess<DatabaseError> InMemoryDatabase::destroyDB() {
 
 ExpectedSuccess<DatabaseError> InMemoryDatabase::open() {
   debug_only::verifyTrue(!is_open_, "database is already open");
-  for (const auto& domain : kDomains) {
-    storage_[domain] = std::make_unique<InMemoryStorage<DataType>>();
-  }
   is_open_ = true;
   return Success();
 }

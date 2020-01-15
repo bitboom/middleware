@@ -9,7 +9,6 @@
 #include <gtest/gtest.h>
 
 #include <osquery/core.h>
-#include <osquery/database.h>
 #include <osquery/logger.h>
 #include <osquery/registry.h>
 #include <osquery/sql.h>
@@ -20,16 +19,11 @@
 
 namespace osquery {
 
-DECLARE_bool(disable_database);
-
 class VirtualTableTests : public testing::Test {
  public:
   void SetUp() override {
     Initializer::platformSetup();
     registryAndPluginInit();
-    FLAGS_disable_database = true;
-    DatabasePlugin::setAllowOpen(true);
-    DatabasePlugin::initPlugin();
   }
 };
 

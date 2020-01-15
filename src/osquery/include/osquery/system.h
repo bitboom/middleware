@@ -291,13 +291,6 @@ std::string getHostIdentifier();
 Status createPidFile();
 
 /**
- * @brief Getter for determining Admin status
- *
- * @return A bool indicating if the current process is running as admin
- */
-bool isUserAdmin();
-
-/**
  * @brief Set the name of the thread
  *
  * @return If the name was set successfully

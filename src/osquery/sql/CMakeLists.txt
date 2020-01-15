@@ -14,7 +14,6 @@
 
 ADD_OSQUERY_LIBRARY(osquery_sql dynamic_table_row.cpp
 								sqlite_encoding.cpp
-								sqlite_hashing.cpp
 								sqlite_util.cpp
 								sql.cpp
 								sqlite_filesystem.cpp

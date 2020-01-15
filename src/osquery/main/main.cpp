@@ -15,14 +15,11 @@
 #include <boost/algorithm/string/predicate.hpp>
 
 #include <osquery/core.h>
-#include <osquery/database.h>
 #include <osquery/devtools/devtools.h>
-#include <osquery/dispatcher/scheduler.h>
 #include <osquery/filesystem/fileops.h>
 #include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/main/main.h>
-#include <osquery/process/process.h>
 #include <osquery/registry_factory.h>
 #include <osquery/sql/sqlite_util.h>
 #include <osquery/system.h>
@@ -58,14 +55,6 @@ int profile(int argc, char* argv[]) {
     query = std::string(argv[1]);
   }
 
-  if (osquery::FLAGS_profile_delay > 0) {
-    osquery::sleepFor(osquery::FLAGS_profile_delay * 1000);
-  }
-
-  // Perform some duplication from Initializer with respect to database setup.
-  osquery::DatabasePlugin::setAllowOpen(true);
-  osquery::RegistryFactory::get().setActive("database", "ephemeral");
-
   auto dbc = osquery::SQLiteDBManager::get();
   for (size_t i = 0; i < static_cast<size_t>(osquery::FLAGS_profile); ++i) {
     osquery::QueryData results;
@@ -78,18 +67,11 @@ int profile(int argc, char* argv[]) {
     }
   }
 
-  if (osquery::FLAGS_profile_delay > 0) {
-    osquery::sleepFor(osquery::FLAGS_profile_delay * 1000);
-  }
-
   return 0;
 }
 
 int startDaemon(Initializer& runner) {
   runner.start();
-
-  // Begin the schedule runloop.
-  startScheduler();
 
 //  osquery::events::init_syscall_tracing();
 
@@ -104,7 +86,6 @@ int startShell(osquery::Initializer& runner, int argc, char* argv[]) {
       !osquery::FLAGS_A.empty() || !osquery::FLAGS_pack.empty() ||
       osquery::FLAGS_L || osquery::FLAGS_profile > 0) {
     // A query was set as a positional argument, via stdin, or profiling is on.
-    osquery::FLAGS_disable_events = true;
     osquery::FLAGS_disable_caching = true;
   }
 

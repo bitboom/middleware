@@ -46,11 +46,9 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include <osquery/core.h>
-#include <osquery/database.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/flags.h>
 #include <osquery/logger.h>
-#include <osquery/process/process.h>
 #include <osquery/sql.h>
 #include <osquery/system.h>
 
@@ -225,16 +223,9 @@ std::string generateHostUUID() {
 }
 
 Status getInstanceUUID(std::string& ident) {
-  // Lookup the instance identifier (UUID) previously generated and stored.
-  auto status =
-      getDatabaseValue(kPersistentSettings, "instance_uuid_v1", ident);
-  if (ident.size() == 0) {
-    // There was no UUID stored in the database, generate one and store it.
-    ident = osquery::generateNewUUID();
-    return setDatabaseValue(kPersistentSettings, "instance_uuid_v1", ident);
-  }
+  ident = osquery::generateNewUUID();
 
-  return status;
+  return Status(-1, "Not supported");
 }
 
 Status getEphemeralUUID(std::string& ident) {
@@ -245,14 +236,7 @@ Status getEphemeralUUID(std::string& ident) {
 }
 
 Status getHostUUID(std::string& ident) {
-  // Lookup the host identifier (UUID) previously generated and stored.
-  auto status = getDatabaseValue(kPersistentSettings, "host_uuid_v3", ident);
-  if (ident.size() == 0) {
-    // There was no UUID stored in the database, generate one and store it.
-    ident = osquery::generateHostUUID();
-    return setDatabaseValue(kPersistentSettings, "host_uuid_v3", ident);
-  }
-  return status;
+  return Status(-1, "Not supported");
 }
 
 Status getSpecifiedUUID(std::string& ident) {
@@ -300,9 +284,6 @@ Status checkStalePid(const std::string& content) {
     return Status::success();
   }
 
-  PlatformProcess target(pid);
-  int status = 0;
-
   // The pid is running, check if it is an osqueryd process by name.
   std::stringstream query_text;
 
@@ -317,12 +298,7 @@ Status checkStalePid(const std::string& content) {
   if (q.rows().size() > 0) {
     // If the process really is osqueryd, return an "error" status.
     if (FLAGS_force) {
-      // The caller may choose to abort the existing daemon with --force.
-      // Do not use SIGQUIT as it will cause a crash on OS X.
-      status = target.kill() ? 0 : -1;
-      sleepFor(1000);
-
-      return Status(status, "Tried to force remove the existing osqueryd");
+      return Status(1, "Tried to force remove the existing osqueryd");
     }
 
     return Status(1, "osqueryd (" + content + ") is already running");
@@ -357,32 +333,7 @@ Status createPidFile() {
     LOG(WARNING) << "Unable to remove the osqueryd pidfile";
   }
 
-  // If no pidfile exists or the existing pid was stale, write, log, and run.
-  auto pid = std::to_string(PlatformProcess::getCurrentPid());
-  VLOG(1) << "Writing osqueryd pid (" << pid << ") to "
-          << pidfile_path.string();
-  auto status = writeTextFile(pidfile_path, pid, 0644);
-  return status;
-}
-
-bool PlatformProcess::cleanup() const {
-  if (!isValid()) {
-    return false;
-  }
-
-  size_t delay = 0;
-  size_t timeout = (FLAGS_alarm_timeout + 1) * 1000;
-  while (delay < timeout) {
-    int status = 0;
-    if (checkStatus(status) == PROCESS_EXITED) {
-      return true;
-    }
-
-    sleepFor(200);
-    delay += 200;
-  }
-  // The requested process did not exit.
-  return false;
+  return Status(-1, "failed");
 }
 
 #ifndef WIN32
