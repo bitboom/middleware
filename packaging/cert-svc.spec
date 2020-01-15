@@ -107,6 +107,10 @@ export CXXFLAGS="$CXXFLAGS -DTIZEN_EMULATOR_MODE"
 export FFLAGS="$FFLAGS -DTIZEN_EMULATOR_MODE"
 %endif
 
+# gcc v9 and new Tizen toolchain adds Wall and this code pretty much always checks string & buffer lenghts
+export CFLAGS="$CFLAGS -Wno-stringop-truncation -Wno-stringop-overflow"
+export CXXFLAGS="$CXXFLAGS -Wno-stringop-truncation -Wno-stringop-overflow"
+
 %{!?build_type:%define build_type "Release"}
 %cmake . -DVERSION=%version \
          -DINCLUDEDIR=%_includedir \

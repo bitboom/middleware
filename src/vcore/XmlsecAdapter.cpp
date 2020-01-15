@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016-2020 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -346,7 +346,7 @@ void XmlSec::validateFile(XmlSecContext &context, xmlSecKeysMngrPtr mngrPtr)
 		if (dsigRefCtx->digestMethod
 				&& dsigRefCtx->digestMethod->id
 				&& dsigRefCtx->digestMethod->id->name) {
-			auto digest = reinterpret_cast<const char *const>(
+			auto digest = reinterpret_cast<const char *>(
 							  dsigRefCtx->digestMethod->id->name);
 
 			if (DIGEST_MD5.compare(digest) == 0)
