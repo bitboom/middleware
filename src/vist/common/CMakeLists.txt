@@ -14,7 +14,8 @@
 
 ADD_VIST_COMMON_LIBRARY(vist_common archive.cpp
 									common.cpp
-									stringfy.cpp)
+									stringfy.cpp
+									thread-pool.cpp)
 
 FILE(GLOB COMMON_TESTS "tests/*.cpp")
 ADD_VIST_TEST(${COMMON_TESTS})
