@@ -17,6 +17,7 @@
 #include "gateway.hpp"
 
 #include <vist/exception.hpp>
+#include <vist/logger.hpp>
 #include <vist/rmi/message.hpp>
 #include <vist/rmi/impl/server.hpp>
 

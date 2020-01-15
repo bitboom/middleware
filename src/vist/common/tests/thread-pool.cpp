@@ -24,15 +24,24 @@
 
 using namespace vist;
 
-TEST(ThreadPoolTests, submit)
+TEST(ThreadPoolTests, once)
 {
 	int count = 0;
+	auto task = [&count]{ count++; };
 
 	ThreadPool worker(5);
-	auto task = [&count]() {
-		count++;
-	};
+	worker.submit(task);
 
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+	EXPECT_EQ(count, 1);
+}
+
+TEST(ThreadPoolTests, multiple)
+{
+	int count = 0;
+	auto task = [&count]{ count++; };
+
+	ThreadPool worker(5);
 	std::size_t repeat = 10;
 	while (repeat--)
 		worker.submit(task);

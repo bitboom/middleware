@@ -16,6 +16,7 @@ SET(TARGET vist-rmi)
 SET(${TARGET}_SRCS gateway.cpp
 				   remote.cpp
 				   message.cpp
+				   impl/server.cpp
 				   impl/socket.cpp
 				   impl/eventfd.cpp
 				   impl/mainloop.cpp

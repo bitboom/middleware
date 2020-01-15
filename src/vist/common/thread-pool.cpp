@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+#include <vist/thread-pool.hpp>
+
+#include <vist/logger.hpp>
+
 #include <sys/types.h>
 #include <unistd.h>
-
-#include <vist/thread-pool.hpp>
 
 #define __BEGIN_CRITICAL__  { std::unique_lock<std::mutex> lock(this->queueMutex);
 #define __END_CRITICAL__    }
@@ -36,6 +38,8 @@ ThreadPool::ThreadPool(std::size_t threads)
 				if (stop && tasks.empty()) {
 					return;
 				}
+
+				DEBUG(VIST) << "Thread is waked..";
 
 				task = std::move(tasks.front());
 				tasks.pop_front();
