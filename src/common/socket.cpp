@@ -122,9 +122,9 @@ Socket Socket::connect(const std::string &path)
 			std::error_code(errno, std::generic_category()),
 			"socket create failed!");
 
-	sockaddr_un addr;
+	sockaddr_un addr = {};
 	addr.sun_family = AF_UNIX;
-	strncpy(addr.sun_path, path.c_str(), sizeof(addr.sun_path));
+	strncpy(addr.sun_path, path.c_str(), sizeof(addr.sun_path) - 1);
 
 	if (::connect(fd, reinterpret_cast<sockaddr *>(&addr),
 				  sizeof(sockaddr_un)) == -1)

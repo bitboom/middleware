@@ -56,7 +56,7 @@ void AssertProc(const char *condition,
 		INTERNAL_LOG("### Function: " << function);
 		INTERNAL_LOG(
 			"################################################################################");
-	} catch (Exception) {
+	} catch (Exception&) {
 		// Just ignore possible double errors
 	}
 
