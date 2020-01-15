@@ -27,7 +27,6 @@
 namespace vist {
 namespace rmi {
 namespace impl {
-namespace ondemand {
 
 Mainloop::Mainloop() :
 	epollFd(::epoll_create1(EPOLL_CLOEXEC)),
@@ -168,7 +167,6 @@ void Mainloop::stop(void)
 	this->wakeupSignal.send();
 }
 
-} // namespace ondemand
 } // namespace impl
 } // namespace rmi
 } // namespace vist

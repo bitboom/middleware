@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -39,9 +39,10 @@ void Vistd::start()
 {
 	INFO(VIST) << "Vistd daemon starts.";
 
-	rmi::Gateway::ServiceType type = rmi::Gateway::ServiceType::General;
 #ifdef TIZEN
-	type = rmi::Gateway::ServiceType::OnDemand;
+	rmi::Gateway::ServiceType type = rmi::Gateway::ServiceType::OnDemand;
+#else
+	rmi::Gateway::ServiceType type = rmi::Gateway::ServiceType::General;
 #endif
 
 	rmi::Gateway gateway(SOCK_ADDR, type);
@@ -49,8 +50,13 @@ void Vistd::start()
 
 	auto& pm = policy::PolicyManager::Instance();
 
+#ifdef TIZEN
 	/// Shutdown service if timeout is occured without activated admin
 	gateway.start(3000, [&pm]() -> bool { return !pm.isActivated(); });
+#else
+	(void)pm;
+	gateway.start();
+#endif
 
 	INFO(VIST) << "Vistd daemon stopped.";
 }

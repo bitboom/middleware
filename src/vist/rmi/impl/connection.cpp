@@ -23,7 +23,6 @@
 namespace vist {
 namespace rmi {
 namespace impl {
-namespace ondemand {
 
 Connection::Connection(Socket&& socket) noexcept : socket(std::move(socket))
 {
@@ -69,7 +68,6 @@ int Connection::getFd(void) const noexcept
 	return this->socket.getFd();
 }
 
-} // namespace ondemand
 } // namespace impl
 } // namespace rmi
 } // namespace vist

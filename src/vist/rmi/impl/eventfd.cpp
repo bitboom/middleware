@@ -27,7 +27,6 @@
 namespace vist {
 namespace rmi {
 namespace impl {
-namespace ondemand {
 
 EventFD::EventFD(unsigned int initval, int flags)
 	: fd(::eventfd(initval, flags))
@@ -62,7 +61,6 @@ int EventFD::getFd(void) const noexcept
 	return this->fd;
 }
 
-} // namespace ondemand
 } // namespace impl
 } // namespace rmi
 } // namespace vist

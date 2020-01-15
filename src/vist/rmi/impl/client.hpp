@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2020 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,28 +16,31 @@
 
 #pragma once
 
-#include <string>
+#include <vist/logger.hpp>
+#include <vist/rmi/impl/client.hpp>
+#include <vist/rmi/impl/connection.hpp>
 
 namespace vist {
 namespace rmi {
 namespace impl {
-namespace interface {
 
 class Client {
 public:
-	Client(const std::string&) {}
-	virtual ~Client() = default;
+	Client(const std::string& path) : connection(path)
+	{
+		DEBUG(VIST) << "Success to connect to : " << path
+					<< " by fd[" << connection.getFd() << "]";
+	}
 
-	Client(const Client&) = delete;
-	Client& operator=(const Client&) = delete;
+	Message request(Message& message)
+	{
+		return this->connection.request(message);
+	}
 
-	Client(Client&&) = default;
-	Client& operator=(Client&&) = default;
-
-	virtual Message request(Message& message) = 0;
+private:
+	Connection connection;
 };
 
-} // namespace interface
 } // namespace impl
 } // namespace rmi
 } // namespace vist

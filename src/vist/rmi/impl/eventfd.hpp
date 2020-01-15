@@ -21,7 +21,6 @@
 namespace vist {
 namespace rmi {
 namespace impl {
-namespace ondemand {
 
 class EventFD final {
 public:
@@ -43,7 +42,6 @@ private:
 	int fd;
 };
 
-} // namespace ondemand
 } // namespace impl
 } // namespace rmi
 } // namespace vist

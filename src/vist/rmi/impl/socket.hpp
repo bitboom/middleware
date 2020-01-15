@@ -28,7 +28,6 @@
 namespace vist {
 namespace rmi {
 namespace impl {
-namespace ondemand {
 
 class Socket {
 public:
@@ -93,7 +92,6 @@ void Socket::recv(T *buffer, const std::size_t size) const
 	}
 }
 
-} // namespace ondemand
 } // namespace impl
 } // namespace rmi
 } // namespace vist

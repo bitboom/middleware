@@ -14,7 +14,7 @@
  *  limitations under the License
  */
 
-#include <vist/rmi/impl/ondemand/socket.hpp>
+#include <vist/rmi/impl/socket.hpp>
 
 #include <string>
 #include <limits>
@@ -24,7 +24,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace vist::rmi::impl::ondemand;
+using namespace vist::rmi::impl;
 
 TEST(SocketTests, socket_read_write)
 {

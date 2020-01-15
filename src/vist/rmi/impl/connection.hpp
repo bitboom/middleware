@@ -17,7 +17,7 @@
 #pragma once
 
 #include <vist/rmi/message.hpp>
-#include <vist/rmi/impl/ondemand/socket.hpp>
+#include <vist/rmi/impl/socket.hpp>
 
 #include <mutex>
 #include <utility>
@@ -25,7 +25,6 @@
 namespace vist {
 namespace rmi {
 namespace impl {
-namespace ondemand {
 
 class Connection {
 public:
@@ -58,7 +57,6 @@ private:
 	unsigned int sequence = 0;
 };
 
-} // namespace ondemand
 } // namespace impl
 } // namespace rmi
 } // namespace vist

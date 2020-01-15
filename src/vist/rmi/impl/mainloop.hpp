@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <vist/rmi/impl/ondemand/eventfd.hpp>
+#include <vist/rmi/impl/eventfd.hpp>
 
 #include <atomic>
 #include <array>
@@ -32,7 +32,6 @@
 namespace vist {
 namespace rmi {
 namespace impl {
-namespace ondemand {
 
 class Mainloop {
 public:
@@ -83,7 +82,6 @@ private:
 	std::array<::epoll_event, MAX_EVENTS> events;
 };
 
-} // namespace ondemand
 } // namespace impl
 } // namespace rmi
 } // namespace vist

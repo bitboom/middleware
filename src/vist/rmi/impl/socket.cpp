@@ -29,7 +29,6 @@
 namespace vist {
 namespace rmi {
 namespace impl {
-namespace ondemand {
 
 namespace {
 
@@ -153,7 +152,6 @@ int Socket::getFd(void) const noexcept
 	return this->fd;
 }
 
-} // namespace ondemand
 } // namespace impl
 } // namespace rmi
 } // namespace vist

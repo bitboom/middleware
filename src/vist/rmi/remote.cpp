@@ -18,12 +18,6 @@
 
 #include <vist/rmi/impl/client.hpp>
 
-#ifdef TIZEN
-#include <vist/rmi/impl/ondemand/client.hpp>
-#else
-#include <vist/rmi/impl/general/client.hpp>
-#endif
-
 #include <memory>
 #include <mutex>
 #include <string>
@@ -35,22 +29,17 @@ using namespace vist::rmi::impl;
 
 class Remote::Impl {
 public:
-	explicit Impl(const std::string& path)
+	explicit Impl(const std::string& path) : client(path)
 	{
-#ifdef TIZEN
-		this->client = std::make_unique<ondemand::Client>(path);
-#else
-		this->client = std::make_unique<general::Client>(path);
-#endif
 	}
 
 	Message request(Message& message)
 	{
-		return this->client->request(message);
+		return this->client.request(message);
 	}
 
 private:
-	std::unique_ptr<interface::Client> client;
+	Client client;
 };
 
 Remote::Remote(const std::string& path) : pImpl(new Impl(path))

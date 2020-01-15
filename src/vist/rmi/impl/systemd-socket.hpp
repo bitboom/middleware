@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2020-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,32 +17,39 @@
 #pragma once
 
 #include <vist/logger.hpp>
-#include <vist/rmi/impl/client.hpp>
-#include <vist/rmi/impl/ondemand/connection.hpp>
+#include <vist/exception.hpp>
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <systemd/sd-daemon.h>
 
 namespace vist {
 namespace rmi {
 namespace impl {
-namespace ondemand {
 
-class Client : public interface::Client {
+class SystemdSocket {
 public:
-	Client(const std::string& path) : interface::Client(path), connection(path)
+	static int Create(const std::string& path)
 	{
-		DEBUG(VIST) << "Success to connect to : " << path
-					<< " by fd[" << connection.getFd() << "]";
-	}
+		static int fds = -1;
 
-	Message request(Message& message) override
-	{
-		return this->connection.request(message);
-	}
+		if (fds == -1)
+			fds = ::sd_listen_fds(0);
 
-private:
-	Connection connection;
+		if (fds < 0)
+			THROW(ErrCode::RuntimeError) << "Failed to get listened systemd fds.";
+
+		for (int fd = SD_LISTEN_FDS_START; fd < SD_LISTEN_FDS_START + fds; ++fd) {
+			if (::sd_is_socket_unix(fd, SOCK_STREAM, 1, path.c_str(), 0) > 0) {
+				INFO(VIST) << "Systemd socket of service is found with fd: " << fd;
+				return fd;
+			}
+		}
+
+		THROW(ErrCode::RuntimeError) << "Failed to find listened systemd fds.";
+	}
 };
 
-} // namespace ondemand
 } // namespace impl
 } // namespace rmi
 } // namespace vist

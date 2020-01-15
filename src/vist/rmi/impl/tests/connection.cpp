@@ -15,9 +15,9 @@
  */
 
 #include <vist/rmi/message.hpp>
-#include <vist/rmi/impl/ondemand/connection.hpp>
-#include <vist/rmi/impl/ondemand/socket.hpp>
-#include <vist/rmi/impl/ondemand/mainloop.hpp>
+#include <vist/rmi/impl/connection.hpp>
+#include <vist/rmi/impl/socket.hpp>
+#include <vist/rmi/impl/mainloop.hpp>
 
 #include <string>
 #include <thread>
@@ -25,7 +25,7 @@
 #include <gtest/gtest.h>
 
 using namespace vist::rmi;
-using namespace vist::rmi::impl::ondemand;
+using namespace vist::rmi::impl;
 
 TEST(ConnectionTests, socket_communication)
 {

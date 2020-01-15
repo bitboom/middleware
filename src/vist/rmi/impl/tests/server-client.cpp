@@ -15,19 +15,16 @@
  */
 
 #include <vist/rmi/message.hpp>
-#include <vist/rmi/impl/general/server.hpp>
-#include <vist/rmi/impl/general/client.hpp>
+#include <vist/rmi/impl/server.hpp>
+#include <vist/rmi/impl/client.hpp>
 
 #include <string>
 #include <thread>
 
-#include <boost/asio.hpp>
-
 #include <gtest/gtest.h>
 
 using namespace vist::rmi;
-using namespace vist::rmi::impl::general;
-using boost::asio::local::stream_protocol;
+using namespace vist::rmi::impl;
 
 namespace {
 
@@ -45,10 +42,9 @@ std::string response3 = "response argument";
 
 } // anonymous namespace
 
-#ifndef TIZEN
-TEST(ServerClientTests, server)
+TEST(ServerClientTests, not_ondemand)
 {
-	std::string sockPath = "vist-test.sock";
+	std::string sockPath = "./vist-test.sock";
 
 	auto task = [&](Message& message) -> Message {
 		EXPECT_EQ(message.signature, requestSignature);
@@ -66,9 +62,9 @@ TEST(ServerClientTests, server)
 		return reply;
 	};
 
-	Server server(sockPath, task); 
+	Server server(sockPath, task);
 	auto serverThread = std::thread([&]() {
-		server.run(); 
+		server.run();
 	});
 
 	{ /// Client configuration
@@ -101,4 +97,3 @@ TEST(ServerClientTests, server)
 	if (serverThread.joinable())
 		serverThread.join();
 }
-#endif

@@ -19,8 +19,6 @@
 #include <vist/exception.hpp>
 #include <vist/rmi/message.hpp>
 #include <vist/rmi/impl/server.hpp>
-#include <vist/rmi/impl/general/server.hpp>
-#include <vist/rmi/impl/ondemand/server.hpp>
 
 #include <memory>
 #include <string>
@@ -51,15 +49,7 @@ public:
 			return reply;
 		};
 
-		switch (type) {
-		case ServiceType::OnDemand:
-			this->server = std::make_unique<ondemand::Server>(path, dispatcher);
-			break;
-		case ServiceType::General: /// fall through
-		default:
-			this->server = std::make_unique<general::Server>(path, dispatcher);
-			break;
-		}
+		this->server = std::make_unique<Server>(path, dispatcher, type);
 	}
 
 	inline void start(int timeout, std::function<bool()> stopper)
@@ -73,7 +63,7 @@ public:
 	}
 
 private:
-	std::unique_ptr<interface::Server> server;
+	std::unique_ptr<Server> server;
 };
 
 Gateway::Gateway(const std::string& path, ServiceType type) :
