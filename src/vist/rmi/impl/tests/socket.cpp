@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2020-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  *  limitations under the License
  */
 
+#include <vist/rmi/impl/credentials.hpp>
 #include <vist/rmi/impl/socket.hpp>
 
-#include <string>
-#include <limits>
-#include <thread>
-#include <chrono>
 #include <cstring>
+#include <limits>
+#include <string>
+#include <thread>
 
 #include <gtest/gtest.h>
 
@@ -38,8 +38,6 @@ TEST(SocketTests, socket_read_write)
 	bool output2 = false;
 
 	auto client = std::thread([&]() {
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-
 		// Send input to server.
 		Socket connected = Socket::connect(sockPath);
 		connected.send(&input);
@@ -75,8 +73,6 @@ TEST(SocketTests, socket_abstract)
 	bool output2 = false;
 
 	auto client = std::thread([&]() {
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-
 		// Send input to server.
 		Socket connected = Socket::connect(sockPath);
 		connected.send(&input);
@@ -95,6 +91,31 @@ TEST(SocketTests, socket_abstract)
 
 	// Send input2 to client.
 	accepted.send(&input2);
+
+	if (client.joinable())
+		client.join();
+}
+
+TEST(SocketTests, peer_credeintials)
+{
+	std::string sockPath = "@sock";
+	Socket socket(sockPath);
+
+	int input = std::numeric_limits<int>::max();
+	auto client = std::thread([&]() {
+		Socket connected = Socket::connect(sockPath);
+		connected.send(&input);
+	});
+
+	Socket accepted = socket.accept();
+
+	auto cred = Credentials::GetPeers(accepted.getFd());
+	EXPECT_TRUE(cred.pid > 0);
+
+	// Recv input from client.
+	int output = 0;
+	accepted.recv(&output);
+	EXPECT_EQ(input, output);
 
 	if (client.joinable())
 		client.join();
