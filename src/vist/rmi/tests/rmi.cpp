@@ -36,6 +36,9 @@ struct Foo {
 
 	std::string getName(void)
 	{
+		auto peer = Gateway::GetPeerCredentials();
+		EXPECT_TRUE(peer != nullptr);
+
 		return this->name;
 	}
 

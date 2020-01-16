@@ -18,6 +18,7 @@
 
 #define EXPOSE(gateway, object, function) gateway.expose(object, #function, function)
 
+#include <vist/credentials.hpp>
 #include <vist/klass/functor.hpp>
 #include <vist/macro.hpp>
 
@@ -49,6 +50,8 @@ public:
 
 	template<typename O, typename F>
 	void expose(O& object, const std::string& name, F&& func);
+
+	static std::shared_ptr<Credentials> GetPeerCredentials();
 
 private:
 	class Impl;

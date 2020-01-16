@@ -84,5 +84,11 @@ void Gateway::stop(void)
 	this->pImpl->stop();
 }
 
+/// Credentials exists per thread.
+std::shared_ptr<Credentials> GetPeerCredentials()
+{
+	return Server::GetPeerCredentials();
+}
+
 } // namespace rmi
 } // namespace vist

@@ -27,6 +27,8 @@ namespace vist {
 namespace rmi {
 namespace impl {
 
+thread_local std::shared_ptr<Credentials> Server::peer = nullptr;
+
 Server::Server(const std::string& path, const Task& task, ServiceType type) : worker(5)
 {
 	switch (type) {
@@ -62,6 +64,8 @@ void Server::accept(const Task& task)
 		/// process task per thread
 		this->worker.submit([this, connection, task]{
 			auto onRead = [connection, task]() {
+				Server::peer.reset(new Credentials(Credentials::Peer(connection->getFd())));
+
 				Message request = connection->recv();
 				DEBUG(VIST) << "Session header: " << request.signature;
 
@@ -80,8 +84,7 @@ void Server::accept(const Task& task)
 				this->mainloop.removeHandler(connection->getFd());
 			};
 
-			this->mainloop.addHandler(connection->getFd(),
-									std::move(onRead), std::move(onClose));
+			this->mainloop.addHandler(connection->getFd(), std::move(onRead), std::move(onClose));
 		});
 	};
 

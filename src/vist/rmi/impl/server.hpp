@@ -16,10 +16,11 @@
 
 #pragma once
 
+#include <vist/credentials.hpp>
 #include <vist/rmi/gateway.hpp>
-#include <vist/rmi/message.hpp>
 #include <vist/rmi/impl/mainloop.hpp>
 #include <vist/rmi/impl/socket.hpp>
+#include <vist/rmi/message.hpp>
 #include <vist/thread-pool.hpp>
 
 #include <memory>
@@ -48,8 +49,15 @@ public:
 	void run(int timeout = -1, Stopper stopper = nullptr);
 	void stop(void);
 
+	static std::shared_ptr<Credentials> GetPeerCredentials()
+	{
+		return peer;
+	}
+
 private:
 	void accept(const Task& task);
+
+	static thread_local std::shared_ptr<Credentials> peer;
 
 	std::unique_ptr<Socket> socket;
 	Mainloop mainloop;

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ std::string response3 = "response argument";
 
 TEST(ServerClientTests, not_ondemand)
 {
-	std::string sockPath = "./vist-test.sock";
+	std::string sockPath = "@vist-test.sock";
 
 	auto task = [&](Message& message) -> Message {
 		EXPECT_EQ(message.signature, requestSignature);
@@ -90,6 +90,53 @@ TEST(ServerClientTests, not_ondemand)
 
 		for (int i = 0; i < 3; i++)
 			clientClosure();
+	}
+
+	server.stop();
+
+	if (serverThread.joinable())
+		serverThread.join();
+}
+
+TEST(ServerClientTests, peer_pid)
+{
+	std::string sockPath = "@vist-test.sock";
+	auto task = [](Message& message) -> Message {
+		EXPECT_EQ(message.signature, requestSignature);
+
+		auto peer = Server::GetPeerCredentials();
+		EXPECT_TRUE(peer != nullptr);
+
+		int recv1;
+		message.disclose(recv1);
+		EXPECT_EQ(request1, recv1);
+
+		Message reply(Message::Type::Reply, responseSignature);
+		reply.enclose(response1);
+		return reply;
+	};
+
+	Server server(sockPath, task);
+	auto serverThread = std::thread([&]() {
+		server.run();
+	});
+
+	{ /// Client configuration
+		auto clientClosure = [&]() {
+			Client client(sockPath);
+
+			Message message(Message::Type::MethodCall, requestSignature);
+			message.enclose(request1);
+
+			auto reply = client.request(message);
+			EXPECT_EQ(reply.signature, responseSignature);
+
+			int recv1;
+			reply.disclose(recv1);
+			EXPECT_EQ(response1, recv1);
+		};
+
+		clientClosure();
 	}
 
 	server.stop();

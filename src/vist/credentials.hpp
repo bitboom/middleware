@@ -22,15 +22,9 @@
 #include <sys/types.h>
 
 namespace vist {
-namespace rmi {
-namespace impl {
 
 struct Credentials {
-	pid_t pid;
-	uid_t uid;
-	gid_t gid;
-
-	static Credentials GetPeers(int fd)
+	static Credentials Peer(int fd)
 	{
 		struct ucred cred;
 		socklen_t credsz = sizeof(cred);
@@ -40,8 +34,10 @@ struct Credentials {
 
 		return {cred.pid, cred.uid, cred.gid};
 	}
+
+	pid_t pid;
+	uid_t uid;
+	gid_t gid;
 };
 
-} // namespace impl
-} // namespace rmi
 } // namespace vist

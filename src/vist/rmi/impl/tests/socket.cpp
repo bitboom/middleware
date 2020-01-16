@@ -14,7 +14,7 @@
  *  limitations under the License
  */
 
-#include <vist/rmi/impl/credentials.hpp>
+#include <vist/credentials.hpp>
 #include <vist/rmi/impl/socket.hpp>
 
 #include <cstring>
@@ -109,7 +109,7 @@ TEST(SocketTests, peer_credeintials)
 
 	Socket accepted = socket.accept();
 
-	auto cred = Credentials::GetPeers(accepted.getFd());
+	auto cred = vist::Credentials::Peer(accepted.getFd());
 	EXPECT_TRUE(cred.pid > 0);
 
 	// Recv input from client.
