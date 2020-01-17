@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <errno.h>
 #include <sys/types.h>

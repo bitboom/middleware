@@ -51,7 +51,7 @@ public:
 	template<typename O, typename F>
 	void expose(O& object, const std::string& name, F&& func);
 
-	static std::shared_ptr<Credentials> GetPeerCredentials();
+	static std::shared_ptr<Credentials> GetPeerCredentials() noexcept;
 
 private:
 	class Impl;

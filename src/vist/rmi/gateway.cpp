@@ -85,7 +85,7 @@ void Gateway::stop(void)
 }
 
 /// Credentials exists per thread.
-std::shared_ptr<Credentials> GetPeerCredentials()
+std::shared_ptr<Credentials> Gateway::GetPeerCredentials() noexcept
 {
 	return Server::GetPeerCredentials();
 }

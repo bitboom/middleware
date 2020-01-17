@@ -14,7 +14,10 @@
  *  limitations under the License
  */
 
+#include <vist/exception.hpp>
 #include <vist/policy/api.hpp>
+#include <vist/process.hpp>
+#include <vist/rmi/gateway.hpp>
 
 #include "policy-manager.hpp"
 
@@ -33,8 +36,14 @@ std::unordered_map<std::string, PolicyValue> API::GetAll()
 
 void API::Admin::Set(const std::string& policy, const PolicyValue& value)
 {
-	// TODO(Sangwan): Get admin name from peer PID
-	PolicyManager::Instance().set(policy, value, "admin");
+	std::string admin;
+	auto peer = rmi::Gateway::GetPeerCredentials();
+	if (peer == nullptr)
+		admin = Process::GetPath(Process::GetPid());
+	else
+		admin = Process::GetPath(peer->pid);
+
+	PolicyManager::Instance().set(policy, value, admin);
 }
 
 void API::Admin::Enroll(const std::string& admin)

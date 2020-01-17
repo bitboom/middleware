@@ -49,7 +49,7 @@ public:
 	void run(int timeout = -1, Stopper stopper = nullptr);
 	void stop(void);
 
-	static std::shared_ptr<Credentials> GetPeerCredentials()
+	static std::shared_ptr<Credentials> GetPeerCredentials() noexcept
 	{
 		return peer;
 	}
