@@ -26,7 +26,7 @@ template<typename Object, typename Field>
 struct Column final {
 	using Type = Field Object::*;
 	using FieldType = Field;
-	using TableType = Object;
+	using Table = Object;
 
 	Column(const std::string& name, Field Object::*field) : name(name), type(field)
 	{

@@ -16,81 +16,62 @@
 
 #pragma once
 
-#include <vector>
+#include "tuple-helper.hpp"
+
 #include <set>
 #include <string>
+#include <tuple>
+#include <vector>
 
 namespace vist {
 namespace tsqb {
 namespace internal {
 
-template<typename... Base>
-class TablePack {
+template<typename... Tables>
+class TablePack final {
 public:
-	virtual ~TablePack() = default;
+	using TupleType = std::tuple<Tables...>;
 
-	template<typename TableType>
-	std::string getName(TableType&&) const noexcept { return std::string(); }
-
-	template<typename ColumnType>
-	std::string getColumnName(ColumnType&&) const noexcept { return std::string(); }
-};
-
-template<typename Front, typename... Rest>
-class TablePack<Front, Rest...> : public TablePack<Rest...> {
-public:
-	using Table = Front;
-
-	explicit TablePack(Front&& front, Rest&& ...rest);
-	virtual ~TablePack() = default;
-
-	TablePack(const TablePack&) = delete;
-	TablePack& operator=(const TablePack&) = delete;
-
-	TablePack(TablePack&&) = default;
-	TablePack& operator=(TablePack&&) = default;
-
-	template<typename TableType>
-	std::string getName(TableType&& table) const noexcept;
-
-	template<typename ColumnType>
-	std::string getColumnName(ColumnType&& column) const noexcept;
-
-private:
-	using Base = TablePack<Rest...>;
-
-	Table table;
-};
-
-template<typename Front, typename... Rest>
-TablePack<Front, Rest...>::TablePack(Front&& front, Rest&& ...rest) :
-	Base(std::forward<Rest>(rest)...), table(front)
-{
-}
-
-template<typename Front, typename... Rest>
-template<typename TableType>
-std::string TablePack<Front, Rest...>::getName(TableType&& table) const noexcept
-{
-	if (this->table.compare(table))
-		return this->table.name;
-
-	return Base::template getName<TableType>(std::forward<TableType>(table));
-}
-
-template<typename Front, typename... Rest>
-template<typename ColumnType>
-std::string TablePack<Front, Rest...>::getColumnName(ColumnType&& column) const noexcept
-{
-	using DecayColumnType = typename std::decay<ColumnType>::type;
-	using DecayTableType = typename DecayColumnType::TableType;
-	if (this->table.compare(DecayTableType())) {
-		auto cname = this->table.getColumnName(column.type);
-		return this->table.name + "." + cname;
+	explicit TablePack(Tables ...tables) : tables(tables...)
+	{
 	}
 
-	return Base::template getColumnName<ColumnType>(std::forward<ColumnType>(column));
-}
+	template<typename TableType>
+	std::string getName(TableType&& table) const noexcept
+	{
+		std::string name;
+		auto predicate = [&name, &table](const auto& iter) {
+			if (iter.compare(table))
+				name = iter.name;
+		};
+
+		tuple_helper::for_each(this->tables, predicate);
+
+		return name;
+	}
+
+	template<typename ColumnType>
+	std::string getColumnName(ColumnType&& column) const noexcept
+	{
+		using TableType = typename ColumnType::Table;
+
+		std::string name;
+		TableType table;
+		auto predicate = [&name, &table, column](const auto& iter) {
+			if (iter.compare(table)) {
+				auto cname = iter.getColumnName(column.type);
+				name = iter.name + "." + cname;
+			}
+		};
+
+		tuple_helper::for_each(this->tables, predicate);
+
+		return name;
+	}
+
+private:
+	std::tuple<Tables...> tables;
+};
 
 } // namespace internal
 } // namespace tsqb

@@ -85,7 +85,7 @@ private:
 		void operator()(T&& type)
 		{
 			auto column = make_column("anonymous", type);
-			using TableType = typename decltype(column)::TableType;
+			using TableType = typename decltype(column)::Table;
 			auto name = this->tablePack.getName(TableType());
 			if (!name.empty())
 				names.emplace(name);
