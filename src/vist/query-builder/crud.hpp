@@ -124,7 +124,7 @@ T& Crud<T>::selectInternal(ColumnTuple&& ct, bool distinct)
 	if (distinct)
 		ss << "DISTINCT ";
 
-	int i = 0;
+	std::size_t i = 0;
 	for (const auto& c : columnNames) {
 		ss << c;
 

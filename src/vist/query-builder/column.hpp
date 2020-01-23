@@ -23,10 +23,14 @@ namespace vist {
 namespace tsqb {
 
 template<typename Object, typename Field>
-struct Column {
+struct Column final {
 	using Type = Field Object::*;
 	using FieldType = Field;
 	using TableType = Object;
+
+	Column(const std::string& name, Field Object::*field) : name(name), type(field)
+	{
+	}
 
 	std::string name;
 	Type type;

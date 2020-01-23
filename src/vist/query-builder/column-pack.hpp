@@ -16,78 +16,61 @@
 
 #pragma once
 
+#include "tuple-helper.hpp"
 #include "type.hpp"
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace vist {
 namespace tsqb {
 namespace internal {
 
-template<typename... Base>
-class ColumnPack {
+template<typename... Columns>
+class ColumnPack final {
 public:
-	virtual ~ColumnPack() = default;
+	using TableType = typename std::tuple_element<0, std::tuple<Columns...>>::type::TableType;
+	using TupleType = std::tuple<Columns...>;
 
-	template<typename ColumnType>
-	std::string getName(ColumnType&&) const noexcept { return std::string(); }
-	std::vector<std::string> getNames(void) const noexcept { return {}; }
+	explicit ColumnPack(Columns&& ...columns) : columns(columns...)
+	{
+	}
 
-	int size() const noexcept { return 0; }
-};
+	template<typename Column>
+	std::string getName(const Column& column) const noexcept
+	{
+		std::string name;
+		auto predicate = [&name, &column](const auto& iter) {
+			if (type::cast_compare(column, iter.type)) 
+				name = iter.name;
+		};
 
-template<typename Front, typename... Rest>
-class ColumnPack<Front, Rest...> : public ColumnPack<Rest...> {
-public:
-	using Column = Front;
-	using TableType = typename Column::TableType;
+		tuple_helper::for_each(this->columns, predicate);
 
-	explicit ColumnPack(Front&& front, Rest&& ...rest);
-	virtual ~ColumnPack() = default;
+		return name;
+	}
 
-	ColumnPack(const ColumnPack&) = delete;
-	ColumnPack& operator=(const ColumnPack&) = delete;
+	std::vector<std::string> getNames(void) const noexcept
+	{
+		std::vector<std::string> names;
+		auto closure = [&names](const auto& iter) {
+			names.push_back(iter.name);
+		};
 
-	ColumnPack(ColumnPack&&) = default;
-	ColumnPack& operator=(ColumnPack&&) = default;
+		tuple_helper::for_each(this->columns, closure);
 
-	template<typename ColumnType>
-	std::string getName(ColumnType&& type) const noexcept;
-	std::vector<std::string> getNames(void) const noexcept;
+		return names;
+	}
 
-	int size() const noexcept { return Base::size() + 1; }
+	std::size_t size() const noexcept
+	{
+		return std::tuple_size<TupleType>::value;
+	}
 
 private:
-	using Base = ColumnPack<Rest...>;
-
-	Column column;
+	std::tuple<Columns...> columns;
 };
-
-template<typename Front, typename... Rest>
-ColumnPack<Front, Rest...>::ColumnPack(Front&& front, Rest&& ...rest) :
-	Base(std::forward<Rest>(rest)...), column(front)
-{
-}
-
-template<typename Front, typename... Rest>
-std::vector<std::string> ColumnPack<Front, Rest...>::getNames(void) const noexcept
-{
-	auto names = Base::getNames();
-	names.push_back(this->column.name);
-
-	return std::move(names);
-}
-
-template<typename Front, typename... Rest>
-template<typename ColumnType>
-std::string ColumnPack<Front, Rest...>::getName(ColumnType&& type) const noexcept
-{
-	if (type::cast_compare(column.type, std::forward<ColumnType>(type)))
-		return column.name;
-
-	return Base::template getName<ColumnType>(std::forward<ColumnType>(type));
-}
 
 } // namespace internal
 } // namespace tsqb

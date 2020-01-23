@@ -102,7 +102,7 @@ Table<Columns...>::Table(const std::string& name, ColumnPackType&& columnPack)
 
 template<typename... Columns>
 template<typename Cs>
-std::set<std::string> Table<Columns...>::getTableNames(Cs&& tuple) const noexcept
+std::set<std::string> Table<Columns...>::getTableNames(Cs&&) const noexcept
 {
 	return {this->name};
 }
