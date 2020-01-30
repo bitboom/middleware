@@ -27,6 +27,7 @@ public:
 		boost::unit_test::counter_t test_cases_amount);
 	void    log_finish(std::ostream &);
 	void    log_build_info(std::ostream &);
+	void    log_build_info(std::ostream &output, bool log_build_info = true);
 
 	void    test_unit_start(
 		std::ostream &,

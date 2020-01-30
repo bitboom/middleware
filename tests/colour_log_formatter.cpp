@@ -124,6 +124,20 @@ colour_log_formatter::log_build_info(std::ostream &output)
 //____________________________________________________________________________//
 
 void
+colour_log_formatter::log_build_info(std::ostream &output, bool log_build_info)
+{
+	if (log_build_info)
+		output  << "Platform: " << BOOST_PLATFORM            << '\n'
+				<< "Compiler: " << BOOST_COMPILER            << '\n'
+				<< "STL     : " << BOOST_STDLIB              << '\n';
+	output  << "Boost   : " << BOOST_VERSION / 100000      << '.'
+			<< BOOST_VERSION / 100 % 1000  << '.'
+			<< BOOST_VERSION % 100       << std::endl;
+}
+
+//____________________________________________________________________________//
+
+void
 colour_log_formatter::test_unit_start(
 	std::ostream &output,
 	test_unit const &tu)
