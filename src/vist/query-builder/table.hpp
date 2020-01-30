@@ -64,17 +64,8 @@ public: // CRTP(Curiously Recurring Template Pattern) for CRUD
 	std::vector<std::string> cache;
 
 private:
-	template<typename ...Cs>
-	friend Table<Cs...> make_table(const std::string& name, Cs&& ...columns);
-
 	std::tuple<Columns...> columns;
 };
-
-template<typename ...Columns>
-Table<Columns...> make_table(const std::string& name, Columns&& ...cs)
-{
-	return Table<Columns...>(name, std::forward<Columns>(cs)...);
-}
 
 template<typename... Columns>
 std::string Table<Columns...>::getName() const noexcept

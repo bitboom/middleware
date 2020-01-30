@@ -42,25 +42,23 @@ struct PolicyDefinition {
 	int ivalue;
 };
 
-auto admin = make_table("admin", make_column("id", &Admin::id),
-								 make_column("pkg", &Admin::pkg),
-								 make_column("uid", &Admin::uid),
-								 make_column("key", &Admin::key),
-								 make_column("removable", &Admin::removable));
+Table admin { "admin", Column("id", &Admin::id),
+					   Column("pkg", &Admin::pkg),
+					   Column("uid", &Admin::uid),
+					   Column("key", &Admin::key),
+					   Column("removable", &Admin::removable) };
 
-auto managedPolicy = make_table("managed_policy",
-								 make_column("id", &ManagedPolicy::id),
-								 make_column("aid", &ManagedPolicy::aid),
-								 make_column("pid", &ManagedPolicy::pid),
-								 make_column("value", &ManagedPolicy::value));
+Table managedPolicy { "managed_policy", Column("id", &ManagedPolicy::id),
+										Column("aid", &ManagedPolicy::aid),
+										Column("pid", &ManagedPolicy::pid),
+										Column("value", &ManagedPolicy::value) };
 
-auto policyDefinition = make_table("policy_definition",
-								   make_column("id", &PolicyDefinition::id),
-								   make_column("scope", &PolicyDefinition::scope),
-								   make_column("name", &PolicyDefinition::name),
-								   make_column("ivalue", &PolicyDefinition::ivalue));
+Table policyDefinition { "policy_definition", Column("id", &PolicyDefinition::id),
+											  Column("scope", &PolicyDefinition::scope),
+											  Column("name", &PolicyDefinition::name),
+											  Column("ivalue", &PolicyDefinition::ivalue) };
 
-auto db = make_database("dpm", admin, managedPolicy, policyDefinition);
+Database db { "dpm", admin, managedPolicy, policyDefinition };
 
 class TsqbTests : public testing::Test {};
 

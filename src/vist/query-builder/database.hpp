@@ -66,17 +66,8 @@ public: // CRTP(Curiously Recurring Template Pattern) for CRUD
 	std::vector<std::string> cache;
 
 private:
-	template<typename ...Ts>
-	friend Database<Ts...> make_database(const std::string& name, Ts&& ...tables);
-
 	std::tuple<Tables...> tables;
 };
-
-template<typename ...Tables>
-Database<Tables...> make_database(const std::string& name, Tables&& ...tables)
-{
-	return Database<Tables...>(name, std::forward<Tables>(tables)...);
-}
 
 template<typename... Tables>
 template<typename Table>
@@ -128,8 +119,8 @@ std::vector<std::string> Database<Tables...>::getTableNames(Cs&& ...columns) con
 	std::set<std::string> names;
 
 	auto closure = [this, &names](const auto& type) {
-		auto column = make_column("anonymous", type);
-		using TableType = typename decltype(column)::Table;
+		Column anonymous("anonymous", type);
+		using TableType = typename decltype(anonymous)::Table;
 		auto name = this->getTableName(TableType());
 		if (!name.empty())
 				names.emplace(name);

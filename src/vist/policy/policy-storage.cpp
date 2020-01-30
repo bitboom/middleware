@@ -30,17 +30,15 @@ using namespace vist::policy::schema;
 
 namespace {
 
-auto adminTable = make_table("ADMIN", make_column("name", &Admin::name),
-									  make_column("activated", &Admin::activated));
+Table adminTable { "ADMIN", Column("name", &Admin::name),
+							Column("activated", &Admin::activated) };
 
-auto polManagedTable = make_table("POLICY_MANAGED",
-									make_column("admin", &PolicyManaged::admin),
-									make_column("policy", &PolicyManaged::policy),
-									make_column("value", &PolicyManaged::value));
+Table polManagedTable { "POLICY_MANAGED", Column("admin", &PolicyManaged::admin),
+										  Column("policy", &PolicyManaged::policy),
+										  Column("value", &PolicyManaged::value) };
 
-auto polDefinitionTable = make_table("POLICY_DEFINITION",
-									 make_column("name", &PolicyDefinition::name),
-									 make_column("ivalue", &PolicyDefinition::ivalue));
+Table polDefinitionTable { "POLICY_DEFINITION", Column("name", &PolicyDefinition::name),
+												Column("ivalue", &PolicyDefinition::ivalue) };
 
 const std::string SCRIPT_BASE = SCRIPT_INSTALL_DIR;
 const std::string SCRIPT_CREATE_SCHEMA  = "create-schema";
