@@ -33,32 +33,28 @@ namespace {
 using namespace vist::tsqb;
 using namespace vist::schema;
 
-auto time = make_table("time",
-					   make_column("hour", &Time::hour),
-					   make_column("minutes", &Time::minutes),
-					   make_column("seconds", &Time::seconds));
+Table time { "time", Column("hour", &Time::hour),
+					 Column("minutes", &Time::minutes),
+					 Column("seconds", &Time::seconds) };
 
-auto processes = make_table("processes",
-							make_column("pid", &Processes::pid),
-							make_column("name", &Processes::name),
-							make_column("path", &Processes::path),
-							make_column("cmdline", &Processes::cmdline),
-							make_column("uid", &Processes::uid),
-							make_column("gid", &Processes::gid),
-							make_column("euid", &Processes::euid),
-							make_column("egid", &Processes::egid),
-							make_column("on_disk", &Processes::on_disk),
-							make_column("parent", &Processes::parent));
+Table processes { "processes", Column("pid", &Processes::pid),
+							   Column("name", &Processes::name),
+							   Column("path", &Processes::path),
+							   Column("cmdline", &Processes::cmdline),
+							   Column("uid", &Processes::uid),
+							   Column("gid", &Processes::gid),
+							   Column("euid", &Processes::euid),
+							   Column("egid", &Processes::egid),
+							   Column("on_disk", &Processes::on_disk),
+							   Column("parent", &Processes::parent) };
 
-auto policyInt = make_table("policy",
-						 make_column("name", &Policy<int>::name),
-						 make_column("value", &Policy<int>::value));
+Table policyInt { "policy", Column("name", &Policy<int>::name),
+							Column("value", &Policy<int>::value) };
 
-auto policyStr = make_table("policy",
-							make_column("name", &Policy<std::string>::name),
-							make_column("value", &Policy<std::string>::value));
+Table policyStr { "policy", Column("name", &Policy<std::string>::name),
+							Column("value", &Policy<std::string>::value) };
 
-auto metaDB = make_database("db", time, processes, policyInt, policyStr);
+Database metaDB { "db", time, processes, policyInt, policyStr };
 
 } // anonymous namespace
 

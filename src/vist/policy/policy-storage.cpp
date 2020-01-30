@@ -25,22 +25,7 @@
 #include <algorithm>
 #include <fstream>
 
-using namespace vist::tsqb;
-using namespace vist::policy::schema;
-
 namespace {
-
-auto adminTable = make_table("ADMIN", make_column("name", &Admin::name),
-									  make_column("activated", &Admin::activated));
-
-auto polManagedTable = make_table("POLICY_MANAGED",
-									make_column("admin", &PolicyManaged::admin),
-									make_column("policy", &PolicyManaged::policy),
-									make_column("value", &PolicyManaged::value));
-
-auto polDefinitionTable = make_table("POLICY_DEFINITION",
-									 make_column("name", &PolicyDefinition::name),
-									 make_column("ivalue", &PolicyDefinition::ivalue));
 
 const std::string SCRIPT_BASE = SCRIPT_INSTALL_DIR;
 const std::string SCRIPT_CREATE_SCHEMA  = "create-schema";
@@ -72,7 +57,7 @@ void PolicyStorage::sync()
 void PolicyStorage::syncPolicyDefinition()
 {
 	this->definitions.clear();
-	std::string query = polDefinitionTable.selectAll();
+	std::string query = schema::policyDefinition.selectAll();
 	database::Statement stmt(*database, query);
 
 	while (stmt.step()) {
@@ -87,7 +72,7 @@ void PolicyStorage::syncPolicyDefinition()
 void PolicyStorage::syncAdmin()
 {
 	this->admins.clear();
-	std::string query = adminTable.selectAll();
+	std::string query = schema::admin.selectAll();
 	database::Statement stmt(*database, query);
 
 	while (stmt.step()) {
@@ -101,7 +86,7 @@ void PolicyStorage::syncAdmin()
 void PolicyStorage::syncPolicyManaged()
 {
 	this->managedPolicies.clear();
-	std::string query = polManagedTable.selectAll();
+	std::string query = schema::policyManaged.selectAll();
 	database::Statement stmt(*database, query);
 
 	while (stmt.step()) {
@@ -139,8 +124,8 @@ void PolicyStorage::define(const std::string& policy, const PolicyValue& ivalue)
 
 	PolicyDefinition pd = { policy, ivalue.dump() };
 
-	std::string query = polDefinitionTable.insert(&PolicyDefinition::name,
-												  &PolicyDefinition::ivalue);
+	std::string query = schema::policyDefinition.insert(&PolicyDefinition::name,
+													    &PolicyDefinition::ivalue);
 	database::Statement stmt(*database, query);
 	stmt.bind(1, pd.name);
 	stmt.bind(2, pd.ivalue);
@@ -162,7 +147,7 @@ void PolicyStorage::enroll(const std::string& name)
 	/// Make admin deactivated as default.
 	Admin admin = {name , 0};
 
-	std::string query = adminTable.insert(&Admin::name, &Admin::activated);
+	std::string query = schema::admin.insert(&Admin::name, &Admin::activated);
 	database::Statement stmt(*database, query);
 	stmt.bind(1, admin.name);
 	stmt.bind(2, admin.activated);
@@ -192,7 +177,7 @@ void PolicyStorage::disenroll(const std::string& name)
 		this->admins.erase(name);
 	}
 
-	std::string query = adminTable.remove().where(expr(&Admin::name) == name);
+	std::string query = schema::admin.remove().where(expr(&Admin::name) == name);
 	database::Statement stmt(*database, query);
 	stmt.bind(1, name);
 	if (!stmt.exec())
@@ -208,8 +193,8 @@ void PolicyStorage::activate(const std::string& admin, bool state)
 		THROW(ErrCode::LogicError) << "Not exist admin: " << admin;
 
 	DEBUG(VIST) << "Activate admin: " << admin;
-	std::string query = adminTable.update(&Admin::activated)
-										 .where(expr(&Admin::name) == admin);
+	std::string query = schema::admin.update(&Admin::activated)
+									 .where(expr(&Admin::name) == admin);
 	database::Statement stmt(*this->database, query);
 	stmt.bind(1, static_cast<int>(state));
 	stmt.bind(2, admin);
@@ -250,9 +235,9 @@ void PolicyStorage::update(const std::string& admin,
 	if (this->definitions.find(policy) == this->definitions.end())
 		THROW(ErrCode::LogicError) << "Not exist policy: " << policy;
 
-	std::string query = polManagedTable.update(&PolicyManaged::value)
-									   .where(expr(&PolicyManaged::admin) == admin &&
-									    expr(&PolicyManaged::policy) == policy);
+	std::string query = schema::policyManaged.update(&PolicyManaged::value)
+											 .where(expr(&PolicyManaged::admin) == admin &&
+													expr(&PolicyManaged::policy) == policy);
 	database::Statement stmt(*this->database, query);
 	stmt.bind(1, value.dump());
 	stmt.bind(2, admin);

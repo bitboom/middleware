@@ -14,6 +14,6 @@
 
 ADD_VIST_COMMON_LIBRARY(vist_query_builder query-builder.cpp)
 
-/// TSQB: Type Safe Query Builder
+# TSQB: Type Safe Query Builder
 FILE(GLOB TSQB_TESTS "tests/*.cpp")
 ADD_VIST_TEST(${TSQB_TESTS})

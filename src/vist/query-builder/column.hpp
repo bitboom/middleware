@@ -23,20 +23,18 @@ namespace vist {
 namespace tsqb {
 
 template<typename Object, typename Field>
-struct Column {
+struct Column final {
 	using Type = Field Object::*;
 	using FieldType = Field;
-	using TableType = Object;
+	using Table = Object;
+
+	Column(const std::string& name, Field Object::*field) : name(name), type(field)
+	{
+	}
 
 	std::string name;
 	Type type;
 };
-
-template<typename O, typename F>
-Column<O, F> make_column(const std::string& name, F O::*field)
-{
-	return {name, field};
-}
 
 template<typename Type>
 struct Distinct {
@@ -46,7 +44,7 @@ struct Distinct {
 template<typename... Args>
 auto distinct(Args&&... args) -> decltype(Distinct<std::tuple<Args...>>())
 {
-	return {std::make_tuple(std::forward<Args>(args)...)};
+	return {std::tuple(args...)};
 }
 
 } // namespace tsqb

@@ -16,7 +16,11 @@
 
 #pragma once
 
+#include <vist/query-builder.hpp>
+
 #include <string>
+
+using namespace vist::tsqb;
 
 namespace vist {
 namespace policy {
@@ -37,6 +41,17 @@ struct PolicyDefinition {
 	std::string name;
 	std::string ivalue;
 };
+
+inline Table admin { "ADMIN", Column("name", &Admin::name),
+							  Column("activated", &Admin::activated) };
+
+inline Table policyManaged { "POLICY_MANAGED", Column("admin", &PolicyManaged::admin),
+											   Column("policy", &PolicyManaged::policy),
+											   Column("value", &PolicyManaged::value) };
+
+inline Table policyDefinition { "POLICY_DEFINITION",
+								Column("name", &PolicyDefinition::name),
+								Column("ivalue", &PolicyDefinition::ivalue) };
 
 } // namespace schema
 } // namespace policy

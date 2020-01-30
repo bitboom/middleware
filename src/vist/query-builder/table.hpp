@@ -16,15 +16,16 @@
 
 #pragma once
 
-#include "crud.hpp"
 #include "column.hpp"
-#include "column-pack.hpp"
+#include "crud.hpp"
 #include "tuple-helper.hpp"
+#include "type.hpp"
 #include "util.hpp"
 
-#include <vector>
-#include <string>
 #include <sstream>
+#include <string>
+#include <tuple>
+#include <vector>
 
 namespace vist {
 namespace tsqb {
@@ -32,116 +33,110 @@ namespace tsqb {
 template<typename... Columns>
 class Table : public Crud<Table<Columns...>> {
 public:
-	virtual ~Table() = default;
+	/// Make first stuct type to table type
+	using Type = typename std::tuple_element<0, std::tuple<Columns...>>::type::Table;
 
-	Table(const Table&) = delete;
-	Table& operator=(const Table&) = delete;
+	explicit Table(const std::string& name, Columns&& ...columns) :
+		name(name), columns(columns...) {}
 
-	Table(Table&&) = default;
-	Table& operator=(Table&&) = default;
-
-	// Functions for Crud
-	template<typename Cs>
-	std::set<std::string> getTableNames(Cs&& tuple) const noexcept;
-	template<typename Cs>
-	std::vector<std::string> getColumnNames(Cs&& tuple) const noexcept;
-	template<typename That>
-	std::string getTableName(That&& type) const noexcept;
-	template<typename ColumnType>
-	std::string getColumnName(ColumnType&& type) const noexcept;
-
+	std::string getName(void) const noexcept;
 	std::vector<std::string> getColumnNames(void) const noexcept;
 
 	template<typename That>
 	bool compare(const That& that) const noexcept;
 
-	int size() const noexcept;
+	std::size_t size() const noexcept;
 
 	operator std::string();
 
-	std::string name;
+	const std::string name;
+
+public: // CRTP(Curiously Recurring Template Pattern) for CRUD
+	template<typename... Cs>
+	std::vector<std::string> getTableNames(Cs&& ...coulmns) const noexcept;
+	template<typename That>
+	std::string getTableName(That&& type) const noexcept;
+	template<typename... Cs>
+	std::vector<std::string> getColumnNames(Cs&& ...columns) const noexcept;
+	template<typename Column>
+	std::string getColumnName(const Column& column) const noexcept;
+
 	std::vector<std::string> cache;
 
 private:
-	using ColumnPackType = internal::ColumnPack<Columns...>;
-	using TableType = typename ColumnPackType::TableType;
-
-	explicit Table(const std::string& name, ColumnPackType&& columnPack);
-
-	template<typename ...Cs>
-	friend Table<Cs...> make_table(const std::string& name, Cs&& ...columns);
-
-	struct GetColumnNames {
-		const ColumnPackType& columnPack;
-		std::vector<std::string> names;
-
-		GetColumnNames(const ColumnPackType& columnPack) : columnPack(columnPack) {}
-
-		template <typename T>
-		void operator()(T&& type)
-		{
-			auto name = this->columnPack.getName(std::forward<T>(type));
-			if (!name.empty())
-				names.emplace_back(name);
-		}
-	};
-
-	ColumnPackType columnPack;
+	std::tuple<Columns...> columns;
 };
 
-template<typename ...Columns>
-Table<Columns...> make_table(const std::string& name, Columns&& ...cs)
-{
-	auto columnPack = internal::ColumnPack<Columns...>(std::forward<Columns>(cs)...);
-	return Table<Columns...>(name, std::move(columnPack));
-}
-
 template<typename... Columns>
-Table<Columns...>::Table(const std::string& name, ColumnPackType&& columnPack)
-	: name(name), columnPack(std::move(columnPack)) {}
-
-template<typename... Columns>
-template<typename Cs>
-std::set<std::string> Table<Columns...>::getTableNames(Cs&& tuple) const noexcept
-{
-	return {this->name};
-}
-
-template<typename... Columns>
-template<typename Cs>
-std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& tuple) const noexcept
-{
-	GetColumnNames closure(this->columnPack);
-	tuple_helper::for_each(std::forward<Cs>(tuple), closure);
-
-	return closure.names;
-}
-
-template<typename... Columns>
-template<typename That>
-std::string Table<Columns...>::getTableName(That&& type) const noexcept
+std::string Table<Columns...>::getName() const noexcept
 {
 	return this->name;
 }
 
 template<typename... Columns>
-template<typename ColumnType>
-std::string Table<Columns...>::getColumnName(ColumnType&& type) const noexcept
+template<typename... Cs>
+std::vector<std::string> Table<Columns...>::getTableNames(Cs&& ...) const noexcept
 {
-	return this->columnPack.getName(std::forward<ColumnType>(type));
+	return {this->name};
+}
+
+template<typename... Columns>
+template<typename... Cs>
+std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& ...columns) const noexcept
+{
+	std::vector<std::string> names;
+	auto closure = [this, &names](auto type) {
+		auto name = this->getColumnName(type);
+		if (!name.empty())
+			names.emplace_back(name);
+	};
+
+	auto tuple = std::tuple(columns...);
+	tuple_helper::for_each(tuple, closure);
+
+	return names;
+}
+
+template<typename... Columns>
+template<typename That>
+std::string Table<Columns...>::getTableName(That&&) const noexcept
+{
+	return this->name;
 }
 
 template<typename... Columns>
 std::vector<std::string> Table<Columns...>::getColumnNames(void) const noexcept
 {
-	return this->columnPack.getNames();
+	std::vector<std::string> names;
+	auto closure = [&names](const auto& iter) {
+		names.push_back(iter.name);
+	};
+
+	tuple_helper::for_each(this->columns, closure);
+
+	return names;
+}
+
+template<typename... Columns>
+template<typename Column>
+std::string Table<Columns...>::getColumnName(const Column& column) const noexcept
+{
+	std::string name;
+	auto predicate = [&name, &column](const auto& iter) {
+		if (type::cast_compare(column, iter.type)) 
+			name = iter.name;
+	};
+
+	tuple_helper::for_each(this->columns, predicate);
+
+	return name;
 }
 
 template<typename... Columns>
 template<typename That>
 bool Table<Columns...>::compare(const That& that) const noexcept
 {
-	using This = TableType;
+	using This = Type;
 	return type::compare(This(), that);
 }
 
@@ -157,9 +152,10 @@ Table<Columns...>::operator std::string()
 }
 
 template<typename... Columns>
-int Table<Columns...>::size() const noexcept
+std::size_t Table<Columns...>::size() const noexcept
 {
-	return this->columnPack.size();
+	using TupleType = std::tuple<Columns...>;
+	return std::tuple_size<TupleType>::value;
 }
 
 } // namespace tsqb

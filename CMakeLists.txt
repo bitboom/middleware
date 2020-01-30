@@ -28,19 +28,14 @@ IF(NOT CMAKE_BUILD_TYPE)
 	SET(CMAKE_BUILD_TYPE "DEBUG")
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
-SET(CMAKE_CXX_FLAGS_DEBUG   "-g -std=c++1y -O0 -ggdb -Wp,-U_FORTIFY_SOURCE")
-SET(CMAKE_CXX_FLAGS_RELEASE "-g -std=c++1y -O2 -DNDEBUG")
+SET(CMAKE_CXX_FLAGS_DEBUG   "-g -std=c++1z -O0 -ggdb -Wp,-U_FORTIFY_SOURCE")
+SET(CMAKE_CXX_FLAGS_RELEASE "-g -std=c++1z -O2 -DNDEBUG")
 
 SET(CMAKE_SHARED_LINKER_FLAGS  "-Wl,--as-needed")
 SET(CMAKE_EXE_LINKER_FLAGS     "-Wl,--as-needed")
 
 ADD_DEFINITIONS("-fPIC")
-#ADD_DEFINITIONS("-Werror")
-#ADD_DEFINITIONS("-Wall")
-#ADD_DEFINITIONS("-Wextra")
-#ADD_DEFINITIONS("-pedantic")
-#ADD_DEFINITIONS("-pedantic-errors")
-
+ADD_DEFINITIONS("-Wno-ignored-qualifiers") # Suppress osquery error
 
 # Set various platform/platform-version/build version/etc defines.
 ADD_DEFINITIONS(-DLINUX="1"
