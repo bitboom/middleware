@@ -54,10 +54,10 @@ public:
 	std::string name;
 
 public: // CRTP(Curiously Recurring Template Pattern) for CRUD
-	template<typename Cs>
-	std::set<std::string> getTableNames(Cs&& tuple) const noexcept;
-	template<typename Cs>
-	std::vector<std::string> getColumnNames(Cs&& tuple) const noexcept;
+	template<typename... Cs>
+	std::vector<std::string> getTableNames(Cs&& ...columns) const noexcept;
+	template<typename... Cs> 
+	std::vector<std::string> getColumnNames(Cs&& ...columns) const noexcept;
 	template<typename TableType>
 	std::string getTableName(TableType&& type) const noexcept;
 	template<typename ColumnType>
@@ -66,9 +66,6 @@ public: // CRTP(Curiously Recurring Template Pattern) for CRUD
 	std::vector<std::string> cache;
 
 private:
-	using ColumnNames = std::vector<std::string>;
-	using TableNames = std::set<std::string>;
-
 	template<typename ...Ts>
 	friend Database<Ts...> make_database(const std::string& name, Ts&& ...tables);
 
@@ -125,8 +122,8 @@ Database<Tables...>::operator std::string()
 }
 
 template<typename... Tables>
-template<typename Cs>
-std::set<std::string> Database<Tables...>::getTableNames(Cs&& tuple) const noexcept
+template<typename... Cs>
+std::vector<std::string> Database<Tables...>::getTableNames(Cs&& ...columns) const noexcept
 {
 	std::set<std::string> names;
 
@@ -138,14 +135,15 @@ std::set<std::string> Database<Tables...>::getTableNames(Cs&& tuple) const noexc
 				names.emplace(name);
 	};
 
-	tuple_helper::for_each(std::forward<Cs>(tuple), closure);
+	auto tuple = std::tuple(columns...);
+	tuple_helper::for_each(tuple, closure);
 
-	return names;
+	return std::vector<std::string>(names.begin(), names.end());
 }
 
 template<typename... Tables>
-template<typename Cs>
-std::vector<std::string> Database<Tables...>::getColumnNames(Cs&& tuple) const noexcept
+template<typename... Cs>
+std::vector<std::string> Database<Tables...>::getColumnNames(Cs&& ...columns) const noexcept
 {
 	std::vector<std::string> names;
 	auto closure = [this, &names](const auto& iter) {
@@ -154,7 +152,8 @@ std::vector<std::string> Database<Tables...>::getColumnNames(Cs&& tuple) const n
 			names.emplace_back(name);
 	};
 
-	tuple_helper::for_each(std::forward<Cs>(tuple), closure);
+	auto tuple = std::tuple(columns...);
+	tuple_helper::for_each(tuple, closure);
 
 	return names;
 }

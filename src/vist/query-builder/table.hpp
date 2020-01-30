@@ -52,12 +52,12 @@ public:
 	const std::string name;
 
 public: // CRTP(Curiously Recurring Template Pattern) for CRUD
-	template<typename Cs>
-	std::set<std::string> getTableNames(Cs&& tuple) const noexcept;
+	template<typename... Cs>
+	std::vector<std::string> getTableNames(Cs&& ...coulmns) const noexcept;
 	template<typename That>
 	std::string getTableName(That&& type) const noexcept;
-	template<typename Cs>
-	std::vector<std::string> getColumnNames(Cs&& tuple) const noexcept;
+	template<typename... Cs>
+	std::vector<std::string> getColumnNames(Cs&& ...columns) const noexcept;
 	template<typename Column>
 	std::string getColumnName(const Column& column) const noexcept;
 
@@ -83,15 +83,15 @@ std::string Table<Columns...>::getName() const noexcept
 }
 
 template<typename... Columns>
-template<typename Cs>
-std::set<std::string> Table<Columns...>::getTableNames(Cs&&) const noexcept
+template<typename... Cs>
+std::vector<std::string> Table<Columns...>::getTableNames(Cs&& ...) const noexcept
 {
 	return {this->name};
 }
 
 template<typename... Columns>
-template<typename Cs>
-std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& tuple) const noexcept
+template<typename... Cs>
+std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& ...columns) const noexcept
 {
 	std::vector<std::string> names;
 	auto closure = [this, &names](auto type) {
@@ -100,7 +100,8 @@ std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& tuple) const noe
 			names.emplace_back(name);
 	};
 
-	tuple_helper::for_each(std::forward<Cs>(tuple), closure);
+	auto tuple = std::tuple(columns...);
+	tuple_helper::for_each(tuple, closure);
 
 	return names;
 }

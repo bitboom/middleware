@@ -52,8 +52,8 @@ public:
 	T& where(Expr expr);
 
 private:
-	template<typename ColumnTuple>
-	T& selectInternal(ColumnTuple&& ct, bool distinct = false);
+	template<typename... ColumnTypes>
+	T& selectInternal(bool distinct, ColumnTypes&& ...cts);
 
 	template<typename L, typename R>
 	std::string processWhere(condition::And<L,R>& expr);
@@ -69,16 +69,14 @@ template<typename T>
 template<typename... ColumnTypes>
 T& Crud<T>::select(ColumnTypes&&... cts)
 {
-	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
-
-	return this->selectInternal(std::move(columnTuple));
+	return this->selectInternal(false, std::forward<ColumnTypes>(cts)...);
 }
 
 template<typename T>
 template<typename Type>
 T& Crud<T>::select(Distinct<Type> distinct)
 {
-	return this->selectInternal(std::move(distinct.value), true);
+	return this->selectInternal(true, std::move(distinct.value));
 }
 
 template<typename T>
@@ -110,13 +108,15 @@ T& Crud<T>::selectAll(void)
 }
 
 template<typename T>
-template<typename ColumnTuple>
-T& Crud<T>::selectInternal(ColumnTuple&& ct, bool distinct)
+template<typename... ColumnTypes>
+T& Crud<T>::selectInternal(bool distinct, ColumnTypes&& ...cts)
 {
 	static_cast<T*>(this)->cache.clear();
 
-	auto columnNames = static_cast<T*>(this)->getColumnNames(std::move(ct));
-	auto tableNames = static_cast<T*>(this)->getTableNames(std::move(ct));
+	auto columnNames = static_cast<T*>(this)->getColumnNames(std::forward<ColumnTypes>(cts)...);
+
+	auto tuple = std::tuple(cts...);
+	auto tableNames = static_cast<T*>(this)->getTableNames(std::move(tuple));
 
 	std::stringstream ss;
 	ss << "SELECT ";
@@ -153,8 +153,7 @@ T& Crud<T>::update(ColumnTypes&&... cts)
 {
 	static_cast<T*>(this)->cache.clear();
 
-	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
-	auto columnNames = static_cast<T*>(this)->getColumnNames(std::move(columnTuple));
+	auto columnNames = static_cast<T*>(this)->getColumnNames(std::forward<ColumnTypes>(cts)...);
 
 	std::stringstream ss;
 	ss << "UPDATE " << static_cast<T*>(this)->name << " ";
@@ -179,8 +178,7 @@ T& Crud<T>::insert(ColumnTypes&&... cts)
 {
 	static_cast<T*>(this)->cache.clear();
 
-	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
-	auto columnNames = static_cast<T*>(this)->getColumnNames(std::move(columnTuple));
+	auto columnNames = static_cast<T*>(this)->getColumnNames(std::forward<ColumnTypes>(cts)...);
 
 	std::stringstream ss;
 	ss << "INSERT INTO " << static_cast<T*>(this)->name << " (";
@@ -213,8 +211,7 @@ T& Crud<T>::remove(ColumnTypes&&... cts)
 {
 	static_cast<T*>(this)->cache.clear();
 
-	auto columnTuple = std::make_tuple(std::forward<ColumnTypes>(cts)...);
-	auto columnNames = static_cast<T*>(this)->getColumnNames(std::move(columnTuple));
+	auto columnNames = static_cast<T*>(this)->getColumnNames(std::forward<ColumnTypes>(cts)...);
 
 	std::stringstream ss;
 	ss << "DELETE FROM " << static_cast<T*>(this)->name;
