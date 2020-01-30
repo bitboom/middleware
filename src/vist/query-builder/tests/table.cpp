@@ -17,11 +17,9 @@
 #include <gtest/gtest.h>
 
 #include <vist/query-builder/column.hpp>
-#include <vist/query-builder/table-pack.hpp>
 #include <vist/query-builder/table.hpp>
 
 using namespace vist::tsqb;
-using namespace vist::tsqb::internal;
 
 namespace {
 
@@ -48,8 +46,6 @@ Table table2 { "table2", Column("column1", &Table2::column1),
 						 Column("column3", &Table2::column3),
 						 Column("column4", &Table2::column4),
 						 Column("column5", &Table2::column5) };
-
-TablePack tables { table1, table2 };
 
 } // anonymous namespace
 
@@ -84,11 +80,4 @@ TEST(TableTests, get_names)
 TEST(TableTests, compare)
 {
 	EXPECT_TRUE(table1.compare(Table1()));
-}
-
-TEST(TableTests, pack_get_column)
-{
-	EXPECT_EQ(tables.getColumnName(Column("anonymous", &Table1::column1)), "table1.column1");
-	EXPECT_EQ(tables.getColumnName(Column("anonymous", &Table1::column2)), "table1.column2");
-	EXPECT_EQ(tables.getColumnName(Column("anonymous", &Table1::column3)), "table1.column3");
 }
