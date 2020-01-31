@@ -20,7 +20,6 @@
 #include "condition.hpp"
 #include "crud.hpp"
 #include "expression.hpp"
-#include "tuple-helper.hpp"
 #include "util.hpp"
 
 #include <algorithm>
@@ -118,7 +117,7 @@ std::vector<std::string> Database<Tables...>::getTableNames(Cs&& ...columns) con
 {
 	std::set<std::string> names;
 
-	auto closure = [this, &names](const auto& type) {
+	auto predicate = [this, &names](const auto& type) {
 		Column anonymous("anonymous", type);
 		using TableType = typename decltype(anonymous)::Table;
 		auto name = this->getTableName(TableType());
@@ -126,8 +125,11 @@ std::vector<std::string> Database<Tables...>::getTableNames(Cs&& ...columns) con
 				names.emplace(name);
 	};
 
-	auto tuple = std::tuple(columns...);
-	tuple_helper::for_each(tuple, closure);
+	auto closure = [&predicate](const auto&... iter) {
+		(predicate(iter), ...);
+	};
+
+	std::apply(closure, std::tuple(columns...));
 
 	return std::vector<std::string>(names.begin(), names.end());
 }
@@ -137,14 +139,17 @@ template<typename... Cs>
 std::vector<std::string> Database<Tables...>::getColumnNames(Cs&& ...columns) const noexcept
 {
 	std::vector<std::string> names;
-	auto closure = [this, &names](const auto& iter) {
+	auto predicate = [this, &names](const auto& iter) {
 		auto name = this->getColumnName(iter);
 		if (!name.empty())
 			names.emplace_back(name);
 	};
 
-	auto tuple = std::tuple(columns...);
-	tuple_helper::for_each(tuple, closure);
+	auto closure = [&predicate](const auto&... iter) {
+		(predicate(iter), ...);
+	};
+
+	std::apply(closure, std::tuple(columns...));
 
 	return names;
 }
@@ -154,12 +159,16 @@ template<typename Table>
 std::string Database<Tables...>::getTableName(Table&& table) const noexcept
 {
 	std::string name;
-	auto predicate = [&name, &table](const auto& iter) {
-		if (iter.compare(table))
-			name = iter.name;
+	auto predicate = [&name, &table](const auto& type) {
+		if (type.compare(table))
+			name = type.name;
 	};
 
-	tuple_helper::for_each(this->tables, predicate);
+	auto closure = [&predicate](const auto&... iter) {
+		(predicate(iter), ...);
+	};
+
+	std::apply(closure, this->tables);
 
 	return name;
 }
@@ -180,7 +189,11 @@ std::string Database<Tables...>::getColumnName(ColumnType&& column) const noexce
 		}
 	};
 
-	tuple_helper::for_each(this->tables, predicate);
+	auto closure = [&predicate](const auto&... iter) {
+		(predicate(iter), ...);
+	};
+
+	std::apply(closure, this->tables);
 
 	return name;
 }

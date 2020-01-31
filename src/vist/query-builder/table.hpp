@@ -18,7 +18,6 @@
 
 #include "column.hpp"
 #include "crud.hpp"
-#include "tuple-helper.hpp"
 #include "type.hpp"
 #include "util.hpp"
 
@@ -85,14 +84,17 @@ template<typename... Cs>
 std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& ...columns) const noexcept
 {
 	std::vector<std::string> names;
-	auto closure = [this, &names](auto type) {
+	auto predicate = [this, &names](const auto& type) {
 		auto name = this->getColumnName(type);
 		if (!name.empty())
 			names.emplace_back(name);
 	};
 
-	auto tuple = std::tuple(columns...);
-	tuple_helper::for_each(tuple, closure);
+	auto closure = [&predicate](const auto&... iter) {
+		(predicate(iter), ...);
+	};
+
+	std::apply(closure, std::tuple(columns...));
 
 	return names;
 }
@@ -108,11 +110,11 @@ template<typename... Columns>
 std::vector<std::string> Table<Columns...>::getColumnNames(void) const noexcept
 {
 	std::vector<std::string> names;
-	auto closure = [&names](const auto& iter) {
-		names.push_back(iter.name);
+	auto closure = [&names](const auto&... iter) {
+		(names.push_back(iter.name), ...);
 	};
 
-	tuple_helper::for_each(this->columns, closure);
+	std::apply(closure, this->columns);
 
 	return names;
 }
@@ -127,7 +129,11 @@ std::string Table<Columns...>::getColumnName(const Column& column) const noexcep
 			name = iter.name;
 	};
 
-	tuple_helper::for_each(this->columns, predicate);
+	auto closure = [&predicate](const auto&... iter) {
+		(predicate(iter), ...);
+	};
+
+	std::apply(closure, this->columns);
 
 	return name;
 }
