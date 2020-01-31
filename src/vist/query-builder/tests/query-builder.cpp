@@ -60,9 +60,7 @@ Table policyDefinition { "policy_definition", Column("id", &PolicyDefinition::id
 
 Database db { "dpm", admin, managedPolicy, policyDefinition };
 
-class TsqbTests : public testing::Test {};
-
-TEST_F(TsqbTests, SELECT)
+TEST(QueryBuilderTsqbTests, SELECT)
 {
 	std::string select1 = admin.select(&Admin::id, &Admin::pkg, &Admin::uid, &Admin::key);
 	std::string select2 = admin.select(&Admin::id, &Admin::uid, &Admin::key);
@@ -71,14 +69,14 @@ TEST_F(TsqbTests, SELECT)
 	EXPECT_EQ(select2, "SELECT id, uid, key FROM admin");
 }
 
-TEST_F(TsqbTests, SELECT_ALL)
+TEST(QueryBuilderTsqbTests, SELECT_ALL)
 {
 	std::string select = admin.selectAll();
 
 	EXPECT_EQ(select, "SELECT * FROM admin");
 }
 
-TEST_F(TsqbTests, SELECT_WHERE)
+TEST(QueryBuilderTsqbTests, SELECT_WHERE)
 {
 	std::string select1 = admin.select(&Admin::uid, &Admin::key)
 							   .where(expr(&Admin::id) > 3);
@@ -94,7 +92,7 @@ TEST_F(TsqbTests, SELECT_WHERE)
 	EXPECT_EQ(select4, "SELECT * FROM admin WHERE uid > ? OR pkg = ?");
 }
 
-TEST_F(TsqbTests, SELECT_DISTINCT)
+TEST(QueryBuilderTsqbTests, SELECT_DISTINCT)
 {
 	std::string select = admin.select(distinct(&Admin::uid, &Admin::key))
 							   .where(expr(&Admin::id) > 3);
@@ -102,7 +100,7 @@ TEST_F(TsqbTests, SELECT_DISTINCT)
 	EXPECT_EQ(select, "SELECT DISTINCT uid, key FROM admin WHERE id > ?");
 }
 
-TEST_F(TsqbTests, UPDATE)
+TEST(QueryBuilderTsqbTests, UPDATE)
 {
 	int uid = 0, id = 1;
 	std::string update1 = admin.update(&Admin::id, &Admin::pkg, &Admin::uid, &Admin::key);
@@ -116,7 +114,7 @@ TEST_F(TsqbTests, UPDATE)
 	EXPECT_EQ(update3, "UPDATE admin SET key = ?, pkg = ? WHERE uid = ? AND id = ?");
 }
 
-TEST_F(TsqbTests, DELETE)
+TEST(QueryBuilderTsqbTests, DELETE)
 {
 	std::string delete1 = admin.remove();
 	std::string delete2 = admin.remove().where(expr(&Admin::pkg) == "dpm" &&
@@ -126,7 +124,7 @@ TEST_F(TsqbTests, DELETE)
 	EXPECT_EQ(delete2, "DELETE FROM admin WHERE pkg = ? AND uid = ?");
 }
 
-TEST_F(TsqbTests, INSERT)
+TEST(QueryBuilderTsqbTests, INSERT)
 {
 	std::string insert1 = admin.insert(&Admin::id, &Admin::pkg, &Admin::uid, &Admin::key);
 	std::string insert2 = admin.insert(&Admin::id, &Admin::pkg, &Admin::key);
@@ -135,7 +133,7 @@ TEST_F(TsqbTests, INSERT)
 	EXPECT_EQ(insert2, "INSERT INTO admin (id, pkg, key) VALUES (?, ?, ?)");
 }
 
-TEST_F(TsqbTests, TYPE_SAFE)
+TEST(QueryBuilderTsqbTests, TYPE_SAFE)
 {
 /*
  * Below cause complie error since expression types are dismatch.
@@ -150,7 +148,7 @@ TEST_F(TsqbTests, TYPE_SAFE)
 */
 }
 
-TEST_F(TsqbTests, MULTI_SELECT)
+TEST(QueryBuilderTsqbTests, MULTI_SELECT)
 {
 	std::string multiSelect1 = db.select(&Admin::uid, &Admin::key,
 										 &ManagedPolicy::id, &ManagedPolicy::value);
@@ -165,7 +163,7 @@ TEST_F(TsqbTests, MULTI_SELECT)
 							"WHERE admin.uid > ? AND managed_policy.id = ?");
 }
 
-TEST_F(TsqbTests, JOIN)
+TEST(QueryBuilderTsqbTests, JOIN)
 {
 	std::string join1 = db.select(&Admin::uid, &Admin::key)
 						  .join<PolicyDefinition>(condition::Join::LEFT_OUTER);

@@ -52,12 +52,12 @@ Database database { "database", table1, table2 };
 
 } // anonymous namespace
 
-TEST(DatabaseTests, size)
+TEST(QueryBuilderDatabaseTests, size)
 {
 	EXPECT_EQ(database.size(), 2);
 }
 
-TEST(DatabaseTests, get_name)
+TEST(QueryBuilderDatabaseTests, get_name)
 {
 	EXPECT_EQ(database.name, "database");
 
@@ -75,7 +75,7 @@ TEST(DatabaseTests, get_name)
 	EXPECT_EQ(database.getColumnName(&Table2::column5), "table2.column5");
 }
 
-TEST(DatabaseTests, get_names)
+TEST(QueryBuilderDatabaseTests, get_names)
 {
 	auto columns = database.getColumnNames(&Table1::column1, &Table2::column3);
 	auto tables = database.getTableNames(&Table1::column1, &Table2::column1, &Table2::column1);

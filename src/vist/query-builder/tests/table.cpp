@@ -49,13 +49,13 @@ Table table2 { "table2", Column("column1", &Table2::column1),
 
 } // anonymous namespace
 
-TEST(TableTests, size)
+TEST(QueryBuilderTableTests, size)
 {
 	EXPECT_EQ(table1.size(), 3);
 	EXPECT_EQ(table2.size(), 5);
 }
 
-TEST(TableTests, get_name)
+TEST(QueryBuilderTableTests, get_name)
 {
 	EXPECT_EQ(table1.getName(), "table1");
 	EXPECT_EQ(table2.name, "table2");
@@ -71,13 +71,13 @@ TEST(TableTests, get_name)
 	EXPECT_EQ(table2.getColumnName(&Table2::column5), "column5");
 }
 
-TEST(TableTests, get_names)
+TEST(QueryBuilderTableTests, get_names)
 {
 	EXPECT_EQ(table1.getColumnNames().size(), 3);
 	EXPECT_EQ(table2.getColumnNames().size(), 5);
 }
 
-TEST(TableTests, compare)
+TEST(QueryBuilderTableTests, compare)
 {
 	EXPECT_TRUE(table1.compare(Table1()));
 }
