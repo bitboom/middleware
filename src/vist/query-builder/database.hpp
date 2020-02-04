@@ -61,6 +61,12 @@ public: // CRTP(Curiously Recurring Template Pattern) for CRUD
 	std::string getTableName(TableType&& type) const noexcept;
 	template<typename ColumnType>
 	std::string getColumnName(ColumnType&& type) const noexcept;
+	template<typename... Cs>
+	std::vector<std::string> _getTableNames(Cs&& ...columns) const noexcept;
+	template<typename... Cs> 
+	std::vector<std::string> _getColumnNames(Cs&& ...columns) const noexcept;
+	template<typename ColumnType> // remove_cv or ref
+	std::string _getColumnName(ColumnType&& type) const noexcept;
 
 	std::vector<std::string> cache;
 
@@ -136,11 +142,54 @@ std::vector<std::string> Database<Tables...>::getTableNames(Cs&& ...columns) con
 
 template<typename... Tables>
 template<typename... Cs>
+std::vector<std::string> Database<Tables...>::_getTableNames(Cs&& ...columns) const noexcept
+{
+	std::set<std::string> names;
+
+	auto predicate = [this, &names](const auto& column) {
+		using ColumnType = std::remove_reference_t<decltype(column)>;
+		using TableType = typename ColumnType::Table;
+		auto name = this->getTableName(TableType());
+		if (!name.empty())
+				names.emplace(name);
+	};
+
+	auto closure = [&predicate](const auto&... iter) {
+		(predicate(iter), ...);
+	};
+
+	std::apply(closure, std::tuple(columns...));
+
+	return std::vector<std::string>(names.begin(), names.end());
+}
+
+template<typename... Tables>
+template<typename... Cs>
 std::vector<std::string> Database<Tables...>::getColumnNames(Cs&& ...columns) const noexcept
 {
 	std::vector<std::string> names;
 	auto predicate = [this, &names](const auto& iter) {
 		auto name = this->getColumnName(iter);
+		if (!name.empty())
+			names.emplace_back(name);
+	};
+
+	auto closure = [&predicate](const auto&... iter) {
+		(predicate(iter), ...);
+	};
+
+	std::apply(closure, std::tuple(columns...));
+
+	return names;
+}
+
+template<typename... Tables>
+template<typename... Cs>
+std::vector<std::string> Database<Tables...>::_getColumnNames(Cs&& ...columns) const noexcept
+{
+	std::vector<std::string> names;
+	auto predicate = [this, &names](const auto& column) {
+		auto name = this->_getColumnName(column);
 		if (!name.empty())
 			names.emplace_back(name);
 	};
@@ -185,6 +234,31 @@ std::string Database<Tables...>::getColumnName(ColumnType&& column) const noexce
 	auto predicate = [&name, &table, &column](const auto& iter) {
 		if (iter.compare(table)) {
 			auto cname = iter.getColumnName(column);
+			name = iter.name + "." + cname;
+		}
+	};
+
+	auto closure = [&predicate](const auto&... iter) {
+		(predicate(iter), ...);
+	};
+
+	std::apply(closure, this->tables);
+
+	return name;
+}
+
+template<typename... Tables>
+template<typename Column>
+std::string Database<Tables...>::_getColumnName(Column&& column) const noexcept
+{
+	using ColumnType = std::remove_reference_t<decltype(column)>;
+	using TableType = typename ColumnType::Table;
+	TableType table;
+
+	std::string name;
+	auto predicate = [&name, &table, &column](const auto& iter) {
+		if (iter.compare(table)) {
+			auto cname = iter._getColumnName(column);
 			name = iter.name + "." + cname;
 		}
 	};

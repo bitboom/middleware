@@ -28,6 +28,9 @@ struct Table1 {
 	int column1;
 	std::string column2;
 	bool column3;
+
+	inline static Column Column1 = { "column1", &Table1::column1 };
+	inline static Column Column2 = { "column2", &Table1::column2 };
 };
 
 struct Table2 {
@@ -64,7 +67,7 @@ TEST(QueryBuilderDatabaseTests, get_name)
 	EXPECT_EQ(database.getTableName(Table1()), "table1");
 	EXPECT_EQ(database.getTableName(Table2()), "table2");
 
-	EXPECT_EQ(database.getColumnName(&Table1::column1), "table1.column1");
+	EXPECT_EQ(database._getColumnName(Table1::Column1), "table1.column1");
 	EXPECT_EQ(database.getColumnName(&Table1::column2), "table1.column2");
 	EXPECT_EQ(database.getColumnName(&Table1::column3), "table1.column3");
 
@@ -77,6 +80,12 @@ TEST(QueryBuilderDatabaseTests, get_name)
 
 TEST(QueryBuilderDatabaseTests, get_names)
 {
+	{
+		auto columns = database._getColumnNames(Table1::Column1, Table1::Column2);
+		EXPECT_EQ(columns[0], "table1.column1");
+		EXPECT_EQ(columns[1], "table1.column2");
+	}
+
 	auto columns = database.getColumnNames(&Table1::column1, &Table2::column3);
 	auto tables = database.getTableNames(&Table1::column1, &Table2::column1, &Table2::column1);
 	if (columns.size() == 2 && tables.size() == 2) {

@@ -27,6 +27,8 @@ struct Table1 {
 	int column1;
 	std::string column2;
 	bool column3;
+
+	inline static Column Column1 = { "column1", &Table1::column1 };
 };
 
 struct Table2 {
@@ -60,6 +62,7 @@ TEST(QueryBuilderTableTests, get_name)
 	EXPECT_EQ(table1.getName(), "table1");
 	EXPECT_EQ(table2.name, "table2");
 
+	EXPECT_EQ(table1._getColumnName(Table1::Column1), "column1");
 	EXPECT_EQ(table1.getColumnName(&Table1::column1), "column1");
 	EXPECT_EQ(table1.getColumnName(&Table1::column2), "column2");
 	EXPECT_EQ(table1.getColumnName(&Table1::column3), "column3");

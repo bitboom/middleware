@@ -36,16 +36,5 @@ struct Column final {
 	Type type;
 };
 
-template<typename Type>
-struct Distinct {
-	Type value;
-};
-
-template<typename... Args>
-auto distinct(Args&&... args) -> decltype(Distinct<std::tuple<Args...>>())
-{
-	return {std::tuple(args...)};
-}
-
 } // namespace tsqb
 } // namespace vist

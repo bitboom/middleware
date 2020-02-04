@@ -35,7 +35,7 @@ public:
 	/// Make first stuct type to table type
 	using Type = typename std::tuple_element<0, std::tuple<Columns...>>::type::Table;
 
-	explicit Table(const std::string& name, Columns&& ...columns) :
+	explicit Table(const std::string& name, Columns ...columns) :
 		name(name), columns(columns...) {}
 
 	std::string getName(void) const noexcept;
@@ -59,6 +59,12 @@ public: // CRTP(Curiously Recurring Template Pattern) for CRUD
 	std::vector<std::string> getColumnNames(Cs&& ...columns) const noexcept;
 	template<typename Column>
 	std::string getColumnName(const Column& column) const noexcept;
+	template<typename... Cs>
+	std::vector<std::string> _getTableNames(Cs&& ...) const noexcept;
+	template<typename... Cs>
+	std::vector<std::string> _getColumnNames(Cs&& ...columns) const noexcept;
+	template<typename Column>
+	std::string _getColumnName(const Column& column) const noexcept;
 
 	std::vector<std::string> cache;
 
@@ -99,6 +105,27 @@ std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& ...columns) cons
 	return names;
 }
 
+
+template<typename... Columns>
+template<typename... Cs>
+std::vector<std::string> Table<Columns...>::_getColumnNames(Cs&& ...columns) const noexcept
+{
+	std::vector<std::string> names;
+	auto predicate = [this, &names](const auto& type) {
+		auto name = this->_getColumnName(type);
+		if (!name.empty())
+			names.emplace_back(name);
+	};
+
+	auto closure = [&predicate](const auto&... iter) {
+		(predicate(iter), ...);
+	};
+
+	std::apply(closure, std::tuple(columns...));
+
+	return names;
+}
+
 template<typename... Columns>
 template<typename That>
 std::string Table<Columns...>::getTableName(That&&) const noexcept
@@ -126,6 +153,32 @@ std::string Table<Columns...>::getColumnName(const Column& column) const noexcep
 	std::string name;
 	auto predicate = [&name, &column](const auto& iter) {
 		if (type::cast_compare(column, iter.type)) 
+			name = iter.name;
+	};
+
+	auto closure = [&predicate](const auto&... iter) {
+		(predicate(iter), ...);
+	};
+
+	std::apply(closure, this->columns);
+
+	return name;
+}
+
+template<typename... Columns>
+template<typename... Cs>
+std::vector<std::string> Table<Columns...>::_getTableNames(Cs&& ...) const noexcept
+{
+	return {this->name};
+}
+
+template<typename... Columns>
+template<typename Column>
+std::string Table<Columns...>::_getColumnName(const Column& column) const noexcept
+{
+	std::string name;
+	auto predicate = [&name, &column](const auto& iter) {
+		if (type::cast_compare(column.type, iter.type)) 
 			name = iter.name;
 	};
 

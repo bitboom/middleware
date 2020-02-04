@@ -31,9 +31,6 @@ public:
 	template<typename... ColumnTypes>
 	T& select(ColumnTypes&&... cts);
 
-	template<typename Type>
-	T& select(Distinct<Type> distinct);
-
 	template<typename TableType>
 	T& selectAll(void);
 
@@ -52,9 +49,6 @@ public:
 	T& where(Expr expr);
 
 private:
-	template<typename... ColumnTypes>
-	T& selectInternal(bool distinct, ColumnTypes&& ...cts);
-
 	template<typename L, typename R>
 	std::string processWhere(condition::And<L,R>& expr);
 
@@ -69,14 +63,35 @@ template<typename T>
 template<typename... ColumnTypes>
 T& Crud<T>::select(ColumnTypes&&... cts)
 {
-	return this->selectInternal(false, std::forward<ColumnTypes>(cts)...);
-}
+	static_cast<T*>(this)->cache.clear();
 
-template<typename T>
-template<typename Type>
-T& Crud<T>::select(Distinct<Type> distinct)
-{
-	return this->selectInternal(true, std::move(distinct.value));
+	auto columnNames = static_cast<T*>(this)->_getColumnNames(std::forward<ColumnTypes>(cts)...);
+	auto tableNames = static_cast<T*>(this)->_getTableNames(std::forward<ColumnTypes>(cts)...);
+
+	std::stringstream ss;
+	ss << "SELECT ";
+
+	std::size_t i = 0;
+	for (const auto& c : columnNames) {
+		ss << c;
+
+		if (i++ < columnNames.size() - 1)
+			ss << ", ";
+	}
+
+	ss << " FROM ";
+
+	i = 0;
+	for (const auto& t : tableNames) {
+		ss << t;
+
+		if (i++ < tableNames.size() - 1)
+			ss << ", ";
+	}
+
+	static_cast<T*>(this)->cache.emplace_back(ss.str());
+
+	return *(static_cast<T*>(this));
 }
 
 template<typename T>
@@ -101,46 +116,6 @@ T& Crud<T>::selectAll(void)
 	std::stringstream ss;
 	auto tableName = static_cast<T*>(this)->getTableName(TableType());
 	ss << "SELECT * FROM " << tableName;
-
-	static_cast<T*>(this)->cache.emplace_back(ss.str());
-
-	return *(static_cast<T*>(this));
-}
-
-template<typename T>
-template<typename... ColumnTypes>
-T& Crud<T>::selectInternal(bool distinct, ColumnTypes&& ...cts)
-{
-	static_cast<T*>(this)->cache.clear();
-
-	auto columnNames = static_cast<T*>(this)->getColumnNames(std::forward<ColumnTypes>(cts)...);
-
-	auto tuple = std::tuple(cts...);
-	auto tableNames = static_cast<T*>(this)->getTableNames(std::move(tuple));
-
-	std::stringstream ss;
-	ss << "SELECT ";
-
-	if (distinct)
-		ss << "DISTINCT ";
-
-	std::size_t i = 0;
-	for (const auto& c : columnNames) {
-		ss << c;
-
-		if (i++ < columnNames.size() - 1)
-			ss << ", ";
-	}
-
-	ss << " FROM ";
-
-	i = 0;
-	for (const auto& t : tableNames) {
-		ss << t;
-
-		if (i++ < tableNames.size() - 1)
-			ss << ", ";
-	}
 
 	static_cast<T*>(this)->cache.emplace_back(ss.str());
 
