@@ -124,8 +124,8 @@ void PolicyStorage::define(const std::string& policy, const PolicyValue& ivalue)
 
 	PolicyDefinition pd = { policy, ivalue.dump() };
 
-	std::string query = schema::policyDefinition.insert(&PolicyDefinition::name,
-													    &PolicyDefinition::ivalue);
+	std::string query = schema::PolicyDefinitionTable.insert(PolicyDefinition::Name,
+															 PolicyDefinition::Ivalue);
 	database::Statement stmt(*database, query);
 	stmt.bind(1, pd.name);
 	stmt.bind(2, pd.ivalue);
@@ -147,7 +147,7 @@ void PolicyStorage::enroll(const std::string& name)
 	/// Make admin deactivated as default.
 	Admin admin = {name , 0};
 
-	std::string query = schema::admin.insert(&Admin::name, &Admin::activated);
+	std::string query = schema::AdminTable.insert(Admin::Name, Admin::Activated);
 	database::Statement stmt(*database, query);
 	stmt.bind(1, admin.name);
 	stmt.bind(2, admin.activated);

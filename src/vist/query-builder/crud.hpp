@@ -153,7 +153,7 @@ T& Crud<T>::insert(ColumnTypes&&... cts)
 {
 	static_cast<T*>(this)->cache.clear();
 
-	auto columnNames = static_cast<T*>(this)->getColumnNames(std::forward<ColumnTypes>(cts)...);
+	auto columnNames = static_cast<T*>(this)->_getColumnNames(std::forward<ColumnTypes>(cts)...);
 
 	std::stringstream ss;
 	ss << "INSERT INTO " << static_cast<T*>(this)->name << " (";

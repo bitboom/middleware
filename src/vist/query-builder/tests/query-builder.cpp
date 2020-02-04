@@ -147,8 +147,8 @@ TEST(QueryBuilderTsqbTests, DELETE)
 
 TEST(QueryBuilderTsqbTests, INSERT)
 {
-	std::string insert1 = admin.insert(&Admin::id, &Admin::pkg, &Admin::uid, &Admin::key);
-	std::string insert2 = admin.insert(&Admin::id, &Admin::pkg, &Admin::key);
+	std::string insert1 = AdminTable.insert(Admin::Id, Admin::Pkg, Admin::Uid, Admin::Key);
+	std::string insert2 = AdminTable.insert(Admin::Id, Admin::Pkg, Admin::Key);
 
 	EXPECT_EQ(insert1, "INSERT INTO admin (id, pkg, uid, key) VALUES (?, ?, ?, ?)");
 	EXPECT_EQ(insert2, "INSERT INTO admin (id, pkg, key) VALUES (?, ?, ?)");
