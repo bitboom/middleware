@@ -128,7 +128,7 @@ T& Crud<T>::update(ColumnTypes&&... cts)
 {
 	static_cast<T*>(this)->cache.clear();
 
-	auto columnNames = static_cast<T*>(this)->getColumnNames(std::forward<ColumnTypes>(cts)...);
+	auto columnNames = static_cast<T*>(this)->_getColumnNames(std::forward<ColumnTypes>(cts)...);
 
 	std::stringstream ss;
 	ss << "UPDATE " << static_cast<T*>(this)->name << " ";

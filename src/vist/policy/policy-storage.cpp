@@ -193,8 +193,9 @@ void PolicyStorage::activate(const std::string& admin, bool state)
 		THROW(ErrCode::LogicError) << "Not exist admin: " << admin;
 
 	DEBUG(VIST) << "Activate admin: " << admin;
-	std::string query = schema::admin.update(&Admin::activated)
-									 .where(expr(&Admin::name) == admin);
+	/// Admin::Activated
+	std::string query = schema::AdminTable.update(Admin::Activated)
+										  .where(expr(&Admin::name) == admin);
 	database::Statement stmt(*this->database, query);
 	stmt.bind(1, static_cast<int>(state));
 	stmt.bind(2, admin);
@@ -235,8 +236,8 @@ void PolicyStorage::update(const std::string& admin,
 	if (this->definitions.find(policy) == this->definitions.end())
 		THROW(ErrCode::LogicError) << "Not exist policy: " << policy;
 
-	std::string query = schema::policyManaged.update(&PolicyManaged::value)
-											 .where(expr(&PolicyManaged::admin) == admin &&
+	std::string query = schema::PolicyManagedTable.update(PolicyManaged::Value)
+												  .where(expr(&PolicyManaged::admin) == admin &&
 													expr(&PolicyManaged::policy) == policy);
 	database::Statement stmt(*this->database, query);
 	stmt.bind(1, value.dump());

@@ -124,10 +124,10 @@ TEST(QueryBuilderTsqbTests, SELECT_WHERE)
 TEST(QueryBuilderTsqbTests, UPDATE)
 {
 	int uid = 0, id = 1;
-	std::string update1 = admin.update(&Admin::id, &Admin::pkg, &Admin::uid, &Admin::key);
-	std::string update2 = admin.update(&Admin::key).where(expr(&Admin::uid) == uid &&
+	std::string update1 = admin.update(Admin::Id, Admin::Pkg, Admin::Uid, Admin::Key);
+	std::string update2 = admin.update(Admin::Key).where(expr(&Admin::uid) == uid &&
 														  expr(&Admin::id) == id);
-	std::string update3 = admin.update(&Admin::key, &Admin::pkg)
+	std::string update3 = admin.update(Admin::Key, Admin::Pkg)
 							   .where(expr(&Admin::uid) == 0 && expr(&Admin::id) == 1);
 
 	EXPECT_EQ(update1, "UPDATE admin SET id = ?, pkg = ?, uid = ?, key = ?");

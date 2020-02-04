@@ -29,18 +29,35 @@ namespace schema {
 struct Admin {
 	std::string name;
 	int activated = -1;
+
+	inline static Column Name = { "name", &Admin::name };
+	inline static Column Activated = { "activated", &Admin::activated };
 };
 
 struct PolicyManaged {
 	std::string admin;
 	std::string policy;
 	std::string value;
+
+	inline static Column Admin = { "admin", &PolicyManaged::admin };
+	inline static Column Policy = { "policy", &PolicyManaged::policy };
+	inline static Column Value = { "value", &PolicyManaged::value };
 };
 
 struct PolicyDefinition {
 	std::string name;
 	std::string ivalue;
+
+	inline static Column Name = { "name", &PolicyDefinition::name };
+	inline static Column Ivalue = { "policy", &PolicyDefinition::ivalue };
 };
+
+inline Table AdminTable { "ADMIN", Admin::Name, Admin::Activated };
+inline Table PolicyManagedTable { "POLICY_MANAGED", PolicyManaged::Admin,
+													PolicyManaged::Policy,
+													PolicyManaged::Value };
+inline Table PolicyDefinitionTable { "POLICY_DEFINITION", PolicyDefinition::Name,
+													 PolicyDefinition::Ivalue };
 
 inline Table admin { "ADMIN", Column("name", &Admin::name),
 							  Column("activated", &Admin::activated) };
