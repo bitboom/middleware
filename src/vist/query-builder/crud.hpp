@@ -50,10 +50,10 @@ public:
 
 private:
 	template<typename L, typename R>
-	std::string processWhere(condition::And<L,R>& expr);
+	std::string processWhere(And<L,R>& expr);
 
 	template<typename L, typename R>
-	std::string processWhere(condition::Or<L,R>& expr);
+	std::string processWhere(Or<L,R>& expr);
 
 	template<typename Expr>
 	std::string processWhere(Expr expr);
@@ -210,7 +210,7 @@ T& Crud<T>::where(Expr expr)
 
 template<typename T>
 template<typename L, typename R>
-std::string Crud<T>::processWhere(condition::And<L,R>& expr)
+std::string Crud<T>::processWhere(And<L,R>& expr)
 {
 	std::stringstream ss;
 	ss << this->processWhere(expr.l) << " ";
@@ -222,7 +222,7 @@ std::string Crud<T>::processWhere(condition::And<L,R>& expr)
 
 template<typename T>
 template<typename L, typename R>
-std::string Crud<T>::processWhere(condition::Or<L,R>& expr)
+std::string Crud<T>::processWhere(Or<L,R>& expr)
 {
 	std::stringstream ss;
 	ss << this->processWhere(expr.l) << " ";

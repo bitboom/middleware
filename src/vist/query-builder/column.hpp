@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "expression.hpp"
+
 #include <string>
 #include <tuple>
 
@@ -34,7 +36,35 @@ struct Column final {
 
 	std::string name;
 	Type type;
+
+	template<typename Value>
+	Equal<Column<Object, Field>, Value> operator==(Value value) const;
+	template<typename Value>
+	Greater<Column<Object, Field>, Value> operator>(Value value) const;
+	template<typename Value>
+	Lesser<Column<Object, Field>, Value> operator<(Value value) const;
 };
+
+template<typename Object, typename Field>
+template<typename Value>
+Equal<Column<Object, Field>, Value> Column<Object, Field>::operator==(Value value) const
+{
+	return {*this, value};
+}
+
+template<typename Object, typename Field>
+template<typename Value>
+Greater<Column<Object, Field>, Value> Column<Object, Field>::operator>(Value value) const
+{
+	return {*this, value};
+}
+
+template<typename Object, typename Field>
+template<typename Value>
+Lesser<Column<Object, Field>, Value> Column<Object, Field>::operator<(Value value) const
+{
+	return {*this, value};
+}
 
 } // namespace tsqb
 } // namespace vist

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017-present Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2020-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,15 +13,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @brief namespace TSQB means type-safe query builder
- */
 
-#pragma once
+#include <gtest/gtest.h>
 
-#include "query-builder/column.hpp"
-#include "query-builder/database.hpp"
-#include "query-builder/expression.hpp"
-#include "query-builder/macro.hpp"
-#include "query-builder/table.hpp"
-#include "query-builder/util.hpp"
+#include "schema.hpp"
+
+using namespace vist::tsqb;
+using namespace vist::test;
+
+TEST(QueryBuilderExpressionTests, equal)
+{
+	std::string dump = (Table1::Column1 == 3);
+	EXPECT_EQ(dump, "=");
+}
+
+TEST(QueryBuilderExpressionTests, greater)
+{
+	std::string dump = (Table1::Column1 > 3);
+	EXPECT_EQ(dump, ">");
+}
+
+TEST(QueryBuilderExpressionTests, lesser)
+{
+	std::string dump = (Table1::Column1 < 3);
+	EXPECT_EQ(dump, "<");
+}

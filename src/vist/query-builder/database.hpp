@@ -17,7 +17,6 @@
 #pragma once
 
 #include "column.hpp"
-#include "condition.hpp"
 #include "crud.hpp"
 #include "expression.hpp"
 #include "util.hpp"
@@ -40,12 +39,6 @@ public:
 	explicit Database(const std::string& name, Tables ...tables) :
 		name(name), tables(tables...) {}
 
-	template<typename Table>
-	Self& join(condition::Join type = condition::Join::INNER);
-
-	template<typename Expr>
-	Self& on(Expr expr);
-
 	std::size_t size() const noexcept;
 
 	operator std::string();
@@ -67,38 +60,6 @@ public: // CRTP(Curiously Recurring Template Pattern) for CRUD
 private:
 	std::tuple<Tables...> tables;
 };
-
-template<typename... Tables>
-template<typename Table>
-Database<Tables...>& Database<Tables...>::join(condition::Join type)
-{
-	std::stringstream ss;
-	ss << condition::to_string(type) << " ";
-	ss << "JOIN ";
-	ss << this->getTableName(Table());
-
-	this->cache.emplace_back(ss.str());
-	return *this;
-}
-
-template<typename... Tables>
-template<typename Expr>
-Database<Tables...>& Database<Tables...>::on(Expr expr)
-{
-	std::stringstream ss;
-	ss << "ON ";
-
-	auto lname = this->getColumnName(std::move(expr.l.type));
-	ss << lname << " ";
-
-	ss << std::string(expr) << " ";
-
-	auto rname = this->getColumnName(std::move(expr.r.type));
-	ss << rname;
-
-	this->cache.emplace_back(ss.str());
-	return *this;
-}
 
 template<typename... Tables>
 Database<Tables...>::operator std::string()

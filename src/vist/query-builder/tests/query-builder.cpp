@@ -108,12 +108,12 @@ TEST(QueryBuilderTsqbTests, SELECT_ALL)
 TEST(QueryBuilderTsqbTests, SELECT_WHERE)
 {
 	std::string select1 = AdminTable.select(Admin::Uid, Admin::Key)
-									.where(expr(&Admin::id) > 3);
-	std::string select2 = admin.selectAll().where(expr(&Admin::uid) > 3);
-	std::string select3 = admin.selectAll().where(expr(&Admin::uid) > 3 &&
-												  expr(&Admin::pkg) == "dpm");
-	std::string select4 = admin.selectAll().where(expr(&Admin::uid) > 3 ||
-												  expr(&Admin::pkg) == "dpm");
+									.where(Admin::Id > 3);
+	std::string select2 = admin.selectAll().where(Admin::Uid > 3);
+	std::string select3 = admin.selectAll().where(Admin::Uid > 3 &&
+												  Admin::Pkg == "dpm");
+	std::string select4 = admin.selectAll().where(Admin::Uid > 3 ||
+												  Admin::Pkg == "dpm");
 
 	EXPECT_EQ(select1, "SELECT uid, key FROM admin WHERE id > ?");
 	EXPECT_EQ(select2, "SELECT * FROM admin WHERE uid > ?");
@@ -125,10 +125,10 @@ TEST(QueryBuilderTsqbTests, UPDATE)
 {
 	int uid = 0, id = 1;
 	std::string update1 = admin.update(Admin::Id, Admin::Pkg, Admin::Uid, Admin::Key);
-	std::string update2 = admin.update(Admin::Key).where(expr(&Admin::uid) == uid &&
-														  expr(&Admin::id) == id);
+	std::string update2 = admin.update(Admin::Key).where((Admin::Uid == uid) &&
+														 (Admin::Id == id));
 	std::string update3 = admin.update(Admin::Key, Admin::Pkg)
-							   .where(expr(&Admin::uid) == 0 && expr(&Admin::id) == 1);
+							   .where((Admin::Uid == 0) && (Admin::Id == 1));
 
 	EXPECT_EQ(update1, "UPDATE admin SET id = ?, pkg = ?, uid = ?, key = ?");
 	EXPECT_EQ(update2, "UPDATE admin SET key = ? WHERE uid = ? AND id = ?");
@@ -138,8 +138,8 @@ TEST(QueryBuilderTsqbTests, UPDATE)
 TEST(QueryBuilderTsqbTests, DELETE)
 {
 	std::string delete1 = admin.remove();
-	std::string delete2 = admin.remove().where(expr(&Admin::pkg) == "dpm" &&
-											   expr(&Admin::uid) == 3);
+	std::string delete2 = admin.remove().where((Admin::Pkg == "dpm") &&
+											   (Admin::Uid == 3));
 
 	EXPECT_EQ(delete1, "DELETE FROM admin");
 	EXPECT_EQ(delete2, "DELETE FROM admin WHERE pkg = ? AND uid = ?");
@@ -159,13 +159,13 @@ TEST(QueryBuilderTsqbTests, TYPE_SAFE)
 /*
  * Below cause complie error since expression types are dismatch.
 
-	std::string type_unsafe1 = admin.selectAll().where(expr(&Admin::uid) > "dpm");
-	std::string type_unsafe2 = admin.selectAll().where(expr(&Admin::uid) == "dpm");
-	std::string type_unsafe3 = admin.selectAll().where(expr(&Admin::pkg) == 3);
+	std::string type_unsafe1 = admin.selectAll().where(Admin::Uid > "dpm");
+	std::string type_unsafe2 = admin.selectAll().where(Admin::Uid == "dpm");
+	std::string type_unsafe3 = admin.selectAll().where(Admin::Pkg == 3);
 	int pkg = 3;
-	std::string type_unsafe4 = admin.selectAll().where(expr(&Admin::pkg) < pkg);
-	std::string type_unsafe5 = admin.remove().where(expr(&Admin::pkg) == "dpm" &&
-													expr(&Admin::uid) == "dpm");
+	std::string type_unsafe4 = admin.selectAll().where(Admin::Pkg) < pkg);
+	std::string type_unsafe5 = admin.remove().where(Admin::Pkg) == "dpm" &&
+													Admin::Uid) == "dpm");
 */
 }
 
@@ -175,7 +175,7 @@ TEST(QueryBuilderTsqbTests, MULTI_SELECT)
 										 ManagedPolicy::Id, ManagedPolicy::Value);
 	std::string multiSelect2 = db.select(Admin::Uid, Admin::Key,
 										 ManagedPolicy::Id, ManagedPolicy::Value)
-								 .where(expr(&Admin::uid) > 0 && expr(&ManagedPolicy::id) == 3);
+								 .where((Admin::Uid > 0) && (ManagedPolicy::Id == 3));
 
 	EXPECT_EQ(multiSelect1, "SELECT admin.uid, admin.key, managed_policy.id, "
 							"managed_policy.value FROM admin, managed_policy");
@@ -193,10 +193,10 @@ TEST(QueryBuilderTsqbTests, JOIN)
 						  .join<ManagedPolicy>(condition::Join::CROSS);
 	std::string join3 = db.select(ManagedPolicy::Value)
 						  .join<PolicyDefinition>()
-						  .on(expr(&ManagedPolicy::pid) == expr(&PolicyDefinition::id))
+						  .on(ManagedPolicy::Pid) == PolicyDefinition::Id))
 						  .join<Admin>()
-						  .on(expr(&ManagedPolicy::aid) == expr(&Admin::id))
-						  .where(expr(&ManagedPolicy::pid) == 99);
+						  .on(ManagedPolicy::Aid) == Admin::Id))
+						  .where(ManagedPolicy::Pid) == 99);
 
 	EXPECT_EQ(join1, "SELECT admin.uid, admin.key FROM admin "
 					 "LEFT OUTER JOIN policy_definition");

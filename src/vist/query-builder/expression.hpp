@@ -18,84 +18,49 @@
 
 #include "column.hpp"
 #include "type.hpp"
-#include "condition.hpp"
 
+#include <string>
 #include <type_traits>
 
 namespace vist {
 namespace tsqb {
 
-template<typename Type>
-struct Expression {
-	Type value;
-};
+struct Expression {};
 
-template<typename O, typename F>
-Expression<Column<O, F>> expr(F O::*field)
-{
-	Column<O, F> anonymous = {"anonymous", field};
-	return {anonymous};
-}
+template<typename T>
+using is_expression = typename std::is_base_of<Expression, T>;
 
 template<typename L, typename R>
-struct Lesser : public condition::Binary<L, R> {
-	using condition::Binary<L, R>::Binary;
-
-	operator std::string() const
-	{
-		return "<";
-	}
-};
-
-template<typename L, typename R>
-Lesser<L, R> operator<(Expression<L> expr, R r)
-{
-	return {expr.value, r};
-}
-
-template<typename L, typename R>
-struct Equal : public condition::Binary<L, R>
-{
-	using condition::Binary<L, R>::Binary;
-
-	operator std::string() const
-	{
-		return "=";
-	}
-};
-
-template<typename L, typename R>
-Equal<L, R> operator==(Expression<L> expr, R r)
-{
-	return {expr.value, r};
-}
-
-namespace join {
-
-template<typename L, typename R>
-struct Equal
-{
+struct Binary : public Expression {
 	L l;
 	R r;
 
-	operator std::string() const
+	/// L is Column and R is Value
+	Binary(L l, R r) : l(l), r(r)
 	{
-		return "=";
+		/// preventing logical expressions like &&, || and ==
+		if constexpr(!is_expression<L>::value) {
+			using FieldType = typename L::FieldType;
+			type::assert_compare(FieldType(), r);
+		}
 	}
 };
 
-} // namespace join
+template<typename L>
+struct Binary<L, const char*> : public Expression {
+	L l;
+	std::string r;
+
+	Binary(L l, const char* r) : l(l), r(r)
+	{
+		using FieldType = typename L::FieldType;
+		type::assert_compare(FieldType(), std::string());
+	}
+};
 
 template<typename L, typename R>
-join::Equal<L, R> operator==(Expression<L> l, Expression<R> r)
-{
-	return {l.value, r.value};
-}
-
-template<typename L, typename R>
-struct Greater : public condition::Binary<L, R>
-{
-	using condition::Binary<L, R>::Binary;
+struct Greater : public Binary<L, R> {
+	using Binary<L, R>::Binary;
 
 	operator std::string() const
 	{
@@ -104,31 +69,59 @@ struct Greater : public condition::Binary<L, R>
 };
 
 template<typename L, typename R>
-Greater<L, R> operator>(Expression<L> expr, R r)
-{
-	return {expr.value, r};
-}
+struct Lesser : public Binary<L, R> {
+	using Binary<L, R>::Binary;
 
-template<bool B, typename T = void>
-using enable_if_t = typename std::enable_if<B, T>::type;
+	operator std::string() const
+	{
+		return "<";
+	}
+};
 
-template<typename T>
-using is_condition = typename std::is_base_of<condition::Base, T>;
+template<typename L, typename R>
+struct Equal : public Binary<L, R> {
+	using Binary<L, R>::Binary;
+
+	operator std::string() const
+	{
+		return "=";
+	}
+};
+
+template<typename L, typename R>
+struct And : public Binary<L, R> {
+	using Binary<L, R>::Binary;
+
+	operator std::string() const
+	{
+		return "AND";
+	}
+};
+
+template<typename L, typename R>
+struct Or  : public Binary<L, R> {
+	using Binary<L, R>::Binary;
+
+	operator std::string() const
+	{
+		return "OR";
+	}
+};
 
 template<typename L,
 		 typename R,
-		 typename = typename tsqb::enable_if_t<is_condition<L>::value
-							 && tsqb::is_condition<R>::value>>
-condition::And<L, R> operator&&(const L& l, const R& r)
+		 typename = typename std::enable_if_t<is_expression<L>::value &&
+											  is_expression<R>::value>>
+And<L, R> operator&&(const L& l, const R& r)
 {
 	return {l, r};
 }
 
 template<typename L,
 		 typename R,
-		 typename = typename tsqb::enable_if_t<is_condition<L>::value
-							 && tsqb::is_condition<R>::value>>
-condition::Or<L, R> operator||(const L& l, const R& r)
+		 typename = typename std::enable_if_t<is_expression<L>::value &&
+											  is_expression<R>::value>>
+Or<L, R> operator||(const L& l, const R& r)
 {
 	return {l, r};
 }
