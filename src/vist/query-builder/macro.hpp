@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017-present Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2020-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,16 +13,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * @brief namespace TSQB means type-safe query builder
- */
 
 #pragma once
 
-#include "query-builder/column.hpp"
-#include "query-builder/condition.hpp"
-#include "query-builder/database.hpp"
-#include "query-builder/expression.hpp"
-#include "query-builder/macro.hpp"
-#include "query-builder/table.hpp"
-#include "query-builder/util.hpp"
+#include "column.hpp" 
+#include "database.hpp" 
+#include "table.hpp" 
+
+#define DECLARE_COLUMN(instance, name, type) \
+	inline static vist::tsqb::Column instance = { name, type }
+#define DECLARE_TABLE(instance, name, ...) \
+	inline vist::tsqb::Table instance { name, __VA_ARGS__ }
+#define DECLARE_DATABASE(instance, name, ...)  \
+	inline vist::tsqb::Database instance { name, __VA_ARGS__ }

@@ -27,9 +27,9 @@ struct Table1 {
 	std::string column2;
 	bool column3;
 
-	inline static Column Column1 = { "column1", &Table1::column1 };
-	inline static Column Column2 = { "column2", &Table1::column2 };
-	inline static Column Column3 = { "column3", &Table1::column3 };
+	DECLARE_COLUMN(Column1, "column1", &Table1::column1);
+	DECLARE_COLUMN(Column2, "column2", &Table1::column2);
+	DECLARE_COLUMN(Column3, "column3", &Table1::column3);
 };
 
 struct Table2 {
@@ -39,21 +39,21 @@ struct Table2 {
 	float column4;
 	double column5;
 
-	inline static Column Column1 = { "column1", &Table2::column1 };
-	inline static Column Column2 = { "column2", &Table2::column2 };
-	inline static Column Column3 = { "column3", &Table2::column3 };
-	inline static Column Column4 = { "column4", &Table2::column4 };
-	inline static Column Column5 = { "column5", &Table2::column5 };
+	DECLARE_COLUMN(Column1, "column1", &Table2::column1);
+	DECLARE_COLUMN(Column2, "column2", &Table2::column2);
+	DECLARE_COLUMN(Column3, "column3", &Table2::column3);
+	DECLARE_COLUMN(Column4, "column4", &Table2::column4);
+	DECLARE_COLUMN(Column5, "column5", &Table2::column5);
 };
 
-inline Table table1 { "table1", Table1::Column1, Table1::Column2, Table1::Column3 };
-inline Table table2 { "table2", Table2::Column1,
+DECLARE_TABLE(table1, "table1", Table1::Column1, Table1::Column2, Table1::Column3);
+DECLARE_TABLE(table2, "table2", Table2::Column1,
 								Table2::Column2,
 								Table2::Column3,
 								Table2::Column4,
-								Table2::Column5 };
+								Table2::Column5);
 
-inline Database database { "database", table1, table2 };
+DECLARE_DATABASE(database, "database", table1, table2);
 
 } // namespace test
 } // namespace vist

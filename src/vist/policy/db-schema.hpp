@@ -30,8 +30,8 @@ struct Admin {
 	std::string name;
 	int activated = -1;
 
-	inline static Column Name = { "name", &Admin::name };
-	inline static Column Activated = { "activated", &Admin::activated };
+	DECLARE_COLUMN(Name, "name", &Admin::name);
+	DECLARE_COLUMN(Activated, "activated", &Admin::activated);
 };
 
 struct PolicyManaged {
@@ -39,36 +39,25 @@ struct PolicyManaged {
 	std::string policy;
 	std::string value;
 
-	inline static Column Admin = { "admin", &PolicyManaged::admin };
-	inline static Column Policy = { "policy", &PolicyManaged::policy };
-	inline static Column Value = { "value", &PolicyManaged::value };
+	DECLARE_COLUMN(Admin, "admin", &PolicyManaged::admin);
+	DECLARE_COLUMN(Policy, "policy", &PolicyManaged::policy);
+	DECLARE_COLUMN(Value, "value", &PolicyManaged::value);
 };
 
 struct PolicyDefinition {
 	std::string name;
 	std::string ivalue;
 
-	inline static Column Name = { "name", &PolicyDefinition::name };
-	inline static Column Ivalue = { "policy", &PolicyDefinition::ivalue };
+	DECLARE_COLUMN(Name, "name", &PolicyDefinition::name);
+	DECLARE_COLUMN(Ivalue, "policy", &PolicyDefinition::ivalue);
 };
 
-inline Table AdminTable { "ADMIN", Admin::Name, Admin::Activated };
-inline Table PolicyManagedTable { "POLICY_MANAGED", PolicyManaged::Admin,
+DECLARE_TABLE(AdminTable, "ADMIN", Admin::Name, Admin::Activated);
+DECLARE_TABLE(PolicyManagedTable, "POLICY_MANAGED", PolicyManaged::Admin,
 													PolicyManaged::Policy,
-													PolicyManaged::Value };
-inline Table PolicyDefinitionTable { "POLICY_DEFINITION", PolicyDefinition::Name,
-													 PolicyDefinition::Ivalue };
-
-inline Table admin { "ADMIN", Column("name", &Admin::name),
-							  Column("activated", &Admin::activated) };
-
-inline Table policyManaged { "POLICY_MANAGED", Column("admin", &PolicyManaged::admin),
-											   Column("policy", &PolicyManaged::policy),
-											   Column("value", &PolicyManaged::value) };
-
-inline Table policyDefinition { "POLICY_DEFINITION",
-								Column("name", &PolicyDefinition::name),
-								Column("ivalue", &PolicyDefinition::ivalue) };
+													PolicyManaged::Value);
+DECLARE_TABLE(PolicyDefinitionTable, "POLICY_DEFINITION", PolicyDefinition::Name,
+														  PolicyDefinition::Ivalue);
 
 } // namespace schema
 } // namespace policy

@@ -57,7 +57,7 @@ void PolicyStorage::sync()
 void PolicyStorage::syncPolicyDefinition()
 {
 	this->definitions.clear();
-	std::string query = schema::policyDefinition.selectAll();
+	std::string query = schema::PolicyDefinitionTable.selectAll();
 	database::Statement stmt(*database, query);
 
 	while (stmt.step()) {
@@ -72,7 +72,7 @@ void PolicyStorage::syncPolicyDefinition()
 void PolicyStorage::syncAdmin()
 {
 	this->admins.clear();
-	std::string query = schema::admin.selectAll();
+	std::string query = schema::AdminTable.selectAll();
 	database::Statement stmt(*database, query);
 
 	while (stmt.step()) {
@@ -86,7 +86,7 @@ void PolicyStorage::syncAdmin()
 void PolicyStorage::syncPolicyManaged()
 {
 	this->managedPolicies.clear();
-	std::string query = schema::policyManaged.selectAll();
+	std::string query = schema::PolicyManagedTable.selectAll();
 	database::Statement stmt(*database, query);
 
 	while (stmt.step()) {
@@ -177,7 +177,7 @@ void PolicyStorage::disenroll(const std::string& name)
 		this->admins.erase(name);
 	}
 
-	std::string query = schema::admin.remove().where(expr(&Admin::name) == name);
+	std::string query = schema::AdminTable.remove().where(expr(&Admin::name) == name);
 	database::Statement stmt(*database, query);
 	stmt.bind(1, name);
 	if (!stmt.exec())
