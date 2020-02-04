@@ -20,40 +20,10 @@
 #include <vist/query-builder/database.hpp>
 #include <vist/query-builder/table.hpp>
 
+#include "schema.hpp"
+
 using namespace vist::tsqb;
-
-namespace {
-
-struct Table1 {
-	int column1;
-	std::string column2;
-	bool column3;
-
-	inline static Column Column1 = { "column1", &Table1::column1 };
-	inline static Column Column2 = { "column2", &Table1::column2 };
-};
-
-struct Table2 {
-	int column1;
-	std::string column2;
-	bool column3;
-	float column4;
-	double column5;
-};
-
-Table table1 { "table1", Column("column1", &Table1::column1),
-						 Column("column2", &Table1::column2),
-						 Column("column3", &Table1::column3) };
-
-Table table2 { "table2", Column("column1", &Table2::column1),
-						 Column("column2", &Table2::column2),
-						 Column("column3", &Table2::column3),
-						 Column("column4", &Table2::column4),
-						 Column("column5", &Table2::column5) };
-
-Database database { "database", table1, table2 };
-
-} // anonymous namespace
+using namespace vist::test;
 
 TEST(QueryBuilderDatabaseTests, size)
 {
@@ -67,27 +37,20 @@ TEST(QueryBuilderDatabaseTests, get_name)
 	EXPECT_EQ(database.getTableName(Table1()), "table1");
 	EXPECT_EQ(database.getTableName(Table2()), "table2");
 
-	EXPECT_EQ(database._getColumnName(Table1::Column1), "table1.column1");
-	EXPECT_EQ(database.getColumnName(&Table1::column2), "table1.column2");
-	EXPECT_EQ(database.getColumnName(&Table1::column3), "table1.column3");
+	EXPECT_EQ(database.getColumnName(Table1::Column2), "table1.column2");
+	EXPECT_EQ(database.getColumnName(Table1::Column3), "table1.column3");
 
-	EXPECT_EQ(database.getColumnName(&Table2::column1), "table2.column1");
-	EXPECT_EQ(database.getColumnName(&Table2::column2), "table2.column2");
-	EXPECT_EQ(database.getColumnName(&Table2::column3), "table2.column3");
-	EXPECT_EQ(database.getColumnName(&Table2::column4), "table2.column4");
-	EXPECT_EQ(database.getColumnName(&Table2::column5), "table2.column5");
+	EXPECT_EQ(database.getColumnName(Table2::Column1), "table2.column1");
+	EXPECT_EQ(database.getColumnName(Table2::Column2), "table2.column2");
+	EXPECT_EQ(database.getColumnName(Table2::Column3), "table2.column3");
+	EXPECT_EQ(database.getColumnName(Table2::Column4), "table2.column4");
+	EXPECT_EQ(database.getColumnName(Table2::Column5), "table2.column5");
 }
 
 TEST(QueryBuilderDatabaseTests, get_names)
 {
-	{
-		auto columns = database._getColumnNames(Table1::Column1, Table1::Column2);
-		EXPECT_EQ(columns[0], "table1.column1");
-		EXPECT_EQ(columns[1], "table1.column2");
-	}
-
-	auto columns = database.getColumnNames(&Table1::column1, &Table2::column3);
-	auto tables = database.getTableNames(&Table1::column1, &Table2::column1, &Table2::column1);
+	auto columns = database.getColumnNames(Table1::Column1, Table2::Column3);
+	auto tables = database.getTableNames(Table1::Column1, Table2::Column1, Table2::Column1);
 	if (columns.size() == 2 && tables.size() == 2) {
 		EXPECT_EQ(columns[0], "table1.column1");
 		EXPECT_EQ(columns[1], "table2.column3");

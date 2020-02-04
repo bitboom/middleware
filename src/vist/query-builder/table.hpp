@@ -52,19 +52,13 @@ public:
 
 public: // CRTP(Curiously Recurring Template Pattern) for CRUD
 	template<typename... Cs>
-	std::vector<std::string> getTableNames(Cs&& ...coulmns) const noexcept;
+	std::vector<std::string> getTableNames(Cs&& ...) const noexcept;
 	template<typename That>
-	std::string getTableName(That&& type) const noexcept;
+	std::string getTableName(That&&) const noexcept;
 	template<typename... Cs>
 	std::vector<std::string> getColumnNames(Cs&& ...columns) const noexcept;
 	template<typename Column>
-	std::string getColumnName(const Column& column) const noexcept;
-	template<typename... Cs>
-	std::vector<std::string> _getTableNames(Cs&& ...) const noexcept;
-	template<typename... Cs>
-	std::vector<std::string> _getColumnNames(Cs&& ...columns) const noexcept;
-	template<typename Column>
-	std::string _getColumnName(const Column& column) const noexcept;
+	std::string getColumnName(Column&& column) const noexcept;
 
 	std::vector<std::string> cache;
 
@@ -80,39 +74,11 @@ std::string Table<Columns...>::getName() const noexcept
 
 template<typename... Columns>
 template<typename... Cs>
-std::vector<std::string> Table<Columns...>::getTableNames(Cs&& ...) const noexcept
-{
-	return {this->name};
-}
-
-template<typename... Columns>
-template<typename... Cs>
 std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& ...columns) const noexcept
 {
 	std::vector<std::string> names;
 	auto predicate = [this, &names](const auto& type) {
 		auto name = this->getColumnName(type);
-		if (!name.empty())
-			names.emplace_back(name);
-	};
-
-	auto closure = [&predicate](const auto&... iter) {
-		(predicate(iter), ...);
-	};
-
-	std::apply(closure, std::tuple(columns...));
-
-	return names;
-}
-
-
-template<typename... Columns>
-template<typename... Cs>
-std::vector<std::string> Table<Columns...>::_getColumnNames(Cs&& ...columns) const noexcept
-{
-	std::vector<std::string> names;
-	auto predicate = [this, &names](const auto& type) {
-		auto name = this->_getColumnName(type);
 		if (!name.empty())
 			names.emplace_back(name);
 	};
@@ -147,34 +113,15 @@ std::vector<std::string> Table<Columns...>::getColumnNames(void) const noexcept
 }
 
 template<typename... Columns>
-template<typename Column>
-std::string Table<Columns...>::getColumnName(const Column& column) const noexcept
-{
-	std::string name;
-	auto predicate = [&name, &column](const auto& iter) {
-		if (type::cast_compare(column, iter.type)) 
-			name = iter.name;
-	};
-
-	auto closure = [&predicate](const auto&... iter) {
-		(predicate(iter), ...);
-	};
-
-	std::apply(closure, this->columns);
-
-	return name;
-}
-
-template<typename... Columns>
 template<typename... Cs>
-std::vector<std::string> Table<Columns...>::_getTableNames(Cs&& ...) const noexcept
+std::vector<std::string> Table<Columns...>::getTableNames(Cs&& ...) const noexcept
 {
 	return {this->name};
 }
 
 template<typename... Columns>
 template<typename Column>
-std::string Table<Columns...>::_getColumnName(const Column& column) const noexcept
+std::string Table<Columns...>::getColumnName(Column&& column) const noexcept
 {
 	std::string name;
 	auto predicate = [&name, &column](const auto& iter) {

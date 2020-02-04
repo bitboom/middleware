@@ -65,8 +65,8 @@ T& Crud<T>::select(ColumnTypes&&... cts)
 {
 	static_cast<T*>(this)->cache.clear();
 
-	auto columnNames = static_cast<T*>(this)->_getColumnNames(std::forward<ColumnTypes>(cts)...);
-	auto tableNames = static_cast<T*>(this)->_getTableNames(std::forward<ColumnTypes>(cts)...);
+	auto columnNames = static_cast<T*>(this)->getColumnNames(std::forward<ColumnTypes>(cts)...);
+	auto tableNames = static_cast<T*>(this)->getTableNames(std::forward<ColumnTypes>(cts)...);
 
 	std::stringstream ss;
 	ss << "SELECT ";
@@ -128,7 +128,7 @@ T& Crud<T>::update(ColumnTypes&&... cts)
 {
 	static_cast<T*>(this)->cache.clear();
 
-	auto columnNames = static_cast<T*>(this)->_getColumnNames(std::forward<ColumnTypes>(cts)...);
+	auto columnNames = static_cast<T*>(this)->getColumnNames(std::forward<ColumnTypes>(cts)...);
 
 	std::stringstream ss;
 	ss << "UPDATE " << static_cast<T*>(this)->name << " ";
@@ -153,7 +153,7 @@ T& Crud<T>::insert(ColumnTypes&&... cts)
 {
 	static_cast<T*>(this)->cache.clear();
 
-	auto columnNames = static_cast<T*>(this)->_getColumnNames(std::forward<ColumnTypes>(cts)...);
+	auto columnNames = static_cast<T*>(this)->getColumnNames(std::forward<ColumnTypes>(cts)...);
 
 	std::stringstream ss;
 	ss << "INSERT INTO " << static_cast<T*>(this)->name << " (";
@@ -237,7 +237,7 @@ template<typename Expr>
 std::string Crud<T>::processWhere(Expr expr)
 {
 	std::stringstream ss;
-	ss << static_cast<T*>(this)->getColumnName(expr.l.type);
+	ss << static_cast<T*>(this)->getColumnName(expr.l);
 	ss << " " << std::string(expr) << " ?";
 
 	return ss.str();

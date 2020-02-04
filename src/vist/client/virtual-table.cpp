@@ -80,7 +80,9 @@ Member VirtualRow<T>::at(Member Struct::* field) const
 	if (this->data.size() == 0)
 		THROW(ErrCode::RuntimeError) << "Data is not exist.";
 
-	std::string key = metaDB.getColumnName(field);
+	/// TODO: Refactor
+	Column anonymous("anonymous", field);
+	std::string key = metaDB.getColumnName(anonymous);
 	if (key.empty())
 		THROW(ErrCode::RuntimeError) << "Column is not exist.";
 
