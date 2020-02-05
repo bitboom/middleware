@@ -19,6 +19,7 @@
 #include <linux/netlink.h>
 
 #include <cstring>
+#include <limits>
 
 #include <klay/error.h>
 #include <klay/exception.h>
@@ -119,6 +120,10 @@ Netlink::Message Netlink::recv(int options)
 
 	struct sockaddr_nl nladdr;
 	socklen_t nladdrlen = sizeof(nladdr);
+
+	if (nlh.nlmsg_len > (std::numeric_limits<decltype(nlh.nlmsg_len)>::max() - NLMSG_HDRLEN))
+		throw klay::Exception("Netlink message is too large.");
+
 	char buf[nlh.nlmsg_len + NLMSG_HDRLEN];
 	do {
 		ret = ::recvfrom(fd, buf, sizeof(buf), options,
