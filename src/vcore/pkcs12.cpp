@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2020 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -451,7 +451,6 @@ int verify_cert_details(X509 *cert, STACK_OF(X509) *certv)
 
 			if (res != 1) {
 				LogError("P12 load certificate store failed");
-				X509_STORE_free(cert_store);
 				result = CERTSVC_FAIL;
 				goto free_memory;
 			}
@@ -460,7 +459,6 @@ int verify_cert_details(X509 *cert, STACK_OF(X509) *certv)
 
 			if (res != 1) {
 				LogError("P12 load certificate store path failed");
-				X509_STORE_free(cert_store);
 				result = CERTSVC_FAIL;
 				goto free_memory;
 			}
@@ -552,14 +550,11 @@ int verify_cert_details(X509 *cert, STACK_OF(X509) *certv)
 #endif //_CERT_SVC_VERIFY_PKCS12
 free_memory:
 
-	if (cert_store != NULL)
-		X509_STORE_free(cert_store);
+	X509_STORE_free(cert_store);
+	X509_STORE_CTX_free(cert_ctx);
 
-	if (cert_ctx)
-		X509_STORE_CTX_free(cert_ctx);
-
-	free(pSubject);
-	free(pIssuerName);
+	OPENSSL_free(pSubject);
+	OPENSSL_free(pIssuerName);
 	return result;
 }
 
