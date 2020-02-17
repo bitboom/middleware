@@ -115,10 +115,10 @@ TEST(QueryBuilderTsqbTests, SELECT_WHERE)
 	std::string select4 = admin.selectAll().where(Admin::Uid > 3 ||
 												  Admin::Pkg == "dpm");
 
-	EXPECT_EQ(select1, "SELECT uid, key FROM admin WHERE id > ?");
-	EXPECT_EQ(select2, "SELECT * FROM admin WHERE uid > ?");
-	EXPECT_EQ(select3, "SELECT * FROM admin WHERE uid > ? AND pkg = ?");
-	EXPECT_EQ(select4, "SELECT * FROM admin WHERE uid > ? OR pkg = ?");
+	EXPECT_EQ(select1, "SELECT uid, key FROM admin WHERE id > 3");
+	EXPECT_EQ(select2, "SELECT * FROM admin WHERE uid > 3");
+	EXPECT_EQ(select3, "SELECT * FROM admin WHERE uid > 3 AND pkg = 'dpm'");
+	EXPECT_EQ(select4, "SELECT * FROM admin WHERE uid > 3 OR pkg = 'dpm'");
 }
 
 TEST(QueryBuilderTsqbTests, UPDATE)
@@ -131,8 +131,8 @@ TEST(QueryBuilderTsqbTests, UPDATE)
 							   .where((Admin::Uid == 0) && (Admin::Id == 1));
 
 	EXPECT_EQ(update1, "UPDATE admin SET id = ?, pkg = ?, uid = ?, key = ?");
-	EXPECT_EQ(update2, "UPDATE admin SET key = ? WHERE uid = ? AND id = ?");
-	EXPECT_EQ(update3, "UPDATE admin SET key = ?, pkg = ? WHERE uid = ? AND id = ?");
+	EXPECT_EQ(update2, "UPDATE admin SET key = ? WHERE uid = 0 AND id = 1");
+	EXPECT_EQ(update3, "UPDATE admin SET key = ?, pkg = ? WHERE uid = 0 AND id = 1");
 }
 
 TEST(QueryBuilderTsqbTests, DELETE)
@@ -142,7 +142,7 @@ TEST(QueryBuilderTsqbTests, DELETE)
 											   (Admin::Uid == 3));
 
 	EXPECT_EQ(delete1, "DELETE FROM admin");
-	EXPECT_EQ(delete2, "DELETE FROM admin WHERE pkg = ? AND uid = ?");
+	EXPECT_EQ(delete2, "DELETE FROM admin WHERE pkg = 'dpm' AND uid = 3");
 }
 
 TEST(QueryBuilderTsqbTests, INSERT)
@@ -181,7 +181,7 @@ TEST(QueryBuilderTsqbTests, MULTI_SELECT)
 							"managed_policy.value FROM admin, managed_policy");
 	EXPECT_EQ(multiSelect2, "SELECT admin.uid, admin.key, managed_policy.id, "
 							"managed_policy.value FROM admin, managed_policy "
-							"WHERE admin.uid > ? AND managed_policy.id = ?");
+							"WHERE admin.uid > 0 AND managed_policy.id = 3");
 }
 
 /*

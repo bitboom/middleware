@@ -56,7 +56,7 @@ private:
 	std::string processWhere(Or<L,R>& expr);
 
 	template<typename Expr>
-	std::string processWhere(Expr expr);
+	std::string processWhere(const Expr& expr);
 };
 
 template<typename T>
@@ -234,11 +234,12 @@ std::string Crud<T>::processWhere(Or<L,R>& expr)
 
 template<typename T>
 template<typename Expr>
-std::string Crud<T>::processWhere(Expr expr)
+std::string Crud<T>::processWhere(const Expr& expr)
 {
 	std::stringstream ss;
-	ss << static_cast<T*>(this)->getColumnName(expr.l);
-	ss << " " << std::string(expr) << " ?";
+	ss << static_cast<T*>(this)->getColumnName(expr.l) << " ";
+	ss << static_cast<std::string>(expr) << " ";
+	ss << expr.r;
 
 	return ss.str();
 }

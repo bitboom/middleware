@@ -18,6 +18,7 @@
 
 #include "column.hpp"
 #include "type.hpp"
+#include "util.hpp"
 
 #include <string>
 #include <type_traits>
@@ -38,7 +39,7 @@ struct Binary : public Expression {
 	/// L is Column and R is Value
 	Binary(L l, R r) : l(l), r(r)
 	{
-		/// preventing logical expressions like &&, || and ==
+		/// Prevent logical expressions like &&, || and ==
 		if constexpr(!is_expression<L>::value) {
 			using FieldType = typename L::FieldType;
 			type::assert_compare(FieldType(), r);
@@ -51,7 +52,8 @@ struct Binary<L, const char*> : public Expression {
 	L l;
 	std::string r;
 
-	Binary(L l, const char* r) : l(l), r(r)
+	/// Make r to 'r'
+	Binary(L l, const char* r) : l(l), r("'" + std::string(r) + "'")
 	{
 		using FieldType = typename L::FieldType;
 		type::assert_compare(FieldType(), std::string());

@@ -19,6 +19,7 @@
 #include <string>
 #include <algorithm>
 #include <cctype>
+#include <sstream>
 
 namespace vist {
 namespace tsqb {
@@ -30,6 +31,14 @@ inline std::string rtrim(std::string&& s)
 	auto base = std::find_if(s.rbegin(), s.rend(), predicate).base();
 	s.erase(base, s.end());
 	return s;
+}
+
+template <typename V>
+std::string concat(const std::string& column, const std::string& op, const V& value)
+{
+	std::stringstream ss;
+	ss << column << " " << op << " " << value;
+	return ss.str();
 }
 
 } // namespace util

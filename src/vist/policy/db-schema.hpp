@@ -49,7 +49,7 @@ struct PolicyDefinition {
 	std::string ivalue;
 
 	DECLARE_COLUMN(Name, "name", &PolicyDefinition::name);
-	DECLARE_COLUMN(Ivalue, "policy", &PolicyDefinition::ivalue);
+	DECLARE_COLUMN(Ivalue, "ivalue", &PolicyDefinition::ivalue);
 };
 
 DECLARE_TABLE(AdminTable, "ADMIN", Admin::Name, Admin::Activated);

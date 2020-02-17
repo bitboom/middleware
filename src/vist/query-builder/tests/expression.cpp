@@ -25,6 +25,9 @@ TEST(QueryBuilderExpressionTests, equal)
 {
 	std::string dump = (Table1::Column1 == 3);
 	EXPECT_EQ(dump, "=");
+
+	dump = (Table1::Column2 == "string");
+	EXPECT_EQ(dump, "=");
 }
 
 TEST(QueryBuilderExpressionTests, greater)
@@ -37,4 +40,16 @@ TEST(QueryBuilderExpressionTests, lesser)
 {
 	std::string dump = (Table1::Column1 < 3);
 	EXPECT_EQ(dump, "<");
+}
+
+TEST(QueryBuilderExpressionTests, and_)
+{
+	std::string dump = (Table1::Column1 < 3) && (Table1::Column1 == 3);
+	EXPECT_EQ(dump, "AND");
+}
+
+TEST(QueryBuilderExpressionTests, or_)
+{
+	std::string dump = (Table1::Column1 < 3) || (Table1::Column2 == "text");
+	EXPECT_EQ(dump, "OR");
 }
