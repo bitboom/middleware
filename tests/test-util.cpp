@@ -80,9 +80,14 @@ int connectSSL(const std::string &addr)
 		return -1;
 	}
 
-	curl_easy_setopt(curl.get(), CURLOPT_URL, addr.c_str());
+	CURLcode res = curl_easy_setopt(curl.get(), CURLOPT_URL, addr.c_str());
+	if (res != CURLE_OK) {
+		std::cout << "Failed to set option: "
+				  << curl_easy_strerror(res) << std::endl;
+		return -1;
+	}
 
-	CURLcode res = curl_easy_perform(curl.get());
+	res = curl_easy_perform(curl.get());
 	if (res != CURLE_OK) {
 		std::cout << "Failed to connect failed: "
 				  << curl_easy_strerror(res) << std::endl;
