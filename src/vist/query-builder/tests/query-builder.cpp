@@ -124,15 +124,16 @@ TEST(QueryBuilderTsqbTests, SELECT_WHERE)
 TEST(QueryBuilderTsqbTests, UPDATE)
 {
 	int uid = 0, id = 1;
-	std::string update1 = admin.update(Admin::Id, Admin::Pkg, Admin::Uid, Admin::Key);
-	std::string update2 = admin.update(Admin::Key).where((Admin::Uid == uid) &&
-														 (Admin::Id == id));
-	std::string update3 = admin.update(Admin::Key, Admin::Pkg)
+	std::string update1 = admin.update(Admin::Id = id, Admin::Pkg = "pkg",
+									   Admin::Uid = uid, Admin::Key = "key");
+	std::string update2 = admin.update(Admin::Key = "key").where((Admin::Uid == uid) &&
+																 (Admin::Id == id));
+	std::string update3 = admin.update(Admin::Key = "key", Admin::Pkg = "pkg")
 							   .where((Admin::Uid == 0) && (Admin::Id == 1));
 
-	EXPECT_EQ(update1, "UPDATE admin SET id = ?, pkg = ?, uid = ?, key = ?");
-	EXPECT_EQ(update2, "UPDATE admin SET key = ? WHERE uid = 0 AND id = 1");
-	EXPECT_EQ(update3, "UPDATE admin SET key = ?, pkg = ? WHERE uid = 0 AND id = 1");
+	EXPECT_EQ(update1, "UPDATE admin SET id = 1, pkg = 'pkg', uid = 0, key = 'key'");
+	EXPECT_EQ(update2, "UPDATE admin SET key = 'key' WHERE uid = 0 AND id = 1");
+	EXPECT_EQ(update3, "UPDATE admin SET key = 'key', pkg = 'pkg' WHERE uid = 0 AND id = 1");
 }
 
 TEST(QueryBuilderTsqbTests, DELETE)

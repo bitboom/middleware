@@ -81,6 +81,16 @@ struct Lesser : public Binary<L, R> {
 };
 
 template<typename L, typename R>
+struct Assign : public Binary<L, R> {
+	using Binary<L, R>::Binary;
+
+	operator std::string() const
+	{
+		return "=";
+	}
+};
+
+template<typename L, typename R>
 struct Equal : public Binary<L, R> {
 	using Binary<L, R>::Binary;
 

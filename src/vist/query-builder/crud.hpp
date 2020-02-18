@@ -21,6 +21,7 @@
 
 #include <string>
 #include <sstream>
+#include <tuple>
 
 namespace vist {
 namespace tsqb {
@@ -36,8 +37,8 @@ public:
 
 	T& selectAll(void);
 
-	template<typename... ColumnTypes>
-	T& update(ColumnTypes&&... cts);
+	template<typename... AssginExpressions>
+	T& update(AssginExpressions&&... expression);
 
 	template<typename... ColumnTypes>
 	T& insert(ColumnTypes&&... cts);
@@ -123,26 +124,29 @@ T& Crud<T>::selectAll(void)
 }
 
 template<typename T>
-template<typename... ColumnTypes>
-T& Crud<T>::update(ColumnTypes&&... cts)
+template<typename... AssginExpressions>
+T& Crud<T>::update(AssginExpressions&&... expression)
 {
 	static_cast<T*>(this)->cache.clear();
-
-	auto columnNames = static_cast<T*>(this)->getColumnNames(std::forward<ColumnTypes>(cts)...);
 
 	std::stringstream ss;
 	ss << "UPDATE " << static_cast<T*>(this)->name << " ";
 	ss << "SET ";
 
-	unsigned int i = 0;
-	for (const auto& c : columnNames) {
-		ss << c << " = ?";
+	auto closure = [&ss, this](const auto&... iter) {
+		(static_cast<void>( /// Make fold expression possible
+			(ss << static_cast<T*>(this)->getColumnName(iter.l) /// Column name
+				<< " " << static_cast<std::string>(iter) << " " /// Assign operator
+				<< iter.r << ", ") /// Value
+		), ...); /// Process fold expression
+	};
+	std::apply(closure, std::tuple(expression...));
 
-		if (i++ < columnNames.size() - 1)
-			ss << ", ";
-	}
+	std::string raw = ss.str();
+	if (raw.size() > 2)
+		raw.erase(raw.end() - 2, raw.end()); /// Remove last ", "
 
-	static_cast<T*>(this)->cache.emplace_back(ss.str());
+	static_cast<T*>(this)->cache.emplace_back(std::move(raw));
 
 	return *(static_cast<T*>(this));
 }
