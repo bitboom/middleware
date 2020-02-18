@@ -27,15 +27,12 @@ struct Admin {
 	std::string key;
 	int removable;
 
-	inline static Column Id = { "id", &Admin::id };
-	inline static Column Pkg = { "pkg", &Admin::pkg };
-	inline static Column Uid = { "uid", &Admin::uid };
-	inline static Column Key = { "key", &Admin::key };
-	inline static Column Removable = { "removable", &Admin::removable };
+	DECLARE_COLUMN(Id, "id", &Admin::id);
+	DECLARE_COLUMN(Pkg, "pkg", &Admin::pkg);
+	DECLARE_COLUMN(Uid, "uid", &Admin::uid);
+	DECLARE_COLUMN(Key, "key", &Admin::key);
+	DECLARE_COLUMN(Removable, "removable", &Admin::removable);
 };
-
-static Table AdminTable { "admin", Admin::Id, Admin::Pkg,
-								   Admin::Uid, Admin::Key, Admin::Removable };
 
 struct ManagedPolicy {
 	int id;
@@ -43,16 +40,11 @@ struct ManagedPolicy {
 	int pid;
 	int value;
 
-	inline static Column Id = { "id", &ManagedPolicy::id };
-	inline static Column Aid = { "aid", &ManagedPolicy::aid };
-	inline static Column Pid = { "pid", &ManagedPolicy::pid };
-	inline static Column Value = { "value", &ManagedPolicy::value };
+	DECLARE_COLUMN(Id, "id", &ManagedPolicy::id);
+	DECLARE_COLUMN(Aid, "aid", &ManagedPolicy::aid);
+	DECLARE_COLUMN(Pid, "pid", &ManagedPolicy::pid);
+	DECLARE_COLUMN(Value, "value", &ManagedPolicy::value);
 };
-
-static Table ManagedPolicyTable { "managed_policy", ManagedPolicy::Id,
-													  ManagedPolicy::Aid,
-													  ManagedPolicy::Pid,
-													  ManagedPolicy::Value };
 
 struct PolicyDefinition {
 	int id;
@@ -60,34 +52,26 @@ struct PolicyDefinition {
 	std::string name;
 	int ivalue;
 
-	inline static Column Id = { "id", &PolicyDefinition::id };
-	inline static Column Scope = { "scope", &PolicyDefinition::scope };
-	inline static Column Name = { "name", &PolicyDefinition::name };
-	inline static Column Ivalue = { "ivalue", &PolicyDefinition::ivalue };
+	DECLARE_COLUMN(Id, "id", &PolicyDefinition::id);
+	DECLARE_COLUMN(Scope, "scope", &PolicyDefinition::scope);
+	DECLARE_COLUMN(Name, "name", &PolicyDefinition::name);
+	DECLARE_COLUMN(Ivalue, "ivalue", &PolicyDefinition::ivalue);
 };
 
-static Table PolicyDefinition { "policy_definition", PolicyDefinition::Id,
-													 PolicyDefinition::Scope,
-													 PolicyDefinition::Name,
-													 PolicyDefinition::Ivalue };
+DECLARE_TABLE(AdminTable, "admin", Admin::Id, Admin::Pkg,
+								   Admin::Uid, Admin::Key, Admin::Removable);
 
-Table admin { "admin", Column("id", &Admin::id),
-					   Column("pkg", &Admin::pkg),
-					   Column("uid", &Admin::uid),
-					   Column("key", &Admin::key),
-					   Column("removable", &Admin::removable) };
+DECLARE_TABLE(ManagedPolicyTable, "managed_policy", ManagedPolicy::Id,
+													ManagedPolicy::Aid,
+													ManagedPolicy::Pid,
+													ManagedPolicy::Value);
 
-Table managedPolicy { "managed_policy", Column("id", &ManagedPolicy::id),
-										Column("aid", &ManagedPolicy::aid),
-										Column("pid", &ManagedPolicy::pid),
-										Column("value", &ManagedPolicy::value) };
+DECLARE_TABLE(PolicyDefinitionTable, "policy_definition", PolicyDefinition::Id,
+														  PolicyDefinition::Scope,
+														  PolicyDefinition::Name,
+														  PolicyDefinition::Ivalue);
 
-Table policyDefinition { "policy_definition", Column("id", &PolicyDefinition::id),
-											  Column("scope", &PolicyDefinition::scope),
-											  Column("name", &PolicyDefinition::name),
-											  Column("ivalue", &PolicyDefinition::ivalue) };
-
-Database db { "dpm", admin, managedPolicy, policyDefinition };
+DECLARE_DATABASE(DPM, "dpm", AdminTable, ManagedPolicyTable, PolicyDefinitionTable);
 
 TEST(QueryBuilderTsqbTests, SELECT)
 {
@@ -109,11 +93,9 @@ TEST(QueryBuilderTsqbTests, SELECT_WHERE)
 {
 	std::string select1 = AdminTable.select(Admin::Uid, Admin::Key)
 									.where(Admin::Id > 3);
-	std::string select2 = admin.selectAll().where(Admin::Uid > 3);
-	std::string select3 = admin.selectAll().where(Admin::Uid > 3 &&
-												  Admin::Pkg == "dpm");
-	std::string select4 = admin.selectAll().where(Admin::Uid > 3 ||
-												  Admin::Pkg == "dpm");
+	std::string select2 = AdminTable.selectAll().where(Admin::Uid > 3);
+	std::string select3 = AdminTable.selectAll().where(Admin::Uid > 3 && Admin::Pkg == "dpm");
+	std::string select4 = AdminTable.selectAll().where(Admin::Uid > 3 || Admin::Pkg == "dpm");
 
 	EXPECT_EQ(select1, "SELECT uid, key FROM admin WHERE id > 3");
 	EXPECT_EQ(select2, "SELECT * FROM admin WHERE uid > 3");
@@ -124,12 +106,12 @@ TEST(QueryBuilderTsqbTests, SELECT_WHERE)
 TEST(QueryBuilderTsqbTests, UPDATE)
 {
 	int uid = 0, id = 1;
-	std::string update1 = admin.update(Admin::Id = id, Admin::Pkg = "pkg",
-									   Admin::Uid = uid, Admin::Key = "key");
-	std::string update2 = admin.update(Admin::Key = "key").where((Admin::Uid == uid) &&
-																 (Admin::Id == id));
-	std::string update3 = admin.update(Admin::Key = "key", Admin::Pkg = "pkg")
-							   .where((Admin::Uid == 0) && (Admin::Id == 1));
+	std::string update1 = AdminTable.update(Admin::Id = id, Admin::Pkg = "pkg",
+											Admin::Uid = uid, Admin::Key = "key");
+	std::string update2 = AdminTable.update(Admin::Key = "key")
+									.where((Admin::Uid == uid) && (Admin::Id == id));
+	std::string update3 = AdminTable.update(Admin::Key = "key", Admin::Pkg = "pkg")
+									.where((Admin::Uid == 0) && (Admin::Id == 1));
 
 	EXPECT_EQ(update1, "UPDATE admin SET id = 1, pkg = 'pkg', uid = 0, key = 'key'");
 	EXPECT_EQ(update2, "UPDATE admin SET key = 'key' WHERE uid = 0 AND id = 1");
@@ -138,9 +120,8 @@ TEST(QueryBuilderTsqbTests, UPDATE)
 
 TEST(QueryBuilderTsqbTests, DELETE)
 {
-	std::string delete1 = admin.remove();
-	std::string delete2 = admin.remove().where((Admin::Pkg == "dpm") &&
-											   (Admin::Uid == 3));
+	std::string delete1 = AdminTable.remove();
+	std::string delete2 = AdminTable.remove().where((Admin::Pkg == "dpm") && (Admin::Uid == 3));
 
 	EXPECT_EQ(delete1, "DELETE FROM admin");
 	EXPECT_EQ(delete2, "DELETE FROM admin WHERE pkg = 'dpm' AND uid = 3");
@@ -184,11 +165,11 @@ TEST(QueryBuilderTsqbTests, TYPE_SAFE)
 
 TEST(QueryBuilderTsqbTests, MULTI_SELECT)
 {
-	std::string multiSelect1 = db.select(Admin::Uid, Admin::Key,
-										 ManagedPolicy::Id, ManagedPolicy::Value);
-	std::string multiSelect2 = db.select(Admin::Uid, Admin::Key,
-										 ManagedPolicy::Id, ManagedPolicy::Value)
-								 .where((Admin::Uid > 0) && (ManagedPolicy::Id == 3));
+	std::string multiSelect1 = DPM.select(Admin::Uid, Admin::Key,
+										  ManagedPolicy::Id, ManagedPolicy::Value);
+	std::string multiSelect2 = DPM.select(Admin::Uid, Admin::Key,
+										  ManagedPolicy::Id, ManagedPolicy::Value)
+								  .where((Admin::Uid > 0) && (ManagedPolicy::Id == 3));
 
 	EXPECT_EQ(multiSelect1, "SELECT admin.uid, admin.key, managed_policy.id, "
 							"managed_policy.value FROM admin, managed_policy");
@@ -196,29 +177,3 @@ TEST(QueryBuilderTsqbTests, MULTI_SELECT)
 							"managed_policy.value FROM admin, managed_policy "
 							"WHERE admin.uid > 0 AND managed_policy.id = 3");
 }
-
-/*
-TEST(QueryBuilderTsqbTests, JOIN)
-{
-	std::string join1 = db.select(Admin::Uid, Admin::Key)
-						  .join<PolicyDefinition>(condition::Join::LEFT_OUTER);
-	std::string join2 = db.select(Admin::Uid, Admin::Key)
-						  .join<ManagedPolicy>(condition::Join::CROSS);
-	std::string join3 = db.select(ManagedPolicy::Value)
-						  .join<PolicyDefinition>()
-						  .on(ManagedPolicy::Pid) == PolicyDefinition::Id))
-						  .join<Admin>()
-						  .on(ManagedPolicy::Aid) == Admin::Id))
-						  .where(ManagedPolicy::Pid) == 99);
-
-	EXPECT_EQ(join1, "SELECT admin.uid, admin.key FROM admin "
-					 "LEFT OUTER JOIN policy_definition");
-	EXPECT_EQ(join2, "SELECT admin.uid, admin.key FROM admin "
-					 "CROSS JOIN managed_policy");
-	EXPECT_EQ(join3, "SELECT managed_policy.value FROM managed_policy "
-					 "INNER JOIN policy_definition "
-					 "ON managed_policy.pid = policy_definition.id "
-					 "INNER JOIN admin ON managed_policy.aid = admin.id "
-					 "WHERE managed_policy.pid = ?");
-}
-*/

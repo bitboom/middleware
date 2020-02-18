@@ -177,7 +177,6 @@ void PolicyStorage::disenroll(const std::string& name)
 
 	std::string query = schema::AdminTable.remove().where(Admin::Name == name);
 	database::Statement stmt(*database, query);
-	stmt.bind(1, name);
 	if (!stmt.exec())
 		THROW(ErrCode::RuntimeError) << stmt.getErrorMessage();
 
