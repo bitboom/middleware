@@ -153,33 +153,46 @@ T& Crud<T>::update(AssginExpressions&&... expression)
 
 template<typename T>
 template<typename... ColumnTypes>
-T& Crud<T>::insert(ColumnTypes&&... cts)
+T& Crud<T>::insert(ColumnTypes&&... expression)
 {
 	static_cast<T*>(this)->cache.clear();
 
-	auto columnNames = static_cast<T*>(this)->getColumnNames(std::forward<ColumnTypes>(cts)...);
+	std::string query;
+	{ 
+		std::stringstream ss;
+		ss << "INSERT INTO " << static_cast<T*>(this)->name << " (";
 
-	std::stringstream ss;
-	ss << "INSERT INTO " << static_cast<T*>(this)->name << " (";
+		auto onColumn = [&ss, this](const auto&... iter) {
+			(static_cast<void>( /// Make fold expression possible
+				(ss << static_cast<T*>(this)->getColumnName(iter.l) << ", ") /// Column name
+			), ...); /// Process fold expression
+		};
+		std::apply(onColumn, std::tuple(expression...));
 
-	const int columnCount = columnNames.size();
-	for (int i = 0; i < columnCount; i++) {
-		ss << columnNames[i];
-		if (i < columnCount - 1)
-			ss << ", ";
+		/// Remove last ", "
+		query = ss.str();
+		if (query.size() > 2)
+			query.erase(query.end() - 2, query.end());
 	}
 
-	ss << ") VALUES (";
+	query += ") VALUES (";
 
-	for (int i = 0; i < columnCount; i++) {
-		ss << "?";
-		if (i < columnCount - 1)
-			ss << ", ";
+	{
+		std::stringstream ss;
+		auto onValue = [&ss](const auto&... iter) {
+			(static_cast<void>((ss << iter.r) << ", "), ...); /// Process fold expression
+		};
+		std::apply(onValue, std::tuple(expression...));
+
+		/// Remove last ", "
+		query += ss.str();
+		if (query.size() > 2)
+			query.erase(query.end() - 2, query.end());
 	}
 
-	ss << ")";
+	query += ")";
 
-	static_cast<T*>(this)->cache.emplace_back(ss.str());
+	static_cast<T*>(this)->cache.emplace_back(std::move(query));
 
 	return *(static_cast<T*>(this));
 }

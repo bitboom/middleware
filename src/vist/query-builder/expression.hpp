@@ -60,6 +60,19 @@ struct Binary<L, const char*> : public Expression {
 	}
 };
 
+template<typename L>
+struct Binary<L, std::string> : public Expression {
+	L l;
+	std::string r;
+
+	/// Make r to 'r'
+	Binary(L l, std::string r) : l(l), r("'" + r + "'")
+	{
+		using FieldType = typename L::FieldType;
+		type::assert_compare(FieldType(), std::string());
+	}
+};
+
 template<typename L, typename R>
 struct Greater : public Binary<L, R> {
 	using Binary<L, R>::Binary;
