@@ -130,7 +130,8 @@ Socket Socket::connect(const std::string& path)
 
 	::sockaddr_un addr;
 	addr.sun_family = AF_UNIX;
-	::strncpy(addr.sun_path, path.c_str(), sizeof(::sockaddr_un::sun_path));
+	::strncpy(addr.sun_path, path.c_str(), sizeof(sockaddr_un::sun_path) - 1);
+	addr.sun_path[sizeof(sockaddr_un::sun_path) - 1] = '\0';
 
 	if (addr.sun_path[0] == '@')
 		addr.sun_path[0] = '\0';
