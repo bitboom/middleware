@@ -16,8 +16,9 @@
 
 #pragma once
 
-#include <vist/logger.hpp>
 #include <vist/exception.hpp>
+#include <vist/logger.hpp>
+#include <vist/logger/dlog.hpp>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -31,6 +32,8 @@ class SystemdSocket {
 public:
 	static int Create(const std::string& path)
 	{
+		LogStream::Init(std::make_shared<Dlog>());
+
 		static int fds = -1;
 
 		if (fds == -1)
