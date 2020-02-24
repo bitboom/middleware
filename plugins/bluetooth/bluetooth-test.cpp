@@ -18,6 +18,7 @@
 #include "../test-util.hpp"
 
 #include <vist/client/query.hpp>
+#include <vist/client/schema/bluetooth.hpp>
 #include <vist/exception.hpp>
 
 #include <iostream>
@@ -25,10 +26,11 @@
 #include <gtest/gtest.h>
 
 using namespace vist;
-using namespace vist::policy::plugin;
 
 TEST(BluetoothTests, change_policy_state)
 {
+	using namespace vist::policy::plugin;
+
 	try {
 		test::change_policy_state<BluetoothState>();
 		test::change_policy_state<DesktopConnectivity>();
@@ -64,4 +66,18 @@ TEST(BluetoothTests, set_policies)
 	}
 
 	Query::Execute("DELETE FROM policy_admin WHERE name = 'vist-plugin-bluetooth-test'");
+}
+
+TEST(BluetoothTest, query_builder)
+{
+	using namespace vist::schema;
+
+	std::string query = BluetoothTable.selectAll();
+	EXPECT_EQ(query, "SELECT * FROM bluetooth");
+
+	query = BluetoothTable.update(Bluetooth::DesktopConnectivity = 3, Bluetooth::State = 7);
+	EXPECT_EQ(query, "UPDATE bluetooth SET desktopConnectivity = 3, state = 7");
+
+	query = BluetoothTable.update(Bluetooth::Pairing = 2, Bluetooth::Tethering = 9);
+	EXPECT_EQ(query, "UPDATE bluetooth SET pairing = 2, tethering = 9");
 }

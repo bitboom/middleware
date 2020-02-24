@@ -33,7 +33,7 @@ namespace schema {
 		DECLARE_COLUMN(Tethering, "tethering", &Bluetooth::tethering);
 	};
 
-	DECLARE_TABLE(bluetoothTable, "bluetooth", Bluetooth::State,
+	DECLARE_TABLE(BluetoothTable, "bluetooth", Bluetooth::State,
 											   Bluetooth::DesktopConnectivity,
 											   Bluetooth::Pairing,
 											   Bluetooth::Tethering);
