@@ -38,6 +38,7 @@ ADD_EXECUTABLE(${TARGET_TEST} ../tests.cpp
 							  bluetooth-test.cpp)
 TARGET_LINK_LIBRARIES(${TARGET_TEST} ${PLUGIN_DEPS_LIBRARIES}
 									 vist-common
+									 vist-client
 									 gtest
 									 pthread)
 INSTALL(TARGETS ${TARGET_TEST}

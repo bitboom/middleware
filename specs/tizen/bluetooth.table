@@ -1,9 +1,10 @@
 table_name("bluetooth")
 description("The policies related bluetooth.")
 schema([
-    Column("bluetooth", INTEGER, "The policy value about bluetooth state"),
-    Column("bluetooth-desktop-connectivity", INTEGER, "The policy value about bt desktop connectivity"),
-    Column("bluetooth-pairing", INTEGER, "The policy value about bluetooth pairing"),
-    Column("bluetooth-tethering", INTEGER, "The policy value about bluetooth tethering"),
+    Column("state", INTEGER, "The policy value about bluetooth state"),
+    Column("desktopConnectivity", INTEGER, "The policy value about bt desktop connectivity"),
+    Column("pairing", INTEGER, "The policy value about bluetooth pairing"),
+    Column("tethering", INTEGER, "The policy value about bluetooth tethering"),
 ])
 implementation("tizen/bluetooth@genBluetooth")
+implementation_update("tizen/bluetooth@updateBluetooth")

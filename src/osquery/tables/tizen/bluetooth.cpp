@@ -29,10 +29,15 @@ namespace osquery {
 
 namespace {
 
-void getPolicy(Row& row, const std::string& name)
+std::map<std::string, std::string> ALIAS = {
+	{ "state", "bluetooth" },
+	{ "desktopConnectivity", "bluetooth-desktop-connectivity" },
+	{ "pairing", "bluetooth-pairing" },
+	{ "tethering", "bluetooth-tethering"} };
+
+void setPolicy(const std::string& name, int value)
 {
-	int value = vist::policy::API::Get(name);
-	row[name] = std::to_string(value);
+	vist::policy::API::Admin::Set(name, vist::policy::PolicyValue(value));
 }
 
 } // anonymous namespace
@@ -42,19 +47,53 @@ namespace tables {
 using namespace vist;
 
 QueryData genBluetooth(QueryContext& context) try {
-	INFO(VIST) << "Select query about policy table.";
+	INFO(VIST) << "Select query about bluetooth table.";
 
 	QueryData results;
 
 	Row row;
-	getPolicy(row, "bluetooth");
-	getPolicy(row, "bluetooth-desktop-connectivity");
-	getPolicy(row, "bluetooth-pairing");
-	getPolicy(row, "bluetooth-tethering");
+
+	for (const auto&[schemaName, policyName]: ALIAS) {
+		int value = vist::policy::API::Get(policyName);
+		row[schemaName] = std::to_string(value);
+	}
 
 	results.emplace_back(std::move(row));
 
 	return results;
+} catch (const vist::Exception<ErrCode>& e) {
+	ERROR(VIST) << "Failed to query: " << e.what();
+	Row r;
+	return { r };
+} catch (...) {
+	ERROR(VIST) << "Failed to query with unknown exception.";
+	Row r;
+	return { r };
+}
+
+QueryData updateBluetooth(QueryContext& context, const PluginRequest& request) try {
+	INFO(VIST) << "Update query about bluetooth table.";
+	if (request.count("json_value_array") == 0)
+		throw std::runtime_error("Wrong request format. Not found json value.");
+
+	std::string str = request.at("json_value_array");
+	rapidjson::Document document;
+	document.Parse(str.c_str());
+	if (document.HasParseError() || !document.IsArray())
+		throw std::runtime_error("Cannot parse request.");
+
+	if (document.Size() != 4)
+		throw std::runtime_error("Wrong request format.");
+
+	/// TODO(Sangwan): Sync vtab schema with policy definition
+	setPolicy("bluetooth", document[0].GetInt());
+	setPolicy("bluetooth-desktop-connectivity", document[1].GetInt());
+	setPolicy("bluetooth-pairing", document[2].GetInt());
+	setPolicy("bluetooth-tethering", document[3].GetInt());
+
+	Row r;
+	r["status"] = "success";
+	return { r };
 } catch (const vist::Exception<ErrCode>& e) {
 	ERROR(VIST) << "Failed to query: " << e.what();
 	Row r;

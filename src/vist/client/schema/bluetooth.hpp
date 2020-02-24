@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <vist/query-builder.hpp>
+
 namespace vist {
 namespace schema {
 
@@ -26,7 +28,7 @@ namespace schema {
 		int tethering; 
 
 		DECLARE_COLUMN(State, "state", &Bluetooth::state);
-		DECLARE_COLUMN(DesktopConnectivity, "desktopConnectivity", &Bluetooth::DesktopConnectivity);
+		DECLARE_COLUMN(DesktopConnectivity, "desktopConnectivity", &Bluetooth::desktopConnectivity);
 		DECLARE_COLUMN(Pairing, "pairing", &Bluetooth::pairing);
 		DECLARE_COLUMN(Tethering, "tethering", &Bluetooth::tethering);
 	};

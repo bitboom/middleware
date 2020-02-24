@@ -58,13 +58,14 @@ void Server::stop(void)
 void Server::accept(const Task& task)
 {
 	auto handler = [this, task]() {
-		DEBUG(VIST) << "New session is accepted.";
 		auto connection = std::make_shared<Connection>(this->socket->accept());
+		DEBUG(VIST) << "New session is accepted: fd[" << connection->getFd() << "]";
 
 		/// process task per thread
 		this->worker.submit([this, connection, task]{
 			auto onRead = [connection, task]() {
 				Server::peer.reset(new Credentials(Credentials::Peer(connection->getFd())));
+				DEBUG(VIST) << "Read event occured: pid[" << Server::peer->pid << "]";
 
 				Message request = connection->recv();
 				DEBUG(VIST) << "Session header: " << request.signature;
