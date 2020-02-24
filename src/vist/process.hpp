@@ -17,7 +17,10 @@
 #pragma once
 
 #include <vist/exception.hpp>
+#include <vist/logger.hpp>
 
+#include <algorithm>
+#include <cctype>
 #include <cstdio>
 #include <memory>
 #include <string>
@@ -26,6 +29,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 namespace vist {
 
@@ -35,17 +39,45 @@ struct Process {
 		return ::getpid();
 	}
 
+	/// TODO(Sangwan): Unify the method which get process identifier
 	static std::string GetPath(pid_t pid)
 	{
-		std::string cmdline = "/proc/" + std::to_string(pid) + "/exe";
+		std::string exe = "/proc/" + std::to_string(pid) + "/exe";
 
 		/// c++17 std::filesystem::read_symlink
 		std::vector<char> buf(1024);
-		auto size = ::readlink(cmdline.c_str(), buf.data(), buf.size());
-		if (size == -1)
-			THROW(ErrCode::RuntimeError) << "Failed to get process path: " << errno;
+		errno = 0;
+		auto size = ::readlink(exe.c_str(), buf.data(), buf.size());
+		if (size == -1) {
+			WARN(VIST) << "Failed to get process path by exe: " << exe
+					   << ", errno: " << errno;
 
-		return std::string(buf.begin(), buf.begin() + size);
+			std::string cmdline = "/proc/" + std::to_string(pid) + "/cmdline";
+			int fd = ::open(cmdline.c_str(), O_RDONLY);
+			if (fd == -1)
+				THROW(ErrCode::RuntimeError) << "Failed to get process path: " << cmdline;
+
+			errno = 0;
+			size = ::read(fd, buf.data(), buf.size());
+			::close(fd);
+
+			if (size == -1)
+				THROW(ErrCode::RuntimeError) << "Failed to get process path: " << cmdline
+											 << ", errno: " << errno;
+
+			buf[size - 1] = '\0';
+		}
+
+		return canonicalize(std::string(buf.begin(), buf.begin() + size));
+	}
+
+private:
+	static std::string canonicalize(std::string&& s)
+	{
+		auto predicate = [](unsigned char c){ return std::isspace(c) || c == '\0'; };
+		auto base = std::find_if(s.begin(), s.end(), predicate);
+		s.erase(base, s.end());
+		return s;
 	}
 };
 
