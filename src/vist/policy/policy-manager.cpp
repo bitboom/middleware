@@ -33,7 +33,7 @@ PolicyManager::PolicyManager() : storage(DB_PATH)
 	int cnt = loadPolicies();
 	INFO(VIST) << std::to_string(cnt) << "-policies loaded";
 
-	this->storage.enroll(DEFAULT_ADMIN_PATH);
+	this->storage.enroll(DEFAULT_POLICY_ADMIN);
 }
 
 std::pair<int, int> PolicyManager::loadProviders(const std::string& path)

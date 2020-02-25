@@ -164,7 +164,7 @@ void PolicyStorage::enroll(const std::string& name)
 
 void PolicyStorage::disenroll(const std::string& name)
 {
-	if (name == DEFAULT_ADMIN_PATH)
+	if (name == DEFAULT_POLICY_ADMIN)
 		THROW(ErrCode::RuntimeError) << "Cannot disenroll default admin.";
 
 	INFO(VIST) << "Disenroll admin: " << name;

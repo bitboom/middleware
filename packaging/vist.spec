@@ -70,7 +70,7 @@ cp %SOURCE1 .
 		 -DUSER_NAME=%{user_name} \
 		 -DGROUP_NAME=%{group_name} \
 		 -DSMACK_LABEL=%{smack_label} \
-		 -DDEFAULT_ADMIN_PATH=%{_bindir}/vist-cli \
+		 -DDEFAULT_POLICY_ADMIN=vist-cli \
 		 -DDB_INSTALL_DIR:PATH=%{vist_db_dir} \
 		 -DPLUGIN_INSTALL_DIR:PATH=%{vist_plugin_dir} \
 		 -DSCRIPT_INSTALL_DIR:PATH=%{vist_script_dir} \

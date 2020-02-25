@@ -114,7 +114,7 @@ TEST_F(PolicyStorageTests, default_admin)
 
 	/// Cannot disenroll default admin
 	try {
-		storage->disenroll(DEFAULT_ADMIN_PATH);
+		storage->disenroll(DEFAULT_POLICY_ADMIN);
 	} catch (const std::exception& e) {
 		isRaised = true;
 	}
@@ -125,21 +125,21 @@ TEST_F(PolicyStorageTests, default_admin)
 TEST_F(PolicyStorageTests, activate)
 {
 	auto storage = getStorage();
-	EXPECT_FALSE(storage->isActivated(DEFAULT_ADMIN_PATH));
+	EXPECT_FALSE(storage->isActivated(DEFAULT_POLICY_ADMIN));
 
-	storage->activate(DEFAULT_ADMIN_PATH);
-	EXPECT_TRUE(storage->isActivated(DEFAULT_ADMIN_PATH));
+	storage->activate(DEFAULT_POLICY_ADMIN);
+	EXPECT_TRUE(storage->isActivated(DEFAULT_POLICY_ADMIN));
 
-	storage->activate(DEFAULT_ADMIN_PATH, true);
-	EXPECT_TRUE(storage->isActivated(DEFAULT_ADMIN_PATH));
+	storage->activate(DEFAULT_POLICY_ADMIN, true);
+	EXPECT_TRUE(storage->isActivated(DEFAULT_POLICY_ADMIN));
 
-	storage->activate(DEFAULT_ADMIN_PATH, false);
-	EXPECT_FALSE(storage->isActivated(DEFAULT_ADMIN_PATH));
+	storage->activate(DEFAULT_POLICY_ADMIN, false);
+	EXPECT_FALSE(storage->isActivated(DEFAULT_POLICY_ADMIN));
 
-	storage->activate(DEFAULT_ADMIN_PATH);
-	EXPECT_TRUE(storage->isActivated(DEFAULT_ADMIN_PATH));
+	storage->activate(DEFAULT_POLICY_ADMIN);
+	EXPECT_TRUE(storage->isActivated(DEFAULT_POLICY_ADMIN));
 
-	storage->activate(DEFAULT_ADMIN_PATH, false);
+	storage->activate(DEFAULT_POLICY_ADMIN, false);
 }
 
 TEST_F(PolicyStorageTests, activate_failed)
