@@ -18,7 +18,10 @@
 
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
+
+#ifdef TIZEN
 #include <vist/logger/dlog.hpp>
+#endif
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -32,8 +35,9 @@ class SystemdSocket {
 public:
 	static int Create(const std::string& path)
 	{
+#ifdef TIZEN
 		LogStream::Init(std::make_shared<Dlog>());
-
+#endif
 		static int fds = -1;
 
 		if (fds == -1)
