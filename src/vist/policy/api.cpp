@@ -39,9 +39,9 @@ void API::Admin::Set(const std::string& policy, const PolicyValue& value)
 	std::string admin;
 	auto peer = rmi::Gateway::GetPeerCredentials();
 	if (peer == nullptr)
-		admin = Process::GetPath(Process::GetPid());
+		admin = Process::GetIdentifier(Process::GetPid());
 	else
-		admin = Process::GetPath(peer->pid);
+		admin = Process::GetIdentifier(peer->pid);
 
 	PolicyManager::Instance().set(policy, value, admin);
 }

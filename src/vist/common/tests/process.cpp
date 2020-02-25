@@ -24,15 +24,15 @@ using namespace vist;
 
 TEST(ProcessTests, path_positive)
 {
-	auto name = Process::GetPath(Process::GetPid());
-	EXPECT_EQ("/usr/bin/vist-test", name);
+	auto name = Process::GetIdentifier(Process::GetPid());
+	EXPECT_EQ("vist-test", name);
 }
 
 TEST(ProcessTests, path_negative)
 {
 	bool raised = false;
 	try {
-		Process::GetPath(-1);
+		Process::GetIdentifier(-1);
 	} catch(...) {
 		raised = true;
 	}

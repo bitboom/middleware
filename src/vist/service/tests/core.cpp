@@ -41,7 +41,7 @@ TEST_F(CoreTests, query_select)
 
 TEST_F(CoreTests, query_update)
 {
-	policy::API::Admin::Enroll("/usr/bin/vist-test");
+	policy::API::Admin::Enroll("vist-test");
 
 	std::string statement = "SELECT * FROM policy WHERE name = 'sample-int-policy'";
 	auto rows = Vistd::Query(statement);
@@ -56,5 +56,5 @@ TEST_F(CoreTests, query_update)
 	rows = Vistd::Query(statement);
 	EXPECT_EQ(rows[0]["value"], "I/10");
 
-	policy::API::Admin::Disenroll("/usr/bin/vist-test");
+	policy::API::Admin::Disenroll("vist-test");
 }
