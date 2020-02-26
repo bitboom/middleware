@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 - 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2016 - 2020 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -446,15 +446,22 @@ int update_ca_certificate_file(char *cert)
 			} else {
 				text = (const char *)sqlite3_column_text(stmt, 0);
 
-				if (text)
+				if (text) {
 					gname = strndup(text, strlen(text));
+					if (!gname) {
+						SLOGE("Memory allocation failed");
+						goto error_and_exit;
+					}
+				}
 
 				result = get_certificate_buffer_from_store(storeType, gname, &cert);
 
 				if (result != CERTSVC_SUCCESS) {
 					SLOGE("Failed to get certificate buffer from key-manager. gname[%s]", gname);
+					free(gname);
 					goto error_and_exit;
 				}
+				free(gname);
 			}
 
 			if (cert == NULL) {
