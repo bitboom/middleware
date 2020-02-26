@@ -1,12 +1,22 @@
-Project ViST is inspired by [osquery](https://osquery.io/).  
-osquery views operating system as table 
+Project ViST is inspired by [osquery](https://osquery.io/).   
+
+Osquery views operating system as table 
 from the perspective of the system administrator. 
+It provides osqueryd(daemon),  osqueryi(interactive shell).  
 
 We view operating system as table 
 from the perspective of the system programmar.  
-We want to provide them more compact and 
-more efficient library from this different perspective.
+Our purpose is to provide them more compact and 
+more efficient interface from this different perspective.
 
+# Query and Virtiual Table 
+SQL Query is an interface that allows access and manipulate table resources. 
+SQLite provides two types of table.
+- (Real) Table: Provide interface to handle database file.
+- [Virtual Table](https://sqlite.org/vtab.html): 
+Provide interface to invoke the callback methods of object(virtual table).
+
+We can call any routines with query via virtual table.
 
 # ViST, Virtual Security Table
 ViST(Virtual Security Table) is a security monitoring framework using SQL query.
