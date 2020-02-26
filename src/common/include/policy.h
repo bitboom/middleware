@@ -79,7 +79,13 @@ extern const std::string REGEX_QUALITY_ALPHANUMERIC;
 
 struct COMMON_API Policy {
 	Policy();
-	~Policy();
+	virtual ~Policy();
+
+	Policy(const Policy &) = default;
+	Policy& operator=(const Policy &) = default;
+
+	Policy(Policy &&) = default;
+	Policy& operator=(Policy &&) = default;
 
 	std::string info(void) const;
 

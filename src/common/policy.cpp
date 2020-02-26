@@ -58,9 +58,7 @@ Policy::Policy() :
 {
 }
 
-Policy::~Policy()
-{
-}
+Policy::~Policy() = default;
 
 std::string Policy::info() const
 {
