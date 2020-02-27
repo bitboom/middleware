@@ -53,16 +53,6 @@ guarantees to generate type-safe query.
 Refer [this](https://github.sec.samsung.net/RS7-SECIOTSW/tizen-osquery/tree/master/src/vist/query-builder)
 to compare ours and other opensources.
 
-# Difference with osquery
-Osquery views operating system as table 
-from the perspective of the system administrator. 
-It provides osqueryd(daemon), osqueryi(interactive shell).  
-
-We view operating system as table 
-from the perspective of the system programmar.  
-Our purpose is to provide them more compact and 
-more efficient interface from this different perspective.
-
 # ViST, Virtual Security Table
 ViST(Virtual Security Table) is a security monitoring framework using SQL query.
 - Provides APIs for monitoring and controlling security resources.
