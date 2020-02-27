@@ -18,13 +18,13 @@ For this we must achieve two things:
 
 We believe that ViST makes security software usable and universial.
 
-## Terminology
+# Terminology
 ### Virtual Table
 SQL Query is an interface that allows access and manipulate table resources.
 SQLite provides two types of table.
 - (Real) Table: Provide interface to handle database file.
 - [Virtual Table](https://sqlite.org/vtab.html): 
-Provide interface to invoke the callback methods of object(virtual table).  
+Provides interface to invoke the callback methods of object(virtual table).  
 
 We can call any routines with query via virtual table.  
 
@@ -48,16 +48,18 @@ do not guarantee to generate type-safe query.
 But [QueryDSL(Java)](https://github.com/querydsl/querydsl)
 guarantees to generate type-safe query.
 
-**We makes query-builder to generate type-safe query.**  
+**We make query-builder to generate type-safe query.**  
 
 Refer [this](https://github.sec.samsung.net/RS7-SECIOTSW/tizen-osquery/tree/master/src/vist/query-builder)
 to compare ours and other opensources.
 
-# ViST, Virtual Security Table
-ViST(Virtual Security Table) is a security monitoring framework using SQL query.
-- Provides APIs for monitoring and controlling security resources.
-- Views security resources as virtual tables and manipulates them through SQL queries.
-- Adopts a plug-in architecture and uses [osquery](https://osquery.io/) as the query analysis engine.
+# Main Features
+To provide intuitive and robustness security framework,
+ViST takes below features.
+- Query-based unified interface
+- Struct-based schema
+- Type-safe query builder
+- Runtime policy plugin
 
 # Architecture (Layered View)
 <img src="https://github.sec.samsung.net/storage/user/692/files/9badb280-20db-11ea-8c37-a314f094a3aa" alt="layered architecture" width="650" height="650">
@@ -66,7 +68,7 @@ ViST(Virtual Security Table) is a security monitoring framework using SQL query.
 ViST provides three types of API.  
 One is for data structure and the other is for functional.
 
-## Schema API
+### Schema API
 Schema API represents the data structure of Virtua Tables.  
 This is referred to by Client API and Admin API.
 ```cpp
@@ -92,9 +94,7 @@ struct Processes {
   long long int parent;
 };
 ```
-
-
-## Client API (SELECT)
+### Client API (SELECT)
 Client API is a functioanl API for monitoring Virtual Tables.  
 Since Client API generates 'select query' by using query-builder, it doesn't need to write a query directly.
 
@@ -108,7 +108,7 @@ Since Client API generates 'select query' by using query-builder, it doesn't nee
   }
 ```
 
-## Admin API (SELECT, INSERT, UPDATE, DELETE)
+### Admin API (SELECT, INSERT, UPDATE, DELETE)
 Admin API is a functioanl API for manipulating Virtual Tables.  
 This executes the query statement for the virtual table.
 ```cpp
