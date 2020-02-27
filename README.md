@@ -1,5 +1,24 @@
-Project ViST is inspired by [osquery](https://osquery.io/).   
+<p align="center">
+<b> ViST, Virtual Security Table &#127912 </b><br>
+Query-based Universial Security API
+</p>
 
+---
+
+> Project ViST is inspired by [osquery](https://osquery.io/).   
+
+The purpose of ViST project is
+**"Provide unified interface
+to security software designer
+and developer
+via type-safe query".**  
+For this we must achieve two things:
+1. Provide **unified interface via query**
+2. Generate **type-safe query via query-builder**
+
+We believe that ViST makes security software usable and universial.
+
+# Difference with osquery
 Osquery views operating system as table 
 from the perspective of the system administrator. 
 It provides osqueryd(daemon),  osqueryi(interactive shell).  
