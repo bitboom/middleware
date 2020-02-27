@@ -18,24 +18,50 @@ For this we must achieve two things:
 
 We believe that ViST makes security software usable and universial.
 
+## Terminology
+### Virtual Table
+SQL Query is an interface that allows access and manipulate table resources.
+SQLite provides two types of table.
+- (Real) Table: Provide interface to handle database file.
+- [Virtual Table](https://sqlite.org/vtab.html): 
+Provide interface to invoke the callback methods of object(virtual table).  
+
+We can call any routines with query via virtual table.  
+
+**We make virtual tables about device policy at ViST v1.**
+
+### Type-safe Query 
+> In computer science, [type safety](https://en.wikipedia.org/wiki/Type_safety)
+> is the extent to
+> which a programming language
+> discourages or prevents type errors.
+
+Type-safe query is what checked for type error at compile time.
+
+Basically query statement is not type-safe.
+Most of opensource projects
+what generate query like
+[JPA(Java)](https://github.com/spring-projects/spring-data-jpa),
+[sqlpp11(C++)](https://github.com/rbock/sqlpp11)
+and [sqlite_orm(C++)](https://github.com/fnc12/sqlite_orm)
+do not guarantee to generate type-safe query.
+But [QueryDSL(Java)](https://github.com/querydsl/querydsl)
+guarantees to generate type-safe query.
+
+**We makes query-builder to generate type-safe query.**  
+
+Refer [this](https://github.sec.samsung.net/RS7-SECIOTSW/tizen-osquery/tree/master/src/vist/query-builder)
+to compare ours and other opensources.
+
 # Difference with osquery
 Osquery views operating system as table 
 from the perspective of the system administrator. 
-It provides osqueryd(daemon),  osqueryi(interactive shell).  
+It provides osqueryd(daemon), osqueryi(interactive shell).  
 
 We view operating system as table 
 from the perspective of the system programmar.  
 Our purpose is to provide them more compact and 
 more efficient interface from this different perspective.
-
-# Query and Virtiual Table 
-SQL Query is an interface that allows access and manipulate table resources. 
-SQLite provides two types of table.
-- (Real) Table: Provide interface to handle database file.
-- [Virtual Table](https://sqlite.org/vtab.html): 
-Provide interface to invoke the callback methods of object(virtual table).
-
-We can call any routines with query via virtual table.
 
 # ViST, Virtual Security Table
 ViST(Virtual Security Table) is a security monitoring framework using SQL query.
