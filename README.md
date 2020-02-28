@@ -1,6 +1,7 @@
 <p align="center">
 <b> ViST, Virtual Security Table &#127912 </b><br>
-Query-based Universial Security API
+Query-based Universial Security API &#128196<br>
+of the developer, by the developer, for the developer &#128187
 </p>
 
 ---
@@ -66,10 +67,7 @@ ViST takes below features.
 
 # Design
 ## Programming Abstraction
-- Struct-based schema
-1. query builder
-2. query parser
-3. virtual table 
+/// XXX - Struct-based schema, query builder, query parser, virtual table 
 
 ## Programming Interface
 ViST provides three types of API.  
@@ -102,12 +100,17 @@ struct ${TABLE_NAME} {
 ```
 
 ### Query builder API (Header only library)
-Query builder API is a functioanl API to generate type-safed query.  
-This generate query statement via Schema API and check type-error for type-safe query. 
+Query builder API is
+a functioanl API
+to generate type-safed query.  
+This generate the query statement
+via Schema API and
+check type-error
+for type-safe query. 
 
 The CRUD clause is provided at ViST v1.
 
-```
+```cpp
 DECLARE_COLUMN(${COLUMN_INSTANCE}, ${COLUMN_NAME}, ${COLUMN_IDENTIFIER});
 DECLARE_TABLE(${TABLE_INSTANCE}, ${TABLE_NAME}, ${COLUMN_INSTANCE});
 
@@ -116,21 +119,15 @@ DECLARE_TABLE(${TABLE_INSTANCE}, ${TABLE_NAME}, ${COLUMN_INSTANCE});
 %{TABLE_INSTANCE}.update(${COLUMN_INSTANCE} = ${COLUMN_VALUE});
 %{TABLE_INSTANCE}.remove(${COLUMN_INSTANCE});
 ```
-### Query execution API
-Admin API is a functioanl API for manipulating Virtual Tables.  
-This executes the query statement for the virtual table.
+
+### Virtual table API
+Virtual table API is a functioanl API to invoke callback of virtual table.  
+This execute the query statement about the virtual table
+and listen the event of it.
+
 ```cpp
-   /// Registering policy admin using Admin API
-   vist::Query::Execute("INSERT INTO policy_admin (name) VALUES ('testAdmin')");
-   
-   /// rows includes [name:testAdmin, activated:0]
-   auto rows = vist::Query::Execute("SELECT * FROM policy_admin");
-   
-   /// Activating policy admin
-   vist::Query::Execute("UPDATE policy_admin SET activated = 1 where name = 'testAdmin'");
-   
-   /// Excluding policy admin using Admin API
-   vist::Query::Execute("DELETE FROM policy_admin WHERE name = 'testAdmin'");
+VirtualTable::Execute(${QUERY_STATEMENT});
+VirtualTable::Listen(${TABLE}, ${HANDLER}); // NOT IMPLEMENTED YET
 ```
 
 # Contacts
