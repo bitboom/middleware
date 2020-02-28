@@ -62,8 +62,8 @@ ViST takes below features.
 - Type-safe query builder
 - Runtime policy plugin
 
-# Architecture (Layered View)
-<img src="https://github.sec.samsung.net/storage/user/692/files/9badb280-20db-11ea-8c37-a314f094a3aa" alt="layered architecture" width="650" height="650">
+# Architecture
+<img src="https://github.sec.samsung.net/storage/user/692/files/6829c580-5a46-11ea-86d5-4091ecdfc1ea" alt="layered architecture" width="780" height="610">
 
 # Design
 ## Programming Abstraction
