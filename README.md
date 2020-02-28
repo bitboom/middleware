@@ -68,7 +68,7 @@ ViST adopts 3-tier layerd architecture to separate of concern.
 - Service layer: Parse the query and bind query to virtual table
 - Logic layer: Include callback routine about virtual table executed via query 
 
-<img src="https://github.sec.samsung.net/storage/user/692/files/6829c580-5a46-11ea-86d5-4091ecdfc1ea" alt="layered architecture" width="780" height="610">
+<img src="https://github.sec.samsung.net/storage/user/692/files/b8eeed80-5a49-11ea-85cb-3b4a975b2343" alt="layered architecture" width="780" height="610">
 
 # Design
 ## Programming Abstraction
