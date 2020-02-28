@@ -5,13 +5,13 @@ Query-based Universial Security API
 
 ---
 
-> Project ViST is inspired by [osquery](https://osquery.io/).   
+> Project ViST is forked from [osquery](https://osquery.io/).   
 
 The purpose of ViST project is
 **"Provide unified interface
 to security software designer
 and developer
-via type-safe query".**  
+via type-safe query".**
 For this we must achieve two things:
 1. Provide **unified interface via query**
 2. Generate **type-safe query via query-builder**
@@ -64,51 +64,59 @@ ViST takes below features.
 # Architecture (Layered View)
 <img src="https://github.sec.samsung.net/storage/user/692/files/9badb280-20db-11ea-8c37-a314f094a3aa" alt="layered architecture" width="650" height="650">
 
-# Programming Abstraction
+# Design
+## Programming Abstraction
+- Struct-based schema
+1. query builder
+2. query parser
+3. virtual table 
+
+## Programming Interface
 ViST provides three types of API.  
-One is for data structure and the other is for functional.
+One is for data structure(schema)
+and the other is for functional.
 
-### Schema API
-Schema API represents the data structure of Virtua Tables.  
-This is referred to by Client API and Admin API.
+### Schema API (Header only library)
+Schema API is a data structure API
+to represent struct-based schema
+referred by query builder API.  
+This inform virtual table schema to client and make type-safe query possible.
+
+- The schema of virtual table is correspond with struct.
+- The column of schema is correspond with struct member.
+
+#### Table schema
+| Table  | Column | Type |
+|---|---|---|
+| ${TABLE_NAME} | ${COLUMN_NAME_1} | ${COLUMN_TYPE} |
+| | ${COLUMN_NAME_2} | ${COLUMN_TYPE} |
+| | ${COLUMN_NAME_3} | ${COLUMN_TYPE} |
+
+#### Struct-based schema
 ```cpp
-/// policy schema API
-template <typename T>
-struct Policy {
-  std::string name;
-  T value;
-};
-
-/// process schema API
-struct Processes {
-  long long int pid;
-  std::string name;
-  std::string path;
-  std::string cmdline;
-  long long int uid;
-  long long int gid;
-  long long int euid;
-  long long int egid;
-  int on_disk;
-  long long int resident_size;
-  long long int parent;
+struct ${TABLE_NAME} {
+    ${COLUMN_TYPE} ${COLUMN_NAME_1};
+    ${COLUMN_TYPE} ${COLUMN_NAME_2};
+    ${COLUMN_TYPE} ${COLUMN_NAME_3};
 };
 ```
-### Client API (SELECT)
-Client API is a functioanl API for monitoring Virtual Tables.  
-Since Client API generates 'select query' by using query-builder, it doesn't need to write a query directly.
 
-```cpp
-  /// Querying device policies using Client API
-  vist::VirtualTable<Policy<int>> table;
-  for (const auto& row : table) {
-    vist::schema::Policy<int> policy = { row[&Policy<int>::name], row[&Policy<int>::value] };
-    std::cout << "Policy name: " << policy.name << ", ";
-    std::cout << "Policy value: " << policy.value << "\n";
-  }
+### Query builder API (Header only library)
+Query builder API is a functioanl API to generate type-safed query.  
+This generate query statement via Schema API and check type-error for type-safe query. 
+
+The CRUD clause is provided at ViST v1.
+
 ```
+DECLARE_COLUMN(${COLUMN_INSTANCE}, ${COLUMN_NAME}, ${COLUMN_IDENTIFIER});
+DECLARE_TABLE(${TABLE_INSTANCE}, ${TABLE_NAME}, ${COLUMN_INSTANCE});
 
-### Admin API (SELECT, INSERT, UPDATE, DELETE)
+%{TABLE_INSTANCE}.select(${COLUMN_INSTANCE});
+%{TABLE_INSTANCE}.insert(${COLUMN_INSTANCE} = ${COLUMN_VALUE});
+%{TABLE_INSTANCE}.update(${COLUMN_INSTANCE} = ${COLUMN_VALUE});
+%{TABLE_INSTANCE}.remove(${COLUMN_INSTANCE});
+```
+### Query execution API
 Admin API is a functioanl API for manipulating Virtual Tables.  
 This executes the query statement for the virtual table.
 ```cpp
