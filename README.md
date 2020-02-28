@@ -63,6 +63,11 @@ ViST takes below features.
 - Runtime policy plugin
 
 # Architecture
+ViST adopts 3-tier layerd architecture to separate of concern.
+- Interface layer: Provide API to client to generate query
+- Service layer: Parse the query and bind query to virtual table
+- Logic layer: Include callback routine about virtual table executed via query 
+
 <img src="https://github.sec.samsung.net/storage/user/692/files/6829c580-5a46-11ea-86d5-4091ecdfc1ea" alt="layered architecture" width="780" height="610">
 
 # Design
