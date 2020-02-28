@@ -187,12 +187,14 @@ fi
 %attr(-, %{user_name}, %{group_name}) %cert_svc_ro_path
 
 %files devel
+%manifest %name.manifest
 %_includedir/*
 %_libdir/pkgconfig/*
 %_libdir/libcert-svc-vcore.so
 
 %if 0%{?certsvc_test_build}
 %files test
+%manifest %name.manifest
 %bin_dir/cert-svc-test*
 %dir %cert_svc_tests
 %cert_svc_tests/p12
@@ -203,6 +205,7 @@ fi
 %cert_svc_examples
 
 %files test-binaries
+%manifest %name.manifest
 %cert_svc_tests/apps
 
 %endif
