@@ -60,7 +60,7 @@ ViST takes below features.
 - Query-based unified interface
 - Struct-based schema
 - Type-safe query builder
-- Runtime policy plugin
+- Security virtual table
 
 # Architecture
 ViST adopts 3-tier layerd architecture to separate of concern.
@@ -71,8 +71,31 @@ ViST adopts 3-tier layerd architecture to separate of concern.
 <img src="https://github.sec.samsung.net/storage/user/692/files/b8eeed80-5a49-11ea-85cb-3b4a975b2343" alt="layered architecture" width="780" height="610">
 
 # Design
-## Programming Abstraction
-/// XXX - Struct-based schema, query builder, query parser, virtual table 
+## Programming Abstractions
+// TODO: Use SF keyword to overall
+Security functions in ViST
+are built around
+two abstractions.
+One is the producer
+which provides security functions
+via virtual tables. 
+Another is the consumer
+which calls security functions
+via type-safe query.
+
+### Abstractions for producer 
+Producer has own security functions.
+To provide security functions via virtual table,
+producer have to design schema of secuirty functions
+and bind it to virtual table. We provide following features for this.
+- Struct-based schema: The schema of security functions
+- Virtual table: The object which be bound security functions
+
+### Abstractions for consumer
+// XXX
+
+### Framework
+// XXX
 
 ## Programming Interface
 ViST provides three types of API.  
