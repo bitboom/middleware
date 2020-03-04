@@ -72,7 +72,7 @@ ViST adopts 3-tier layerd architecture to separate of concern.
 
 # Design
 ## Programming Abstractions
-// TODO: Use SF keyword to overall
+// TODO: Use SF keyword to overall  
 Security functions in ViST
 are built around
 two abstractions.
@@ -83,16 +83,21 @@ Another is the consumer
 which calls security functions
 via type-safe query.
 
-### Abstractions for producer 
+### Security Function Producer
 Producer has own security functions.
 To provide security functions via virtual table,
 producer have to design schema of secuirty functions
 and bind it to virtual table. We provide following features for this.
 - Struct-based schema: The schema of security functions
-- Virtual table: The object which be bound security functions
+- Security virtual table: The object which be bound security functions
 
-### Abstractions for consumer
-// XXX
+### Secuirty Function Consumer
+Consumer calls exposed security functions.
+To call security functions via type-safe query,
+consumer have to use query builder
+and query-based unified interface.
+- Type-safe query builder: The query builder with type-error checking at compile time
+- Query-based unified interface: The interface between query and virtual table
 
 ### Framework
 // XXX
