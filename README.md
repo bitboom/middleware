@@ -40,16 +40,19 @@ We can call any routines with query via virtual table.
 Type-safe query is what checked for type error at compile time.
 
 Basically query statement is not type-safe.
-Most of opensource projects
-what generate query like
-[JPA(Java)](https://github.com/spring-projects/spring-data-jpa),
-[sqlpp11(C++)](https://github.com/rbock/sqlpp11)
-and [sqlite_orm(C++)](https://github.com/fnc12/sqlite_orm)
-do not guarantee to generate type-safe query.
-But [QueryDSL(Java)](https://github.com/querydsl/querydsl)
+There are some opensource projects
+what generate query or ORM.
+In Java,
+[JPA](https://github.com/spring-projects/spring-data-jpa),
+do not guarantee to generate type-safe query
+but [QueryDSL](https://github.com/querydsl/querydsl)
 guarantees to generate type-safe query.
+In C++,
+both [sqlpp11](https://github.com/rbock/sqlpp11)
+and [sqlite_orm](https://github.com/fnc12/sqlite_orm)
+guarantee to generate type-safe query.
 
-**We make query-builder to generate type-safe query.**  
+**We make type-safe query-builder more intuitively.**
 
 Refer [this](https://github.sec.samsung.net/RS7-SECIOTSW/tizen-osquery/tree/master/src/vist/query-builder)
 to compare ours and other opensources.

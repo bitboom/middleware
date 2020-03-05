@@ -5,6 +5,7 @@ between sql query and sql schema at compile time.
 |   | ViST | [sqlpp11](https://github.com/rbock/sqlpp11) | [sqlite_orm](https://github.com/fnc12/sqlite_orm) |
 |---|---|---|---|
 | **Tpye** | query builder | orm | orm |
+| **Query** | type safe | type safe | type safe |
 | **Language** | c++17 | c++11 ([WIP to c++17](https://github.com/rbock/sqlpp17)) | c++14 |
 | **Schema Location** | header file | header file | source file<br>(This makes hard to expose API.) |
 | **Intuition** | simple | complex | simple |
