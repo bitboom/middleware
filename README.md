@@ -17,53 +17,11 @@ For this we must achieve two things:
 1. Provide **unified interface via query**
 2. Generate **type-safe query via query-builder**
 
-We believe that ViST makes security software usable and universial.
-
-# Terminology
-### Virtual Table
-SQL Query is an interface that allows access and manipulate table resources.
-SQLite provides two types of table.
-- (Real) Table: Provide interface to handle database file.
-- [Virtual Table](https://sqlite.org/vtab.html): 
-Provides interface to invoke the callback methods of object(virtual table).  
-
-We can call any routines with query via virtual table.  
-
-**We make virtual tables about device policy at ViST v1.**
-
-### Type-safe Query 
-> In computer science, [type safety](https://en.wikipedia.org/wiki/Type_safety)
-> is the extent to
-> which a programming language
-> discourages or prevents type errors.
-
-Type-safe query is what checked for type error at compile time.
-
-Basically query statement is not type-safe.
-There are some opensource projects
-what generate query or ORM.
-In Java,
-[JPA](https://github.com/spring-projects/spring-data-jpa),
-do not guarantee to generate type-safe query
-but [QueryDSL](https://github.com/querydsl/querydsl)
-guarantees to generate type-safe query.
-In C++,
-both [sqlpp11](https://github.com/rbock/sqlpp11)
-and [sqlite_orm](https://github.com/fnc12/sqlite_orm)
-guarantee to generate type-safe query.
-
-**We make type-safe query-builder more intuitively.**
-
+We make type-safe query-builder more intuitively than other opensource projects.
 Refer [this](https://github.sec.samsung.net/RS7-SECIOTSW/tizen-osquery/tree/master/src/vist/query-builder)
 to compare ours and other opensources.
 
-# Architecture
-ViST adopts 3-tier layerd architecture to separate of concern.
-- Interface layer: Provide API to client to generate query
-- Service layer: Parse the query and bind query to virtual table
-- Logic layer: Include callback routine about virtual table executed via query 
-
-<img src="https://github.sec.samsung.net/storage/user/692/files/b8eeed80-5a49-11ea-85cb-3b4a975b2343" alt="layered architecture" width="780" height="610">
+We believe that ViST makes security software usable and universial.
 
 # Design
 Our design philoshophy is "Make usable and robust security framework.".
@@ -174,6 +132,13 @@ and listen the event of it.
 VirtualTable::Execute(${QUERY_STATEMENT});
 VirtualTable::Listen(${TABLE}, ${HANDLER}); // NOT IMPLEMENTED YET
 ```
+# Architecture
+ViST adopts 3-tier layerd architecture to separate of concern.
+- Interface layer: Provide API to client to generate query
+- Service layer: Parse the query and bind query to virtual table
+- Logic layer: Include callback routine about virtual table executed via query 
+
+<img src="https://github.sec.samsung.net/storage/user/692/files/b8eeed80-5a49-11ea-85cb-3b4a975b2343" alt="layered architecture" width="780" height="610">
 
 # Contacts
 - Sangwan Kwon (sangwan.kwon@samsung.com)
