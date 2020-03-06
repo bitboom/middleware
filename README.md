@@ -57,14 +57,6 @@ guarantee to generate type-safe query.
 Refer [this](https://github.sec.samsung.net/RS7-SECIOTSW/tizen-osquery/tree/master/src/vist/query-builder)
 to compare ours and other opensources.
 
-# Main Features
-To provide intuitive and robustness security framework,
-ViST takes below features.
-- Query-based unified interface
-- Struct-based schema
-- Type-safe query builder
-- Security virtual table
-
 # Architecture
 ViST adopts 3-tier layerd architecture to separate of concern.
 - Interface layer: Provide API to client to generate query
@@ -74,6 +66,8 @@ ViST adopts 3-tier layerd architecture to separate of concern.
 <img src="https://github.sec.samsung.net/storage/user/692/files/b8eeed80-5a49-11ea-85cb-3b4a975b2343" alt="layered architecture" width="780" height="610">
 
 # Design
+Our design philoshophy is "Make usable and robust security framework.".
+
 ## Programming Abstractions
 // TODO: Use SF keyword to overall  
 Security functions in ViST
@@ -86,26 +80,41 @@ Another is the consumer
 which calls security functions
 via type-safe query.
 
-### Security Function Producer
-Producer has own security functions.
-To provide security functions via virtual table,
-producer have to design schema of secuirty functions
-and bind it to virtual table. We provide following features for this.
-- Struct-based schema: The schema of security functions
-- Security virtual table: The object which be bound security functions
+#### Security Function Producer
+Producers is the subject who has own security functions.
+They produce security functions and provide it to consumers.
+There are many things to consider to producers.
+Two concerns of those things are below.
 
-### Secuirty Function Consumer
-Consumer calls exposed security functions.
-To call security functions via type-safe query,
-consumer have to use query builder
-and query-based unified interface.
-- Type-safe query builder: The query builder with type-error checking at compile time
-- Query-based unified interface: The interface between query and virtual table
+- How to provide security functions to customer?
+- How to design usable API?
 
-### Framework
-// XXX
+To solve two concerns, we made functional requirement.
+- <a name=FR1>FR1</a>: Provide feature what can be bounded security functions.
+- <a name=FR2>FR2</a>: Provide a way to design API security functions.
 
-## Programming Interface
+#### Secuirty Function Consumer
+Consumer is the subject who calls security functions.
+Secuirty functions are not enemy of consumer.
+We should provide unified interface to consumer.
+The interface should be usable and robust according to our design philosophy.
+From this, two functional requirements are added.
+
+- <a name=FR3>FR3</a>: Provide unified interface of secuirty functions.
+- <a name=FR4>FR4</a>: Provide a way to make unified interface more rubust.
+
+#### ViST Framework
+ViST framework provides **four main features and three types of API**
+to support producer and consumer.
+Main features are describe below and
+APIs are describe at [programming interface](#ProgrammingInterface).
+
+- Security virtual table: The object which be bound security functions ([FR1](#FR1))
+- Struct-based schema: The schema of security functions ([FR2](#FR2))
+- Query-based unified interface: The interface between query and virtual table ([FR3](#FR3))
+- Type-safe query builder: The query builder with type-error checking at compile time ([FR4](#FR4))
+
+## <a name="ProgrammingInterface">Programming Interface</a>
 ViST provides three types of API.  
 One is for data structure(schema)
 and the other is for functional.
