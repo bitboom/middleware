@@ -6,18 +6,21 @@ of the developer, by the developer, for the developer &#128187
 
 ---
 
-> Project ViST is forked from [osquery](https://osquery.io/).   
+> Project ViST is inspired by [osquery](https://osquery.io/) and
+> [sqlite_orm](https://github.com/fnc12/sqlite_orm) and forked from them.
 
 The purpose of ViST project is
 **"Provide unified interface
+of security functions
 to security software designer
-and developer
-via type-safe query".**
-For this we must achieve two things:
-1. Provide **unified interface via query**
-2. Generate **type-safe query via query-builder**
+and developer."**.
+Technically, two main components are
+virtual table and 
+type-safe query. (refer [terminology](https://github.sec.samsung.net/RS7-SECIOTSW/tizen-osquery/blob/master/doc/terminology.md))
 
-We make type-safe query-builder more intuitively than other opensource projects.
+To support type-safe query,
+we make type-safe query-builder
+more intuitively than other opensource projects.
 Refer [this](https://github.sec.samsung.net/RS7-SECIOTSW/tizen-osquery/tree/master/src/vist/query-builder)
 to compare ours and other opensources.
 
@@ -27,7 +30,6 @@ We believe that ViST makes security software usable and universial.
 Our design philoshophy is "Make usable and robust security framework.".
 
 ## Programming Abstractions
-// TODO: Use SF keyword to overall  
 Security functions in ViST
 are built around
 two abstractions.
