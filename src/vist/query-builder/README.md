@@ -15,6 +15,15 @@ between sql query and sql schema at compile time.
 | **Backend** | sqlite3<br> | mysql<br>sqlite3<br>postgresql<br>odbc | sqlite3<br> |
 | **Feature** | basic (crud) | variety | variety |
 
+# C++ features in ViST Query Builder
+- template argument deduction for class templates
+- declaring non-type template parameters with auto
+- folding expressions
+- inline variables
+- std::apply()
+- curiously recurring template pattern
+- ...
+
 # Sample Code
 ## ours
 ```cpp
