@@ -4,14 +4,16 @@ between sql query and sql schema at compile time.
 
 |   | ViST | [sqlpp11](https://github.com/rbock/sqlpp11) | [sqlite_orm](https://github.com/fnc12/sqlite_orm) |
 |---|---|---|---|
-| **Tpye** | query builder | orm | orm |
-| **Query** | type safe | type safe | type safe |
+| **Tpye** | orm (virtual table) | orm (real tab) | orm (real tab) |
+| **Query Builder  Coupling** | loosely | tightly | tightly | 
+| **Query Type** | type safe | type safe | type safe |
 | **Language** | c++17 | c++11 ([WIP to c++17](https://github.com/rbock/sqlpp17)) | c++14 |
-| **Schema Location** | header file | header file | source file<br>(This makes hard to expose API.) |
+| **Schema Location** | header file | header file | header file | 
+| **Instance Location** | header file | source file<br>(This makes hard to expose API.) | source file<br>(This makes hard to expose API.) |
 | **Intuition** | simple | complex | simple |
 | **Usability** | high | low | high |
-| **Backend** | sqlite3<br>(with virtual table) | mysql<br>sqlite3<br>(without virtual table)<br>postgresql<br>odbc | sqlite3<br>(without virtual table) |
-| **Feature** | basic(crud) | variety | variety |
+| **Backend** | sqlite3<br> | mysql<br>sqlite3<br>postgresql<br>odbc | sqlite3<br> |
+| **Feature** | basic (crud) | variety | variety |
 
 # Sample Code
 ## ours
