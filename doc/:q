@@ -1,0 +1,25 @@
+
+  7 +--------------------------------+----------------------+----------------------------------------------------------+
+  8 |            Policy Name         |     Policy state     |                       Query API                          |
+  9 +--------------------------------+----------------------+----------------------------------------------------------+
+ 10 | wifi                           | allowed / disallowed | dpm_restriction_get_wifi_state                           |
+ 11 | wifi-hotspot                   | allowed / disallowed | dpm_restriction_get_wifi_hotspot                         |
+ 12 | wifi-profile-change            | allowed / disallowed | dpm_wifi_is_profile_change_restricted                    |
+ 13 | wifi-ssid-restriction          | allowed / disallowed | dpm_wifi_is_network_access_restricted                    |
+ 14 | bluetooth                      | allowed / disallowed | dpm_restriction_get_bluetooth_mode_change_state          |
+ 15 | bluetooth-tethering            | allowed / disallowed | dpm_restriction_get_bluetooth_tethering_state            |
+ 16 | bluetooth-desktop-connectivity | allowed / disallowed | dpm_restriction_get_bluetooth_desktop_connectivity_state |
+ 17 | bluetooth-pairing              | allowed / disallowed | dpm_restriction_get_bluetooth_pairing_state              |
+ 18 | bluetooth-device-restriction   | allowed / disallowed | dpm_bluetooth_is_device_restricted                       |
+ 19 | bluetooth-uuid-restriction     | allowed / disallowed | dpm_bluetooth_is_uuid_restricted                         |
+ 20 | usb                            | allowed / disallowed | dpm_restriction_get_usb_state                            |
+ 21 | usb-tethering                  | allowed / disallowed | dpm_restriction_get_usb_tethering_state                  |
+ 22 | usb-debugging                  | allowed / disallowed | dpm_restriction_get_usb_debugging_state                  |
+ 23 | settings-changes               | allowed / disallowed | dpm_restriction_get_setting_changes_state                |
+ 24 | external-storage               | allowed / disallowed | dpm_restriction_get_external_storage_state               |
+ 25 | camera                         | allowed / disallowed | dpm_restriction_get_camera_state                         |
+ 26 | clipboard                      | allowed / disallowed | dpm_restriction_get_clipboard_state                      |
+ 27 | location                       | allowed / disallowed | dpm_restriction_get_location_state                       |
+ 28 | microphone                     | allowed / disallowed | dpm_restriction_get_microphone_state                     |
+ 29 +--------------------------------+----------------------+----------------------------------------------------------+
+
