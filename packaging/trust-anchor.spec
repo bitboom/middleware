@@ -57,6 +57,13 @@ SSL root certificates for its HTTPS communication.
 	CXXFLAGS="$CXXFLAGS -Wp,-U_FORTIFY_SOURCE"
 %endif
 
+%if 0%{?gcov:1}
+export CFLAGS+=" -fprofile-arcs -ftest-coverage"
+export CXXFLAGS+=" -fprofile-arcs -ftest-coverage"
+export FFLAGS+=" -fprofile-arcs -ftest-coverage"
+export LDFLAGS+=" -lgcov"
+%endif
+
 %cmake . -DCMAKE_BUILD_TYPE=%{build_type} \
 		 -DLIB_NAME=%{lib_name} \
 		 -DLIB_VERSION=%{version} \
@@ -74,7 +81,8 @@ SSL root certificates for its HTTPS communication.
 		 -DTZ_SYS_CA_CERTS=%{TZ_SYS_CA_CERTS} \
 		 -DTZ_SYS_CA_BUNDLE=%{TZ_SYS_CA_BUNDLE} \
 		 -DTZ_SYS_RO_CA_CERTS=%{TZ_SYS_RO_CA_CERTS} \
-		 -DTZ_SYS_RO_CA_BUNDLE=%{TZ_SYS_RO_CA_BUNDLE}
+		 -DTZ_SYS_RO_CA_BUNDLE=%{TZ_SYS_RO_CA_BUNDLE} \
+		 -DBUILD_GCOV=%{?gcov:1}%{!?gcov:0}
 
 make %{?_smp_mflags}
 

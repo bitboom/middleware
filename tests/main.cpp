@@ -26,6 +26,10 @@
 
 int main(int /*argc*/, char** /*argv*/)
 {
+#ifdef TIZEN_TEST_GCOV
+	::setenv("GCOV_PREFIX", "/tmp", 1);
+#endif
+
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 
 	testbench::Testbench::runAllTestSuites();

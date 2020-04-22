@@ -32,6 +32,10 @@ class InitLib {
 public:
 	InitLib()
 	{
+#ifdef TIZEN_TEST_GCOV
+		::setenv("GCOV_PREFIX", "/tmp", 1);
+#endif
+
 		this->m_sink.reset(new audit::DlogLogSink("TRUST_ANCHOR"));
 	};
 	~InitLib() = default;
