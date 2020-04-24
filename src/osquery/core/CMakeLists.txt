@@ -14,8 +14,6 @@
 
 ADD_OSQUERY_LIBRARY(osquery_core tables.cpp
 								 query.cpp
-								 database/database.cpp
-								 database/in_memory_database.cpp
 								 plugins/logger.cpp
 								 plugins/plugin.cpp
 								 plugins/sql.cpp
