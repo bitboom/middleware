@@ -14,7 +14,6 @@
 #include <unistd.h>
 
 #include <osquery/filesystem/filesystem.h>
-#include <osquery/flags.h>
 #include <osquery/logger.h>
 
 namespace osquery {
@@ -22,8 +21,6 @@ namespace osquery {
 #define kLinuxMaxMemRead 0x10000
 
 const std::string kLinuxMemPath = "/dev/mem";
-
-FLAG(bool, disable_memory, false, "Disable physical memory reads");
 
 Status readMem(int fd, size_t base, size_t length, uint8_t* buffer) {
   if (lseek(fd, base, SEEK_SET) == -1) {
@@ -55,10 +52,6 @@ Status readMem(int fd, size_t base, size_t length, uint8_t* buffer) {
 
 Status readRawMem(size_t base, size_t length, void** buffer) {
   *buffer = 0;
-
-  if (FLAGS_disable_memory) {
-    return Status(1, "Configuration has disabled physical memory reads");
-  }
 
   if (length > kLinuxMaxMemRead) {
     return Status(1, "Cowardly refusing to read a large number of bytes");

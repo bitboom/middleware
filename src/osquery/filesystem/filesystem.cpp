@@ -23,7 +23,6 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include <osquery/filesystem/filesystem.h>
-#include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/sql.h>
 #include <osquery/system.h>
@@ -36,15 +35,6 @@ namespace fs = boost::filesystem;
 namespace errc = boost::system::errc;
 
 namespace osquery {
-
-FLAG(uint64, read_max, 50 * 1024 * 1024, "Maximum file read size");
-
-/// See reference #1382 for reasons why someone would allow unsafe.
-HIDDEN_FLAG(bool, allow_unsafe, false, "Allow unsafe executable permissions");
-
-/// Disable forensics (atime/mtime preserving) file reads.
-HIDDEN_FLAG(bool, disable_forensic, true, "Disable atime/mtime preservation");
-
 static const size_t kMaxRecursiveGlobs = 64;
 
 Status writeTextFile(const fs::path& path,
@@ -106,7 +96,7 @@ Status readFile(const fs::path& path,
   }
 
   // Apply the max byte-read based on file/link target ownership.
-  auto read_max = static_cast<off_t>(FLAGS_read_max);
+  auto read_max = static_cast<off_t>(2048);
   if (file_size > read_max) {
     if (!dry_run) {
       LOG(WARNING) << "Cannot read file that exceeds size limit: "
@@ -163,10 +153,6 @@ Status readFile(const fs::path& path,
     predicate(content, file_size);
   }
 
-  // Attempt to restore the atime and mtime before the file read.
-  if (preserve_time && !FLAGS_disable_forensic) {
-    handle.fd->setFileTimes(times);
-  }
   return Status::success();
 }
 
@@ -482,10 +468,6 @@ bool safePermissions(const fs::path& dir,
   if (!platformIsFileAccessible(path).ok()) {
     // Path was not real, had too may links, or could not be accessed.
     return false;
-  }
-
-  if (FLAGS_allow_unsafe) {
-    return true;
   }
 
   Status result = platformIsTmpDir(dir);

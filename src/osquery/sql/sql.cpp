@@ -21,8 +21,6 @@
 
 namespace osquery {
 
-FLAG(int32, value_max, 512, "Maximum returned row value size");
-
 CREATE_LAZY_REGISTRY(SQLPlugin, "sql");
 
 SQL::SQL(const std::string& query, bool use_cache) {

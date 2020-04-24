@@ -35,7 +35,6 @@
 
 #include <osquery/devtools/devtools.h>
 #include <osquery/filesystem/filesystem.h>
-#include <osquery/flags.h>
 #include <osquery/packs.h>
 #include <osquery/registry_factory.h>
 #include <osquery/sql/virtual_table.h>
@@ -49,28 +48,6 @@ extern int sqlite3WhereTrace;
 #endif
 
 namespace fs = boost::filesystem;
-
-DECLARE_string(flagfile);
-
-namespace osquery {
-
-/// Define flags used by the shell. They are parsed by the drop-in shell.
-SHELL_FLAG(bool, csv, false, "Set output mode to 'csv'");
-SHELL_FLAG(bool, json, false, "Set output mode to 'json'");
-SHELL_FLAG(bool, line, false, "Set output mode to 'line'");
-SHELL_FLAG(bool, list, false, "Set output mode to 'list'");
-SHELL_FLAG(string, separator, "|", "Set output field separator, default '|'");
-SHELL_FLAG(bool, header, true, "Toggle column headers true/false");
-SHELL_FLAG(string, pack, "", "Run all queries in a pack");
-
-/// Define short-hand shell switches.
-SHELL_FLAG(bool, L, false, "List all table names");
-SHELL_FLAG(string, A, "", "Select all from a table");
-
-DECLARE_string(nullvalue);
-DECLARE_string(logger_plugin);
-DECLARE_string(logger_path);
-} // namespace osquery
 
 static char zHelp[] =
     "Welcome to the osquery shell. Please explore your OS!\n"
@@ -522,7 +499,7 @@ static int shell_callback(void* pArg,
     for (i = 0; i < nArg; ++i) {
       if (azCol[i] != nullptr) {
         r[std::string(azCol[i])] = (azArg[i] == nullptr)
-                                       ? osquery::FLAGS_nullvalue
+                                       ? ""
                                        : std::string(azArg[i]);
       }
     }
@@ -754,13 +731,10 @@ static void set_table_name(struct callback_data* p, const char* zName) {
 
 static void pretty_print_if_needed(struct callback_data* pArg) {
   if ((pArg != nullptr) && pArg->mode == MODE_Pretty) {
-    if (osquery::FLAGS_json) {
-      osquery::jsonPrint(pArg->prettyPrint->results);
-    } else {
-      osquery::prettyPrint(pArg->prettyPrint->results,
-                           pArg->prettyPrint->columns,
-                           pArg->prettyPrint->lengths);
-    }
+    osquery::prettyPrint(pArg->prettyPrint->results,
+                         pArg->prettyPrint->columns,
+                         pArg->prettyPrint->lengths);
+
     pArg->prettyPrint->results.clear();
     pArg->prettyPrint->columns.clear();
     pArg->prettyPrint->lengths.clear();
@@ -1137,18 +1111,6 @@ inline void meta_show(struct callback_data* p) {
       " - being built, with love, at Facebook\n"
       "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
   meta_version(p);
-
-  fprintf(p->out, "\nGeneral settings:\n");
-  fprintf(p->out, "%13.13s: %s\n", "Flagfile", FLAGS_flagfile.c_str());
-
-  // Show helpful logger-related settings.
-  fprintf(
-      p->out, "%13.13s: %s", "Logger", osquery::FLAGS_logger_plugin.c_str());
-  if (osquery::FLAGS_logger_plugin == "filesystem") {
-    fprintf(p->out, " (%s)\n", osquery::FLAGS_logger_path.c_str());
-  } else {
-    fprintf(p->out, "\n");
-  }
 
   fprintf(p->out, "\nShell settings:\n");
   fprintf(p->out, "%13.13s: %s\n", "echo", p->echoOn != 0 ? "on" : "off");
@@ -1643,76 +1605,12 @@ int launchIntoShell(int argc, char** argv) {
 
   data.out = stdout;
 
-  // Set modes and settings from CLI flags.
-  data.showHeader = static_cast<int>(FLAGS_header);
-  if (FLAGS_list) {
-    data.mode = MODE_List;
-  } else if (FLAGS_line) {
-    data.mode = MODE_Line;
-  } else if (FLAGS_csv) {
-    data.mode = MODE_Csv;
-    data.separator[0] = ',';
-  } else {
-    data.mode = MODE_Pretty;
-  }
-
-  sqlite3_snprintf(
-      sizeof(data.separator), data.separator, "%s", FLAGS_separator.c_str());
-  sqlite3_snprintf(
-      sizeof(data.nullvalue), data.nullvalue, "%s", FLAGS_nullvalue.c_str());
-
-  int rc = 0;
-  if (FLAGS_L || !FLAGS_A.empty()) {
-    // Helper meta commands from shell switches.
-    std::string query = (FLAGS_L) ? ".tables" : ".all " + FLAGS_A;
-    auto* cmd = new char[query.size() + 1];
-    memset(cmd, 0, query.size() + 1);
-    std::copy(query.begin(), query.end(), cmd);
-    rc = do_meta_command(cmd, &data);
-    delete[] cmd;
-  } else if (!FLAGS_pack.empty()) {
-    rc = runPack(&data);
-  } else if (argc > 1 && argv[1] != nullptr) {
-    // Run a command or statement from CLI
-    char* query = argv[1];
-    if (query[0] == '.') {
-      rc = do_meta_command(query, &data);
-      rc = (rc == 2) ? 0 : rc;
-    } else {
-      rc = runQuery(&data, query);
-      if (rc != 0) {
-        return rc;
-      }
-    }
-  } else {
-    // Run commands received from standard input
-    if (stdin_is_interactive) {
-      printf("Using a ");
-      print_bold("virtual database");
-      printf(". Need help, type '.help'\n");
-
-      auto history_file =
-          (fs::path(osquery::osqueryHomeDirectory()) / ".history")
-              .make_preferred()
-              .string();
-      linenoiseHistorySetMaxLen(100);
-      linenoiseHistoryLoad(history_file.c_str());
-      linenoiseSetCompletionCallback(tableCompletionFunction);
-
-      rc = process_input(&data, nullptr);
-
-      linenoiseHistorySave(history_file.c_str());
-    } else {
-      rc = process_input(&data, stdin);
-    }
-  }
-
   set_table_name(&data, nullptr);
   sqlite3_free(data.zFreeOnClose);
 
   if (data.prettyPrint != nullptr) {
     delete data.prettyPrint;
   }
-  return rc;
+  return 0;
 }
 } // namespace osquery

@@ -10,7 +10,6 @@
 #include <unordered_set>
 
 #include <osquery/core.h>
-#include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/registry_factory.h>
 #include <osquery/sql/dynamic_table_row.h>
@@ -21,15 +20,6 @@
 #include <osquery/logger.h>
 
 namespace osquery {
-
-FLAG(bool, enable_foreign, false, "Enable no-op foreign virtual tables");
-
-FLAG(uint64,
-     table_delay,
-     0,
-     "Add an optional microsecond delay between table scans");
-
-SHELL_FLAG(bool, planner, false, "Enable osquery runtime planner output");
 
 RecursiveMutex kAttachMutex;
 
@@ -293,9 +283,6 @@ inline std::string table_doc(const std::string& name) {
 }
 
 static void plan(const std::string& output) {
-  if (FLAGS_planner) {
-    fprintf(stderr, "osquery planner: %s\n", output.c_str());
-  }
 }
 
 int xOpen(sqlite3_vtab* tab, sqlite3_vtab_cursor** ppCursor) {
@@ -1065,13 +1052,6 @@ Status attachFunctionInternal(
 }
 
 void attachVirtualTables(const SQLiteDBInstanceRef& instance) {
-  if (FLAGS_enable_foreign) {
-#if !defined(OSQUERY_EXTERNAL)
-    // Foreign table schema is available for the shell and daemon only.
-//    registerForeignTables();
-#endif
-  }
-
   PluginResponse response;
   bool is_extension = false;
 

@@ -19,12 +19,10 @@
 
 #include <osquery/data_logger.h>
 #include <osquery/filesystem/filesystem.h>
-#include <osquery/flags.h>
 #include <osquery/plugins/logger.h>
 #include <osquery/registry_factory.h>
 #include <osquery/system.h>
 
-#include <osquery/flagalias.h>
 #include <osquery/utils/conversions/split.h>
 #include <osquery/utils/info/platform_type.h>
 #include <osquery/utils/json/json.h>
@@ -34,46 +32,6 @@ namespace rj = rapidjson;
 
 namespace osquery {
 
-FLAG(bool, verbose, false, "Enable verbose informational messages");
-
-/// Despite being a configurable option, this is only read/used at load.
-FLAG(bool, disable_logging, false, "Disable ERROR/INFO logging");
-
-FLAG(string, logger_plugin, "filesystem", "Logger plugin name");
-
-/// Alias for the minloglevel used internally by GLOG.
-FLAG(int32, logger_min_status, 0, "Minimum level for status log recording");
-
-/// Alias for the stderrthreshold used internally by GLOG.
-FLAG(int32,
-     logger_min_stderr,
-     0,
-     "Minimum level for statuses written to stderr");
-
-/// It is difficult to set logging to stderr on/off at runtime.
-CLI_FLAG(bool, logger_stderr, true, "Write status logs to stderr");
-
-/**
- * @brief This hidden flag is for testing status logging.
- *
- * When enabled, logs are pushed directly to logger plugin from Glog.
- * Otherwise they are buffered and an async request for draining is sent
- * for each log.
- *
- * Within the daemon, logs are drained every 3 seconds.
- */
-HIDDEN_FLAG(bool,
-            logger_status_sync,
-            false,
-            "Always send status logs synchronously");
-
-/**
- * @brief Logger plugin registry.
- *
- * This creates an osquery registry for "logger" which may implement
- * LoggerPlugin. Only strings are logged in practice, and LoggerPlugin provides
- * a helper member for transforming PluginRequest%s to strings.
- */
 CREATE_REGISTRY(LoggerPlugin, "logger");
 
 /**
@@ -192,52 +150,10 @@ static void serializeIntermediateLog(const std::vector<StatusLogLine>& log,
   doc.toString(request["log"]);
 }
 
-void setVerboseLevel() {
-  if (Flag::getValue("verbose") == "true") {
-    // Turn verbosity up to 1.
-    // Do log DEBUG, INFO, WARNING, ERROR to their log files.
-    // Do log the above and verbose=1 to stderr (can be turned off later).
-    FLAGS_minloglevel = google::GLOG_INFO;
-    FLAGS_alsologtostderr = true;
-    FLAGS_v = 1;
-  } else {
-    /* We use a different default for the log level if running as a daemon or if
-     * running as a shell. If the flag was set we just use that in both cases.
-     */
-    if (Flag::isDefault("logger_min_status") && Initializer::isShell()) {
-      FLAGS_minloglevel = google::GLOG_WARNING;
-    } else {
-      FLAGS_minloglevel = Flag::getInt32Value("logger_min_status");
-    }
-    FLAGS_stderrthreshold = Flag::getInt32Value("logger_min_stderr");
-  }
-
-  if (!FLAGS_logger_stderr) {
-    FLAGS_stderrthreshold = 3;
-    FLAGS_alsologtostderr = false;
-  }
-
-  FLAGS_logtostderr = true;
-}
-
 void initStatusLogger(const std::string& name, bool init_glog) {
-  FLAGS_logbufsecs = 0;
-  FLAGS_stop_logging_if_full_disk = true;
-  // The max size for individual log file is 10MB.
-  FLAGS_max_log_size = 10;
-
-  // Begin with only logging to stderr.
-  FLAGS_logtostderr = true;
-  FLAGS_stderrthreshold = 3;
-
-  setVerboseLevel();
   // Start the logging, and announce the daemon is starting.
   if (init_glog) {
     google::InitGoogleLogging(name.c_str());
-  }
-
-  if (!FLAGS_disable_logging) {
-    BufferedLogSink::get().setUp();
   }
 }
 
@@ -304,11 +220,6 @@ void BufferedLogSink::send(google::LogSeverity severity,
                      toUnixTime(tm_time),
                      std::string()});
   }
-
-  // The daemon will relay according to the schedule.
-  if (enabled_ && !Initializer::isDaemon()) {
-    relayStatusLogs(FLAGS_logger_status_sync);
-  }
 }
 
 void BufferedLogSink::WaitTillSent() {
@@ -359,10 +270,6 @@ Status logString(const std::string& message, const std::string& category) {
 Status logString(const std::string& message,
                  const std::string& category,
                  const std::string& receiver) {
-  if (FLAGS_disable_logging) {
-    return Status::success();
-  }
-
   Status status;
   for (const auto& logger : osquery::split(receiver, ",")) {
     if (Registry::get().exists("logger", logger, true)) {
@@ -387,10 +294,6 @@ Status logQueryLogItem(const QueryLogItem& results) {
 
 Status logQueryLogItem(const QueryLogItem& results,
                        const std::string& receiver) {
-  if (FLAGS_disable_logging) {
-    return Status::success();
-  }
-
   std::vector<std::string> json_items;
   Status status;
   std::string json;
@@ -408,10 +311,6 @@ Status logQueryLogItem(const QueryLogItem& results,
 }
 
 Status logSnapshotQuery(const QueryLogItem& item) {
-  if (FLAGS_disable_logging) {
-    return Status::success();
-  }
-
   std::vector<std::string> json_items;
   Status status;
   std::string json;
@@ -449,13 +348,6 @@ size_t queuedSenders() {
 }
 
 void relayStatusLogs(bool async) {
-  if (FLAGS_disable_logging) {
-    // The logger plugins may not be setUp if logging is disabled.
-    // If the database is not setUp, or is in a reset, status logs continue
-    // to buffer.
-    return;
-  }
-
   {
     ReadLock lock(kBufferedLogSinkLogs);
     if (BufferedLogSink::get().dump().size() == 0) {

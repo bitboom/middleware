@@ -11,14 +11,10 @@
 #include <set>
 #include <string>
 
-#include <osquery/flags.h>
 #include <osquery/plugins/plugin.h>
 #include <osquery/utils/json/json.h>
 
 namespace osquery {
-
-/// Allow users to disable enrollment features.
-DECLARE_bool(disable_enrollment);
 
 /**
  * @brief These tables populate the "host_details" content.

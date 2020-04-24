@@ -14,7 +14,6 @@
 #include <osquery/utils/conversions/castvariant.h>
 
 #include <osquery/core.h>
-#include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/registry_factory.h>
 #include <osquery/sql.h>
@@ -24,13 +23,6 @@
 #include <boost/lexical_cast.hpp>
 
 namespace osquery {
-
-FLAG(string,
-     disable_tables,
-     "Not Specified",
-     "Comma-delimited list of table names to be disabled");
-
-FLAG(string, nullvalue, "", "Set string for NULL values, default ''");
 
 using OpReg = QueryPlanner::Opcode::Register;
 
@@ -356,7 +348,6 @@ SQLiteDBInstance::~SQLiteDBInstance() {
 
 SQLiteDBManager::SQLiteDBManager() : db_(nullptr) {
   sqlite3_soft_heap_limit64(1);
-  setDisabledTables(Flag::getValue("disable_tables"));
 }
 
 bool SQLiteDBManager::isDisabled(const std::string& table_name) {
@@ -375,12 +366,6 @@ void SQLiteDBManager::resetPrimary() {
     sqlite3_close(self.db_);
     self.db_ = nullptr;
   }
-}
-
-void SQLiteDBManager::setDisabledTables(const std::string& list) {
-  const auto& tables = split(list, ",");
-  disabled_tables_ =
-      std::unordered_set<std::string>(tables.begin(), tables.end());
 }
 
 SQLiteDBInstanceRef SQLiteDBManager::getUnique() {
@@ -546,7 +531,7 @@ Status readRows(sqlite3_stmt* prepared_statement,
           row[colNames[i]] = sqlite3_column_double(prepared_statement, i);
           break;
         case SQLITE_NULL:
-          row[colNames[i]] = FLAGS_nullvalue;
+          row[colNames[i]] = "";
           break;
         default:
           // Everything else (SQLITE_TEXT, SQLITE3_TEXT, SQLITE_BLOB) is

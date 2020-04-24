@@ -12,13 +12,10 @@
 
 #include <osquery/utils/system/time.h>
 
-#include <osquery/flags.h>
 #include <osquery/system.h>
 #include <osquery/tables.h>
 
 namespace osquery {
-
-DECLARE_bool(utc);
 
 namespace tables {
 
@@ -33,11 +30,7 @@ QueryData genTime(QueryContext& context) {
   gmtime_r(&local_time, &gmt);
 
   struct tm now;
-  if (FLAGS_utc) {
-    now = gmt;
-  } else {
-    localtime_r(&local_time, &now);
-  }
+  localtime_r(&local_time, &now);
 
   struct tm local;
   localtime_r(&local_time, &local);

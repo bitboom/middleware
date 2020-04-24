@@ -11,14 +11,11 @@
 
 #include <osquery/core.h>
 #include <osquery/devtools/devtools.h>
-#include <osquery/flags.h>
 #include <osquery/utils/chars.h>
 #include <osquery/utils/map_take.h>
 #include <osquery/utils/system/env.h>
 
 namespace osquery {
-
-DECLARE_string(nullvalue);
 
 static std::vector<char> kOffset = {0, 0};
 static std::string kToken = "|";
@@ -86,8 +83,8 @@ std::string generateRow(const Row& r,
     // Print a terminator for the previous value or lhs, followed by spaces.
     out += kToken + ' ';
     if (r.count(column) == 0 || lengths.count(column) == 0) {
-      size = column.size() - utf8StringSize(FLAGS_nullvalue);
-      out += FLAGS_nullvalue;
+      size = column.size() - utf8StringSize("");
+      out += "";
     } else {
       int buffer_size =
           static_cast<int>(lengths.at(column) - utf8StringSize(r.at(column)));

@@ -47,7 +47,6 @@
 
 #include <osquery/core.h>
 #include <osquery/filesystem/filesystem.h>
-#include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/sql.h>
 #include <osquery/system.h>
@@ -66,34 +65,6 @@
 namespace fs = boost::filesystem;
 
 namespace osquery {
-
-DECLARE_uint64(alarm_timeout);
-
-/// The path to the pidfile for osqueryd
-CLI_FLAG(string,
-         pidfile,
-         OSQUERY_PIDFILE "osqueryd.pidfile",
-         "Path to the daemon pidfile mutex");
-
-/// Should the daemon force unload previously-running osqueryd daemons.
-CLI_FLAG(bool,
-         force,
-         false,
-         "Force osqueryd to kill previously-running daemons");
-
-FLAG(string,
-     host_identifier,
-     "hostname",
-     "Field used to identify the host running osquery (hostname, uuid, "
-     "instance, ephemeral, specified)");
-
-// Only used when host_identifier=specified
-FLAG(string,
-     specified_identifier,
-     "",
-     "Field used to specify the host_identifier when set to \"specified\"");
-
-FLAG(bool, utc, true, "Convert all UNIX times to UTC");
 
 const std::vector<std::string> kPlaceholderHardwareUUIDList{
     "00000000-0000-0000-0000-000000000000",
@@ -240,10 +211,6 @@ Status getHostUUID(std::string& ident) {
 }
 
 Status getSpecifiedUUID(std::string& ident) {
-  if (FLAGS_specified_identifier.empty()) {
-    return Status(1, "No specified identifier for host");
-  }
-  ident = FLAGS_specified_identifier;
   return Status::success();
 }
 
@@ -253,15 +220,6 @@ std::string getHostIdentifier() {
   Status result(2);
   if (ident.size() == 0) {
     // The identifier has not been set yet.
-    if (FLAGS_host_identifier == "uuid") {
-      result = getHostUUID(ident);
-    } else if (FLAGS_host_identifier == "instance") {
-      result = getInstanceUUID(ident);
-    } else if (FLAGS_host_identifier == "ephemeral") {
-      result = getEphemeralUUID(ident);
-    } else if (FLAGS_host_identifier == "specified") {
-      result = getSpecifiedUUID(ident);
-    }
 
     if (!result.ok()) {
       // assuming the default of "hostname" as the machine identifier
@@ -297,9 +255,6 @@ Status checkStalePid(const std::string& content) {
 
   if (q.rows().size() > 0) {
     // If the process really is osqueryd, return an "error" status.
-    if (FLAGS_force) {
-      return Status(1, "Tried to force remove the existing osqueryd");
-    }
 
     return Status(1, "osqueryd (" + content + ") is already running");
   } else {
@@ -307,33 +262,6 @@ Status checkStalePid(const std::string& content) {
   }
 
   return Status::success();
-}
-
-Status createPidFile() {
-  // check if pidfile exists
-  auto pidfile_path = fs::path(FLAGS_pidfile).make_preferred();
-
-  if (pathExists(pidfile_path).ok()) {
-    // if it exists, check if that pid is running.
-    std::string content;
-    auto read_status = readFile(pidfile_path, content, true);
-    if (!read_status.ok()) {
-      return Status(1, "Could not read pidfile: " + read_status.toString());
-    }
-
-    auto stale_status = checkStalePid(content);
-    if (!stale_status.ok()) {
-      return stale_status;
-    }
-  }
-
-  // Now the pidfile is either the wrong pid or the pid is not running.
-  if (!removePath(pidfile_path)) {
-    // Unable to remove old pidfile.
-    LOG(WARNING) << "Unable to remove the osqueryd pidfile";
-  }
-
-  return Status(-1, "failed");
 }
 
 #ifndef WIN32

@@ -42,9 +42,6 @@ std::string kTestWorkingDirectory;
 /// The relative path within the source repo to find test content.
 std::string kTestDataPath{"../../../tools/tests/"};
 
-DECLARE_string(enroll_tls_endpoint);
-DECLARE_bool(disable_logging);
-
 using chrono_clock = std::chrono::high_resolution_clock;
 
 void initTesting() {
@@ -98,8 +95,6 @@ void initTesting() {
 
   fs::remove_all(kTestWorkingDirectory);
   fs::create_directories(kTestWorkingDirectory);
-
-  FLAGS_disable_logging = true;
 
   Initializer::platformSetup();
 }

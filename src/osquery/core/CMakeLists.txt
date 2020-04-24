@@ -12,8 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LIBRARY(osquery_core flags.cpp
-								 tables.cpp
+ADD_OSQUERY_LIBRARY(osquery_core tables.cpp
 								 init.cpp
 								 query.cpp
 								 system.cpp

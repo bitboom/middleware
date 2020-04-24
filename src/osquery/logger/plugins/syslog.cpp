@@ -10,16 +10,10 @@
 
 #include <syslog.h>
 
-#include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/utils/conversions/split.h>
 
 namespace osquery {
-
-FLAG(int32,
-     logger_syslog_facility,
-     LOG_LOCAL3 >> 3,
-     "Syslog facility for status and results logs (0-23, default 19)");
 
 class SyslogLoggerPlugin : public LoggerPlugin {
  public:
@@ -62,13 +56,6 @@ Status SyslogLoggerPlugin::logStatus(const std::vector<StatusLogLine>& log) {
 Status SyslogLoggerPlugin::init(const std::string& name,
                                 const std::vector<StatusLogLine>& log) {
   closelog();
-
-  // Define the syslog/target's application name.
-  if (FLAGS_logger_syslog_facility < 0 ||
-      FLAGS_logger_syslog_facility > 23) {
-    FLAGS_logger_syslog_facility = LOG_LOCAL3 >> 3;
-  }
-  openlog(name.c_str(), LOG_PID | LOG_CONS, FLAGS_logger_syslog_facility << 3);
 
   // Now funnel the intermediate status logs provided to `init`.
   return logStatus(log);

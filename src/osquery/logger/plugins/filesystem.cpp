@@ -12,20 +12,12 @@
 #include <mutex>
 
 #include <osquery/filesystem.h>
-#include <osquery/flags.h>
 #include <osquery/logger.h>
 
 namespace pt = boost::property_tree;
 namespace fs = boost::filesystem;
 
 namespace osquery {
-
-FLAG(string,
-     logger_path,
-     "/var/log/osquery/",
-     "Directory path for ERROR/WARN/INFO and results logging");
-/// Legacy, backward compatible "osquery_log_dir" CLI option.
-FLAG_ALIAS(std::string, osquery_log_dir, logger_path);
 
 const std::string kFilesystemLoggerFilename = "osqueryd.results.log";
 const std::string kFilesystemLoggerSnapshots = "osqueryd.snapshots.log";
@@ -50,7 +42,6 @@ class FilesystemLoggerPlugin : public LoggerPlugin {
 REGISTER(FilesystemLoggerPlugin, "logger", "filesystem");
 
 Status FilesystemLoggerPlugin::setUp() {
-  log_path_ = fs::path(FLAGS_logger_path);
   return Status(0, "OK");
 }
 
@@ -100,17 +91,6 @@ Status FilesystemLoggerPlugin::init(const std::string& name,
   // Stop the internal Glog facilities.
   google::ShutdownGoogleLogging();
 
-  // The log dir is used for status logging and the filesystem results logs.
-  if (isWritable(log_path_.string()).ok()) {
-    FLAGS_log_dir = log_path_.string();
-    FLAGS_logtostderr = false;
-  } else {
-    // If we cannot write logs to the filesystem, fallback to stderr.
-    // The caller (flags/options) might 'also' be logging to stderr using
-    // debug, verbose, etc.
-    FLAGS_logtostderr = true;
-  }
-
   // Restart the Glog facilities using the name `init` was provided.
   google::InitGoogleLogging(name.c_str());
 
@@ -120,21 +100,8 @@ Status FilesystemLoggerPlugin::init(const std::string& name,
   google::SetLogDestination(google::WARNING, (basename + ".WARNING.").c_str());
   google::SetLogDestination(google::ERROR, (basename + ".ERROR.").c_str());
 
-  // Store settings for logging to stderr.
-  bool log_to_stderr = FLAGS_logtostderr;
-  bool also_log_to_stderr = FLAGS_alsologtostderr;
-  int stderr_threshold = FLAGS_stderrthreshold;
-  FLAGS_alsologtostderr = false;
-  FLAGS_logtostderr = false;
-  FLAGS_stderrthreshold = 5;
-
   // Now funnel the intermediate status logs provided to `init`.
   logStatus(log);
-
-  // Restore settings for logging to stderr.
-  FLAGS_logtostderr = log_to_stderr;
-  FLAGS_alsologtostderr = also_log_to_stderr;
-  FLAGS_stderrthreshold = stderr_threshold;
 
   // The filesystem logger cheats and uses Glog to log to the filesystem so
   // we can return failure here and stop the custom log sink.

@@ -14,7 +14,6 @@
 #include <boost/noncopyable.hpp>
 
 #include <osquery/core.h>
-#include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/plugins/plugin.h>
 #include <osquery/query.h>

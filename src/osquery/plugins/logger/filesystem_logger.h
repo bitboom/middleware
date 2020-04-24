@@ -13,7 +13,6 @@
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/registry_factory.h>
 #include <osquery/plugins/logger.h>
-#include <osquery/flagalias.h>
 
 namespace osquery {
 

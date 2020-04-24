@@ -3,8 +3,6 @@
 
 namespace osquery {
 
-DECLARE_bool(log_numerics_as_numbers);
-
 QueryDataTyped getTestDBExpectedResults() {
   QueryDataTyped d;
   RowTyped row1;
@@ -153,7 +151,6 @@ std::pair<JSON, QueryLogItem> getSerializedQueryLogItem() {
   doc.add("unixTime", 1408993857);
   doc.add("epoch", std::size_t{0});
   doc.add("counter", std::size_t{0});
-  doc.add("logNumericsAsNumbers", FLAGS_log_numerics_as_numbers);
 
   return std::make_pair(std::move(doc), std::move(i));
 }

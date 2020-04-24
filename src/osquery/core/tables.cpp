@@ -8,15 +8,12 @@
 
 #include <osquery/utils/json/json.h>
 
-#include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/registry_factory.h>
 #include <osquery/tables.h>
 #include <osquery/utils/conversions/tryto.h>
 
 namespace osquery {
-
-FLAG(bool, disable_caching, false, "Disable scheduled query caching");
 
 CREATE_LAZY_REGISTRY(TablePlugin, "table");
 
@@ -216,10 +213,6 @@ static bool cacheAllowed(const TableColumns& cols, const QueryContext& ctx) {
 }
 
 bool TablePlugin::isCached(size_t step, const QueryContext& ctx) const {
-  if (FLAGS_disable_caching) {
-    return false;
-  }
-
   // Perform the step comparison first, because it's easy.
   return (step < last_cached_ + last_interval_ && cacheAllowed(columns(), ctx));
 }
