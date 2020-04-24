@@ -18,7 +18,6 @@
 #include <boost/noncopyable.hpp>
 
 #include <osquery/data_logger.h>
-#include <osquery/filesystem/filesystem.h>
 #include <osquery/plugins/logger.h>
 #include <osquery/registry_factory.h>
 #include <osquery/system.h>

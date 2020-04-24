@@ -13,7 +13,6 @@
 #include <vector>
 
 #include <osquery/core.h>
-#include <osquery/filesystem/filesystem.h>
 
 namespace osquery {
 

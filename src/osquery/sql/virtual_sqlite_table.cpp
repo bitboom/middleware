@@ -7,7 +7,6 @@
  */
 
 #include <osquery/core.h>
-#include <osquery/filesystem/filesystem.h>
 #include <osquery/logger.h>
 #include <osquery/sql.h>
 
@@ -16,7 +15,10 @@
 #include "osquery/sql/dynamic_table_row.h"
 #include "osquery/sql/sqlite_util.h"
 
+#include <boost/filesystem/path.hpp>
+
 namespace fs = boost::filesystem;
+namespace errc = boost::system::errc;
 
 namespace osquery {
 
@@ -73,8 +75,14 @@ Status genTableRowsForSqliteTable(const fs::path& sqlite_db,
                                   TableRows& results,
                                   bool respect_locking) {
   sqlite3* db = nullptr;
-  if (!pathExists(sqlite_db).ok()) {
+  boost::system::error_code ec;
+  if (sqlite_db.empty()) {
     return Status(1, "Database path does not exist");
+  }
+
+  // A tri-state determination of presence
+  if (!fs::exists(sqlite_db, ec) || ec.value() != errc::success) {
+    return Status(1, ec.message());
   }
 
   auto rc = sqlite3_open_v2(

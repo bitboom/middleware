@@ -37,7 +37,6 @@
 #include "osquery/utils/info/platform_type.h"
 #include <osquery/core.h>
 #include <osquery/data_logger.h>
-#include <osquery/filesystem/filesystem.h>
 #include <osquery/registry.h>
 #include <osquery/utils/info/version.h>
 #include <osquery/utils/system/time.h>
@@ -81,10 +80,6 @@ enum {
 
 namespace {
 extern "C" {
-static inline bool hasWorkerVariable() {
-  return ::osquery::getEnvVar("OSQUERY_WORKER").is_initialized();
-}
-
 volatile std::sig_atomic_t kHandledSignal{0};
 
 void signalHandler(int num) {
@@ -174,13 +169,6 @@ Initializer::Initializer(int& argc,
 }
 
 void Initializer::initDaemon() const {
-  if (isWorker() || !isDaemon()) {
-    // The worker process (child) will not daemonize.
-    return;
-  }
-
-  // Print the version to the OS system log.
-  systemLog(binary_ + " started [version=" + kVersion + "]");
 }
 
 void Initializer::initShell() const {
@@ -194,10 +182,6 @@ void Initializer::initWorker(const std::string& name) const {
       memset((*argv_)[i], '\0', strlen((*argv_)[i]));
     }
   }
-}
-
-bool Initializer::isWorker() {
-  return hasWorkerVariable();
 }
 
 void Initializer::initActivePlugin(const std::string& type,
@@ -244,7 +228,6 @@ void Initializer::requestShutdown(int retcode) {
 }
 
 void Initializer::requestShutdown(int retcode, const std::string& system_log) {
-  systemLog(system_log);
   requestShutdown(retcode);
 }
 

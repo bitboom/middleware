@@ -46,7 +46,6 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include <osquery/core.h>
-#include <osquery/filesystem/filesystem.h>
 #include <osquery/logger.h>
 #include <osquery/sql.h>
 #include <osquery/system.h>
@@ -149,48 +148,7 @@ bool isPlaceholderHardwareUUID(const std::string& uuid) {
 }
 
 std::string generateHostUUID() {
-  std::string hardware_uuid;
-#ifdef __APPLE__
-  // Use the hardware UUID available on OSX to identify this machine
-  uuid_t id;
-  // wait at most 5 seconds for gethostuuid to return
-  const timespec wait = {5, 0};
-  if (gethostuuid(id, &wait) == 0) {
-    char out[128] = {0};
-    uuid_unparse(id, out);
-    hardware_uuid = std::string(out);
-  }
-#elif WIN32
-  const WmiRequest wmiUUIDReq("Select UUID from Win32_ComputerSystemProduct");
-  const std::vector<WmiResultItem>& wmiUUIDResults = wmiUUIDReq.results();
-  if (wmiUUIDResults.size() != 0) {
-    wmiUUIDResults[0].GetString("UUID", hardware_uuid);
-  }
-#else
-  readFile("/sys/class/dmi/id/product_uuid", hardware_uuid);
-#endif
-
-  // We know at least Linux will append a newline.
-  hardware_uuid.erase(
-      std::remove(hardware_uuid.begin(), hardware_uuid.end(), '\n'),
-      hardware_uuid.end());
-  boost::algorithm::trim(hardware_uuid);
-  if (!hardware_uuid.empty()) {
-    // Construct a new string to remove trailing nulls.
-    hardware_uuid = std::string(hardware_uuid.c_str());
-  }
-
-  // Check whether the UUID is valid. If not generate an ephemeral UUID.
-  if (hardware_uuid.empty()) {
-    VLOG(1) << "Failed to read system uuid, returning ephemeral uuid";
-    return generateNewUUID();
-  } else if (isPlaceholderHardwareUUID(hardware_uuid)) {
-    VLOG(1) << "Hardware uuid '" << hardware_uuid
-            << "' is a placeholder, returning ephemeral uuid";
-    return generateNewUUID();
-  } else {
-    return hardware_uuid;
-  }
+  return "Not supported";
 }
 
 Status getInstanceUUID(std::string& ident) {

@@ -19,7 +19,6 @@
 #include <vist/client/virtual-table.hpp>
 
 #include <vist/client/schema/policy.hpp>
-#include <vist/client/schema/processes.hpp>
 #include <vist/client/schema/time.hpp>
 
 #include <vist/logger.hpp>
@@ -73,39 +72,6 @@ TEST(VirtualTableTests, time_row_arry_op)
 	EXPECT_NE(result.hour, -1);
 	EXPECT_NE(result.minutes, -1);
 	EXPECT_NE(result.seconds, -1);
-}
-
-TEST(VirtualTableTests, processes_table)
-{
-	Processes result;
-	VirtualTable<Processes> processes;
-	EXPECT_TRUE(processes.size() > 0);
-
-	for(auto& p : processes) {
-		EXPECT_TRUE(p.size() > 0);
-		result.pid = p.at(&Processes::pid);
-		result.name = p.at(&Processes::name);
-		result.path = p.at(&Processes::path);
-		result.cmdline = p.at(&Processes::cmdline);
-		result.uid = p.at(&Processes::uid);
-		result.gid = p.at(&Processes::gid);
-		result.euid = p.at(&Processes::euid);
-		result.egid = p.at(&Processes::egid);
-		result.on_disk = p.at(&Processes::on_disk);
-		result.parent = p.at(&Processes::parent);
-
-		INFO(VIST_CLIENT) << "[Test] Processes table:";
-		INFO(VIST_CLIENT) << "\t pid: " << result.pid;
-		INFO(VIST_CLIENT) << "\t name: " << result.name;
-		INFO(VIST_CLIENT) << "\t path: " << result.path;
-		INFO(VIST_CLIENT) << "\t cmdline: " << result.cmdline;
-		INFO(VIST_CLIENT) << "\t uid: " << result.uid;
-		INFO(VIST_CLIENT) << "\t gid: " << result.gid;
-		INFO(VIST_CLIENT) << "\t euid: " << result.euid;
-		INFO(VIST_CLIENT) << "\t egid: " << result.egid;
-		INFO(VIST_CLIENT) << "\t on_disk: " << result.on_disk;
-		INFO(VIST_CLIENT) << "\t parent: " << result.parent;
-	}
 }
 
 TEST(VirtualTableTests, policy_int_table)

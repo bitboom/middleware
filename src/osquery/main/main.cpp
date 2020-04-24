@@ -13,10 +13,10 @@
 #include <iostream>
 
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/filesystem.hpp>
 
 #include <osquery/core.h>
 #include <osquery/devtools/devtools.h>
-#include <osquery/filesystem/fileops.h>
 #include <osquery/logger.h>
 #include <osquery/main/main.h>
 #include <osquery/registry_factory.h>
@@ -31,8 +31,6 @@ namespace osquery {
 
 int startDaemon(Initializer& runner) {
   runner.start();
-
-//  osquery::events::init_syscall_tracing();
 
   // Finally wait for a signal / interrupt to shutdown.
   runner.waitForShutdown();

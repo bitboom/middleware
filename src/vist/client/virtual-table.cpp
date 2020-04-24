@@ -18,7 +18,6 @@
 
 #include <vist/client/query.hpp>
 #include <vist/client/schema/policy.hpp>
-#include <vist/client/schema/processes.hpp>
 #include <vist/client/schema/time.hpp>
 
 #include <vist/exception.hpp>
@@ -37,24 +36,13 @@ Table time { "time", Column("hour", &Time::hour),
 					 Column("minutes", &Time::minutes),
 					 Column("seconds", &Time::seconds) };
 
-Table processes { "processes", Column("pid", &Processes::pid),
-							   Column("name", &Processes::name),
-							   Column("path", &Processes::path),
-							   Column("cmdline", &Processes::cmdline),
-							   Column("uid", &Processes::uid),
-							   Column("gid", &Processes::gid),
-							   Column("euid", &Processes::euid),
-							   Column("egid", &Processes::egid),
-							   Column("on_disk", &Processes::on_disk),
-							   Column("parent", &Processes::parent) };
-
 Table policyInt { "policy", Column("name", &Policy<int>::name),
 							Column("value", &Policy<int>::value) };
 
 Table policyStr { "policy", Column("name", &Policy<std::string>::name),
 							Column("value", &Policy<std::string>::value) };
 
-Database metaDB { "db", time, processes, policyInt, policyStr };
+Database metaDB { "db", time, policyInt, policyStr };
 
 } // anonymous namespace
 
@@ -136,15 +124,6 @@ template class VirtualTable<Time>;
 template class VirtualRow<Time>;
 template int VirtualRow<Time>::at(int Time::*) const;
 template int VirtualRow<Time>::operator[](int Time::*) const;
-
-template class VirtualTable<Processes>;
-template class VirtualRow<Processes>;
-template int VirtualRow<Processes>::at(int Processes::*) const;
-template int VirtualRow<Processes>::operator[](int Processes::*) const;
-template long long int VirtualRow<Processes>::at(long long int Processes::*) const;
-template long long int VirtualRow<Processes>::operator[](long long int Processes::*) const;
-template std::string VirtualRow<Processes>::at(std::string Processes::*) const;
-template std::string VirtualRow<Processes>::operator[](std::string Processes::*) const;
 
 template class VirtualTable<Policy<int>>;
 template class VirtualRow<Policy<int>>;
