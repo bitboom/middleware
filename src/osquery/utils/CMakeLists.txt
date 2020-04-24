@@ -21,8 +21,6 @@ ADD_OSQUERY_LIBRARY(osquery_utils base64.cpp
 								  system/posix/errno.cpp
 								  system/posix/filepath.cpp
 								  system/posix/time.cpp
-								  info/platform_type.cpp
-								  config/default_paths.cpp
 								  conversions/tryto.cpp
 								  conversions/split.cpp
 								  json/json.cpp)

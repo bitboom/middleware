@@ -11,7 +11,6 @@
 #include <osquery/sql.h>
 #include <osquery/sql/sqlite_util.h>
 #include <osquery/sql/tests/sql_test_utils.h>
-#include <osquery/utils/info/platform_type.h>
 
 #include <gtest/gtest.h>
 
@@ -179,10 +178,8 @@ TEST_F(SQLiteUtilTests, test_affected_tables) {
 TEST_F(SQLiteUtilTests, test_table_attributes_event_based) {
   {
     SQLInternal sql_internal("select * from process_events");
-    if (!isPlatform(PlatformType::TYPE_WINDOWS)) {
-      EXPECT_TRUE(sql_internal.getStatus().ok());
-      EXPECT_TRUE(sql_internal.eventBased());
-    }
+    EXPECT_TRUE(sql_internal.getStatus().ok());
+    EXPECT_TRUE(sql_internal.eventBased());
   }
 
   {

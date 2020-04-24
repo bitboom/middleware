@@ -26,7 +26,6 @@
 #include <osquery/utils/conversions/tryto.h>
 
 #include <osquery/tests/test_util.h>
-#include <osquery/utils/info/platform_type.h>
 
 namespace fs = boost::filesystem;
 
@@ -44,16 +43,8 @@ std::string kTestDataPath{"../../../tools/tests/"};
 using chrono_clock = std::chrono::high_resolution_clock;
 
 void initTesting() {
-  if (osquery::isPlatform(PlatformType::TYPE_OSX)) {
-    kTestWorkingDirectory = "/private/tmp/osquery-tests";
-  } else {
-    kTestWorkingDirectory =
-        (fs::temp_directory_path() / "osquery-tests").string();
-  }
-
-  if (osquery::isPlatform(PlatformType::TYPE_WINDOWS)) {
-    kTestDataPath = "../" + kTestDataPath;
-  }
+  kTestWorkingDirectory =
+     (fs::temp_directory_path() / "osquery-tests").string();
 
   registryAndPluginInit();
 

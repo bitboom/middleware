@@ -3,7 +3,6 @@
 #include <osquery/registry_interface.h>
 #include <osquery/sql.h>
 #include <osquery/sql/sqlite_util.h>
-#include <osquery/utils/info/platform_type.h>
 
 namespace osquery {
 

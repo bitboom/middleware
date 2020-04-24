@@ -22,7 +22,6 @@
 #include <osquery/registry_factory.h>
 
 #include <osquery/utils/conversions/split.h>
-#include <osquery/utils/info/platform_type.h>
 #include <osquery/utils/json/json.h>
 #include <osquery/utils/system/time.h>
 
@@ -232,12 +231,7 @@ void BufferedLogSink::WaitTillSent() {
     senders.pop();
   }
 
-  if (!isPlatform(PlatformType::TYPE_WINDOWS)) {
-    first.wait();
-  } else {
-    // Windows is locking by scheduling an async on the main thread.
-    first.wait_for(std::chrono::microseconds(100));
-  }
+  first.wait();
 }
 
 std::vector<StatusLogLine>& BufferedLogSink::dump() {

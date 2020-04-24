@@ -10,8 +10,6 @@
 #include <osquery/logger.h>
 #include <osquery/sql.h>
 
-#include <osquery/utils/info/platform_type.h>
-
 #include "osquery/sql/dynamic_table_row.h"
 #include "osquery/sql/sqlite_util.h"
 
@@ -23,15 +21,7 @@ namespace errc = boost::system::errc;
 namespace osquery {
 
 const char* getSystemVFS(bool respect_locking) {
-  if (respect_locking) {
-    return nullptr;
-  }
-  if (isPlatform(PlatformType::TYPE_POSIX)) {
-    return "unix-none";
-  } else if (isPlatform(PlatformType::TYPE_WINDOWS)) {
-    return "win32-none";
-  }
-  return nullptr;
+  return "unix-none";
 }
 
 Status genSqliteTableRow(sqlite3_stmt* stmt,
