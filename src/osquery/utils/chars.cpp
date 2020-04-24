@@ -9,7 +9,7 @@
 #include <string>
 #include <cstddef>
 
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 
 #include <osquery/utils/chars.h>
 #include <osquery/utils/conversions/tryto.h>
@@ -47,7 +47,7 @@ std::string unescapeUnicode(const std::string& escaped) {
       // Assume 2-byte wide unicode.
       auto const exp = tryTo<long>(escaped.substr(i + 2, 4), 16);
       if (exp.isError()) {
-        LOG(WARNING) << "Unescaping a string with length: " << escaped.size()
+        WARN(OSQUERY) << "Unescaping a string with length: " << escaped.size()
                      << " failed at: " << i;
         return "";
       }

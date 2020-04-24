@@ -18,7 +18,7 @@
 
 #include <mutex>
 
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 
 namespace {
 	std::mutex mutex;
@@ -39,7 +39,7 @@ Status Notification::add(const std::string& table, const NotifyCallback& callbac
 	if (table.empty())
 		return Status(1, "Wrong table name");
 
-	LOG(INFO) << "Add NotifyCallback to:" << table;
+	INFO(VIST) << "Add NotifyCallback to:" << table;
 	{
 		std::lock_guard<std::mutex> lock(mutex);
 		this->callbacks.insert(std::make_pair(table, callback));
@@ -57,7 +57,7 @@ Status Notification::emit(const std::string& table, const Row& result) const
 	if (iter == this->callbacks.end())
 		return Status(1, "Registered callback not found");
 
-	LOG(INFO) << "Emit notification about:" << table;
+	INFO(VIST) << "Emit notification about:" << table;
 	{
 		std::lock_guard<std::mutex> lock(mutex);
 		while (iter != this->callbacks.end())  {

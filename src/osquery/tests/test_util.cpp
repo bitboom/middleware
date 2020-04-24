@@ -19,7 +19,7 @@
 
 #include <boost/filesystem/operations.hpp>
 
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 #include <osquery/registry_factory.h>
 #include <osquery/sql.h>
 #include <osquery/utils/system/time.h>

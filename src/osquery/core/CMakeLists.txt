@@ -14,7 +14,6 @@
 
 ADD_OSQUERY_LIBRARY(osquery_core tables.cpp
 								 query.cpp
-								 plugins/logger.cpp
 								 plugins/plugin.cpp
 								 plugins/sql.cpp
 								 sql/column.cpp
@@ -28,5 +27,4 @@ ADD_OSQUERY_LIBRARY(osquery_core tables.cpp
 FILE(GLOB OSQUERY_CORE_TESTS "tests/*.cpp")
 FILE(GLOB OSQUERY_CORE_POSIX_TESTS "tests/posix/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_SQL_TESTS}
-				 ${OSQUERY_CORE_POSIX_TESTS}
-				 ${OSQUERY_CORE_PLUGINS_TESTS})
+				 ${OSQUERY_CORE_POSIX_TESTS})

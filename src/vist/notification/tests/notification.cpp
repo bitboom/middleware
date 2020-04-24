@@ -16,9 +16,8 @@
 
 #include <gtest/gtest.h>
 
+#include <vist/logger.hpp>
 #include <vist/notification/notification.hpp>
-
-#include <osquery/logger.h>
 
 using namespace vist;
 
@@ -29,9 +28,9 @@ TEST_F(NotificationTests, test_add_positive)
 	auto& notifier = Notification::instance();
 
 	auto callback = [](const Row& row) {
-		LOG(INFO) << "NotifyCallback called:";
+		INFO(VIST) << "NotifyCallback called:";
 		for (const auto& r : row)
-			LOG(INFO) << "\t" << r.first << " : " << r.second;
+			INFO(VIST) << "\t" << r.first << " : " << r.second;
 	};
 
 	auto s = notifier.add("test", std::move(callback));
@@ -43,9 +42,9 @@ TEST_F(NotificationTests, test_add_negative)
 	auto& notifier = Notification::instance();
 
 	auto callback = [](const Row& row) {
-		LOG(INFO) << "NotifyCallback called:";
+		INFO(VIST) << "NotifyCallback called:";
 		for (const auto& r : row)
-			LOG(INFO) << "\t" << r.first << " : " << r.second;
+			INFO(VIST) << "\t" << r.first << " : " << r.second;
 	};
 
 	auto s = notifier.add("", std::move(callback));
@@ -58,9 +57,9 @@ TEST_F(NotificationTests, test_emit_positive)
 
 	int called = 0;
 	auto callback = [&](const Row& row) {
-		LOG(INFO) << "NotifyCallback called:";
+		INFO(VIST) << "NotifyCallback called:";
 		for (const auto& r : row)
-			LOG(INFO) << "\t" << r.first << " : " << r.second;
+			INFO(VIST) << "\t" << r.first << " : " << r.second;
 		called++;
 	};
 

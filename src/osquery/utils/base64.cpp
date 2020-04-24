@@ -13,7 +13,7 @@
 #include <boost/archive/iterators/binary_from_base64.hpp>
 #include <boost/archive/iterators/transform_width.hpp>
 
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 
 namespace bai = boost::archive::iterators;
 
@@ -43,7 +43,7 @@ std::string decode(std::string encoded) {
     return std::string(base64_dec(encoded.data()),
                        base64_dec(encoded.data() + encoded.size()));
   } catch (const boost::archive::iterators::dataflow_exception& e) {
-    LOG(INFO) << "Could not base64 decode string: " << e.what();
+    INFO(OSQUERY) << "Could not base64 decode string: " << e.what();
     return "";
   }
 }
@@ -60,7 +60,7 @@ std::string encode(const std::string& unencoded) {
     encoded.append(std::string(writePaddChars, '='));
     return encoded;
   } catch (const boost::archive::iterators::dataflow_exception& e) {
-    LOG(INFO) << "Could not base64 decode string: " << e.what();
+    INFO(OSQUERY) << "Could not base64 decode string: " << e.what();
     return "";
   }
 }

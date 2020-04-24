@@ -14,7 +14,7 @@
 #include <osquery/utils/conversions/castvariant.h>
 
 #include <osquery/core.h>
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 #include <osquery/registry_factory.h>
 #include <osquery/sql.h>
 
@@ -251,7 +251,7 @@ SQLiteDBInstance::SQLiteDBInstance(sqlite3*& db, Mutex& mtx)
     primary_ = true;
   } else {
     db_ = nullptr;
-    VLOG(1) << "DBManager contention: opening transient SQLite database";
+    DEBUG(OSQUERY) << "DBManager contention: opening transient SQLite database";
     init();
   }
 }

@@ -9,7 +9,7 @@
 #include <gtest/gtest.h>
 
 #include <osquery/core.h>
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 #include <osquery/registry.h>
 #include <osquery/sql.h>
 #include <osquery/sql/dynamic_table_row.h>

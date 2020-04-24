@@ -8,7 +8,7 @@
 
 #include <osquery/utils/json/json.h>
 
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 #include <osquery/registry_factory.h>
 #include <osquery/tables.h>
 #include <osquery/utils/conversions/tryto.h>

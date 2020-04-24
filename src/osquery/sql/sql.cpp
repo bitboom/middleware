@@ -9,7 +9,7 @@
 #include <sstream>
 
 #include <osquery/core.h>
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 #include <osquery/registry.h>
 #include <osquery/sql.h>
 #include <osquery/tables.h>

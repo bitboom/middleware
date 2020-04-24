@@ -12,7 +12,7 @@
 #include <cstdlib>
 #include <sstream>
 
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 #include <osquery/registry.h>
 #include <osquery/utils/conversions/split.h>
 #include <osquery/utils/json/json.h>
@@ -88,11 +88,11 @@ Status RegistryFactory::call(const std::string& registry_name,
     }
     return get().registry(registry_name)->call(item_name, request, response);
   } catch (const std::exception& e) {
-    LOG(ERROR) << registry_name << " registry " << item_name
+    ERROR(OSQUERY) << registry_name << " registry " << item_name
                << " plugin caused exception: " << e.what();
     return Status(1, e.what());
   } catch (...) {
-    LOG(ERROR) << registry_name << " registry " << item_name
+    ERROR(OSQUERY) << registry_name << " registry " << item_name
                << " plugin caused unknown exception";
     return Status(2, "Unknown exception");
   }

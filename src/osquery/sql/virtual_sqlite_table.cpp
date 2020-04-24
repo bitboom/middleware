@@ -7,7 +7,7 @@
  */
 
 #include <osquery/core.h>
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 #include <osquery/sql.h>
 
 #include "osquery/sql/dynamic_table_row.h"
@@ -52,7 +52,7 @@ Status genSqliteTableRow(sqlite3_stmt* stmt,
     }
   }
   if (r.count("path") > 0) {
-    LOG(WARNING) << "Row contains a path key, refusing to overwrite";
+    WARN(OSQUERY) << "Row contains a path key, refusing to overwrite";
   } else {
     r["path"] = sqlite_db.string();
   }
@@ -81,7 +81,7 @@ Status genTableRowsForSqliteTable(const fs::path& sqlite_db,
       (SQLITE_OPEN_READONLY | SQLITE_OPEN_PRIVATECACHE | SQLITE_OPEN_NOMUTEX),
       getSystemVFS(respect_locking));
   if (rc != SQLITE_OK || db == nullptr) {
-    VLOG(1) << "Cannot open specified database: "
+    DEBUG(OSQUERY) << "Cannot open specified database: "
             << getStringForSQLiteReturnCode(rc);
     if (db != nullptr) {
       sqlite3_close(db);
@@ -93,7 +93,7 @@ Status genTableRowsForSqliteTable(const fs::path& sqlite_db,
   rc = sqlite3_prepare_v2(db, sqlite_query.c_str(), -1, &stmt, nullptr);
   if (rc != SQLITE_OK) {
     sqlite3_close(db);
-    VLOG(1) << "Could not prepare database at path: " << sqlite_db;
+    DEBUG(OSQUERY) << "Could not prepare database at path: " << sqlite_db;
     return Status(rc, "Could not prepare database");
   }
 

@@ -10,7 +10,6 @@
 ** This file is generated. Do not modify it manually!
 */
 
-#include <osquery/logger.h>
 #include <osquery/tables.h>
 #include <osquery/registry_factory.h>
 

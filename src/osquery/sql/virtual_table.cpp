@@ -10,13 +10,13 @@
 #include <unordered_set>
 
 #include <osquery/core.h>
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 #include <osquery/registry_factory.h>
 #include <osquery/sql/dynamic_table_row.h>
 #include <osquery/sql/virtual_table.h>
 #include <osquery/utils/conversions/tryto.h>
 
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 
 namespace osquery {
 
@@ -105,7 +105,7 @@ bool getColumnValue(std::string& value,
   }
 
   default: {
-    LOG(ERROR) << "Invalid column type returned by sqlite";
+    ERROR(OSQUERY) << "Invalid column type returned by sqlite";
     return false;
   }
   }
@@ -118,7 +118,7 @@ int serializeDeleteParameters(std::string& json_value_array,
 							  VirtualTable* pVtab) {
 	auto content = pVtab->content;
 	if (content->constraints.size() <= 0) {
-		LOG(ERROR) << "Invalid constraints arguments";
+		ERROR(OSQUERY) << "Invalid constraints arguments";
 		return SQLITE_ERROR;
 	}
 
@@ -157,7 +157,7 @@ int serializeUpdateParameters(std::string& json_value_array,
                               sqlite3_value** argv,
                               const TableColumns& columnDescriptors) {
   if (columnDescriptors.size() != argc - 2U) {
-    VLOG(1) << "Wrong column count: " << argc - 2U
+    DEBUG(OSQUERY) << "Wrong column count: " << argc - 2U
             << ". Expected: " << columnDescriptors.size();
     return SQLITE_RANGE;
   }
@@ -240,7 +240,7 @@ int serializeUpdateParameters(std::string& json_value_array,
     }
 
     default: {
-      LOG(ERROR) << "Invalid column type returned by sqlite";
+      ERROR(OSQUERY) << "Invalid column type returned by sqlite";
       return SQLITE_MISMATCH;
     }
     }
@@ -382,7 +382,7 @@ int xUpdate(sqlite3_vtab* p,
     auto serializerError = serializeUpdateParameters(
         json_value_array, argument_count, argv, columnDescriptors);
     if (serializerError != SQLITE_OK) {
-      VLOG(1) << "Failed to serialize the INSERT request";
+      DEBUG(OSQUERY) << "Failed to serialize the INSERT request";
       return serializerError;
     }
 
@@ -393,7 +393,7 @@ int xUpdate(sqlite3_vtab* p,
 
       std::string auto_generated_rowid;
       if (!getColumnValue(auto_generated_rowid, 1U, argument_count, argv)) {
-        VLOG(1) << "Failed to retrieve the column value";
+        DEBUG(OSQUERY) << "Failed to retrieve the column value";
         return SQLITE_ERROR;
       }
 
@@ -410,7 +410,7 @@ int xUpdate(sqlite3_vtab* p,
 
     std::string current_rowid;
     if (!getColumnValue(current_rowid, 0U, argument_count, argv)) {
-      VLOG(1) << "Failed to retrieve the column value";
+      DEBUG(OSQUERY) << "Failed to retrieve the column value";
       return SQLITE_ERROR;
     }
 
@@ -420,7 +420,7 @@ int xUpdate(sqlite3_vtab* p,
     if (sqlite3_value_type(argv[1]) == SQLITE_INTEGER) {
       std::string new_rowid;
       if (!getColumnValue(new_rowid, 1U, argument_count, argv)) {
-        VLOG(1) << "Failed to retrieve the column value";
+        DEBUG(OSQUERY) << "Failed to retrieve the column value";
         return SQLITE_ERROR;
       }
 
@@ -434,14 +434,14 @@ int xUpdate(sqlite3_vtab* p,
     auto serializerError = serializeUpdateParameters(
         json_value_array, argument_count, argv, columnDescriptors);
     if (serializerError != SQLITE_OK) {
-      VLOG(1) << "Failed to serialize the UPDATE request";
+      DEBUG(OSQUERY) << "Failed to serialize the UPDATE request";
       return serializerError;
     }
 
     plugin_request.insert({"json_value_array", json_value_array});
 
   } else {
-    VLOG(1) << "Invalid xUpdate call";
+    DEBUG(OSQUERY) << "Invalid xUpdate call";
     return SQLITE_ERROR;
   }
 
@@ -453,13 +453,13 @@ int xUpdate(sqlite3_vtab* p,
 
   // Validate the response
   if (response_list.size() != 1) {
-    VLOG(1) << "Invalid response from the extension table";
+    DEBUG(OSQUERY) << "Invalid response from the extension table";
     return SQLITE_ERROR;
   }
 
   const auto& response = response_list.at(0);
   if (response.count("status") == 0) {
-    VLOG(1) << "Invalid response from the extension table; the status field is "
+    DEBUG(OSQUERY) << "Invalid response from the extension table; the status field is "
                "missing";
 
     return SQLITE_ERROR;
@@ -487,7 +487,7 @@ int xUpdate(sqlite3_vtab* p,
     return SQLITE_CONSTRAINT;
 
   } else if (status_value != "success") {
-    VLOG(1) << "Invalid response from the extension table; the status field "
+    DEBUG(OSQUERY) << "Invalid response from the extension table; the status field "
                "could not be recognized";
 
     return SQLITE_ERROR;
@@ -500,14 +500,14 @@ int xUpdate(sqlite3_vtab* p,
 
     if (plugin_request.at("auto_rowid") == "true") {
       if (!getColumnValue(rowid, 1U, argument_count, argv)) {
-        VLOG(1) << "Failed to retrieve the rowid value";
+        DEBUG(OSQUERY) << "Failed to retrieve the rowid value";
         return SQLITE_ERROR;
       }
 
     } else {
       auto id_it = response.find("id");
       if (id_it == response.end()) {
-        VLOG(1) << "The plugin did not return a row id";
+        DEBUG(OSQUERY) << "The plugin did not return a row id";
         return SQLITE_ERROR;
       }
 
@@ -516,7 +516,7 @@ int xUpdate(sqlite3_vtab* p,
 
     auto exp = tryTo<long long>(rowid);
     if (exp.isError()) {
-      VLOG(1) << "The plugin did not return a valid row id";
+      DEBUG(OSQUERY) << "The plugin did not return a valid row id";
       return SQLITE_ERROR;
     }
     *pRowid = exp.take();
@@ -563,10 +563,10 @@ int xCreate(sqlite3* db,
 
   int rc = sqlite3_declare_vtab(db, statement.c_str());
   if (rc != SQLITE_OK || !status.ok() || response.size() == 0) {
-    LOG(ERROR) << "Error creating virtual table: " << name << " (" << rc
+    ERROR(OSQUERY) << "Error creating virtual table: " << name << " (" << rc
                << "): " << getStringForSQLiteReturnCode(rc);
 
-    VLOG(1) << "Cannot create virtual table using: " << statement;
+    DEBUG(OSQUERY) << "Cannot create virtual table using: " << statement;
     delete pVtab;
     return (rc != SQLITE_OK) ? rc : SQLITE_ERROR;
   }
@@ -903,15 +903,15 @@ static int xFilter(sqlite3_vtab_cursor* pVtabCursor,
   }
 
   if (!user_based_satisfied) {
-    LOG(WARNING) << "The " << pVtab->content->name
+    WARN(OSQUERY) << "The " << pVtab->content->name
                  << " table returns data based on the current user by default, "
                     "consider JOINing against the users table";
   } else if (!required_satisfied) {
-    LOG(WARNING)
+    WARN(OSQUERY)
         << "Table " << pVtab->content->name
         << " was queried without a required column in the WHERE clause";
   } else if (!events_satisfied) {
-    LOG(WARNING) << "Table " << pVtab->content->name
+    WARN(OSQUERY) << "Table " << pVtab->content->name
                  << " is event-based but events are disabled";
   }
 
@@ -978,14 +978,14 @@ Status attachTableInternal(const std::string& name,
                            const SQLiteDBInstanceRef& instance,
                            bool is_extension) {
   if (SQLiteDBManager::isDisabled(name)) {
-    VLOG(1) << "Table " << name << " is disabled, not attaching";
+    DEBUG(OSQUERY) << "Table " << name << " is disabled, not attaching";
     return Status(0, getStringForSQLiteReturnCode(0));
   }
 
   struct sqlite3_module* module =
       tables::sqlite::getVirtualTableModule(name, is_extension);
   if (module == nullptr) {
-    VLOG(1) << "Failed to retrieve the virtual table module for \"" << name
+    DEBUG(OSQUERY) << "Failed to retrieve the virtual table module for \"" << name
             << "\"";
     return Status(1);
   }
@@ -1005,7 +1005,7 @@ Status attachTableInternal(const std::string& name,
         sqlite3_exec(instance->db(), format.c_str(), nullptr, nullptr, nullptr);
 
   } else {
-    LOG(ERROR) << "Error attaching table: " << name << " (" << rc << ")";
+    ERROR(OSQUERY) << "Error attaching table: " << name << " (" << rc << ")";
   }
 
   return Status(rc, getStringForSQLiteReturnCode(rc));
@@ -1017,7 +1017,7 @@ Status detachTableInternal(const std::string& name,
   auto format = "DROP TABLE IF EXISTS temp." + name;
   int rc = sqlite3_exec(instance->db(), format.c_str(), nullptr, nullptr, 0);
   if (rc != SQLITE_OK) {
-    LOG(ERROR) << "Error detaching table: " << name << " (" << rc << ")";
+    ERROR(OSQUERY) << "Error detaching table: " << name << " (" << rc << ")";
   }
 
   return Status(rc, getStringForSQLiteReturnCode(rc));

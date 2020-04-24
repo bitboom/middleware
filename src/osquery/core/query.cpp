@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 #include <osquery/query.h>
 
 #include <osquery/utils/json/json.h>
@@ -67,16 +67,16 @@ Status Query::addNewResults(QueryDataTyped current_qd,
   if (!isQueryNameInDatabase()) {
     // This is the first encounter of the scheduled query.
     fresh_results = true;
-    LOG(INFO) << "Storing initial results for new scheduled query: " << name_;
+    INFO(OSQUERY) << "Storing initial results for new scheduled query: " << name_;
     saveQuery(name_, query_);
   } else if (getPreviousEpoch() != current_epoch) {
     fresh_results = true;
-    LOG(INFO) << "New Epoch " << current_epoch << " for scheduled query "
+    INFO(OSQUERY) << "New Epoch " << current_epoch << " for scheduled query "
               << name_;
   } else if (isNewQuery()) {
     // This query is 'new' in that the previous results may be invalid.
     new_query = true;
-    LOG(INFO) << "Scheduled query has been updated: " + name_;
+    INFO(OSQUERY) << "Scheduled query has been updated: " + name_;
     saveQuery(name_, query_);
   }
 

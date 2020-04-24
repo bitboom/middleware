@@ -9,7 +9,7 @@
 #include "dynamic_table_row.h"
 #include "virtual_table.h"
 
-#include <osquery/logger.h>
+#include <vist/logger.hpp>
 #include <osquery/utils/conversions/tryto.h>
 
 namespace rj = rapidjson;
@@ -74,7 +74,7 @@ int DynamicTableRow::get_rowid(sqlite_int64 default_value,
 
     auto exp = tryTo<long long>(rowid_text_field, 10);
     if (exp.isError()) {
-      VLOG(1) << "Invalid rowid value returned " << exp.getError();
+      DEBUG(OSQUERY) << "Invalid rowid value returned " << exp.getError();
       return SQLITE_ERROR;
     }
     *pRowid = exp.take();
@@ -103,7 +103,7 @@ int DynamicTableRow::get_column(sqlite3_context* ctx,
   const auto& value = row[column_name];
   if (this->row.count(column_name) == 0) {
     // Missing content.
-    VLOG(1) << "Error " << column_name << " is empty";
+    DEBUG(OSQUERY) << "Error " << column_name << " is empty";
     sqlite3_result_null(ctx);
   } else if (type == TEXT_TYPE || type == BLOB_TYPE) {
     sqlite3_result_text(
@@ -111,7 +111,7 @@ int DynamicTableRow::get_column(sqlite3_context* ctx,
   } else if (type == INTEGER_TYPE) {
     auto afinite = tryTo<long>(value, 0);
     if (afinite.isError()) {
-      VLOG(1) << "Error casting " << column_name << " (" << value
+      DEBUG(OSQUERY) << "Error casting " << column_name << " (" << value
               << ") to INTEGER";
       sqlite3_result_null(ctx);
     } else {
@@ -120,7 +120,7 @@ int DynamicTableRow::get_column(sqlite3_context* ctx,
   } else if (type == BIGINT_TYPE || type == UNSIGNED_BIGINT_TYPE) {
     auto afinite = tryTo<long long>(value, 0);
     if (afinite.isError()) {
-      VLOG(1) << "Error casting " << column_name << " (" << value
+      DEBUG(OSQUERY) << "Error casting " << column_name << " (" << value
               << ") to BIGINT";
       sqlite3_result_null(ctx);
     } else {
@@ -130,14 +130,14 @@ int DynamicTableRow::get_column(sqlite3_context* ctx,
     char* end = nullptr;
     double afinite = strtod(value.c_str(), &end);
     if (end == nullptr || end == value.c_str() || *end != '\0') {
-      VLOG(1) << "Error casting " << column_name << " (" << value
+      DEBUG(OSQUERY) << "Error casting " << column_name << " (" << value
               << ") to DOUBLE";
       sqlite3_result_null(ctx);
     } else {
       sqlite3_result_double(ctx, afinite);
     }
   } else {
-    LOG(ERROR) << "Error unknown column type " << column_name;
+    ERROR(OSQUERY) << "Error unknown column type " << column_name;
   }
 
   return SQLITE_OK;
