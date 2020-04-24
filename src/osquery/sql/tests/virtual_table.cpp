@@ -13,7 +13,6 @@
 #include <osquery/registry.h>
 #include <osquery/sql.h>
 #include <osquery/sql/dynamic_table_row.h>
-#include <osquery/system.h>
 
 #include <osquery/sql/virtual_table.h>
 
@@ -22,7 +21,6 @@ namespace osquery {
 class VirtualTableTests : public testing::Test {
  public:
   void SetUp() override {
-    Initializer::platformSetup();
     registryAndPluginInit();
   }
 };

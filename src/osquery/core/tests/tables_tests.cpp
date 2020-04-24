@@ -11,7 +11,6 @@
 
 #include <osquery/database.h>
 #include <osquery/registry.h>
-#include <osquery/system.h>
 #include <osquery/tables.h>
 
 namespace osquery {

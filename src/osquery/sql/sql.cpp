@@ -17,7 +17,6 @@
 #include <osquery/plugins/sql.h>
 
 #include <osquery/utils/conversions/split.h>
-#include <osquery/utils/info/tool_type.h>
 
 namespace osquery {
 
@@ -209,11 +208,6 @@ Status mockGetQueryTables(std::string copy_q,
 }
 
 Status getQueryTables(const std::string& q, std::vector<std::string>& tables) {
-  if (kToolType == ToolType::TEST) {
-    // We 'mock' this functionality for internal tests.
-    return mockGetQueryTables(q, tables);
-  }
-
   PluginResponse response;
   auto status = Registry::call(
       "sql", "sql", {{"action", "tables"}, {"query", q}}, response);

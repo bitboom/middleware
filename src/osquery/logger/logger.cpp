@@ -20,7 +20,6 @@
 #include <osquery/data_logger.h>
 #include <osquery/plugins/logger.h>
 #include <osquery/registry_factory.h>
-#include <osquery/system.h>
 
 #include <osquery/utils/conversions/split.h>
 #include <osquery/utils/info/platform_type.h>

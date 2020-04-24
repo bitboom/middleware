@@ -14,7 +14,6 @@
 #include <osquery/registry_factory.h>
 #include <osquery/sql/dynamic_table_row.h>
 #include <osquery/sql/virtual_table.h>
-#include <osquery/system.h>
 #include <osquery/utils/conversions/tryto.h>
 
 #include <osquery/logger.h>
@@ -914,13 +913,6 @@ static int xFilter(sqlite3_vtab_cursor* pVtabCursor,
   } else if (!events_satisfied) {
     LOG(WARNING) << "Table " << pVtab->content->name
                  << " is event-based but events are disabled";
-  }
-
-  // Provide a helpful reference to table documentation within the shell.
-  if (Initializer::isShell() &&
-      (!user_based_satisfied || !required_satisfied || !events_satisfied)) {
-    LOG(WARNING) << "Please see the table documentation: "
-                 << table_doc(pVtab->content->name);
   }
 
   // Reset the virtual table contents.

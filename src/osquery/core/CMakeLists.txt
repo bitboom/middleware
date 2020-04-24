@@ -13,15 +13,12 @@
 #  limitations under the License
 
 ADD_OSQUERY_LIBRARY(osquery_core tables.cpp
-								 init.cpp
 								 query.cpp
-								 system.cpp
 								 database/database.cpp
 								 database/in_memory_database.cpp
 								 plugins/logger.cpp
 								 plugins/plugin.cpp
 								 plugins/sql.cpp
-								 posix/initializer.cpp
 								 sql/column.cpp
 								 sql/diff_results.cpp
 								 sql/query_data.cpp

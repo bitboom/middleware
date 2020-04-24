@@ -22,7 +22,6 @@
 #include <osquery/logger.h>
 #include <osquery/registry_factory.h>
 #include <osquery/sql.h>
-#include <osquery/system.h>
 #include <osquery/utils/system/time.h>
 #include <osquery/utils/conversions/tryto.h>
 
@@ -45,7 +44,6 @@ std::string kTestDataPath{"../../../tools/tests/"};
 using chrono_clock = std::chrono::high_resolution_clock;
 
 void initTesting() {
-  kToolType = ToolType::TEST;
   if (osquery::isPlatform(PlatformType::TYPE_OSX)) {
     kTestWorkingDirectory = "/private/tmp/osquery-tests";
   } else {
@@ -95,12 +93,9 @@ void initTesting() {
 
   fs::remove_all(kTestWorkingDirectory);
   fs::create_directories(kTestWorkingDirectory);
-
-  Initializer::platformSetup();
 }
 
 void shutdownTesting() {
-  Initializer::platformTeardown();
 }
 
 ScheduledQuery getOsqueryScheduledQuery() {

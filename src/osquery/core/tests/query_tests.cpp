@@ -16,7 +16,6 @@
 
 #include <osquery/query.h>
 #include <osquery/sql/tests/sql_test_utils.h>
-#include <osquery/system.h>
 #include <osquery/tests/test_util.h>
 
 namespace osquery {

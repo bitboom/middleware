@@ -16,17 +16,12 @@ ADD_OSQUERY_LIBRARY(osquery_utils base64.cpp
 								  chars.cpp
 								  only_movable.cpp
 								  status/status.cpp
-								  system/system.cpp
 								  system/time.cpp
-								  system/uptime.cpp
 								  system/posix/env.cpp
 								  system/posix/errno.cpp
 								  system/posix/filepath.cpp
-								  system/posix/system.cpp
 								  system/posix/time.cpp
 								  info/platform_type.cpp
-								  info/tool_type.cpp
-								  info/version.cpp
 								  config/default_paths.cpp
 								  conversions/tryto.cpp
 								  conversions/split.cpp

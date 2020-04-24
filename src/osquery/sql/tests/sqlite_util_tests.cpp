@@ -11,7 +11,6 @@
 #include <osquery/sql.h>
 #include <osquery/sql/sqlite_util.h>
 #include <osquery/sql/tests/sql_test_utils.h>
-#include <osquery/system.h>
 #include <osquery/utils/info/platform_type.h>
 
 #include <gtest/gtest.h>
@@ -23,7 +22,6 @@ namespace osquery {
 class SQLiteUtilTests : public testing::Test {
  public:
   void SetUp() override {
-    Initializer::platformSetup();
     registryAndPluginInit();
   }
 };

@@ -12,7 +12,6 @@
 
 #include <osquery/utils/system/time.h>
 
-#include <osquery/system.h>
 #include <osquery/tables.h>
 
 namespace osquery {
