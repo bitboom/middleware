@@ -37,5 +37,6 @@ namespace schema {
 											   Bluetooth::DesktopConnectivity,
 											   Bluetooth::Pairing,
 											   Bluetooth::Tethering);
+
 } // namesapce schema
 } // namesapce vist

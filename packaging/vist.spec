@@ -12,14 +12,10 @@ BuildRequires: make
 BuildRequires: cmake
 # osquery BRs
 BuildRequires: glog-devel
-BuildRequires: gflags-devel
 BuildRequires: boost-devel
 BuildRequires: python-jinja2
-BuildRequires: libuuid-devel
-BuildRequires: pkgconfig(libprocps)
-BuildRequires: pkgconfig(libsystemd)
-BuildRequires: pkgconfig(openssl)
 # vist BRs
+BuildRequires: gflags-devel
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(libtzplatform-config)
@@ -27,7 +23,6 @@ BuildRequires: pkgconfig(libsystemd-daemon)
 Requires: glog
 Requires: gflag
 Requires: boost-regex boost-system boost-thread boost-filesystem
-Requires: procps-ng
 Requires: libsystemd
 
 %global osquery_version 4.0.0

@@ -19,17 +19,13 @@ SET(${TARGET_OSQUERY_LIB}_DEPS "")
 SET(${TARGET_OSQUERY_LIB}_TESTS "")
 
 ADD_OSQUERY_LINK(glog
-				 gflags
 				 pthread
 				 dl
 				 boost_regex
 				 boost_system
 				 boost_thread
 				 boost_filesystem
-				 sqlite3
-				 crypto # openssl
-				 # build-in tables deps
-				 systemd)
+				 sqlite3)
 
 IF(DEFINED GBS_BUILD)
 	SET(GBS_ONLY_PACKAGES sqlite3)
