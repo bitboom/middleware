@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,18 +14,21 @@
  *  limitations under the License
  */
 
-#include <string>
-#include <memory>
-#include <stdexcept>
+#include "policy.hpp"
 
-#include <osquery/sql.h>
-#include <osquery/tables.h>
-
-#include <vist/policy/api.hpp>
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
+#include <vist/policy/api.hpp>
 
-namespace osquery {
+#include <osquery/registry.h>
+#include <osquery/sql/dynamic_table_row.h>
+
+#include <memory>
+#include <stdexcept>
+#include <string>
+
+namespace vist {
+namespace table {
 
 namespace {
 
@@ -40,11 +43,22 @@ Row convert(const std::string& name, const vist::policy::PolicyValue& value)
 
 } // anonymous namespace
 
-namespace tables {
+void PolicyTable::Init()
+{
+	auto tables = RegistryFactory::get().registry("table");
+	tables->add("policy", std::make_shared<PolicyTable>());
+}
 
-using namespace vist;
+TableColumns PolicyTable::columns() const
+{
+	return {
+		std::make_tuple("name", TEXT_TYPE, ColumnOptions::DEFAULT),
+		std::make_tuple("value", TEXT_TYPE, ColumnOptions::DEFAULT),
+	};
+}
 
-QueryData genPolicy(QueryContext& context) try {
+TableRows PolicyTable::generate(QueryContext& context) try
+{
 	INFO(VIST) << "Select query about policy table.";
 
 	QueryData results;
@@ -65,18 +79,19 @@ QueryData genPolicy(QueryContext& context) try {
 		}
 	}
 
-	return results;
+	return osquery::tableRowsFromQueryData(std::move(results));
 } catch (const vist::Exception<ErrCode>& e) {
 	ERROR(VIST) << "Failed to query: " << e.what();
 	Row r;
-	return { r };
+	return osquery::tableRowsFromQueryData({ r });
 } catch (...) {
 	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
-	return { r };
+	return osquery::tableRowsFromQueryData({ r });
 }
 
-QueryData updatePolicy(QueryContext& context, const PluginRequest& request) try {
+QueryData PolicyTable::update(QueryContext&, const PluginRequest& request) try
+{
 	INFO(VIST) << "Update query about policy table.";
 	if (request.count("json_value_array") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
@@ -108,5 +123,5 @@ QueryData updatePolicy(QueryContext& context, const PluginRequest& request) try 
 	return { r };
 }
 
-} // namespace tables
-} // namespace osquery
+} // namespace table
+} // namespace vist

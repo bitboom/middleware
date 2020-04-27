@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2020-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,16 +14,22 @@
  *  limitations under the License
  */
 
-#pragma once
+#include <osquery/tables.h>
 
 namespace vist {
-namespace schema {
+namespace table {
 
-struct Time {
-	int hour;
-	int minutes;
-	int seconds;
+using namespace osquery;
+
+class BluetoothTable final : public TablePlugin {
+public:
+	static void Init();
+
+private:
+	TableColumns columns() const override;
+	TableRows generate(QueryContext&) override;
+	QueryData update(QueryContext&, const PluginRequest& request) override;
 };
 
-} // namesapce schema
-} // namesapce vist
+} // namespace table
+} // namespace vist

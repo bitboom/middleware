@@ -21,6 +21,10 @@
 #include <vist/policy/policy-manager.hpp>
 #include <vist/rmi/gateway.hpp>
 
+#include <vist/table/bluetooth.hpp>
+#include <vist/table/policy-admin.hpp>
+#include <vist/table/policy.hpp>
+
 #include <osquery/registry_interface.h>
 #include <osquery/sql.h>
 
@@ -33,6 +37,10 @@ namespace vist {
 Vistd::Vistd()
 {
 	osquery::registryAndPluginInit();
+
+	table::BluetoothTable::Init();
+	table::PolicyAdminTable::Init();
+	table::PolicyTable::Init();
 }
 
 void Vistd::start()

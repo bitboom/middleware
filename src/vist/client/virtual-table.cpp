@@ -17,13 +17,11 @@
 #include "virtual-table.hpp"
 
 #include <vist/client/query.hpp>
-#include <vist/client/schema/policy.hpp>
-#include <vist/client/schema/time.hpp>
-
 #include <vist/exception.hpp>
-#include <vist/stringfy.hpp>
 #include <vist/logger.hpp>
 #include <vist/query-builder.hpp>
+#include <vist/schema/policy.hpp>
+#include <vist/stringfy.hpp>
 
 #include <boost/lexical_cast.hpp>
 
@@ -32,17 +30,13 @@ namespace {
 using namespace vist::tsqb;
 using namespace vist::schema;
 
-Table time { "time", Column("hour", &Time::hour),
-					 Column("minutes", &Time::minutes),
-					 Column("seconds", &Time::seconds) };
-
 Table policyInt { "policy", Column("name", &Policy<int>::name),
 							Column("value", &Policy<int>::value) };
 
 Table policyStr { "policy", Column("name", &Policy<std::string>::name),
 							Column("value", &Policy<std::string>::value) };
 
-Database metaDB { "db", time, policyInt, policyStr };
+Database metaDB { "db", policyInt, policyStr };
 
 } // anonymous namespace
 
@@ -118,12 +112,6 @@ VirtualTable<T>::VirtualTable()
 		this->rows.emplace_back(VirtualRow<T>(std::move(row)));
 	}
 }
-
-/// Explicit instantiation
-template class VirtualTable<Time>;
-template class VirtualRow<Time>;
-template int VirtualRow<Time>::at(int Time::*) const;
-template int VirtualRow<Time>::operator[](int Time::*) const;
 
 template class VirtualTable<Policy<int>>;
 template class VirtualRow<Policy<int>>;

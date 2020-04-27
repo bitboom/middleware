@@ -14,18 +14,21 @@
  *  limitations under the License
  */
 
-#include <string>
-#include <memory>
-#include <stdexcept>
+#include "bluetooth.hpp"
 
-#include <osquery/sql.h>
-#include <osquery/tables.h>
-
-#include <vist/policy/api.hpp>
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
+#include <vist/policy/api.hpp>
 
-namespace osquery {
+#include <osquery/registry.h>
+#include <osquery/sql/dynamic_table_row.h>
+
+#include <memory>
+#include <stdexcept>
+#include <string>
+
+namespace vist {
+namespace table {
 
 namespace {
 
@@ -42,11 +45,23 @@ void setPolicy(const std::string& name, int value)
 
 } // anonymous namespace
 
-namespace tables {
+void BluetoothTable::Init()
+{
+	auto tables = RegistryFactory::get().registry("table");
+	tables->add("bluetooth", std::make_shared<BluetoothTable>());
+}
 
-using namespace vist;
+TableColumns BluetoothTable::columns() const
+{
+	return {
+		std::make_tuple("state", INTEGER_TYPE, ColumnOptions::DEFAULT),
+		std::make_tuple("desktopConnectivity", INTEGER_TYPE, ColumnOptions::DEFAULT),
+		std::make_tuple("pairing", INTEGER_TYPE, ColumnOptions::DEFAULT),
+		std::make_tuple("tethering", INTEGER_TYPE, ColumnOptions::DEFAULT),
+	};
+}
 
-QueryData genBluetooth(QueryContext& context) try {
+TableRows BluetoothTable::generate(QueryContext&) try {
 	INFO(VIST) << "Select query about bluetooth table.";
 
 	QueryData results;
@@ -60,18 +75,18 @@ QueryData genBluetooth(QueryContext& context) try {
 
 	results.emplace_back(std::move(row));
 
-	return results;
+	return osquery::tableRowsFromQueryData(std::move(results));
 } catch (const vist::Exception<ErrCode>& e) {
 	ERROR(VIST) << "Failed to query: " << e.what();
 	Row r;
-	return { r };
+	return osquery::tableRowsFromQueryData({ r });
 } catch (...) {
 	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
-	return { r };
+	return osquery::tableRowsFromQueryData({ r });
 }
 
-QueryData updateBluetooth(QueryContext& context, const PluginRequest& request) try {
+QueryData BluetoothTable::update(QueryContext&, const PluginRequest& request) try {
 	INFO(VIST) << "Update query about bluetooth table.";
 	if (request.count("json_value_array") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
@@ -104,5 +119,5 @@ QueryData updateBluetooth(QueryContext& context, const PluginRequest& request) t
 	return { r };
 }
 
-} // namespace tables
-} // namespace osquery
+} // namespace table
+} // namespace vist

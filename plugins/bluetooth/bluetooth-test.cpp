@@ -18,7 +18,7 @@
 #include "../test-util.hpp"
 
 #include <vist/client/query.hpp>
-#include <vist/client/schema/bluetooth.hpp>
+#include <vist/schema/bluetooth.hpp>
 #include <vist/exception.hpp>
 
 #include <iostream>
