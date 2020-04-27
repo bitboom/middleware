@@ -1,4 +1,4 @@
-#  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+#  Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -35,29 +35,14 @@ SET(CMAKE_SHARED_LINKER_FLAGS  "-Wl,--as-needed")
 SET(CMAKE_EXE_LINKER_FLAGS     "-Wl,--as-needed")
 
 ADD_DEFINITIONS("-fPIC")
-ADD_DEFINITIONS("-Wno-ignored-qualifiers") # Suppress osquery error
 
-# Set various platform/platform-version/build version/etc defines.
-ADD_DEFINITIONS(-DLINUX="1"
-				-DPOSIX="1"
-				-DOSQUERY_LINUX="1"
-				-DOSQUERY_POSIX="1"
-				-DOSQUERY_BUILD_PLATFORM="linux"
-				-DOSQUERY_BUILD_DISTRO="linux")
-
-ADD_DEFINITIONS(-DOSQUERY_VERSION=${OSQUERY_VERSION}
-				-DOSQUERY_BUILD_VERSION=${OSQUERY_VERSION}
-				-DOSQUERY_BUILD_SDK_VERSION=${OSQUERY_VERSION})
-
+INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/src")
 # Suppresse SYSTEM header's warnings:
-INCLUDE_DIRECTORIES(SYSTEM "${CMAKE_SOURCE_DIR}/src")
+INCLUDE_DIRECTORIES(SYSTEM "${CMAKE_SOURCE_DIR}/third-party")
 INCLUDE_DIRECTORIES(SYSTEM "${CMAKE_SOURCE_DIR}/src/osquery/include")
 INCLUDE_DIRECTORIES("/usr/local/include")
 
 ENABLE_TESTING()
-
-# Make sure the generated paths exist
-EXECUTE_PROCESS(COMMAND mkdir -p "${CMAKE_BINARY_DIR}/generated")
 
 ADD_SUBDIRECTORY(data)
 ADD_SUBDIRECTORY(src)
