@@ -13,12 +13,8 @@
 #  limitations under the License
 
 ADD_OSQUERY_LIBRARY(osquery_sql dynamic_table_row.cpp
-								sqlite_encoding.cpp
 								sqlite_util.cpp
 								sql.cpp
-								sqlite_filesystem.cpp
-								sqlite_math.cpp
-								sqlite_string.cpp
 								virtual_table.cpp
 								virtual_sqlite_table.cpp)
 

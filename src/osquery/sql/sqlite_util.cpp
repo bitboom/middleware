@@ -264,14 +264,6 @@ static inline void openOptimized(sqlite3*& db) {
     settings += "PRAGMA " + setting.first + "=" + setting.second + "; ";
   }
   sqlite3_exec(db, settings.c_str(), nullptr, nullptr, nullptr);
-
-  // Register function extensions.
-  registerMathExtensions(db);
-#if !defined(FREEBSD)
-  registerStringExtensions(db);
-#endif
-  registerFilesystemExtensions(db);
-  registerEncodingExtensions(db);
 }
 
 void SQLiteDBInstance::init() {

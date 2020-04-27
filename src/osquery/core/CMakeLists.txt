@@ -19,12 +19,9 @@ ADD_OSQUERY_LIBRARY(osquery_core tables.cpp
 								 sql/column.cpp
 								 sql/diff_results.cpp
 								 sql/query_data.cpp
-								 sql/query_performance.cpp
 								 sql/row.cpp
 								 sql/scheduled_query.cpp
 								 sql/table_rows.cpp)
 
 FILE(GLOB OSQUERY_CORE_TESTS "tests/*.cpp")
-FILE(GLOB OSQUERY_CORE_POSIX_TESTS "tests/posix/*.cpp")
-ADD_OSQUERY_TEST(${OSQUERY_SQL_TESTS}
-				 ${OSQUERY_CORE_POSIX_TESTS})
+ADD_OSQUERY_TEST(${OSQUERY_SQL_TESTS})

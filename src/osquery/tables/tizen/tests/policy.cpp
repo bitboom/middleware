@@ -30,21 +30,21 @@ TEST_F(PolicyTests, get_all) {
 
 TEST_F(PolicyTests, get_admin_all) {
 	auto admins = policy::API::Admin::GetAll();
-	EXPECT_EQ(admins.size(), 0);
+	EXPECT_EQ(admins.size(), 1);
 
 	policy::API::Admin::Enroll("testAdmin");
 	admins = policy::API::Admin::GetAll();
-	EXPECT_EQ(admins.size(), 1);
+	EXPECT_EQ(admins.size(), 2);
 
 	policy::API::Admin::Enroll("testAdmin1");
 	admins = policy::API::Admin::GetAll();
-	EXPECT_EQ(admins.size(), 2);
+	EXPECT_EQ(admins.size(), 3);
 
 	policy::API::Admin::Disenroll("testAdmin");
 	admins = policy::API::Admin::GetAll();
-	EXPECT_EQ(admins.size(), 1);
+	EXPECT_EQ(admins.size(), 2);
 
 	policy::API::Admin::Disenroll("testAdmin1");
 	admins = policy::API::Admin::GetAll();
-	EXPECT_EQ(admins.size(), 0);
+	EXPECT_EQ(admins.size(), 1);
 }

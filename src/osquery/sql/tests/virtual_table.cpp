@@ -200,19 +200,6 @@ TEST_F(VirtualTableTests, test_sqlite3_attach_vtable) {
       results[0]["sql"]);
 }
 
-TEST_F(VirtualTableTests, test_sqlite3_table_joins) {
-  // Get a database connection.
-  auto dbc = SQLiteDBManager::getUnique();
-
-  QueryData results;
-  // Run a query with a join within.
-  std::string statement =
-      "SELECT p.pid FROM osquery_info oi, processes p WHERE oi.pid = p.pid";
-  auto status = queryInternal(statement, results, dbc);
-  ASSERT_TRUE(status.ok());
-  ASSERT_EQ(results.size(), 1U);
-}
-
 class pTablePlugin : public TablePlugin {
  private:
   TableColumns columns() const override {
@@ -739,60 +726,6 @@ class defaultScanTablePlugin : public TablePlugin {
   // Here the goal is to expect/assume the number of scans.
   size_t scans{0};
 };
-
-TEST_F(VirtualTableTests, test_indexing_costs) {
-  // Get a database connection.
-  auto dbc = SQLiteDBManager::getUnique();
-  auto table_registry = RegistryFactory::get().registry("table");
-
-  auto i = std::make_shared<indexIOptimizedTablePlugin>();
-  table_registry->add("index_i", i);
-  attachTableInternal("index_i", i->columnDefinition(false), dbc, false);
-
-  auto j = std::make_shared<indexJOptimizedTablePlugin>();
-  table_registry->add("index_j", j);
-  attachTableInternal("index_j", j->columnDefinition(false), dbc, false);
-
-  auto default_scan = std::make_shared<defaultScanTablePlugin>();
-  table_registry->add("default_scan", default_scan);
-  attachTableInternal(
-      "default_scan", default_scan->columnDefinition(false), dbc, false);
-
-  QueryData results;
-  queryInternal(
-      "SELECT * from default_scan JOIN index_i using (i);", results, dbc);
-  dbc->clearAffectedTables();
-
-  // We expect index_i to optimize, meaning the constraint evaluation
-  // understood the marked columns and returned a low cost.
-  ASSERT_EQ(1U, default_scan->scans);
-  EXPECT_EQ(10U, i->scans);
-
-  // Reset.
-  default_scan->scans = 0;
-  i->scans = 0;
-
-  // The inverse should also hold, all cost evaluations will be high.
-  queryInternal(
-      "SELECT * from index_i JOIN default_scan using (i);", results, dbc);
-  dbc->clearAffectedTables();
-  EXPECT_EQ(10U, i->scans);
-  EXPECT_EQ(1U, default_scan->scans);
-
-  // Reset.
-  default_scan->scans = 0;
-  i->scans = 0;
-
-  queryInternal(
-      "SELECT * from default_scan join index_i using (i) join index_j using "
-      "(j);",
-      results,
-      dbc);
-  dbc->clearAffectedTables();
-  ASSERT_EQ(1U, default_scan->scans);
-  EXPECT_EQ(10U, i->scans);
-  EXPECT_EQ(10U, j->scans);
-}
 
 class colsUsedTablePlugin : public TablePlugin {
  private:
