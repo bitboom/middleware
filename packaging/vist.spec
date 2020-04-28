@@ -1,8 +1,8 @@
 Name: vist
-Version: 0.0.0
+Version: 0.1.0
 Release: 0
 License: Apache-2.0 and GPLv2 and MIT
-Summary: ViST(Virtual Security Table) is a security monitoring framework using SQL query.
+Summary: ViST(Virtual Security Table) is an unified security API platform based virtual tables.
 Url: https://github.com/facebook/osquery
 Group: Security/Libraries
 Source0: file://%{name}-%{version}.tar.gz
@@ -13,7 +13,6 @@ BuildRequires: cmake
 # osquery BRs
 BuildRequires: glog-devel
 BuildRequires: boost-devel
-BuildRequires: python-jinja2
 # vist BRs
 BuildRequires: gflags-devel
 BuildRequires: pkgconfig(dlog)
@@ -42,7 +41,7 @@ Requires: libsystemd
 %global vist_script_dir %{vist_ro_dir}/script
 
 %description
-ViST provides APIs for monitoring and controlling security resources.
+ViST provides unified interface of security functions.
 ViST views security resources as virtual tables and manipulates them through SQL queries.
 ViST adopts a plug-in architecture and uses osquery as the query analysis engine.
 

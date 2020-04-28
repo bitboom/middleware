@@ -1,6 +1,6 @@
 <p align="center">
 <b> ViST, Virtual Security Table &#127912 </b><br>
-Query-based Universial Security API &#128196<br>
+Query-based Unified Security API Platform &#128196<br>
 of the developer, by the developer, for the developer &#128187
 </p>
 
@@ -24,7 +24,7 @@ more intuitively than other opensource projects.
 Refer [this](https://github.sec.samsung.net/RS7-SECIOTSW/tizen-osquery/tree/master/src/vist/query-builder)
 to compare ours and other opensources.
 
-We believe that ViST makes security software usable and universial.
+We believe that ViST makes security software usable and universal.
 
 # Design
 Our design philoshophy is "Make usable and robust security framework.".

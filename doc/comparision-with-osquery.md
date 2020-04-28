@@ -14,8 +14,8 @@ more efficient interface from this different perspective.
 | Perspective | system developer | system administrator |
 | Project Type | SAM | OPENM |
 | Component | daemon, **library** | daemon, shell |
-| Additional<br>dependencies<br>(without tizen) | jinja2-python<br>rapidjson | jinja2-python<br>rapidsjon<br>lz4<br>zstd<br>rocksdb<br>thrift<br>|
-| Code Lines | 35K (18K - osquery) | 120K |
+| Additional<br>dependencies<br>(without tizen) | rapidjson | jinja2-python<br>rapidsjon<br>lz4<br>zstd<br>rocksdb<br>thrift<br>|
+| Code Lines | 16K (8K - osquery) | 120K |
 
 ---
 
@@ -51,38 +51,39 @@ SUM:                              1386          28549          29233         119
 
 ---
 
-## ViST 0.0.1
+## ViST 0.1.0
 
 ```
+$ cloc . --exclude-dir=third-party
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-C++                            164           4135           3174          18280
-C/C++ Header                   165           4518           8159          15806
-CMake                           38            160            495            632
-Markdown                         7             70              0            463
-Python                           2            104             71            448
+C++                            118           2554           1910          10482
+C/C++ Header                   101           1714           3371           4733
+Markdown                         8             77              0            488
+CMake                           30            127            411            472
 Dockerfile                       1             12              9             34
 SQL                              1              8             15             30
 make                             1              4              0             13
 XML                              1              0              0              1
 -------------------------------------------------------------------------------
-SUM:                           380           9011          11923          35707
+SUM:                           261           4496           5716          16253
 -------------------------------------------------------------------------------
 ```
 
 ---
 
-## osquery in ViST (about 15% of osquery)
+## osquery in ViST (about 7% of osquery)
 
 ```
+$ cloc src/osquery/
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-C++                             96           2903           2076          14170
-C/C++ Header                    71           1398           4102           3335
-CMake                           12             45            145            193
+C++                             49           1274            787           6192
+C/C++ Header                    41            844           2320           2094
+CMake                            5             25             67             94
 -------------------------------------------------------------------------------
-SUM:                           179           4346           6323          17698
+SUM:                            95           2143           3174           8380
 -------------------------------------------------------------------------------
 ```
