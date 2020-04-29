@@ -1,7 +1,7 @@
 Name: vist
 Version: 0.1.0
 Release: 0
-License: Apache-2.0 and GPLv2 and MIT
+License: Apache-2.0 and MIT
 Summary: ViST(Virtual Security Table) is an unified security API platform based virtual tables.
 Url: https://github.com/facebook/osquery
 Group: Security/Libraries
@@ -100,7 +100,6 @@ fi
 %files
 %manifest %{name}.manifest
 %license LICENSE-Apache-2.0
-%license LICENSE-GPL-2.0
 %license LICENSE-MIT
 %attr(-, %{user_name}, %{group_name}) %{_bindir}/vist-cli
 %attr(-, %{user_name}, %{group_name}) %{_bindir}/vistd
