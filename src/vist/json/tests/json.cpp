@@ -79,19 +79,47 @@ TEST(JsonTests, string_type_mismatch)
 	}
 }
 
-TEST(JsonTests, object)
+TEST(JsonTests, array)
 {
-	Json root, child;
-	child["int"] = 1;
-	child["string"] = "initial value";
+	Array array;
+	array.push(100);
+	array.push("string");
 
-	root.push("child", child);
-	EXPECT_EQ(root.size(), 1);
+	EXPECT_EQ(array.size(), 2);
+	EXPECT_EQ(array.serialize(), "[ 100, \"string\" ]");
 
-	auto result = root.pop("child");
-	EXPECT_EQ(root.size(), 0);
+	EXPECT_EQ(static_cast<int>(array.at(0)), 100);
+	EXPECT_EQ(static_cast<std::string>(array.at(1)), "string");
+
+	Json json;
+	json.push("array", array);
+	EXPECT_EQ(json.size(), 1);
+
+	auto& result = json.get<Array>("array");
+	EXPECT_EQ(json.size(), 1);
 	EXPECT_EQ(result.size(), 2);
 
+	EXPECT_EQ(static_cast<int>(result.at(0)), 100);
+	EXPECT_EQ(static_cast<std::string>(result.at(1)), "string");
+}
+
+TEST(JsonTests, object)
+{
+	Object object;
+	object["int"] = 1;
+	object["string"] = "initial value";
+
+	EXPECT_EQ(object.size(), 2);
+	EXPECT_EQ(object.serialize(), "{ \"string\": \"initial value\", \"int\": 1 }");
+
+	EXPECT_EQ(static_cast<int>(object["int"]), 1);
+	EXPECT_EQ(static_cast<std::string>(object["string"]), "initial value");
+
+	Json json;
+	json.push("object", object);
+	EXPECT_EQ(json.size(), 1);
+
+	auto result = json.get<Object>("object");
 	EXPECT_EQ(static_cast<int>(result["int"]), 1);
 	EXPECT_EQ(static_cast<std::string>(result["string"]), "initial value");
 }
@@ -104,7 +132,7 @@ TEST(JsonTests, serialize)
 	// expected: { "string": "root value", "int": 1 }
 	EXPECT_EQ(json.serialize(), "{ \"string\": \"root value\", \"int\": 1 }");
 
-	Json child;
+	Object child;
 	child["int"] = 2;
 	child["string"] = "child value";
 	json.push("child", child);

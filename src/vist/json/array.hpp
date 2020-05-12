@@ -19,59 +19,61 @@
 #include <vist/json/value.hpp>
 
 #include <string>
-#include <unordered_map>
+#include <vector>
 
 namespace vist {
 namespace json {
 
-struct Object : public Value {
+struct Array : public Value {
 	std::size_t size() const noexcept
 	{
-		return this->pairs.size();
-	}
-
-	bool exist(const std::string& key) const noexcept
-	{
-		return this->pairs.find(key) != this->pairs.end();
+		return this->buffer.size();
 	}
 
 	std::string serialize() const override
 	{
 		std::stringstream ss;
-		ss << "{ ";
+		ss << "[ ";
 
 		std::size_t i = 0;
-		for (const auto& [key, value] : pairs) {
-			ss << "\"" << key << "\": ";
+		for (const auto& value : buffer) {
 			ss << value->serialize();
 
-			if (i++ < pairs.size() - 1)
+			if (i++ < buffer.size() - 1)
 				ss << ",";
 
 			ss << " ";
 		}
-		ss << "}";
+		ss << "]";
 
 		return ss.str();
 	}
 
 	template <typename Type>
-	void push(const std::string& key, const Type& data)
+	void push(const Type& data)
 	{
 		auto value = std::make_shared<Value>();
 		*value = data;
-		this->pairs[key] = std::move(value);
+		this->buffer.emplace_back(std::move(value));
 	}
 
-	Value& operator[](const char* key)
+	Value& at(std::size_t index)
 	{
-		if (!this->exist(key))
-			this->pairs[key] = std::make_shared<Value>();
+		if (index > this->size())
+			throw std::invalid_argument("Wrong index.");
 
-		return *(this->pairs[key]);
+		return *(this->buffer[index]);
 	}
 
-	std::unordered_map<std::string, std::shared_ptr<Value>> pairs;
+	Value& operator[](std::size_t index)
+	{
+		if (index > this->size())
+			throw std::invalid_argument("Wrong index.");
+
+		return *(this->buffer[index]);
+	}
+
+	std::vector<std::shared_ptr<Value>> buffer;
 };
 
 } // namespace json

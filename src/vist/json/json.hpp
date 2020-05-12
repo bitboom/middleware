@@ -18,7 +18,7 @@
  *   - Applied design pattern: Composite pattern
  *     - Component structure: Value 
  *     - Leaf structure: Int, String (To be added: Bool, Null)
- *     - Composite structure: Object (To be added: Array)
+ *     - Composite structure: Array, Object
  */
 /*
  * Usage:
@@ -37,8 +37,9 @@
 
 #pragma once
 
-#include <vist/json/value.hpp>
+#include <vist/json/array.hpp>
 #include <vist/json/object.hpp>
+#include <vist/json/value.hpp>
 
 #include <sstream>
 #include <stdexcept>
@@ -72,26 +73,42 @@ struct Json {
 		return this->root.serialize();
 	}
 
-	void push(const std::string& key, Json& child)
+	template <typename CompositeType>
+	void push(const std::string& key, CompositeType& child)
 	{
-		auto object = std::make_shared<Object>();
-		object->pairs = std::move(child.root.pairs);
-		this->root.pairs[key] = object; 
+		auto composite = std::make_shared<CompositeType>();
+		if constexpr (std::is_same_v<CompositeType, Array>)
+			composite->buffer = std::move(child.buffer);
+		else if constexpr (std::is_same_v<CompositeType, Object>)
+			composite->pairs = std::move(child.pairs);
+		else
+			static_assert(dependent_false<CompositeType>::value, "Only Composite type supported.");
+
+		this->root.pairs[key] = composite; 
 	}
 
-	Json pop(const std::string& key)
+	void push(const std::string& key, Array& child)
+	{
+		auto array = std::make_shared<Array>();
+		array->buffer = std::move(child.buffer);
+		this->root.pairs[key] = array; 
+	}
+
+	template <typename CompositeType>
+	CompositeType& get(const std::string& key)
 	{
 		if (!this->root.exist(key))
 			throw std::runtime_error("Not exist key.");
 
-		if (auto downcast = std::dynamic_pointer_cast<Object>(this->root.pairs[key]);
-			downcast == nullptr)
-			throw std::runtime_error("Mismatched type.");
-		else {
-			Json json;
-			json.root.pairs = std::move(downcast->pairs);
-			this->root.pairs.erase(key);
-			return json;
+		if constexpr (std::is_same_v<CompositeType, Array> ||
+					  std::is_same_v<CompositeType, Object>) {
+			if (auto downcast = std::dynamic_pointer_cast<CompositeType>(this->root.pairs[key]);
+				downcast == nullptr)
+				throw std::runtime_error("Mismatched type.");
+			else
+				return *downcast;
+		} else {
+			static_assert(dependent_false<CompositeType>::value, "Only Composite type supported.");
 		}
 	}
 
