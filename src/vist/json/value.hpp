@@ -26,6 +26,7 @@ namespace json {
 struct Int;
 struct String;
 struct Object;
+struct Array;
 
 template<class T> struct dependent_false : std::false_type {};
 
@@ -36,6 +37,27 @@ struct Value {
 			throw std::runtime_error("Leaf is not set yet.");
 
 		return this->leaf->serialize();
+	}
+
+	template <typename Type>
+	void convert()
+	{
+		this->leaf = std::make_shared<Type>();
+	}
+
+	virtual void deserialize(const std::string& dumped)
+	{
+		if (dumped.empty())
+			throw std::invalid_argument("Dumped value cannot empty.");
+
+		switch (dumped[0]) {
+			case '{' : this->convert<Object>(); break;
+			case '[' : this->convert<Array>(); break;
+			case '"': this->convert<String>(); break;
+			default : this->convert<Int>();
+		}
+
+		this->leaf->deserialize(dumped);
 	}
 
 	template <typename Type>
@@ -72,13 +94,17 @@ struct Value {
 };
 
 struct Int : public Value {
-	explicit Int(int data) : data(data)
-	{
-	}
+	explicit Int() {}
+	explicit Int(int data) : data(data) {}
 
 	std::string serialize() const override
 	{
 		return std::to_string(data);
+	}
+
+	void deserialize(const std::string& dumped) override
+	{
+		this->data = std::stoi(dumped);
 	}
 
 	operator int() override
@@ -90,13 +116,23 @@ struct Int : public Value {
 };
 
 struct String : public Value {
-	explicit String(const std::string& data) : data(data)
-	{
-	}
+	explicit String() {}
+	explicit String(const std::string& data) : data(data) {}
 
 	std::string serialize() const override
 	{
 		return "\"" + data + "\"";
+	}
+
+	void deserialize(const std::string& dumped) override
+	{
+		if (dumped.empty())
+			throw std::invalid_argument("Dumped value cannot empty.");
+
+		if (dumped[0] != '"' || dumped[dumped.size() - 1] != '"')
+			throw std::invalid_argument("Wrong format.");
+
+		this->data = dumped.substr(1, dumped.size() -2);
 	}
 
 	operator std::string() override

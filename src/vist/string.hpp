@@ -37,17 +37,29 @@ inline void rtrim(std::string& str)
 	}).base(), str.end());
 }
 
-inline void trim(std::string& str)
+inline std::string trim(const std::string& origin)
 {
-	ltrim(str);
-	rtrim(str);
+	std::string ret = origin;
+	ltrim(ret);
+	rtrim(ret);
+	return ret;
 }
 
-inline std::vector<std::string> split(const std::string origin, std::regex regex)
+inline std::vector<std::string> split(const std::string& origin, const std::string& expression)
 {
+	std::regex regex(expression);
 	auto begin = std::sregex_token_iterator(origin.begin(), origin.end(), regex, -1);
 	auto end = std::sregex_token_iterator();
 	return std::vector<std::string>(begin, end);
+}
+
+inline std::string strip(const std::string& origin, char begin, char end)
+{
+	auto copied = origin;
+	if (copied.size() < 2 || copied[0] != begin || copied[copied.size() - 1] != end)
+		throw std::invalid_argument("Wrong format.");
+
+	return copied.substr(1, copied.size() -2);
 }
 
 } // namespace vist

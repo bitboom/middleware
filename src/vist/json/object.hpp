@@ -17,6 +17,7 @@
 #pragma once
 
 #include <vist/json/value.hpp>
+#include <vist/string.hpp>
 
 #include <string>
 #include <unordered_map>
@@ -25,14 +26,20 @@ namespace vist {
 namespace json {
 
 struct Object : public Value {
-	std::size_t size() const noexcept
+	template <typename Type>
+	void push(const std::string& key, const Type& data)
 	{
-		return this->pairs.size();
+		auto value = std::make_shared<Value>();
+		*value = data;
+		this->pairs[key] = std::move(value);
 	}
 
-	bool exist(const std::string& key) const noexcept
+	Value& operator[](const char* key)
 	{
-		return this->pairs.find(key) != this->pairs.end();
+		if (!this->exist(key))
+			this->pairs[key] = std::make_shared<Value>();
+
+		return *(this->pairs[key]);
 	}
 
 	std::string serialize() const override
@@ -55,23 +62,80 @@ struct Object : public Value {
 		return ss.str();
 	}
 
-	template <typename Type>
-	void push(const std::string& key, const Type& data)
+	void deserialize(const std::string& dumped) override
 	{
-		auto value = std::make_shared<Value>();
-		*value = data;
-		this->pairs[key] = std::move(value);
+		if (dumped.empty())
+			throw std::invalid_argument("Dumped value cannot empty.");
+
+		auto stripped = strip(dumped, '{', '}');
+		auto divided = split(trim(stripped), ",");
+		auto tokens = this->canonicalize(divided);
+		for (const auto& token : tokens) {
+			if (auto pos = token.find(":"); pos != std::string::npos) {
+				auto lhs = token.substr(0, pos);
+				auto rhs = token.substr(pos + 1);
+
+				auto key = strip(trim(lhs), '"', '"');
+				auto value = std::make_shared<Value>();
+
+				value->deserialize(trim(rhs));
+				this->pairs[key] = value;
+			} else {
+				throw std::runtime_error("Wrong format.");
+			}
+		}
 	}
 
-	Value& operator[](const char* key)
+	std::size_t size() const noexcept
 	{
-		if (!this->exist(key))
-			this->pairs[key] = std::make_shared<Value>();
+		return this->pairs.size();
+	}
 
-		return *(this->pairs[key]);
+	bool exist(const std::string& key) const noexcept
+	{
+		return this->pairs.find(key) != this->pairs.end();
 	}
 
 	std::unordered_map<std::string, std::shared_ptr<Value>> pairs;
+
+	std::vector<std::string> canonicalize(std::vector<std::string>& tokens)
+	{
+		std::vector<std::string> result;
+		auto rearrange = [&](std::vector<std::string>::iterator& iter, char first, char last) {
+			if ((*iter).find(first) == std::string::npos)
+				return false;
+
+			std::string origin = *iter;
+			iter++;
+
+			std::size_t lcount = 1, rcount = 0;
+			while (iter != tokens.end()) {
+				if ((*iter).find(first) != std::string::npos)
+					lcount++;
+				else if ((*iter).find(last) != std::string::npos)
+					rcount++;
+
+				origin += ", " + *iter;
+
+				if (lcount == rcount)
+					break;
+				else
+					iter++;
+			}
+			result.emplace_back(std::move(origin));
+
+			return true;
+		};
+
+		for (auto iter = tokens.begin() ; iter != tokens.end(); iter++) {
+			if (rearrange(iter, '{', '}') || rearrange(iter, '[', ']'))
+				continue;
+
+			result.emplace_back(std::move(*iter));
+		}
+
+		return result;
+	}
 };
 
 } // namespace json

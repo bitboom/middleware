@@ -17,6 +17,7 @@
 #pragma once
 
 #include <vist/json/value.hpp>
+#include <vist/string.hpp>
 
 #include <string>
 #include <vector>
@@ -25,30 +26,6 @@ namespace vist {
 namespace json {
 
 struct Array : public Value {
-	std::size_t size() const noexcept
-	{
-		return this->buffer.size();
-	}
-
-	std::string serialize() const override
-	{
-		std::stringstream ss;
-		ss << "[ ";
-
-		std::size_t i = 0;
-		for (const auto& value : buffer) {
-			ss << value->serialize();
-
-			if (i++ < buffer.size() - 1)
-				ss << ",";
-
-			ss << " ";
-		}
-		ss << "]";
-
-		return ss.str();
-	}
-
 	template <typename Type>
 	void push(const Type& data)
 	{
@@ -71,6 +48,44 @@ struct Array : public Value {
 			throw std::invalid_argument("Wrong index.");
 
 		return *(this->buffer[index]);
+	}
+
+	std::string serialize() const override
+	{
+		std::stringstream ss;
+		ss << "[ ";
+
+		std::size_t i = 0;
+		for (const auto& value : buffer) {
+			ss << value->serialize();
+
+			if (i++ < buffer.size() - 1)
+				ss << ",";
+
+			ss << " ";
+		}
+		ss << "]";
+
+		return ss.str();
+	}
+
+	void deserialize(const std::string& dumped) override
+	{
+		if (dumped.empty())
+			throw std::invalid_argument("Dumped value cannot empty.");
+
+		auto stripped = strip(dumped, '[', ']');
+		auto tokens = split(trim(stripped), ",");
+		for (const auto& token : tokens) {
+			auto value = std::make_shared<Value>();
+			value->deserialize(trim(token));
+			this->buffer.emplace_back(std::move(value));
+		}
+	}
+
+	std::size_t size() const noexcept
+	{
+		return this->buffer.size();
 	}
 
 	std::vector<std::shared_ptr<Value>> buffer;

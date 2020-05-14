@@ -37,14 +37,13 @@ TEST(StringTests, rtrim)
 TEST(StringTests, trim)
 {
 	std::string str = " a b c ";
-	trim(str);
-	EXPECT_EQ(str, "a b c");
+	EXPECT_EQ(trim(str), "a b c");
 }
 
 TEST(StringTests, split)
 {
 	std::string origin = "a b c";
-	auto token = split(origin, std::regex("\\s"));
+	auto token = split(origin, "\\s");
 	if (token.size() == 3) {
 		EXPECT_EQ(token[0], "a");
 		EXPECT_EQ(token[1], "b");
@@ -54,7 +53,7 @@ TEST(StringTests, split)
 	}
 
 	origin = "a,b,c";
-	token = split(origin, std::regex(","));
+	token = split(origin, ",");
 	EXPECT_EQ(token.size(), 3);
 	if (token.size() == 3) {
 		EXPECT_EQ(token[0], "a");
@@ -62,5 +61,18 @@ TEST(StringTests, split)
 		EXPECT_EQ(token[2], "c");
 	} else {
 		EXPECT_TRUE(false);
+	}
+}
+
+TEST(StringTests, strip)
+{
+	std::string origin = "{a b c}";
+	EXPECT_EQ(strip(origin, '{', '}'), "a b c");
+
+	try {
+		strip(origin, '[', ']');
+		EXPECT_TRUE(false);
+	} catch(...) {
+		EXPECT_TRUE(true);
 	}
 }

@@ -36,6 +36,9 @@ TEST(JsonTests, int)
 	EXPECT_EQ(static_cast<int>(json["int"]), -1);
 
 	EXPECT_EQ(json["int"].serialize(), "-1");
+
+	json["int"].deserialize("1");
+	EXPECT_EQ(static_cast<int>(json["int"]), 1);
 }
 
 TEST(JsonTests, int_type_mismatch)
@@ -64,6 +67,9 @@ TEST(JsonTests, string)
 	EXPECT_EQ(value, "changed value");
 
 	EXPECT_EQ(json["string"].serialize(), "\"changed value\"");
+
+	json["string"].deserialize("\"deserialized value\"");
+	EXPECT_EQ(static_cast<std::string>(json["string"]), "deserialized value");
 }
 
 TEST(JsonTests, string_type_mismatch)
@@ -86,10 +92,17 @@ TEST(JsonTests, array)
 	array.push("string");
 
 	EXPECT_EQ(array.size(), 2);
-	EXPECT_EQ(array.serialize(), "[ 100, \"string\" ]");
 
 	EXPECT_EQ(static_cast<int>(array.at(0)), 100);
 	EXPECT_EQ(static_cast<std::string>(array.at(1)), "string");
+
+	auto serialized = array.serialize();
+	EXPECT_EQ(serialized, "[ 100, \"string\" ]");
+
+	Array restore;
+	restore.deserialize(serialized);
+	EXPECT_EQ(static_cast<int>(restore.at(0)), 100);
+	EXPECT_EQ(static_cast<std::string>(restore.at(1)), "string");
 
 	Json json;
 	json.push("array", array);
@@ -110,10 +123,17 @@ TEST(JsonTests, object)
 	object["string"] = "initial value";
 
 	EXPECT_EQ(object.size(), 2);
-	EXPECT_EQ(object.serialize(), "{ \"string\": \"initial value\", \"int\": 1 }");
 
 	EXPECT_EQ(static_cast<int>(object["int"]), 1);
 	EXPECT_EQ(static_cast<std::string>(object["string"]), "initial value");
+
+	std::string serialized = object.serialize();
+	EXPECT_EQ(serialized, "{ \"string\": \"initial value\", \"int\": 1 }");
+
+	Object restore;
+	restore.deserialize(serialized);
+	EXPECT_EQ(static_cast<int>(restore["int"]), 1);
+	EXPECT_EQ(static_cast<std::string>(restore["string"]), "initial value");
 
 	Json json;
 	json.push("object", object);
@@ -132,14 +152,38 @@ TEST(JsonTests, serialize)
 	// expected: { "string": "root value", "int": 1 }
 	EXPECT_EQ(json.serialize(), "{ \"string\": \"root value\", \"int\": 1 }");
 
-	Object child;
-	child["int"] = 2;
-	child["string"] = "child value";
-	json.push("child", child);
+	Object object;
+	object["int"] = 2;
+	object["string"] = "child value";
+	json.push("object", object);
+
+	Array array;
+	array.push(3);
+	array.push("array value");
+	json.push("array", array);
 
 	// Json don't keep order for performance.
-	// expected: { "child": { "string": "child value", "int": 2 }, "int": 1, "string": "root value" }
-	EXPECT_EQ(json.serialize(),
-			  "{ \"child\": { \"string\": \"child value\", "
-			  "\"int\": 2 }, \"int\": 1, \"string\": \"root value\" }");
+	// expected: { "array": [ 3, "array value" ],
+	//             "object": { "string": "child value", "int": 2 },
+	//             "int": 1,
+	//             "string": "root value" }
+	auto serialized = json.serialize();
+	EXPECT_EQ(serialized, "{ \"array\": [ 3, \"array value\" ], "
+						  "\"object\": { \"string\": \"child value\", \"int\": 2 }, "
+						  "\"int\": 1, "
+						  "\"string\": \"root value\" }");
+
+	Json restore;
+	restore.deserialize(serialized);
+
+	EXPECT_EQ(static_cast<int>(restore["int"]), 1);
+	EXPECT_EQ(static_cast<std::string>(restore["string"]), "root value");
+
+	Object child1 = restore.get<Object>("object");
+	EXPECT_EQ(static_cast<int>(child1["int"]), 2);
+	EXPECT_EQ(static_cast<std::string>(child1["string"]), "child value");
+
+	Array child2 = restore.get<Array>("array");
+	EXPECT_EQ(static_cast<int>(child2.at(0)), 3);
+	EXPECT_EQ(static_cast<std::string>(child2.at(1)), "array value");
 }

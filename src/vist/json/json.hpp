@@ -40,6 +40,7 @@
 #include <vist/json/array.hpp>
 #include <vist/json/object.hpp>
 #include <vist/json/value.hpp>
+#include <vist/string.hpp>
 
 #include <sstream>
 #include <stdexcept>
@@ -57,7 +58,40 @@ struct Json {
 		return *(this->root.pairs[key]);
 	}
 
-	// Return the number of 1-depth's elements.
+	template <typename CompositeType>
+	void push(const std::string& key, CompositeType& child)
+	{
+		auto value = std::make_shared<Value>();
+		auto composite = std::make_shared<CompositeType>();
+		if constexpr (std::is_same_v<CompositeType, Array>)
+			composite->buffer = std::move(child.buffer);
+		else if constexpr (std::is_same_v<CompositeType, Object>)
+			composite->pairs = std::move(child.pairs);
+		else
+			static_assert(dependent_false<CompositeType>::value, "Only Composite type supported.");
+
+		value->leaf = composite;
+		this->root.pairs[key] = std::move(value);
+	}
+
+	template <typename CompositeType>
+	CompositeType& get(const std::string& key)
+	{
+		if (!this->root.exist(key))
+			throw std::runtime_error("Not exist key.");
+
+		if constexpr (std::is_same_v<CompositeType, Array> ||
+					  std::is_same_v<CompositeType, Object>) {
+			if (auto downcast = std::dynamic_pointer_cast<CompositeType>(this->root.pairs[key]->leaf);
+				downcast == nullptr)
+				throw std::runtime_error(key + "Mismatched type.");
+			else
+				return *downcast;
+		} else {
+			static_assert(dependent_false<CompositeType>::value, "Only Composite type supported.");
+		}
+	}
+
 	std::size_t size() const noexcept
 	{
 		return this->root.size();
@@ -73,43 +107,9 @@ struct Json {
 		return this->root.serialize();
 	}
 
-	template <typename CompositeType>
-	void push(const std::string& key, CompositeType& child)
+	void deserialize(const std::string& dumped)
 	{
-		auto composite = std::make_shared<CompositeType>();
-		if constexpr (std::is_same_v<CompositeType, Array>)
-			composite->buffer = std::move(child.buffer);
-		else if constexpr (std::is_same_v<CompositeType, Object>)
-			composite->pairs = std::move(child.pairs);
-		else
-			static_assert(dependent_false<CompositeType>::value, "Only Composite type supported.");
-
-		this->root.pairs[key] = composite; 
-	}
-
-	void push(const std::string& key, Array& child)
-	{
-		auto array = std::make_shared<Array>();
-		array->buffer = std::move(child.buffer);
-		this->root.pairs[key] = array; 
-	}
-
-	template <typename CompositeType>
-	CompositeType& get(const std::string& key)
-	{
-		if (!this->root.exist(key))
-			throw std::runtime_error("Not exist key.");
-
-		if constexpr (std::is_same_v<CompositeType, Array> ||
-					  std::is_same_v<CompositeType, Object>) {
-			if (auto downcast = std::dynamic_pointer_cast<CompositeType>(this->root.pairs[key]);
-				downcast == nullptr)
-				throw std::runtime_error("Mismatched type.");
-			else
-				return *downcast;
-		} else {
-			static_assert(dependent_false<CompositeType>::value, "Only Composite type supported.");
-		}
+		this->root.deserialize(dumped);
 	}
 
 	Object root;
