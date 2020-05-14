@@ -85,6 +85,60 @@ TEST(JsonTests, string_type_mismatch)
 	}
 }
 
+TEST(JsonTests, bool)
+{
+	Json json;
+	json["bool"] = true;
+
+	bool value = json["bool"];
+	EXPECT_EQ(value, true);
+	EXPECT_EQ(json["bool"].serialize(), "true");
+
+	json["bool"] = false;
+	value = static_cast<bool>(json["bool"]);
+	EXPECT_EQ(value, false);
+
+	EXPECT_EQ(json["bool"].serialize(), "false");
+
+	json["bool"].deserialize("true");
+	EXPECT_EQ(static_cast<bool>(json["bool"]), true);
+}
+
+TEST(JsonTests, null)
+{
+	Json json;
+	json["null"] = nullptr;
+
+	EXPECT_EQ(json["null"].serialize(), "null");
+}
+
+TEST(JsonTests, type_check)
+{
+	Json json;
+	json["int"] = 1;
+	json["string"] = "string";
+	json["bool"] = true;
+	json["null"] = nullptr;
+	Array array;
+	Object object;
+	json.push("array", array);
+	json.push("object", object);
+
+	EXPECT_TRUE(json["int"].is<Int>());
+	EXPECT_TRUE(json["string"].is<String>());
+	EXPECT_TRUE(json["bool"].is<Bool>());
+	EXPECT_TRUE(json["null"].is<Null>());
+	EXPECT_TRUE(json["array"].is<Array>());
+	EXPECT_TRUE(json["object"].is<Object>());
+
+	EXPECT_FALSE(json["int"].is<String>());
+	EXPECT_FALSE(json["string"].is<Int>());
+	EXPECT_FALSE(json["bool"].is<Int>());
+	EXPECT_FALSE(json["null"].is<Int>());
+	EXPECT_FALSE(json["array"].is<Int>());
+	EXPECT_FALSE(json["object"].is<Int>());
+}
+
 TEST(JsonTests, array)
 {
 	Array array;

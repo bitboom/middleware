@@ -23,10 +23,13 @@
 namespace vist {
 namespace json {
 
+struct Bool;
 struct Int;
 struct String;
-struct Object;
+struct Null;
+
 struct Array;
+struct Object;
 
 template<class T> struct dependent_false : std::false_type {};
 
@@ -54,6 +57,9 @@ struct Value {
 			case '{' : this->convert<Object>(); break;
 			case '[' : this->convert<Array>(); break;
 			case '"': this->convert<String>(); break;
+			case 'n': this->convert<Null>(); break;
+			case 't': // fall through
+			case 'f' : this->convert<Bool>(); break;
 			default : this->convert<Int>();
 		}
 
@@ -64,10 +70,14 @@ struct Value {
 	Value& operator=(const Type& data)
 	{
 		if constexpr (std::is_same_v<Type, int>)
-			this->leaf = std::make_shared<Int>(data); 
+			this->leaf = std::make_shared<Int>(data);
 		else if constexpr (std::is_same_v<typename std::decay<Type>::type, std::string> ||
 						   std::is_same_v<typename std::decay<Type>::type, char*>)
-			this->leaf = std::make_shared<String>(data); 
+			this->leaf = std::make_shared<String>(data);
+		else if constexpr (std::is_same_v<Type, bool>)
+			this->leaf = std::make_shared<Bool>(data);
+		else if constexpr (std::is_same_v<Type, std::nullptr_t>)
+			this->leaf = std::make_shared<Null>();
 		else
 			static_assert(dependent_false<Type>::value, "Not supported type.");
 
@@ -90,7 +100,24 @@ struct Value {
 		return (*this->leaf).operator std::string();
 	}
 
+	virtual operator bool()
+	{
+		if (auto downcast = std::dynamic_pointer_cast<Bool>(this->leaf); downcast == nullptr)
+			throw std::runtime_error("Mismatched type.");
+
+		return (*this->leaf).operator bool();
+	}
+
+	template <typename Type>
+	bool is()
+	{
+		auto downcast = std::dynamic_pointer_cast<Type>(this->leaf);
+		return downcast != nullptr;
+	}
+
 	std::shared_ptr<Value> leaf;
+
+private:
 };
 
 struct Int : public Value {
@@ -121,7 +148,7 @@ struct String : public Value {
 
 	std::string serialize() const override
 	{
-		return "\"" + data + "\"";
+		return "\"" + this->data + "\"";
 	}
 
 	void deserialize(const std::string& dumped) override
@@ -137,10 +164,52 @@ struct String : public Value {
 
 	operator std::string() override
 	{
-		return data;
+		return this->data;
 	}
 
 	std::string data;
+};
+
+struct Bool : public Value {
+	explicit Bool() {}
+	explicit Bool(bool data) : data(data) {}
+
+	std::string serialize() const override
+	{
+		return this->data ? "true" : "false";
+	}
+
+	void deserialize(const std::string& dumped) override
+	{
+		if (dumped == "true")
+			this->data = true;
+		else if (dumped == "false")
+			this->data = false;
+		else
+			throw std::invalid_argument("Wrong format.");
+	}
+
+	operator bool() override
+	{
+		return this->data;
+	}
+
+	bool data = false;
+};
+
+struct Null : public Value {
+	explicit Null() {}
+
+	std::string serialize() const override
+	{
+		return "null";
+	}
+
+	void deserialize(const std::string& dumped) override
+	{
+		if (dumped != "null")
+			throw std::invalid_argument("Wrong format.");
+	}
 };
 
 } // namespace json

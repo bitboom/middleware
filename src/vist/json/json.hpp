@@ -17,7 +17,7 @@
  * Usable JSON header-only library.
  *   - Applied design pattern: Composite pattern
  *     - Component structure: Value 
- *     - Leaf structure: Int, String (To be added: Bool, Null)
+ *     - Leaf structure: Int, String, Bool, Null
  *     - Composite structure: Array, Object
  */
 /*
