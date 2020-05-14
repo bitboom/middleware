@@ -1,5 +1,5 @@
 Name: vist
-Version: 0.1.0
+Version: 0.1.1
 Release: 0
 License: Apache-2.0 and MIT
 Summary: ViST(Virtual Security Table) is an unified security API platform based virtual tables.
