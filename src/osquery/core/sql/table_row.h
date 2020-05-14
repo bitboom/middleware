@@ -10,13 +10,18 @@
 
 #include "row.h"
 
+#include <osquery/utils/status/status.h>
+
 #include <sqlite3.h>
+
+#include <vector>
 
 namespace osquery {
 
 class TableRow;
 
 using TableRowHolder = std::unique_ptr<TableRow>;
+using TableRows = std::vector<TableRowHolder>;
 
 /**
  * Interface for accessing a table row. Implementations may be backed by
@@ -40,11 +45,6 @@ class TableRow {
   virtual int get_column(sqlite3_context* ctx,
                          sqlite3_vtab* pVtab,
                          int col) = 0;
-  /**
-   * Serialize this row as key,value pairs into the given JSON object.
-   */
-  virtual Status serialize(JSON& doc, rapidjson::Value& obj) const = 0;
-
   /**
    * Clone this row.
    */

@@ -24,16 +24,9 @@
 #include <osquery/core/sql/column.h>
 #include <osquery/plugins/plugin.h>
 #include <osquery/query.h>
+#include <osquery/utils/json/json.h>
 
 #include <gtest/gtest_prod.h>
-
-/// Allow Tables to use "tracked" deprecated OS APIs.
-#define OSQUERY_USE_DEPRECATED(expr)                                           \
-  do {                                                                         \
-    _Pragma("clang diagnostic push") _Pragma(                                  \
-        "clang diagnostic ignored \"-Wdeprecated-declarations\"")(expr);       \
-    _Pragma("clang diagnostic pop")                                            \
-  } while (0)
 
 namespace osquery {
 

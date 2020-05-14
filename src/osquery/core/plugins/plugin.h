@@ -13,7 +13,7 @@
 
 #include <boost/noncopyable.hpp>
 
-#include <osquery/core/sql/table_rows.h>
+#include <osquery/core/sql/table_row.h>
 #include <osquery/utils/status/status.h>
 
 namespace osquery {

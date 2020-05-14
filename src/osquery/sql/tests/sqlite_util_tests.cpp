@@ -63,13 +63,6 @@ TEST_F(SQLiteUtilTests, test_precision_is_maintained) {
   EXPECT_EQ(sql.rows()[0], r);
 }
 
-TEST_F(SQLiteUtilTests, test_simple_query_execution) {
-  // Access to the internal SQL implementation is only available in core.
-  auto sql = SQL("SELECT * FROM time");
-  EXPECT_TRUE(sql.ok());
-  EXPECT_EQ(sql.rows().size(), 1U);
-}
-
 TEST_F(SQLiteUtilTests, test_sqlite_instance_manager) {
   auto dbc1 = SQLiteDBManager::get();
   auto dbc2 = SQLiteDBManager::get();
@@ -136,13 +129,6 @@ TEST_F(SQLiteUtilTests, test_whitespace_query) {
   auto dbc = getTestDBC();
   QueryDataTyped results;
   auto status = queryInternal("     ", results, dbc);
-  EXPECT_TRUE(status.ok());
-}
-
-TEST_F(SQLiteUtilTests, test_whitespace_then_nonwhitespace_query) {
-  auto dbc = getTestDBC();
-  QueryDataTyped results;
-  auto status = queryInternal("     ; select * from time  ", results, dbc);
   EXPECT_TRUE(status.ok());
 }
 

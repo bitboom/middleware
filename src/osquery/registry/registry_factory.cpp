@@ -15,7 +15,6 @@
 #include <vist/logger.hpp>
 #include <osquery/registry.h>
 #include <osquery/utils/conversions/split.h>
-#include <osquery/utils/json/json.h>
 
 namespace osquery {
 

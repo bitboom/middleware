@@ -26,45 +26,6 @@ TableRows tableRowsFromQueryData(QueryData&& rows) {
   return result;
 }
 
-Status deserializeTableRows(const rj::Value& arr, TableRows& rows) {
-  if (!arr.IsArray()) {
-    return Status(1);
-  }
-
-  for (const auto& i : arr.GetArray()) {
-    auto r = make_table_row();
-    auto status = deserializeRow(i, r);
-    if (!status.ok()) {
-      return status;
-    }
-    rows.push_back(std::move(r));
-  }
-  return Status::success();
-}
-
-Status deserializeTableRowsJSON(const std::string& json, TableRows& rows) {
-  auto doc = JSON::newArray();
-  if (!doc.fromString(json) || !doc.doc().IsArray()) {
-    return Status(1, "Cannot deserializing JSON");
-  }
-
-  return deserializeTableRows(doc.doc(), rows);
-}
-
-Status deserializeRow(const rj::Value& doc, DynamicTableRowHolder& r) {
-  if (!doc.IsObject()) {
-    return Status(1);
-  }
-
-  for (const auto& i : doc.GetObject()) {
-    std::string name(i.name.GetString());
-    if (!name.empty() && i.value.IsString()) {
-      r[name] = i.value.GetString();
-    }
-  }
-  return Status::success();
-}
-
 int DynamicTableRow::get_rowid(sqlite_int64 default_value,
                                sqlite_int64* pRowid) const {
   auto& current_row = this->row;
@@ -141,14 +102,6 @@ int DynamicTableRow::get_column(sqlite3_context* ctx,
   }
 
   return SQLITE_OK;
-}
-
-Status DynamicTableRow::serialize(JSON& doc, rj::Value& obj) const {
-  for (const auto& i : row) {
-    doc.addRef(i.first, i.second, obj);
-  }
-
-  return Status::success();
 }
 
 TableRowHolder DynamicTableRow::clone() const {

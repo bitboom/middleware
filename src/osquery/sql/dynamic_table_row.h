@@ -8,9 +8,8 @@
 
 #pragma once
 
+#include <osquery/core/sql/query_data.h>
 #include <osquery/core/sql/table_row.h>
-#include <osquery/core/sql/table_rows.h>
-#include <osquery/utils/json/json.h>
 
 namespace osquery {
 
@@ -29,7 +28,6 @@ class DynamicTableRow : public TableRow {
   }
   virtual int get_rowid(sqlite_int64 default_value, sqlite_int64* pRowid) const;
   virtual int get_column(sqlite3_context* ctx, sqlite3_vtab* pVtab, int col);
-  virtual Status serialize(JSON& doc, rapidjson::Value& obj) const;
   virtual TableRowHolder clone() const;
   inline std::string& operator[](const std::string& key) {
     return row[key];
@@ -80,15 +78,5 @@ inline DynamicTableRowHolder make_table_row(
 /// Converts a QueryData struct to TableRows. Intended for use only in
 /// generated code.
 TableRows tableRowsFromQueryData(QueryData&& rows);
-
-/**
- * @brief Deserialize a DynamicTableRow object from JSON object.
- *
- * @param obj the input JSON value (should be an object).
- * @param r [output] the output DynamicTableRowHolder structure.
- *
- * @return Status indicating the success or failure of the operation.
- */
-Status deserializeRow(const rapidjson::Value& doc, DynamicTableRowHolder& r);
 
 } // namespace osquery

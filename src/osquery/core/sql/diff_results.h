@@ -9,6 +9,7 @@
 #pragma once
 
 #include <osquery/core/sql/query_data.h>
+#include <osquery/utils/only_movable.h>
 
 namespace osquery {
 
@@ -42,36 +43,6 @@ struct DiffResults : private only_movable {
     return !(*this == comp);
   }
 };
-
-/**
- * @brief Serialize a DiffResults object into a JSON object.
- *
- * The object JSON will contain two new keys: added and removed.
- *
- * @param d the DiffResults to serialize.
- * @param doc the managed JSON document.
- * @param obj [output] the output JSON object.
- * @param asNumeric true iff numeric values are serialized as such
- *
- * @return Status indicating the success or failure of the operation.
- */
-Status serializeDiffResults(const DiffResults& d,
-                            JSON& doc,
-                            rapidjson::Document& obj,
-                            bool asNumeric);
-
-/**
- * @brief Serialize a DiffResults object into a JSON string.
- *
- * @param d the DiffResults to serialize.
- * @param json [output] the output JSON string.
- * @param asNumeric true iff numeric values are serialized as such
- *
- * @return Status indicating the success or failure of the operation.
- */
-Status serializeDiffResultsJSON(const DiffResults& d,
-                                std::string& json,
-                                bool asNumeric);
 
 /**
  * @brief Diff QueryDataSet object and QueryData object

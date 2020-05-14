@@ -19,7 +19,6 @@
 #include <osquery/core.h>
 #include <osquery/core/sql/diff_results.h>
 #include <osquery/core/sql/scheduled_query.h>
-#include <osquery/utils/json/json.h>
 
 namespace osquery {
 
@@ -71,49 +70,6 @@ struct QueryLogItem {
     return !(*this == comp);
   }
 };
-
-/**
- * @brief Serialize a QueryLogItem object into a JSON document.
- *
- * @param item the QueryLogItem to serialize.
- * @param doc [output] the output JSON document (object type).
- *
- * @return Status indicating the success or failure of the operation.
- */
-Status serializeQueryLogItem(const QueryLogItem& item, JSON& doc);
-
-/**
- * @brief Serialize a QueryLogItem object into a JSON string.
- *
- * @param item the QueryLogItem to serialize.
- * @param json [output] the output JSON string.
- *
- * @return Status indicating the success or failure of the operation.
- */
-Status serializeQueryLogItemJSON(const QueryLogItem& item, std::string& json);
-
-/**
- * @brief Serialize a QueryLogItem object into a JSON document containing
- * events, a list of actions.
- *
- * @param item the QueryLogItem to serialize
- * @param json [output] the output JSON document.
- *
- * @return Status indicating the success or failure of the operation
- */
-Status serializeQueryLogItemAsEvents(const QueryLogItem& item, JSON& json);
-
-/**
- * @brief Serialize a QueryLogItem object into a JSON string of events,
- * a list of actions.
- *
- * @param i the QueryLogItem to serialize
- * @param items [output] vector of JSON output strings
- *
- * @return Status indicating the success or failure of the operation
- */
-Status serializeQueryLogItemAsEventsJSON(const QueryLogItem& i,
-                                         std::vector<std::string>& items);
 
 /**
  * @brief Interact with the historical on-disk storage for a given query.
