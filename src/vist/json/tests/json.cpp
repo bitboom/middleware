@@ -16,10 +16,20 @@
 
 #include <gtest/gtest.h>
 
-#include <vist/json/json.hpp>
-#include <vist/logger.hpp>
+#include <vist/json.hpp>
 
 using namespace vist::json;
+
+TEST(JsonTests, usage)
+{
+	std::string raw = "{\"project\":\"vist\",\"stars\":10}";
+
+	Json json = Json::Parse(raw);
+	int stars = json["stars"];
+	json["stars"] = stars + 1;
+
+	EXPECT_EQ(json.serialize(), "{ \"stars\": 11, \"project\": \"vist\" }");
+}
 
 TEST(JsonTests, int)
 {

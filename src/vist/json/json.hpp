@@ -50,6 +50,13 @@ namespace vist {
 namespace json {
 
 struct Json {
+	static Json Parse(const std::string& raw)
+	{
+		Json json;
+		json.deserialize(raw);
+		return json;
+	}
+
 	Value& operator[](const std::string& key)
 	{
 		if (!this->root.exist(key))
