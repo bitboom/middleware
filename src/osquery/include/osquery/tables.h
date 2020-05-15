@@ -24,7 +24,8 @@
 #include <osquery/core/sql/column.h>
 #include <osquery/plugins/plugin.h>
 #include <osquery/query.h>
-#include <osquery/utils/json/json.h>
+
+#include <vist/json.hpp>
 
 #include <gtest/gtest_prod.h>
 
@@ -345,10 +346,10 @@ struct ConstraintList : private boost::noncopyable {
    *   ]
    * }
    */
-  void serialize(JSON& doc, rapidjson::Value& obj) const;
+  vist::json::Object serialize() const;
 
-  /// See ConstraintList::unserialize.
-  void deserialize(const rapidjson::Value& obj);
+  void deserialize(vist::json::Object& obj);
+
 
  private:
   /// List of constraint operator/expressions.

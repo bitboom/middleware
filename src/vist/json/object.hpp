@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <vist/json/util.hpp>
 #include <vist/json/value.hpp>
 #include <vist/string.hpp>
 
@@ -26,11 +27,23 @@ namespace vist {
 namespace json {
 
 struct Object : public Value {
+	static Object Create(Value& value)
+	{
+		if (auto downcast = std::dynamic_pointer_cast<Object>(value.leaf); downcast == nullptr)
+			throw std::runtime_error("Mismatched type.");
+		else
+			return *downcast;
+	}
+
 	template <typename Type>
 	void push(const std::string& key, const Type& data)
 	{
+		auto real = std::make_shared<Type>();
+		*real = data;
+
 		auto value = std::make_shared<Value>();
-		*value = data;
+		value->leaf = real;
+
 		this->pairs[key] = std::move(value);
 	}
 
@@ -40,6 +53,24 @@ struct Object : public Value {
 			this->pairs[key] = std::make_shared<Value>();
 
 		return *(this->pairs[key]);
+	}
+
+	template <typename CompositeType>
+	CompositeType& get(const std::string& key)
+	{
+		if (!this->exist(key))
+			throw std::runtime_error("Not exist key.");
+
+		if constexpr (std::is_same_v<CompositeType, Array> ||
+					  std::is_same_v<CompositeType, Object>) {
+			if (auto downcast = std::dynamic_pointer_cast<CompositeType>(this->pairs[key]->leaf);
+				downcast == nullptr)
+				throw std::runtime_error(key + "Mismatched type.");
+			else
+				return *downcast;
+		} else {
+			static_assert(dependent_false<CompositeType>::value, "Only Composite type supported.");
+		}
 	}
 
 	std::string serialize() const override
@@ -67,9 +98,9 @@ struct Object : public Value {
 		if (dumped.empty())
 			throw std::invalid_argument("Dumped value cannot empty.");
 
-		auto stripped = strip(dumped, '{', '}');
-		auto divided = split(trim(stripped), ",");
-		auto tokens = this->canonicalize(divided);
+		auto stripped = strip(trim(dumped), '{', '}');
+		auto divided = split(stripped, ",");
+		auto tokens = canonicalize(divided);
 		for (const auto& token : tokens) {
 			if (auto pos = token.find(":"); pos != std::string::npos) {
 				auto lhs = token.substr(0, pos);
@@ -97,45 +128,6 @@ struct Object : public Value {
 	}
 
 	std::unordered_map<std::string, std::shared_ptr<Value>> pairs;
-
-	std::vector<std::string> canonicalize(std::vector<std::string>& tokens)
-	{
-		std::vector<std::string> result;
-		auto rearrange = [&](std::vector<std::string>::iterator& iter, char first, char last) {
-			if ((*iter).find(first) == std::string::npos)
-				return false;
-
-			std::string origin = *iter;
-			iter++;
-
-			std::size_t lcount = 1, rcount = 0;
-			while (iter != tokens.end()) {
-				if ((*iter).find(first) != std::string::npos)
-					lcount++;
-				else if ((*iter).find(last) != std::string::npos)
-					rcount++;
-
-				origin += ", " + *iter;
-
-				if (lcount == rcount)
-					break;
-				else
-					iter++;
-			}
-			result.emplace_back(std::move(origin));
-
-			return true;
-		};
-
-		for (auto iter = tokens.begin() ; iter != tokens.end(); iter++) {
-			if (rearrange(iter, '{', '}') || rearrange(iter, '[', ']'))
-				continue;
-
-			result.emplace_back(std::move(*iter));
-		}
-
-		return result;
-	}
 };
 
 } // namespace json

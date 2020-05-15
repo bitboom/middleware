@@ -62,4 +62,9 @@ inline std::string strip(const std::string& origin, char begin, char end)
 	return copied.substr(1, copied.size() -2);
 }
 
+inline std::size_t count(const std::string& str, char ch)
+{
+	return std::count(str.begin(), str.end(), ch);
+}
+
 } // namespace vist

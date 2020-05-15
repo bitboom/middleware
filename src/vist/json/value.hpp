@@ -116,8 +116,6 @@ struct Value {
 	}
 
 	std::shared_ptr<Value> leaf;
-
-private:
 };
 
 struct Int : public Value {

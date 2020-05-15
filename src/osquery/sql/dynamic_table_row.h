@@ -10,6 +10,7 @@
 
 #include <osquery/core/sql/query_data.h>
 #include <osquery/core/sql/table_row.h>
+#include <osquery/utils/json/json.h>
 
 namespace osquery {
 

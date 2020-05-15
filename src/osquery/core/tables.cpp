@@ -6,12 +6,11 @@
  *  the LICENSE file found in the root directory of this source tree.
  */
 
-#include <osquery/utils/json/json.h>
-
-#include <vist/logger.hpp>
 #include <osquery/registry_factory.h>
 #include <osquery/tables.h>
 #include <osquery/utils/conversions/tryto.h>
+
+#include <vist/logger.hpp>
 
 namespace osquery {
 
@@ -40,71 +39,64 @@ void TablePlugin::removeExternal(const std::string& name) {
 }
 
 void TablePlugin::setRequestFromContext(const QueryContext& context,
-                                        PluginRequest& request) {
-  auto doc = JSON::newObject();
-  auto constraints = doc.getArray();
+										PluginRequest& request) {
+	vist::json::Json document;
+	vist::json::Array constraints;
 
-  // The QueryContext contains a constraint map from column to type information
-  // and the list of operand/expression constraints applied to that column from
-  // the query given.
-  for (const auto& constraint : context.constraints) {
-    auto child = doc.getObject();
-    doc.addRef("name", constraint.first, child);
-    constraint.second.serialize(doc, child);
-    doc.push(child, constraints);
-  }
+	// The QueryContext contains a constraint map from column to type information
+	// and the list of operand/expression constraints applied to that column from
+	// the query given.
+	//
+	//  {"constraints":[{"name":"test_int","list":[{"op":2,"expr":"2"}],"affinity":"TEXT"}]}
+	for (const auto& constraint : context.constraints) {
+		auto child = constraint.second.serialize();
+		child["name"] = constraint.first;
 
-  doc.add("constraints", constraints);
+		constraints.push(child);
+	}
 
-  if (context.colsUsed) {
-    auto colsUsed = doc.getArray();
-    for (const auto& columnName : *context.colsUsed) {
-      doc.pushCopy(columnName, colsUsed);
-    }
-    doc.add("colsUsed", colsUsed);
-  }
+	document.push("constraints", constraints);
 
-  if (context.colsUsedBitset) {
-    doc.add("colsUsedBitset", context.colsUsedBitset->to_ullong());
-  }
+	if (context.colsUsed) {
+		vist::json::Array colsUsed;
+		for (const auto& columnName : *context.colsUsed)
+			colsUsed.push(columnName);
 
-  doc.toString(request["context"]);
+		document.push("colsUsed", colsUsed);
+	}
+
+	request["context"] = document.serialize();
+	DEBUG(OSQUERY) << "request context->" << request["context"];
 }
 
-QueryContext TablePlugin::getContextFromRequest(
-    const PluginRequest& request) const {
-  QueryContext context;
-  if (request.count("context") == 0) {
-    return context;
-  }
+QueryContext TablePlugin::getContextFromRequest(const PluginRequest& request) const {
+	QueryContext context;
+	if (request.count("context") == 0)
+		return context;
 
-  auto doc = JSON::newObject();
-  doc.fromString(request.at("context"));
-  if (doc.doc().HasMember("colsUsed")) {
-    UsedColumns colsUsed;
-    for (const auto& columnName : doc.doc()["colsUsed"].GetArray()) {
-      colsUsed.insert(columnName.GetString());
-    }
-    context.colsUsed = colsUsed;
-  }
-  if (doc.doc().HasMember("colsUsedBitset")) {
-    context.colsUsedBitset = doc.doc()["colsUsedBitset"].GetUint64();
-  } else if (context.colsUsed) {
-    context.colsUsedBitset = usedColumnsToBitset(*context.colsUsed);
-  }
+	using namespace vist::json;
+	std::string serialized = request.at("context");
+	Json document = Json::Parse(serialized);
+	DEBUG(OSQUERY) << "request context->" << document.serialize();
 
-  if (!doc.doc().HasMember("constraints") ||
-      !doc.doc()["constraints"].IsArray()) {
-    return context;
-  }
+	if (document.exist("colsUsed")) {
+		UsedColumns colsUsed;
+		Array array = document.get<Array>("colsUsed");
+		for (auto i = 0; i < array.size(); i++) {
+			std::string name = array.at(i); 
+			colsUsed.insert(name);
+		}
+		context.colsUsed = colsUsed;
+	}
 
-  // Set the context limit and deserialize each column constraint list.
-  for (const auto& constraint : doc.doc()["constraints"].GetArray()) {
-    auto column_name = constraint["name"].GetString();
-    context.constraints[column_name].deserialize(constraint);
-  }
+	Array constraints = document.get<Array>("constraints"); 
+	for (auto i = 0; i < constraints.size(); i++) {
+		auto constraint = Object::Create(constraints.at(i));
+		std::string name = constraint["name"];
+		context.constraints[name].deserialize(constraint);
+	}
 
-  return context;
+	return context;
 }
 
 UsedColumnsBitset TablePlugin::usedColumnsToBitset(
@@ -451,36 +443,36 @@ template std::set<long long> ConstraintList::getAll<long long>(
 template std::set<unsigned long long>
     ConstraintList::getAll<unsigned long long>(ConstraintOperator) const;
 
-void ConstraintList::serialize(JSON& doc, rapidjson::Value& obj) const {
-  auto expressions = doc.getArray();
-  for (const auto& constraint : constraints_) {
-    auto child = doc.getObject();
-    doc.add("op", static_cast<size_t>(constraint.op), child);
-    doc.addRef("expr", constraint.expr, child);
-    doc.push(child, expressions);
-  }
-  doc.add("list", expressions, obj);
-  doc.addCopy("affinity", columnTypeName(affinity), obj);
+vist::json::Object ConstraintList::serialize() const {
+	// format: { "affinity": "TEXT", "list": [ { "expr": "1", "op": 2 } ] }
+	vist::json::Array list;
+	for (const auto& constraint : constraints_) {
+		vist::json::Object element;
+		element["op"] = static_cast<int>(constraint.op);
+		element["expr"] =  constraint.expr;
+		list.push(element);
+	}
+
+	vist::json::Object object;
+	object.push("list", list);
+	object["affinity"] = columnTypeName(affinity);
+
+	return object;
 }
 
-void ConstraintList::deserialize(const rapidjson::Value& obj) {
-  // Iterate through the list of operand/expressions, then set the constraint
-  // type affinity.
-  if (!obj.IsObject() || !obj.HasMember("list") || !obj["list"].IsArray()) {
-    return;
-  }
+void ConstraintList::deserialize(vist::json::Object& obj) {
+	using namespace vist::json;
+	Array list = obj.get<Array>("list");
+	for (auto i = 0; i < list.size(); i++) {
+		auto element = vist::json::Object::Create(list.at(i));
+		int op = element["op"]; 
+		Constraint constraint(static_cast<unsigned char>(op));
+		constraint.expr = static_cast<std::string>(element["expr"]);
+		this->constraints_.emplace_back(std::move(constraint));
+	}
 
-  for (const auto& list : obj["list"].GetArray()) {
-    auto op = static_cast<unsigned char>(JSON::valueToSize(list["op"]));
-    Constraint constraint(op);
-    constraint.expr = list["expr"].GetString();
-    constraints_.push_back(constraint);
-  }
-
-  auto affinity_name = (obj.HasMember("affinity") && obj["affinity"].IsString())
-                           ? obj["affinity"].GetString()
-                           : "UNKNOWN";
-  affinity = columnTypeName(affinity_name);
+	std::string name = obj.exist("affinity") ? static_cast<std::string>(obj["affinity"]) : "UNKNOWN";
+	this->affinity = columnTypeName(name);
 }
 
 bool QueryContext::isColumnUsed(const std::string& colName) const {

@@ -84,19 +84,12 @@ struct Json {
 	template <typename CompositeType>
 	CompositeType& get(const std::string& key)
 	{
-		if (!this->root.exist(key))
-			throw std::runtime_error("Not exist key.");
+		return this->root.get<CompositeType>(key);
+	}
 
-		if constexpr (std::is_same_v<CompositeType, Array> ||
-					  std::is_same_v<CompositeType, Object>) {
-			if (auto downcast = std::dynamic_pointer_cast<CompositeType>(this->root.pairs[key]->leaf);
-				downcast == nullptr)
-				throw std::runtime_error(key + "Mismatched type.");
-			else
-				return *downcast;
-		} else {
-			static_assert(dependent_false<CompositeType>::value, "Only Composite type supported.");
-		}
+	bool exist(const std::string& key)
+	{
+		return this->root.exist(key);
 	}
 
 	std::size_t size() const noexcept

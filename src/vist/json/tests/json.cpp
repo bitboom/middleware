@@ -208,6 +208,59 @@ TEST(JsonTests, object)
 	EXPECT_EQ(static_cast<std::string>(result["string"]), "initial value");
 }
 
+TEST(JsonTests, empty_array)
+{
+	Json json = Json::Parse("{ \"empty\": [ ] }");
+	EXPECT_EQ(json.size(), 1);
+}
+
+TEST(JsonTests, osquery_format)
+{
+	// {"constraints":[{"name":"test_int","list":[{"op":2,"expr":"2"}],"affinity":"TEXT"}]}
+	Json document;
+
+	{
+		// "constraints"
+		Array constraints;
+
+		// "name"
+		Object child;
+		child["name"] = "test_int";
+
+		// "list"
+		Array list;
+		Object element;
+		element["op"] = 2;
+		element["expr"] = "2";
+		list.push(element);
+		child.push("list", list);
+
+		// "affinity"
+		child["affinity"] = "TEXT";
+
+		constraints.push(child);
+		document.push("constraints", constraints);
+
+		EXPECT_EQ(document.serialize(), "{ \"constraints\": [ { \"affinity\": \"TEXT\", "
+										"\"name\": \"test_int\", "
+										"\"list\": [ { \"expr\": \"2\", \"op\": 2 } ] } ] }");
+	}
+
+	{
+		Json restore = Json::Parse(document.serialize());
+		EXPECT_TRUE(restore.exist("constraints"));
+
+		Array constraints = restore.get<Array>("constraints");
+		Object child = Object::Create(constraints.at(0));
+		EXPECT_EQ(static_cast<std::string>(child["name"]), "test_int");
+
+		Array list = child.get<Array>("list");
+		Object element = Object::Create(list.at(0));
+		EXPECT_EQ(static_cast<int>(element["op"]), 2);
+		EXPECT_EQ(static_cast<std::string>(element["expr"]), "2");
+	}
+}
+
 TEST(JsonTests, serialize)
 {
 	Json json;

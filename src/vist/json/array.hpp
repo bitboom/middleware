@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <vist/json/util.hpp>
 #include <vist/json/value.hpp>
 #include <vist/string.hpp>
 
@@ -30,7 +31,14 @@ struct Array : public Value {
 	void push(const Type& data)
 	{
 		auto value = std::make_shared<Value>();
-		*value = data;
+		if constexpr (std::is_same_v<Type, Array> || std::is_same_v<Type, Object>) {
+			auto real = std::make_shared<Type>();
+			*real = data;
+			value->leaf = real;
+		} else {
+			*value = data;
+		}
+
 		this->buffer.emplace_back(std::move(value));
 	}
 
@@ -74,8 +82,12 @@ struct Array : public Value {
 		if (dumped.empty())
 			throw std::invalid_argument("Dumped value cannot empty.");
 
-		auto stripped = strip(dumped, '[', ']');
-		auto tokens = split(trim(stripped), ",");
+		auto stripped = strip(trim(dumped), '[', ']');
+		if (trim(stripped).empty())
+			return;
+
+		auto divided = split(stripped, ",");
+		auto tokens = canonicalize(divided);
 		for (const auto& token : tokens) {
 			auto value = std::make_shared<Value>();
 			value->deserialize(trim(token));
