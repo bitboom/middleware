@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-SET(VERSION "0.1.1")
+SET(VERSION "0.1.2")
 SET(OSQUERY_VERSION "4.0.0")
 
 SET(RO_DIR "/usr/share")
