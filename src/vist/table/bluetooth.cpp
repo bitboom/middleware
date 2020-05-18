@@ -17,6 +17,7 @@
 #include "bluetooth.hpp"
 
 #include <vist/exception.hpp>
+#include <vist/json.hpp>
 #include <vist/logger.hpp>
 #include <vist/policy/api.hpp>
 
@@ -88,23 +89,20 @@ TableRows BluetoothTable::generate(QueryContext&) try {
 
 QueryData BluetoothTable::update(QueryContext&, const PluginRequest& request) try {
 	INFO(VIST) << "Update query about bluetooth table.";
-	if (request.count("json_value_array") == 0)
+	if (request.count("json_values") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
-	std::string str = request.at("json_value_array");
-	rapidjson::Document document;
-	document.Parse(str.c_str());
-	if (document.HasParseError() || !document.IsArray())
-		throw std::runtime_error("Cannot parse request.");
-
-	if (document.Size() != 4)
+	DEBUG(VIST) << "Request values: " << request.at("json_values");
+	json::Json document = json::Json::Parse(request.at("json_values"));
+	json::Array values = document.get<json::Array>("values");
+	if (values.size() != 4)
 		throw std::runtime_error("Wrong request format.");
 
 	/// TODO(Sangwan): Sync vtab schema with policy definition
-	setPolicy("bluetooth", document[0].GetInt());
-	setPolicy("bluetooth-desktop-connectivity", document[1].GetInt());
-	setPolicy("bluetooth-pairing", document[2].GetInt());
-	setPolicy("bluetooth-tethering", document[3].GetInt());
+	setPolicy("bluetooth", static_cast<int>(values.at(0)));
+	setPolicy("bluetooth-desktop-connectivity", static_cast<int>(values.at(1)));
+	setPolicy("bluetooth-pairing", static_cast<int>(values.at(2)));
+	setPolicy("bluetooth-tethering", static_cast<int>(values.at(3)));
 
 	Row r;
 	r["status"] = "success";

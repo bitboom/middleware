@@ -22,8 +22,7 @@ ADD_OSQUERY_LIBRARY(osquery_utils base64.cpp
 								  system/posix/filepath.cpp
 								  system/posix/time.cpp
 								  conversions/tryto.cpp
-								  conversions/split.cpp
-								  json/json.cpp)
+								  conversions/split.cpp)
 
 FILE(GLOB OSQUERY_UTILS_ERROR_TESTS "error/tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_UTILS_ERROR_TESTS})
@@ -39,9 +38,6 @@ ADD_OSQUERY_TEST(${OSQUERY_UTILS_STATUS_TESTS})
 
 FILE(GLOB OSQUERY_UTILS_CONVERSION_TESTS "conversions/tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_UTILS_CONVERSION_TESTS})
-
-FILE(GLOB OSQUERY_UTILS_JSON_TESTS "json/tests/*.cpp")
-ADD_OSQUERY_TEST(${OSQUERY_UTILS_JSON_TESTS})
 
 FILE(GLOB OSQUERY_UTILS_SYSTEM_TESTS "system/tests/*.cpp")
 FILE(GLOB OSQUERY_UTILS_SYSTEM_POSIXE_TESTS "system/posix/tests/*.cpp")

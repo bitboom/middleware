@@ -17,6 +17,7 @@
 #include "policy.hpp"
 
 #include <vist/exception.hpp>
+#include <vist/json.hpp>
 #include <vist/logger.hpp>
 #include <vist/policy/api.hpp>
 
@@ -93,20 +94,17 @@ TableRows PolicyTable::generate(QueryContext& context) try
 QueryData PolicyTable::update(QueryContext&, const PluginRequest& request) try
 {
 	INFO(VIST) << "Update query about policy table.";
-	if (request.count("json_value_array") == 0)
+	if (request.count("json_values") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
-	std::string str = request.at("json_value_array");
-	rapidjson::Document document;
-	document.Parse(str.c_str());
-	if (document.HasParseError() || !document.IsArray())
-		throw std::runtime_error("Cannot parse request.");
-
-	if (document.Size() != 2)
+	DEBUG(VIST) << "Request values: " << request.at("json_values");
+	json::Json document = json::Json::Parse(request.at("json_values"));
+	json::Array values = document.get<json::Array>("values");
+	if (values.size() != 2)
 		throw std::runtime_error("Wrong request format.");
 
-	std::string name = document[0].GetString();
-	std::string dumpedValue = document[1].GetString();
+	std::string name = static_cast<std::string>(values.at(0));
+	std::string dumpedValue = static_cast<std::string>(values.at(1));
 
 	vist::policy::API::Admin::Set(name, vist::policy::PolicyValue(dumpedValue, true));
 

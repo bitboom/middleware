@@ -13,7 +13,6 @@
 #include <osquery/registry.h>
 #include <osquery/sql.h>
 #include <osquery/sql/dynamic_table_row.h>
-#include <osquery/sql/tests/sql_test_utils.h>
 #include <osquery/tables.h>
 
 namespace osquery {

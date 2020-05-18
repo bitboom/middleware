@@ -9,14 +9,16 @@
 #include <atomic>
 #include <unordered_set>
 
-#include <osquery/core.h>
+#include <vist/json.hpp>
 #include <vist/logger.hpp>
+
+#include <osquery/core.h>
 #include <osquery/registry_factory.h>
 #include <osquery/sql/dynamic_table_row.h>
 #include <osquery/sql/virtual_table.h>
 #include <osquery/utils/conversions/tryto.h>
 
-#include <vist/logger.hpp>
+using namespace vist;
 
 namespace osquery {
 
@@ -114,18 +116,14 @@ bool getColumnValue(std::string& value,
 }
 
 /// PATCH START //////////////////////////////////////////////////////////////
-int serializeDeleteParameters(std::string& json_value_array,
-							  VirtualTable* pVtab) {
+int serializeDeleteParameters(std::string& serialized, VirtualTable* pVtab) {
 	auto content = pVtab->content;
 	if (content->constraints.size() <= 0) {
 		ERROR(OSQUERY) << "Invalid constraints arguments";
 		return SQLITE_ERROR;
 	}
 
-	auto document = rapidjson::Document();
-	document.SetArray();
-	auto& allocator = document.GetAllocator();
-
+	json::Array values;
 	for (std::size_t i = 0; i < content->constraints.size(); i++) {
 		for (auto& constraint : content->constraints[i]) {
 			auto key = constraint.first;
@@ -133,127 +131,110 @@ int serializeDeleteParameters(std::string& json_value_array,
 
 			if (!value.empty()) {
 				/// Since concrete table is not able to know the key, make alias.
-				rapidjson::Value jsonValue((key + ";" + value).c_str(), allocator);
-				document.PushBack(jsonValue, allocator);
+				values.push(key + ";" + value);
 			}
 		}
 	}
 
-	rapidjson::StringBuffer buffer;
-	buffer.Clear();
+	json::Json document;
+	document.push("values", values);
 
-	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-	document.Accept(writer);
-
-	json_value_array = buffer.GetString();
+	serialized = document.serialize();
+	DEBUG(VIST) << "Serialized sql parameters: " << serialized;
 
 	return SQLITE_OK;
 }
-/// PATCH END /////////////////////////////////////////////////////////////////
 
 // Type-aware serializer to pass parameters between osquery and the extension
-int serializeUpdateParameters(std::string& json_value_array,
-                              size_t argc,
-                              sqlite3_value** argv,
-                              const TableColumns& columnDescriptors) {
-  if (columnDescriptors.size() != argc - 2U) {
-    DEBUG(OSQUERY) << "Wrong column count: " << argc - 2U
-            << ". Expected: " << columnDescriptors.size();
-    return SQLITE_RANGE;
-  }
+int serializeUpdateParameters(std::string& serialized,
+							  size_t argc,
+							  sqlite3_value** argv,
+							  const TableColumns& columnDescriptors) {
+	if (columnDescriptors.size() != argc - 2U) {
+		DEBUG(VIST) << "Wrong column count: " << argc - 2U
+					<< ". Expected: " << columnDescriptors.size();
+		return SQLITE_RANGE;
+	}
 
-  auto document = rapidjson::Document();
-  document.SetArray();
+	json::Array values;
 
-  auto& allocator = document.GetAllocator();
+	for (size_t i = 2U; i < argc; i++) {
+		auto sqlite_value = argv[i];
 
-  for (size_t i = 2U; i < argc; i++) {
-    auto sqlite_value = argv[i];
+		const auto& columnDescriptor = columnDescriptors[i - 2U];
+		const auto& columnType = std::get<1>(columnDescriptor);
 
-    const auto& columnDescriptor = columnDescriptors[i - 2U];
-    const auto& columnType = std::get<1>(columnDescriptor);
+		const auto& columnOptions = std::get<2>(columnDescriptor);
+		bool requiredColumn = (columnOptions == ColumnOptions::INDEX ||
+							   columnOptions == ColumnOptions::REQUIRED);
 
-    const auto& columnOptions = std::get<2>(columnDescriptor);
-    bool requiredColumn = (columnOptions == ColumnOptions::INDEX ||
-                           columnOptions == ColumnOptions::REQUIRED);
+		auto receivedValueType = sqlite3_value_type(sqlite_value);
+		switch (receivedValueType) {
+		case SQLITE_INTEGER: {
+			if (columnType != INTEGER_TYPE && columnType != BIGINT_TYPE &&
+					columnType != UNSIGNED_BIGINT_TYPE) {
+				return SQLITE_MISMATCH;
+			}
 
-    auto receivedValueType = sqlite3_value_type(sqlite_value);
-    switch (receivedValueType) {
-    case SQLITE_INTEGER: {
-      if (columnType != INTEGER_TYPE && columnType != BIGINT_TYPE &&
-          columnType != UNSIGNED_BIGINT_TYPE) {
-        return SQLITE_MISMATCH;
-      }
+			auto integer = static_cast<int>(sqlite3_value_int64(sqlite_value));
+			values.push(integer);
+			break;
+		}
 
-      auto integer =
-          static_cast<std::int64_t>(sqlite3_value_int64(sqlite_value));
+		case SQLITE_FLOAT: {
+			if (columnType != DOUBLE_TYPE)
+				return SQLITE_MISMATCH;
 
-      document.PushBack(integer, allocator);
-      break;
-    }
+			values.push(sqlite3_value_double(sqlite_value));
+			break;
+		}
 
-    case SQLITE_FLOAT: {
-      if (columnType != DOUBLE_TYPE) {
-        return SQLITE_MISMATCH;
-      }
+		case SQLITE_BLOB:
+		case SQLITE3_TEXT: {
+			bool typeMismatch = false;
+			if (receivedValueType == SQLITE_BLOB)
+				typeMismatch = columnType != BLOB_TYPE;
+			else
+				typeMismatch = columnType != TEXT_TYPE;
 
-      document.PushBack(sqlite3_value_double(sqlite_value), allocator);
-      break;
-    }
+			if (typeMismatch) 
+				return SQLITE_MISMATCH;
 
-    case SQLITE_BLOB:
-    case SQLITE3_TEXT: {
-      bool typeMismatch = false;
-      if (receivedValueType == SQLITE_BLOB) {
-        typeMismatch = columnType != BLOB_TYPE;
-      } else {
-        typeMismatch = columnType != TEXT_TYPE;
-      }
+			auto data_pointer = sqlite3_value_blob(sqlite_value);
+			auto buffer_size = sqlite3_value_bytes(sqlite_value);
 
-      if (typeMismatch) {
-        return SQLITE_MISMATCH;
-      }
+			std::string string_data;
+			string_data.resize(buffer_size);
+			std::memcpy(&string_data[0], data_pointer, buffer_size);
 
-      auto data_pointer = sqlite3_value_blob(sqlite_value);
-      auto buffer_size = sqlite3_value_bytes(sqlite_value);
+			values.push(string_data);
 
-      std::string string_data;
-      string_data.resize(buffer_size);
-      std::memcpy(&string_data[0], data_pointer, buffer_size);
+			break;
+		}
 
-      rapidjson::Value value(string_data.c_str(), allocator);
-      document.PushBack(value, allocator);
+		case SQLITE_NULL: {
+			if (requiredColumn)
+				return SQLITE_MISMATCH;
 
-      break;
-    }
+			json::Null null;
+			values.push(null);
+			break;
+		}
 
-    case SQLITE_NULL: {
-      if (requiredColumn) {
-        return SQLITE_MISMATCH;
-      }
+		default: {
+			ERROR(OSQUERY) << "Invalid column type returned by sqlite";
+			return SQLITE_MISMATCH;
+		}
+		}
+	}
 
-      rapidjson::Value value;
-      value.SetNull();
+	json::Json document;
+	document.push("values", values);
 
-      document.PushBack(value, allocator);
-      break;
-    }
+	serialized = document.serialize();
+	DEBUG(VIST) << "Serialized sql parameters: " << serialized;
 
-    default: {
-      ERROR(OSQUERY) << "Invalid column type returned by sqlite";
-      return SQLITE_MISMATCH;
-    }
-    }
-  }
-
-  rapidjson::StringBuffer buffer;
-  buffer.Clear();
-
-  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-  document.Accept(writer);
-
-  json_value_array = buffer.GetString();
-  return SQLITE_OK;
+	return SQLITE_OK;
 }
 
 void setTableErrorMessage(sqlite3_vtab* vtable,
@@ -365,10 +346,9 @@ int xUpdate(sqlite3_vtab* p,
     plugin_request.insert({"id", std::to_string(row_to_delete)});
 
 /// PATCH START //////////////////////////////////////////////////////////////
-	std::string json_value_array;
-	/// serialize constraints
-	serializeDeleteParameters(json_value_array, reinterpret_cast<VirtualTable*>(p));
-	plugin_request.insert({"json_value_array", json_value_array});
+	std::string json_values;
+	serializeDeleteParameters(json_values, reinterpret_cast<VirtualTable*>(p));
+	plugin_request.insert({"json_values", json_values});
 /// PATCH END ////////////////////////////////////////////////////////////////
   } else if (sqlite3_value_type(argv[0]) == SQLITE_NULL) {
     // This is an INSERT query; if the rowid has been generated for us, we'll
@@ -378,15 +358,15 @@ int xUpdate(sqlite3_vtab* p,
     // Add the values to insert; we should have a value for each column present
     // in the table, even if the user did not specify a value (in which case
     // we will find a nullptr)
-    std::string json_value_array;
-    auto serializerError = serializeUpdateParameters(
-        json_value_array, argument_count, argv, columnDescriptors);
-    if (serializerError != SQLITE_OK) {
-      DEBUG(OSQUERY) << "Failed to serialize the INSERT request";
-      return serializerError;
-    }
+	std::string json_values;
+	auto serializerError = serializeUpdateParameters(
+		json_values, argument_count, argv, columnDescriptors);
+	if (serializerError != SQLITE_OK) {
+		DEBUG(OSQUERY) << "Failed to serialize the UPDATE request";
+		return serializerError;
+	}
 
-    plugin_request.insert({"json_value_array", json_value_array});
+	plugin_request.insert({"json_values", json_values});
 
     if (sqlite3_value_type(argv[1]) != SQLITE_NULL) {
       plugin_request.insert({"auto_rowid", "true"});
@@ -430,15 +410,15 @@ int xUpdate(sqlite3_vtab* p,
     }
 
     // Get the values to update
-    std::string json_value_array;
-    auto serializerError = serializeUpdateParameters(
-        json_value_array, argument_count, argv, columnDescriptors);
-    if (serializerError != SQLITE_OK) {
-      DEBUG(OSQUERY) << "Failed to serialize the UPDATE request";
-      return serializerError;
-    }
+	std::string json_values;
+	auto serializerError = serializeUpdateParameters(
+		json_values, argument_count, argv, columnDescriptors);
+	if (serializerError != SQLITE_OK) {
+		DEBUG(OSQUERY) << "Failed to serialize the UPDATE request";
+		return serializerError;
+	}
 
-    plugin_request.insert({"json_value_array", json_value_array});
+	plugin_request.insert({"json_values", json_values});
 
   } else {
     DEBUG(OSQUERY) << "Invalid xUpdate call";

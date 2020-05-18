@@ -12,8 +12,6 @@
 #include <vist/logger.hpp>
 #include <osquery/utils/conversions/tryto.h>
 
-namespace rj = rapidjson;
-
 namespace osquery {
 
 TableRows tableRowsFromQueryData(QueryData&& rows) {

@@ -17,6 +17,7 @@
 #include "policy-admin.hpp"
 
 #include <vist/exception.hpp>
+#include <vist/json.hpp>
 #include <vist/logger.hpp>
 #include <vist/policy/api.hpp>
 
@@ -45,15 +46,13 @@ std::string getValue(std::string&& alias, const std::string& key)
 
 std::string parseAdmin(const std::string& request, bool insert = true)
 {
-	rapidjson::Document document;
-	document.Parse(request.c_str());
-	if (document.HasParseError() || !document.IsArray())
-		throw std::runtime_error("Cannot parse request.");
+	json::Json document = json::Json::Parse(request);
+	json::Array values = document.get<json::Array>("values");
 
 	if (insert)
-		return std::string(document[0].GetString());
+		return values.at(0);
 	else
-		return getValue(document[0].GetString(), "name");
+		return getValue(values.at(0), "name");
 }
 
 } // anonymous namespace
@@ -119,10 +118,11 @@ TableRows PolicyAdminTable::generate(QueryContext& context) try
 QueryData PolicyAdminTable::insert(QueryContext&, const PluginRequest& request) try
 {
 	INFO(VIST) << "Insert query about policy-admin table.";
-	if (request.count("json_value_array") == 0)
+	if (request.count("json_values") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
-	auto admin = parseAdmin(request.at("json_value_array"));
+	DEBUG(VIST) << "Request values: " << request.at("json_values");
+	auto admin = parseAdmin(request.at("json_values"));
 	DEBUG(VIST) << "Admin info [name]: " << admin;
 	vist::policy::API::Admin::Enroll(admin);
 
@@ -142,10 +142,11 @@ QueryData PolicyAdminTable::insert(QueryContext&, const PluginRequest& request) 
 QueryData PolicyAdminTable::delete_(QueryContext&, const PluginRequest& request) try
 {
 	INFO(VIST) << "Delete query about policy-admin table.";
-	if (request.count("json_value_array") == 0)
+	if (request.count("json_values") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
-	auto admin = parseAdmin(request.at("json_value_array"), false);
+	DEBUG(VIST) << "Request values: " << request.at("json_values");
+	auto admin = parseAdmin(request.at("json_values"), false);
 	DEBUG(VIST) << "Admin info [name]: " << admin;
 	vist::policy::API::Admin::Disenroll(admin);
 
@@ -165,20 +166,17 @@ QueryData PolicyAdminTable::delete_(QueryContext&, const PluginRequest& request)
 QueryData PolicyAdminTable::update(QueryContext&, const PluginRequest& request) try
 {
 	INFO(VIST) << "Update query about policy-admin table.";
-	if (request.count("json_value_array") == 0)
+	if (request.count("json_values") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
-	std::string str = request.at("json_value_array");
-	rapidjson::Document document;
-	document.Parse(str.c_str());
-	if (document.HasParseError() || !document.IsArray())
-		throw std::runtime_error("Cannot parse request.");
-
-	if (document.Size() != 2)
+	DEBUG(VIST) << "Request values: " << request.at("json_values");
+	json::Json document = json::Json::Parse(request.at("json_values"));
+	json::Array values = document.get<json::Array>("values");
+	if (values.size() != 2)
 		throw std::runtime_error("Wrong request format.");
 
-	std::string name = document[0].GetString();
-	int activated = document[1].GetInt();
+	std::string name = static_cast<std::string>(values.at(0));
+	int activated = static_cast<int>(values.at(1));
 
 	vist::policy::API::Admin::Activate(name, activated);
 

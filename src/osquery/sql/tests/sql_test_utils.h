@@ -3,7 +3,6 @@
 #include <osquery/registry_interface.h>
 #include <osquery/sql.h>
 #include <osquery/sql/sqlite_util.h>
-#include <osquery/utils/json/json.h>
 
 namespace osquery {
 
@@ -22,31 +21,5 @@ QueryDataTyped getTestDBExpectedResults();
 // are in alphabetical order. If unordered_and_repeated is true, the
 // vector includes a repeated column name and is in non-alphabetical order
 ColumnNames getSerializedRowColumnNames(bool unordered_and_repeated);
-
-// getSerializedRow() return an std::pair where pair->first is a string which
-// should serialize to pair->second. pair->second should deserialize
-// to pair->first
-std::pair<JSON, RowTyped> getSerializedRow(bool unordered_and_repeated = false);
-
-// getSerializedQueryData() return an std::pair where pair->first is a string
-// which should serialize to pair->second. pair->second should
-// deserialize to pair->first. getSerializedQueryDataWithColumnOrder
-// returns a pair where pair->second is a tree that has a repeated column and
-// the child nodes are not in alphabetical order
-std::pair<JSON, QueryDataTyped> getSerializedQueryData();
-std::pair<JSON, QueryDataTyped> getSerializedQueryDataWithColumnOrder();
-std::pair<std::string, QueryDataTyped> getSerializedQueryDataJSON();
-
-// getSerializedDiffResults() return an std::pair where pair->first is a string
-// which should serialize to pair->second. pair->second should
-// deserialize to pair->first
-std::pair<JSON, DiffResults> getSerializedDiffResults();
-std::pair<std::string, DiffResults> getSerializedDiffResultsJSON();
-
-// getSerializedQueryLogItem() return an std::pair where pair->first
-// is a string which should serialize to pair->second. pair->second
-// should deserialize to pair->first
-std::pair<JSON, QueryLogItem> getSerializedQueryLogItem();
-std::pair<std::string, QueryLogItem> getSerializedQueryLogItemJSON();
 
 } // namespace osquery
