@@ -35,6 +35,8 @@ struct Array : public Value {
 			auto real = std::make_shared<Type>();
 			*real = data;
 			value->leaf = real;
+		} else if constexpr (std::is_same_v<Type, Null>) {
+			value->leaf = std::make_shared<Null>();
 		} else {
 			*value = data;
 		}

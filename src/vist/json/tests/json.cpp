@@ -51,6 +51,26 @@ TEST(JsonTests, int)
 	EXPECT_EQ(static_cast<int>(json["int"]), 1);
 }
 
+TEST(JsonTests, double)
+{
+	Json json;
+	json["double"] = 1.1;
+
+	double value = json["double"];
+	EXPECT_EQ(value, 1.1);
+
+	json["double"] = -1.1;
+	value = json["double"];
+	EXPECT_EQ(value, -1.1);
+
+	EXPECT_EQ(static_cast<double>(json["double"]), -1.1);
+
+	EXPECT_NE(json["double"].serialize().find("-1.1"), std::string::npos);
+
+	json["double"].deserialize("1.1");
+	EXPECT_EQ(static_cast<double>(json["double"]), 1.1);
+}
+
 TEST(JsonTests, int_type_mismatch)
 {
 	Json json;

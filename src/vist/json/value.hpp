@@ -24,9 +24,10 @@ namespace vist {
 namespace json {
 
 struct Bool;
+struct Double;
 struct Int;
-struct String;
 struct Null;
+struct String;
 
 struct Array;
 struct Object;
@@ -60,7 +61,12 @@ struct Value {
 			case 'n': this->convert<Null>(); break;
 			case 't': // fall through
 			case 'f' : this->convert<Bool>(); break;
-			default : this->convert<Int>();
+			default : {
+				if (dumped.find(".") == std::string::npos)
+					this->convert<Int>();
+				else
+					this->convert<Double>();
+			}
 		}
 
 		this->leaf->deserialize(dumped);
@@ -71,6 +77,8 @@ struct Value {
 	{
 		if constexpr (std::is_same_v<Type, int>)
 			this->leaf = std::make_shared<Int>(data);
+		else if constexpr (std::is_same_v<Type, double>)
+			this->leaf = std::make_shared<Double>(data);
 		else if constexpr (std::is_same_v<typename std::decay<Type>::type, std::string> ||
 						   std::is_same_v<typename std::decay<Type>::type, char*>)
 			this->leaf = std::make_shared<String>(data);
@@ -90,6 +98,14 @@ struct Value {
 			throw std::runtime_error("Mismatched type.");
 
 		return (*this->leaf).operator int();
+	}
+
+	virtual operator double()
+	{
+		if (auto downcast = std::dynamic_pointer_cast<Double>(this->leaf); downcast == nullptr)
+			throw std::runtime_error("Mismatched type.");
+
+		return (*this->leaf).operator double();
 	}
 
 	virtual operator std::string()
@@ -138,6 +154,28 @@ struct Int : public Value {
 	}
 
 	int data = 0;
+};
+
+struct Double : public Value {
+	explicit Double() {}
+	explicit Double(double data) : data(data) {}
+
+	std::string serialize() const override
+	{
+		return std::to_string(data);
+	}
+
+	void deserialize(const std::string& dumped) override
+	{
+		this->data = std::stod(dumped);
+	}
+
+	operator double() override
+	{
+		return data;
+	}
+
+	double data = 0.0;
 };
 
 struct String : public Value {
