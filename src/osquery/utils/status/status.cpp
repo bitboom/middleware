@@ -14,15 +14,17 @@ namespace osquery {
 
 constexpr int Status::kSuccessCode;
 
-Status Status::failure(int code, std::string message) {
-  assert(code != Status::kSuccessCode &&
-         "Using 'failure' to create Status object with a kSuccessCode");
-  return Status(code, std::move(message));
+Status Status::failure(int code, std::string message)
+{
+	assert(code != Status::kSuccessCode &&
+		   "Using 'failure' to create Status object with a kSuccessCode");
+	return Status(code, std::move(message));
 }
 
-::std::ostream& operator<<(::std::ostream& os, const Status& s) {
-  return os << "Status(" << s.getCode() << R"(, ")" << s.getMessage()
-            << R"("))";
+::std::ostream& operator<<(::std::ostream& os, const Status& s)
+{
+	return os << "Status(" << s.getCode() << R"(, ")" << s.getMessage()
+		   << R"("))";
 }
 
 } // namespace osquery

@@ -19,149 +19,155 @@
 namespace osquery {
 
 class RegistryFactory : private boost::noncopyable {
- public:
-  /// Singleton accessor.
-  static RegistryFactory& get();
+public:
+	/// Singleton accessor.
+	static RegistryFactory& get();
 
-  /**
-   * @brief Call a registry item.
-   *
-   * Registry 'calling' is the primary interaction osquery has with the Plugin
-   * APIs, which register items. Each item is an instance of a specialized
-   * Plugin, whose life/scope is maintained by the specific registry identified
-   * by a unique name.
-   *
-   * The specialized plugin type will expose a `call` method that parses a
-   * PluginRequest then perform some action and return a PluginResponse.
-   * Each registry provides a `call` method that performs the registry item
-   * (Plugin instance) look up, and passes and retrieves the request and
-   * response.
-   *
-   * @param registry_name The unique registry name containing item_name,
-   * @param item_name The name of the plugin used to REGISTER.
-   * @param request The PluginRequest object handled by the Plugin item.
-   * @param response The output.
-   * @return A status from the Plugin.
-   */
-  static Status call(const std::string& registry_name,
-                     const std::string& item_name,
-                     const PluginRequest& request,
-                     PluginResponse& response);
+	/**
+	 * @brief Call a registry item.
+	 *
+	 * Registry 'calling' is the primary interaction osquery has with the Plugin
+	 * APIs, which register items. Each item is an instance of a specialized
+	 * Plugin, whose life/scope is maintained by the specific registry identified
+	 * by a unique name.
+	 *
+	 * The specialized plugin type will expose a `call` method that parses a
+	 * PluginRequest then perform some action and return a PluginResponse.
+	 * Each registry provides a `call` method that performs the registry item
+	 * (Plugin instance) look up, and passes and retrieves the request and
+	 * response.
+	 *
+	 * @param registry_name The unique registry name containing item_name,
+	 * @param item_name The name of the plugin used to REGISTER.
+	 * @param request The PluginRequest object handled by the Plugin item.
+	 * @param response The output.
+	 * @return A status from the Plugin.
+	 */
+	static Status call(const std::string& registry_name,
+					   const std::string& item_name,
+					   const PluginRequest& request,
+					   PluginResponse& response);
 
-  /// A helper call that does not return a response (only status).
-  static Status call(const std::string& registry_name,
-                     const std::string& item_name,
-                     const PluginRequest& request);
+	/// A helper call that does not return a response (only status).
+	static Status call(const std::string& registry_name,
+					   const std::string& item_name,
+					   const PluginRequest& request);
 
-  /// A helper call that uses the active plugin (if the registry has one).
-  static Status call(const std::string& registry_name,
-                     const PluginRequest& request,
-                     PluginResponse& response);
+	/// A helper call that uses the active plugin (if the registry has one).
+	static Status call(const std::string& registry_name,
+					   const PluginRequest& request,
+					   PluginResponse& response);
 
-  /// A helper call that uses the active plugin (if the registry has one).
-  static Status call(const std::string& registry_name,
-                     const PluginRequest& request);
+	/// A helper call that uses the active plugin (if the registry has one).
+	static Status call(const std::string& registry_name,
+					   const PluginRequest& request);
 
-  /// Run `setUp` on every registry that is not marked 'lazy'.
-  static void setUp();
+	/// Run `setUp` on every registry that is not marked 'lazy'.
+	static void setUp();
 
- public:
-  /// Direct access to a registry instance.
-  RegistryInterfaceRef registry(const std::string& registry_name) const;
+public:
+	/// Direct access to a registry instance.
+	RegistryInterfaceRef registry(const std::string& registry_name) const;
 
-  void add(const std::string& name, RegistryInterfaceRef reg);
+	void add(const std::string& name, RegistryInterfaceRef reg);
 
-  /// Direct access to all registries.
-  std::map<std::string, RegistryInterfaceRef> all() const;
+	/// Direct access to all registries.
+	std::map<std::string, RegistryInterfaceRef> all() const;
 
-  /// Direct access to all plugin instances for a given registry name.
-  std::map<std::string, PluginRef> plugins(
-      const std::string& registry_name) const;
+	/// Direct access to all plugin instances for a given registry name.
+	std::map<std::string, PluginRef> plugins(
+		const std::string& registry_name) const;
 
-  /// Direct access to a plugin instance.
-  PluginRef plugin(const std::string& registry_name,
-                   const std::string& item_name) const;
+	/// Direct access to a plugin instance.
+	PluginRef plugin(const std::string& registry_name,
+					 const std::string& item_name) const;
 
-  /// Adds an alias for an internal registry item. This registry will only
-  /// broadcast the alias name.
-  Status addAlias(const std::string& registry_name,
-                  const std::string& item_name,
-                  const std::string& alias);
+	/// Adds an alias for an internal registry item. This registry will only
+	/// broadcast the alias name.
+	Status addAlias(const std::string& registry_name,
+					const std::string& item_name,
+					const std::string& alias);
 
-  /// Returns the item_name or the item alias if an alias exists.
-  std::string getAlias(const std::string& registry_name,
-                       const std::string& alias) const;
+	/// Returns the item_name or the item alias if an alias exists.
+	std::string getAlias(const std::string& registry_name,
+						 const std::string& alias) const;
 
-  /// Set a registry's active plugin.
-  Status setActive(const std::string& registry_name,
-                   const std::string& item_name);
+	/// Set a registry's active plugin.
+	Status setActive(const std::string& registry_name,
+					 const std::string& item_name);
 
-  /// Get a registry's active plugin.
-  std::string getActive(const std::string& registry_nane) const;
+	/// Get a registry's active plugin.
+	std::string getActive(const std::string& registry_nane) const;
 
-  bool exists(const std::string& registry_name) const {
-    return (registries_.count(registry_name) > 0);
-  }
+	bool exists(const std::string& registry_name) const
+	{
+		return (registries_.count(registry_name) > 0);
+	}
 
-  /// Check if a registry item exists, optionally search only local registries.
-  bool exists(const std::string& registry_name,
-              const std::string& item_name,
-              bool local = false) const;
+	/// Check if a registry item exists, optionally search only local registries.
+	bool exists(const std::string& registry_name,
+				const std::string& item_name,
+				bool local = false) const;
 
-  /// Get a list of the registry names.
-  std::vector<std::string> names() const;
+	/// Get a list of the registry names.
+	std::vector<std::string> names() const;
 
-  /// Get a list of the registry item names for a given registry.
-  std::vector<std::string> names(const std::string& registry_name) const;
+	/// Get a list of the registry item names for a given registry.
+	std::vector<std::string> names(const std::string& registry_name) const;
 
-  /// Return the number of registries.
-  size_t count() const {
-    return registries_.size();
-  }
+	/// Return the number of registries.
+	size_t count() const
+	{
+		return registries_.size();
+	}
 
-  /// Return the number of registry items for a given registry name.
-  size_t count(const std::string& registry_name) const;
+	/// Return the number of registry items for a given registry name.
+	size_t count(const std::string& registry_name) const;
 
-  /// Enable/disable duplicate registry item support using aliasing.
-  void allowDuplicates(bool allow) {
-    allow_duplicates_ = allow;
-  }
+	/// Enable/disable duplicate registry item support using aliasing.
+	void allowDuplicates(bool allow)
+	{
+		allow_duplicates_ = allow;
+	}
 
-  /// Check if duplicate registry items using registry aliasing are allowed.
-  bool allowDuplicates() {
-    return allow_duplicates_;
-  }
+	/// Check if duplicate registry items using registry aliasing are allowed.
+	bool allowDuplicates()
+	{
+		return allow_duplicates_;
+	}
 
- private:
-  /// Check if the registries are locked.
-  bool locked() {
-    return locked_;
-  }
+private:
+	/// Check if the registries are locked.
+	bool locked()
+	{
+		return locked_;
+	}
 
-  /// Set the registry locked status.
-  void locked(bool locked) {
-    locked_ = locked;
-  }
+	/// Set the registry locked status.
+	void locked(bool locked)
+	{
+		locked_ = locked;
+	}
 
- protected:
-  RegistryFactory() = default;
-  virtual ~RegistryFactory() = default;
+protected:
+	RegistryFactory() = default;
+	virtual ~RegistryFactory() = default;
 
- private:
-  /// Track duplicate registry item support, used for testing.
-  bool allow_duplicates_{false};
+private:
+	/// Track duplicate registry item support, used for testing.
+	bool allow_duplicates_{false};
 
-  /// Track registry "locking", while locked a registry cannot add/create.
-  bool locked_{false};
+	/// Track registry "locking", while locked a registry cannot add/create.
+	bool locked_{false};
 
-  /// The primary storage for constructed registries.
-  std::map<std::string, RegistryInterfaceRef> registries_;
+	/// The primary storage for constructed registries.
+	std::map<std::string, RegistryInterfaceRef> registries_;
 
-  /// Protector for broadcast lookups and external registry mutations.
-  mutable Mutex mutex_;
+	/// Protector for broadcast lookups and external registry mutations.
+	mutable Mutex mutex_;
 
- private:
-  friend class RegistryInterface;
+private:
+	friend class RegistryInterface;
 };
 
 /**
@@ -180,67 +186,71 @@ namespace registries {
 
 template <class R>
 class AR : public AutoRegisterInterface {
- public:
-  AR(const char* t, const char* n, bool optional)
-      : AutoRegisterInterface(t, n, optional) {}
+public:
+	AR(const char* t, const char* n, bool optional)
+		: AutoRegisterInterface(t, n, optional) {}
 
-  void run() override {
-    RegistryFactory::get().add(
-        type_, std::make_shared<RegistryType<R>>(name_, optional_));
-  }
+	void run() override
+	{
+		RegistryFactory::get().add(
+			type_, std::make_shared<RegistryType<R>>(name_, optional_));
+	}
 };
 
 template <class P>
 class AP : public AutoRegisterInterface {
- public:
-  AP(const char* t, const char* n, bool optional)
-      : AutoRegisterInterface(t, n, optional) {}
+public:
+	AP(const char* t, const char* n, bool optional)
+		: AutoRegisterInterface(t, n, optional) {}
 
-  void run() override {
-    auto registry = RegistryFactory::get().registry(type_);
-    registry->add(name_, std::make_shared<P>(), optional_);
-  }
+	void run() override
+	{
+		auto registry = RegistryFactory::get().registry(type_);
+		registry->add(name_, std::make_shared<P>(), optional_);
+	}
 };
 
 template <class R>
 struct RI {
-  RI(const char* class_name,
-     const char* registry_name,
-     bool is_optional = false) {
-    AutoRegisterInterface::autoloadRegistry(
-        std::make_unique<AR<R>>(class_name, registry_name, is_optional));
-  }
+	RI(const char* class_name,
+	   const char* registry_name,
+	   bool is_optional = false)
+	{
+		AutoRegisterInterface::autoloadRegistry(
+			std::make_unique<AR<R>>(class_name, registry_name, is_optional));
+	}
 };
 
 template <class P>
 struct PI {
-  PI(const char* registry_name,
-     const char* plugin_name,
-     bool is_optional = false) {
-    AutoRegisterInterface::autoloadPlugin(
-        std::make_unique<AP<P>>(registry_name, plugin_name, is_optional));
-  }
+	PI(const char* registry_name,
+	   const char* plugin_name,
+	   bool is_optional = false)
+	{
+		AutoRegisterInterface::autoloadPlugin(
+			std::make_unique<AP<P>>(registry_name, plugin_name, is_optional));
+	}
 };
 } // namespace registries
 
 #define CREATE_REGISTRY(class_name, registry_name)                             \
-  namespace registries {                                                       \
-  const RI<class_name> k##class_name(registry_name, registry_name, false);     \
-  }
+	namespace registries {                                                       \
+	const RI<class_name> k##class_name(registry_name, registry_name, false);     \
+	}
 
 #define CREATE_LAZY_REGISTRY(class_name, registry_name)                        \
-  namespace registries {                                                       \
-  const RI<class_name> k##class_name(registry_name, registry_name, true);      \
-  }
+	namespace registries {                                                       \
+	const RI<class_name> k##class_name(registry_name, registry_name, true);      \
+	}
 
 #define REGISTER(class_name, registry_name, plugin_name)                       \
-  namespace registries {                                                       \
-  const PI<class_name> k##class_name(registry_name, plugin_name, false);       \
-  }
+	namespace registries {                                                       \
+	const PI<class_name> k##class_name(registry_name, plugin_name, false);       \
+	}
 
 #define REGISTER_INTERNAL(class_name, registry_name, plugin_name)              \
-  namespace registries {                                                       \
-  const PI<class_name> k##class_name(registry_name, plugin_name, true);        \
-  }
+	namespace registries {                                                       \
+	const PI<class_name> k##class_name(registry_name, plugin_name, true);        \
+	}
 
 } // namespace osquery

@@ -24,7 +24,7 @@ namespace osquery {
  * @return a vector of strings split by delim.
  */
 std::vector<std::string> split(const std::string& s,
-                               const std::string& delim = "\t ");
+							   const std::string& delim = "\t ");
 
 /**
  * @brief Split a given string based on an delimiter.
@@ -36,7 +36,7 @@ std::vector<std::string> split(const std::string& s,
  * @return a vector of strings split by delim for occurrences.
  */
 std::vector<std::string> split(const std::string& s,
-                               char delim,
-                               size_t occurrences);
+							   char delim,
+							   size_t occurrences);
 
 }

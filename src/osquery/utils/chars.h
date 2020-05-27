@@ -24,20 +24,21 @@ bool isPrintable(const std::string& check);
  * @brief In-line helper function for use with utf8StringSize
  */
 template <typename _Iterator1, typename _Iterator2>
-size_t incUtf8StringIterator(_Iterator1& it, const _Iterator2& last) {
-  if (it == last) {
-    return 0;
-  }
+size_t incUtf8StringIterator(_Iterator1& it, const _Iterator2& last)
+{
+	if (it == last) {
+		return 0;
+	}
 
-  size_t res = 1;
-  for (++it; last != it; ++it, ++res) {
-    unsigned char c = *it;
-    if (!(c & 0x80) || ((c & 0xC0) == 0xC0)) {
-      break;
-    }
-  }
+	size_t res = 1;
+	for (++it; last != it; ++it, ++res) {
+		unsigned char c = *it;
+		if (!(c & 0x80) || ((c & 0xC0) == 0xC0)) {
+			break;
+		}
+	}
 
-  return res;
+	return res;
 }
 
 /**

@@ -12,14 +12,15 @@
 
 namespace osquery {
 
-std::string platformAsctime(const struct tm* timeptr) {
-  if (timeptr == nullptr) {
-    return "";
-  }
+std::string platformAsctime(const struct tm* timeptr)
+{
+	if (timeptr == nullptr) {
+		return "";
+	}
 
-  // Manual says at least 26 characters.
-  char buffer[32] = {0};
-  return ::asctime_r(timeptr, buffer);
+	// Manual says at least 26 characters.
+	char buffer[32] = {0};
+	return ::asctime_r(timeptr, buffer);
 }
 
 } // namespace osquery

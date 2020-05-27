@@ -36,123 +36,123 @@ namespace osquery {
  * @endcode
  */
 class SQL : private only_movable {
- public:
-  /**
-   * @brief Instantiate an instance of the class with a query.
-   *
-   * @param query An osquery SQL query.
-   * @param use_cache [optional] Set true to use the query cache.
-   */
-  explicit SQL(const std::string& query, bool use_cache = false);
+public:
+	/**
+	 * @brief Instantiate an instance of the class with a query.
+	 *
+	 * @param query An osquery SQL query.
+	 * @param use_cache [optional] Set true to use the query cache.
+	 */
+	explicit SQL(const std::string& query, bool use_cache = false);
 
-  /// Allow moving.
-  SQL(SQL&&) noexcept = default;
+	/// Allow moving.
+	SQL(SQL&&) noexcept = default;
 
-  /// Allow move assignment.
-  SQL& operator=(SQL&&) = default;
+	/// Allow move assignment.
+	SQL& operator=(SQL&&) = default;
 
- public:
-  /**
-   * @brief Const accessor for the rows returned by the query.
-   *
-   * @return A QueryData object of the query results.
-   */
-  const QueryData& rows() const;
+public:
+	/**
+	 * @brief Const accessor for the rows returned by the query.
+	 *
+	 * @return A QueryData object of the query results.
+	 */
+	const QueryData& rows() const;
 
-  /**
-   * @brief Accessor for the rows returned by the query.
-   *
-   * @return A QueryData object of the query results.
-   */
-  QueryData& rows();
+	/**
+	 * @brief Accessor for the rows returned by the query.
+	 *
+	 * @return A QueryData object of the query results.
+	 */
+	QueryData& rows();
 
-  /**
-   * @brief Column information for the query
-   *
-   * @return A ColumnNames object for the query
-   */
-  const ColumnNames& columns() const;
+	/**
+	 * @brief Column information for the query
+	 *
+	 * @return A ColumnNames object for the query
+	 */
+	const ColumnNames& columns() const;
 
-  /**
-   * @brief Accessor to switch off of when checking the success of a query.
-   *
-   * @return A bool indicating the success or failure of the operation.
-   */
-  bool ok() const;
+	/**
+	 * @brief Accessor to switch off of when checking the success of a query.
+	 *
+	 * @return A bool indicating the success or failure of the operation.
+	 */
+	bool ok() const;
 
-  /**
-   * @brief Get the status returned by the query.
-   *
-   * @return The query status.
-   */
-  const Status& getStatus() const;
+	/**
+	 * @brief Get the status returned by the query.
+	 *
+	 * @return The query status.
+	 */
+	const Status& getStatus() const;
 
-  /**
-   * @brief Accessor for the message string indicating the status of the query.
-   *
-   * @return The message string indicating the status of the query.
-   */
-  std::string getMessageString() const;
+	/**
+	 * @brief Accessor for the message string indicating the status of the query.
+	 *
+	 * @return The message string indicating the status of the query.
+	 */
+	std::string getMessageString() const;
 
 
- public:
-  /**
-   * @brief Get all, 'SELECT * ...', results given a virtual table name.
-   *
-   * @param table The name of the virtual table.
-   * @return A QueryData object of the 'SELECT *...' query results.
-   */
-  static QueryData selectAllFrom(const std::string& table);
+public:
+	/**
+	 * @brief Get all, 'SELECT * ...', results given a virtual table name.
+	 *
+	 * @param table The name of the virtual table.
+	 * @return A QueryData object of the 'SELECT *...' query results.
+	 */
+	static QueryData selectAllFrom(const std::string& table);
 
-  /**
-   * @brief Get all with constraint, 'SELECT * ... where', results given
-   * a virtual table name and single constraint.
-   *
-   * @param table The name of the virtual table.
-   * @param column Table column name to apply constraint.
-   * @param op The SQL comparative operator.
-   * @param expr The constraint expression.
-   * @return A QueryData object of the 'SELECT *...' query results.
-   */
-  static QueryData selectAllFrom(const std::string& table,
-                                 const std::string& column,
-                                 ConstraintOperator op,
-                                 const std::string& expr);
+	/**
+	 * @brief Get all with constraint, 'SELECT * ... where', results given
+	 * a virtual table name and single constraint.
+	 *
+	 * @param table The name of the virtual table.
+	 * @param column Table column name to apply constraint.
+	 * @param op The SQL comparative operator.
+	 * @param expr The constraint expression.
+	 * @return A QueryData object of the 'SELECT *...' query results.
+	 */
+	static QueryData selectAllFrom(const std::string& table,
+								   const std::string& column,
+								   ConstraintOperator op,
+								   const std::string& expr);
 
-  /**
-   * @brief Get columns with constraint, 'SELECT [columns] ... where', results
-   * given a virtual table name, column names, and single constraint.
-   *
-   * @param columns the columns to return
-   * @param table The name of the virtual table.
-   * @param column Table column name to apply constraint.
-   * @param op The SQL comparative operator.
-   * @param expr The constraint expression.
-   * @return A QueryData object of the 'SELECT [columns] ...' query results.
-   */
-  static QueryData selectFrom(const std::initializer_list<std::string>& columns,
-                              const std::string& table,
-                              const std::string& column,
-                              ConstraintOperator op,
-                              const std::string& expr);
+	/**
+	 * @brief Get columns with constraint, 'SELECT [columns] ... where', results
+	 * given a virtual table name, column names, and single constraint.
+	 *
+	 * @param columns the columns to return
+	 * @param table The name of the virtual table.
+	 * @param column Table column name to apply constraint.
+	 * @param op The SQL comparative operator.
+	 * @param expr The constraint expression.
+	 * @return A QueryData object of the 'SELECT [columns] ...' query results.
+	 */
+	static QueryData selectFrom(const std::initializer_list<std::string>& columns,
+								const std::string& table,
+								const std::string& column,
+								ConstraintOperator op,
+								const std::string& expr);
 
- protected:
-  /**
-   * @brief Private default constructor.
-   *
-   * The osquery::SQL class should only ever be instantiated with a query.
-   */
-  SQL() = default;
+protected:
+	/**
+	 * @brief Private default constructor.
+	 *
+	 * The osquery::SQL class should only ever be instantiated with a query.
+	 */
+	SQL() = default;
 
- protected:
-  /// The internal member which holds the results of the query.
-  QueryData results_;
+protected:
+	/// The internal member which holds the results of the query.
+	QueryData results_;
 
-  /// The internal member which holds the status of the query.
-  Status status_;
+	/// The internal member which holds the status of the query.
+	Status status_;
 
-  /// The internal member which holds the column names and order for the query
-  ColumnNames columns_;
+	/// The internal member which holds the column names and order for the query
+	ColumnNames columns_;
 };
 
 
@@ -182,8 +182,8 @@ class SQL : private only_movable {
  * @return A status indicating query success.
  */
 Status query(const std::string& query,
-             QueryData& results,
-             bool use_cache = false);
+			 QueryData& results,
+			 bool use_cache = false);
 
 /**
  * @brief Analyze a query, providing information about the result columns.

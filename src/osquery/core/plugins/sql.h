@@ -26,37 +26,38 @@
 namespace osquery {
 
 class SQLPlugin : public Plugin {
- public:
-  /// Run a SQL query string against the SQL implementation.
-  virtual Status query(const std::string& query,
-                       QueryData& results,
-                       bool use_cache) const = 0;
+public:
+	/// Run a SQL query string against the SQL implementation.
+	virtual Status query(const std::string& query,
+						 QueryData& results,
+						 bool use_cache) const = 0;
 
-  /// Use the SQL implementation to parse a query string and return details
-  /// (name, type) about the columns.
-  virtual Status getQueryColumns(const std::string& query,
-                                 TableColumns& columns) const = 0;
+	/// Use the SQL implementation to parse a query string and return details
+	/// (name, type) about the columns.
+	virtual Status getQueryColumns(const std::string& query,
+								   TableColumns& columns) const = 0;
 
-  /// Given a query, return the list of scanned tables.
-  virtual Status getQueryTables(const std::string& query,
-                                std::vector<std::string>& tables) const = 0;
+	/// Given a query, return the list of scanned tables.
+	virtual Status getQueryTables(const std::string& query,
+								  std::vector<std::string>& tables) const = 0;
 
-  /**
-   * @brief Attach a table at runtime.
-   *
-   * The SQL implementation plugin may need to manage how virtual tables are
-   * attached at run time. In the case of SQLite where a single DB object is
-   * managed, tables are enumerated and attached during initialization.
-   */
-  virtual Status attach(const std::string& /*name*/) {
-    return Status::success();
-  }
+	/**
+	 * @brief Attach a table at runtime.
+	 *
+	 * The SQL implementation plugin may need to manage how virtual tables are
+	 * attached at run time. In the case of SQLite where a single DB object is
+	 * managed, tables are enumerated and attached during initialization.
+	 */
+	virtual Status attach(const std::string& /*name*/)
+	{
+		return Status::success();
+	}
 
-  /// Tables may be detached by name.
-  virtual void detach(const std::string& /*name*/) {}
+	/// Tables may be detached by name.
+	virtual void detach(const std::string& /*name*/) {}
 
- public:
-  Status call(const PluginRequest& request, PluginResponse& response) override;
+public:
+	Status call(const PluginRequest& request, PluginResponse& response) override;
 };
 
 } // namespace osquery

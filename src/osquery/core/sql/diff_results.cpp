@@ -10,23 +10,24 @@
 
 namespace osquery {
 
-DiffResults diff(QueryDataSet& old, QueryDataTyped& current) {
-  DiffResults r;
+DiffResults diff(QueryDataSet& old, QueryDataTyped& current)
+{
+	DiffResults r;
 
-  for (auto& i : current) {
-    auto item = old.find(i);
-    if (item != old.end()) {
-      old.erase(item);
-    } else {
-      r.added.push_back(i);
-    }
-  }
+	for (auto& i : current) {
+		auto item = old.find(i);
+		if (item != old.end()) {
+			old.erase(item);
+		} else {
+			r.added.push_back(i);
+		}
+	}
 
-  for (auto& i : old) {
-    r.removed.push_back(std::move(i));
-  }
+	for (auto& i : old) {
+		r.removed.push_back(std::move(i));
+	}
 
-  return r;
+	return r;
 }
 
 } // namespace osquery

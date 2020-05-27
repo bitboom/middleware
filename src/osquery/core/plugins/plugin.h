@@ -38,53 +38,56 @@ using PluginRequest = std::map<std::string, std::string>;
 using PluginResponse = std::vector<PluginRequest>;
 
 class Plugin : private boost::noncopyable {
- public:
-  virtual ~Plugin() = default;
+public:
+	virtual ~Plugin() = default;
 
- public:
-  /// The plugin may perform some initialization, not required.
-  virtual Status setUp() {
-    return Status::success();
-  }
+public:
+	/// The plugin may perform some initialization, not required.
+	virtual Status setUp()
+	{
+		return Status::success();
+	}
 
-  /// The plugin may perform some tear down, release, not required.
-  virtual void tearDown() {}
+	/// The plugin may perform some tear down, release, not required.
+	virtual void tearDown() {}
 
-  /// The plugin may react to configuration updates.
-  virtual void configure() {}
+	/// The plugin may react to configuration updates.
+	virtual void configure() {}
 
-  /// The plugin may publish route info (other than registry type and name).
-  virtual PluginResponse routeInfo() const {
-    return PluginResponse();
-  }
+	/// The plugin may publish route info (other than registry type and name).
+	virtual PluginResponse routeInfo() const
+	{
+		return PluginResponse();
+	}
 
-  /**
-   * @brief Plugins act by being called, using a request, returning a response.
-   *
-   * The plugin request is a thrift-serializable object. A response is optional
-   * but the API for using a plugin's call is defined by the registry. In most
-   * cases there are multiple supported call 'actions'. A registry type, or
-   * the plugin class, will define the action key and supported actions.
-   *
-   * @param request A plugin request input, including optional action.
-   * @param response A plugin response output.
-   *
-   * @return Status of the call, if the action was handled corrected.
-   */
-  virtual Status call(const PluginRequest& request,
-                      PluginResponse& response) = 0;
+	/**
+	 * @brief Plugins act by being called, using a request, returning a response.
+	 *
+	 * The plugin request is a thrift-serializable object. A response is optional
+	 * but the API for using a plugin's call is defined by the registry. In most
+	 * cases there are multiple supported call 'actions'. A registry type, or
+	 * the plugin class, will define the action key and supported actions.
+	 *
+	 * @param request A plugin request input, including optional action.
+	 * @param response A plugin response output.
+	 *
+	 * @return Status of the call, if the action was handled corrected.
+	 */
+	virtual Status call(const PluginRequest& request,
+						PluginResponse& response) = 0;
 
-  /// Allow the plugin to introspect into the registered name (for logging).
-  virtual void setName(const std::string& name) final;
+	/// Allow the plugin to introspect into the registered name (for logging).
+	virtual void setName(const std::string& name) final;
 
-  /// Force call-sites to use #getName to access the plugin item's name.
-  virtual const std::string& getName() const {
-    return name_;
-  }
+	/// Force call-sites to use #getName to access the plugin item's name.
+	virtual const std::string& getName() const
+	{
+		return name_;
+	}
 
- protected:
-  /// Customized name for the plugin, usually set by the registry.
-  std::string name_;
+protected:
+	/// Customized name for the plugin, usually set by the registry.
+	std::string name_;
 };
 
 /// Helper definition for a shared pointer to a Plugin.

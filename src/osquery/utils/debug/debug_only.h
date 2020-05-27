@@ -21,12 +21,13 @@ namespace debug_only {
 /**
  * Use it for unconditional abort with message only in debug mode
  */
-inline void fail(const char* msg) {
+inline void fail(const char* msg)
+{
 #ifndef NDEBUG
-  std::cerr << "Failure in debug mode: \"" << msg << "\"\n";
-  assert(false && "Failure in debug mode");
+	std::cerr << "Failure in debug mode: \"" << msg << "\"\n";
+	assert(false && "Failure in debug mode");
 #endif
-  boost::ignore_unused(msg);
+	boost::ignore_unused(msg);
 }
 
 /**
@@ -34,27 +35,29 @@ inline void fail(const char* msg) {
  * See examples of usage in tests osquery/debug/tests/debug_only_tests.cpp
  */
 template <typename FunctionType>
-inline void verify(FunctionType checker, const char* msg) {
+inline void verify(FunctionType checker, const char* msg)
+{
 #ifndef NDEBUG
-  if (!checker()) {
-    fail(msg);
-  }
+	if (!checker()) {
+		fail(msg);
+	}
 #endif
-  boost::ignore_unused(checker);
-  boost::ignore_unused(msg);
+	boost::ignore_unused(checker);
+	boost::ignore_unused(msg);
 }
 
 /**
  * Pretty much the same as verify, but for the simple boolean condition
  */
-inline void verifyTrue(bool expected_true, const char* msg) {
+inline void verifyTrue(bool expected_true, const char* msg)
+{
 #ifndef NDEBUG
-  if (!expected_true) {
-    fail(msg);
-  }
+	if (!expected_true) {
+		fail(msg);
+	}
 #endif
-  boost::ignore_unused(expected_true);
-  boost::ignore_unused(msg);
+	boost::ignore_unused(expected_true);
+	boost::ignore_unused(msg);
 }
 
 /**
@@ -67,69 +70,74 @@ inline void verifyTrue(bool expected_true, const char* msg) {
  */
 template <typename VarType>
 class Var final {
- public:
-  explicit Var()
+public:
+	explicit Var()
 #ifndef NDEBUG
-      : value_(VarType{})
+		: value_(VarType {})
 #endif
-  {
-  }
+	{
+	}
 
-  Var(VarType value)
+	Var(VarType value)
 #ifndef NDEBUG
-      : value_(std::move(value))
+		: value_(std::move(value))
 #endif
-  {
-    boost::ignore_unused(value);
-  }
+	{
+		boost::ignore_unused(value);
+	}
 
-  inline void verify(const char* msg) const {
+	inline void verify(const char* msg) const
+	{
 #ifndef NDEBUG
-    if (!value_) {
-      fail(msg);
-    }
+		if (!value_) {
+			fail(msg);
+		}
 #endif
-    boost::ignore_unused(msg);
-  }
+		boost::ignore_unused(msg);
+	}
 
-  template <typename FunctionType>
-  inline void verify(FunctionType checker, const char* msg) const {
+	template <typename FunctionType>
+	inline void verify(FunctionType checker, const char* msg) const
+	{
 #ifndef NDEBUG
-    if (!checker(value_)) {
-      fail(msg);
-    }
+		if (!checker(value_)) {
+			fail(msg);
+		}
 #endif
-    boost::ignore_unused(checker);
-    boost::ignore_unused(msg);
-  }
+		boost::ignore_unused(checker);
+		boost::ignore_unused(msg);
+	}
 
-  inline void verifyEqual(const VarType& other, const char* msg) const {
+	inline void verifyEqual(const VarType& other, const char* msg) const
+	{
 #ifndef NDEBUG
-    if (value_ != other) {
-      fail(msg);
-    }
+		if (value_ != other) {
+			fail(msg);
+		}
 #endif
-    boost::ignore_unused(other);
-    boost::ignore_unused(msg);
-  }
+		boost::ignore_unused(other);
+		boost::ignore_unused(msg);
+	}
 
-  inline void set(const VarType& newValue) const {
+	inline void set(const VarType& newValue) const
+	{
 #ifndef NDEBUG
-    value_ = newValue;
+		value_ = newValue;
 #endif
-    boost::ignore_unused(newValue);
-  }
+		boost::ignore_unused(newValue);
+	}
 
-  template <typename FunctionType>
-  inline void update(FunctionType modifier) const {
+	template <typename FunctionType>
+	inline void update(FunctionType modifier) const
+	{
 #ifndef NDEBUG
-    value_ = modifier(value_);
+		value_ = modifier(value_);
 #endif
-    boost::ignore_unused(modifier);
-  }
+		boost::ignore_unused(modifier);
+	}
 
 #ifndef NDEBUG
-  mutable VarType value_;
+	mutable VarType value_;
 #endif
 };
 

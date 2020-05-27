@@ -23,8 +23,9 @@ namespace osquery {
  * @return the joined string.
  */
 template <typename SequenceType>
-inline std::string join(const SequenceType& s, const std::string& tok) {
-  return boost::algorithm::join(s, tok);
+inline std::string join(const SequenceType& s, const std::string& tok)
+{
+	return boost::algorithm::join(s, tok);
 }
 
 } // namespace osquery

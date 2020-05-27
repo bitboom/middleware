@@ -33,24 +33,24 @@ extern RecursiveMutex kAttachMutex;
  * Only used in the SQLite virtual table module methods.
  */
 struct BaseCursor : private boost::noncopyable {
- public:
-  /// SQLite virtual table cursor.
-  sqlite3_vtab_cursor base;
+public:
+	/// SQLite virtual table cursor.
+	sqlite3_vtab_cursor base;
 
-  /// Track cursors for optional planner output.
-  size_t id{0};
+	/// Track cursors for optional planner output.
+	size_t id{0};
 
-  /// Table data generated from last access.
-  TableRows rows;
+	/// Table data generated from last access.
+	TableRows rows;
 
-  /// Results of current call.
-  TableRowHolder current;
+	/// Results of current call.
+	TableRowHolder current;
 
-  /// Current cursor position.
-  size_t row{0};
+	/// Current cursor position.
+	size_t row{0};
 
-  /// Total number of rows.
-  size_t n{0};
+	/// Total number of rows.
+	size_t n{0};
 };
 
 /**
@@ -60,30 +60,30 @@ struct BaseCursor : private boost::noncopyable {
  * This adds each table plugin class to the state tracking in SQLite.
  */
 struct VirtualTable : private boost::noncopyable {
-  /// The SQLite-provided virtual table structure.
-  sqlite3_vtab base;
+	/// The SQLite-provided virtual table structure.
+	sqlite3_vtab base;
 
-  /// Added structure: A content structure with metadata about the table.
-  std::shared_ptr<VirtualTableContent> content;
+	/// Added structure: A content structure with metadata about the table.
+	std::shared_ptr<VirtualTableContent> content;
 
-  /// Added structure: The thread-local DB instance associated with the query.
-  SQLiteDBInstance* instance{nullptr};
+	/// Added structure: The thread-local DB instance associated with the query.
+	SQLiteDBInstance* instance{nullptr};
 };
 
 /// Attach a table plugin name to an in-memory SQLite database.
 Status attachTableInternal(const std::string& name,
-                           const std::string& statement,
-                           const SQLiteDBInstanceRef& instance,
-                           bool is_extension);
+						   const std::string& statement,
+						   const SQLiteDBInstanceRef& instance,
+						   bool is_extension);
 
 /// Detach (drop) a table.
 Status detachTableInternal(const std::string& name,
-                           const SQLiteDBInstanceRef& instance);
+						   const SQLiteDBInstanceRef& instance);
 
 Status attachFunctionInternal(
-    const std::string& name,
-    std::function<
-        void(sqlite3_context* context, int argc, sqlite3_value** argv)> func);
+	const std::string& name,
+	std::function <
+	void(sqlite3_context* context, int argc, sqlite3_value** argv) > func);
 
 /// Attach all table plugins to an in-memory SQLite database.
 void attachVirtualTables(const SQLiteDBInstanceRef& instance);

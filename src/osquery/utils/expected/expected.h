@@ -72,170 +72,192 @@ namespace osquery {
 
 template <typename ValueType_, typename ErrorCodeEnumType>
 class Expected final {
- public:
-  using ValueType = ValueType_;
-  using ErrorType = Error<ErrorCodeEnumType>;
-  using SelfType = Expected<ValueType, ErrorCodeEnumType>;
+public:
+	using ValueType = ValueType_;
+	using ErrorType = Error<ErrorCodeEnumType>;
+	using SelfType = Expected<ValueType, ErrorCodeEnumType>;
 
-  static_assert(
-      !std::is_pointer<ValueType>::value,
-      "Please do not use raw pointers as expected value, "
-      "use smart pointers instead. See CppCoreGuidelines for explanation. "
-      "https://github.com/isocpp/CppCoreGuidelines/blob/master/"
-      "CppCoreGuidelines.md#Rf-unique_ptr");
-  static_assert(!std::is_reference<ValueType>::value,
-                "Expected does not support reference as a value type");
-  static_assert(std::is_enum<ErrorCodeEnumType>::value,
-                "ErrorCodeEnumType template parameter must be enum");
+	static_assert(
+		!std::is_pointer<ValueType>::value,
+		"Please do not use raw pointers as expected value, "
+		"use smart pointers instead. See CppCoreGuidelines for explanation. "
+		"https://github.com/isocpp/CppCoreGuidelines/blob/master/"
+		"CppCoreGuidelines.md#Rf-unique_ptr");
+	static_assert(!std::is_reference<ValueType>::value,
+				  "Expected does not support reference as a value type");
+	static_assert(std::is_enum<ErrorCodeEnumType>::value,
+				  "ErrorCodeEnumType template parameter must be enum");
 
- public:
-  Expected(ValueType value) : object_{std::move(value)} {}
+public:
+	Expected(ValueType value) : object_{std::move(value)} {}
 
-  Expected(ErrorType error) : object_{std::move(error)} {}
+	Expected(ErrorType error) : object_{std::move(error)} {}
 
-  explicit Expected(ErrorCodeEnumType code, std::string message)
-      : object_{ErrorType(code, message)} {}
+	explicit Expected(ErrorCodeEnumType code, std::string message)
+		: object_{ErrorType(code, message)} {}
 
-  Expected() = delete;
-  Expected(ErrorBase* error) = delete;
+	Expected() = delete;
+	Expected(ErrorBase* error) = delete;
 
-  Expected(Expected&& other)
-      : object_(std::move(other.object_)), errorChecked_(other.errorChecked_) {
-    other.errorChecked_.set(true);
-  }
+	Expected(Expected&& other)
+		: object_(std::move(other.object_)), errorChecked_(other.errorChecked_)
+	{
+		other.errorChecked_.set(true);
+	}
 
-  Expected& operator=(Expected&& other) {
-    if (this != &other) {
-      errorChecked_.verify("Expected was not checked before assigning");
+	Expected& operator=(Expected&& other)
+	{
+		if (this != &other) {
+			errorChecked_.verify("Expected was not checked before assigning");
 
-      object_ = std::move(other.object_);
-      errorChecked_ = other.errorChecked_;
-      other.errorChecked_.set(true);
-    }
-    return *this;
-  }
+			object_ = std::move(other.object_);
+			errorChecked_ = other.errorChecked_;
+			other.errorChecked_.set(true);
+		}
+		return *this;
+	}
 
-  Expected(const Expected&) = delete;
-  Expected& operator=(const Expected& other) = delete;
+	Expected(const Expected&) = delete;
+	Expected& operator=(const Expected& other) = delete;
 
-  ~Expected() {
-    errorChecked_.verify("Expected was not checked before destruction");
-  }
+	~Expected()
+	{
+		errorChecked_.verify("Expected was not checked before destruction");
+	}
 
-  static SelfType success(ValueType value) {
-    return SelfType{std::move(value)};
-  }
+	static SelfType success(ValueType value)
+	{
+		return SelfType{std::move(value)};
+	}
 
-  static SelfType failure(std::string message) {
-    auto defaultCode = ErrorCodeEnumType{};
-    return SelfType(defaultCode, std::move(message));
-  }
+	static SelfType failure(std::string message)
+	{
+		auto defaultCode = ErrorCodeEnumType{};
+		return SelfType(defaultCode, std::move(message));
+	}
 
-  static SelfType failure(ErrorCodeEnumType code, std::string message) {
-    return SelfType(code, std::move(message));
-  }
+	static SelfType failure(ErrorCodeEnumType code, std::string message)
+	{
+		return SelfType(code, std::move(message));
+	}
 
-  ErrorType takeError() && = delete;
-  ErrorType takeError() & {
-    verifyIsError();
-    return std::move(boost::get<ErrorType>(object_));
-  }
+	ErrorType takeError()&& = delete;
+	ErrorType takeError()& {
+		verifyIsError();
+		return std::move(boost::get<ErrorType>(object_));
+	}
 
-  const ErrorType& getError() const&& = delete;
-  const ErrorType& getError() const& {
-    verifyIsError();
-    return boost::get<ErrorType>(object_);
-  }
+	const ErrorType& getError() const&& = delete;
+	const ErrorType& getError() const&
+	{
+		verifyIsError();
+		return boost::get<ErrorType>(object_);
+	}
 
-  ErrorCodeEnumType getErrorCode() const&& = delete;
-  ErrorCodeEnumType getErrorCode() const& {
-    return getError().getErrorCode();
-  }
+	ErrorCodeEnumType getErrorCode() const&& = delete;
+	ErrorCodeEnumType getErrorCode() const&
+	{
+		return getError().getErrorCode();
+	}
 
-  bool isError() const noexcept {
-    errorChecked_.set(true);
-    return object_.which() == kErrorType_;
-  }
+	bool isError() const noexcept
+	{
+		errorChecked_.set(true);
+		return object_.which() == kErrorType_;
+	}
 
-  void ignoreResult() const noexcept {
-    errorChecked_.set(true);
-  }
+	void ignoreResult() const noexcept
+	{
+		errorChecked_.set(true);
+	}
 
-  bool isValue() const noexcept {
-    return !isError();
-  }
+	bool isValue() const noexcept
+	{
+		return !isError();
+	}
 
-  explicit operator bool() const noexcept {
-    return isValue();
-  }
+	explicit operator bool() const noexcept
+	{
+		return isValue();
+	}
 
-  ValueType& get() && = delete;
-  ValueType& get() & {
-    verifyIsValue();
-    return boost::get<ValueType>(object_);
-  }
+	ValueType& get()&& = delete;
+	ValueType& get()& {
+		verifyIsValue();
+		return boost::get<ValueType>(object_);
+	}
 
-  const ValueType& get() const&& = delete;
-  const ValueType& get() const& {
-    verifyIsValue();
-    return boost::get<ValueType>(object_);
-  }
+	const ValueType& get() const&& = delete;
+	const ValueType& get() const&
+	{
+		verifyIsValue();
+		return boost::get<ValueType>(object_);
+	}
 
-  ValueType take() && = delete;
-  ValueType take() & {
-    return std::move(get());
-  }
+	ValueType take()&& = delete;
+	ValueType take()& {
+		return std::move(get());
+	}
 
-  template <typename ValueTypeUniversal = ValueType>
-  typename std::enable_if<
-      std::is_same<typename std::decay<ValueTypeUniversal>::type,
-                   ValueType>::value,
-      ValueType>::type
-  takeOr(ValueTypeUniversal&& defaultValue) {
-    if (isError()) {
-      return std::forward<ValueTypeUniversal>(defaultValue);
-    }
-    return std::move(get());
-  }
+	template <typename ValueTypeUniversal = ValueType>
+	typename std::enable_if <
+	std::is_same<typename std::decay<ValueTypeUniversal>::type,
+		ValueType>::value,
+		ValueType >::type
+		takeOr(ValueTypeUniversal && defaultValue)
+	{
+		if (isError()) {
+			return std::forward<ValueTypeUniversal>(defaultValue);
+		}
+		return std::move(get());
+	}
 
-  ValueType* operator->() && = delete;
-  ValueType* operator->() & {
-    return &get();
-  }
+	ValueType* operator->()&& = delete;
+	ValueType* operator->()& {
+		return &get();
+	}
 
-  const ValueType* operator->() const&& = delete;
-  const ValueType* operator->() const& {
-    return &get();
-  }
+	const ValueType* operator->() const&& = delete;
+	const ValueType* operator->() const&
+	{
+		return &get();
+	}
 
-  ValueType& operator*() && = delete;
-  ValueType& operator*() & {
-    return get();
-  }
+	ValueType& operator*()&& = delete;
+	ValueType& operator*()& {
+		return get();
+	}
 
-  const ValueType& operator*() const&& = delete;
-  const ValueType& operator*() const& {
-    return get();
-  }
+	const ValueType& operator*() const&& = delete;
+	const ValueType& operator*() const&
+	{
+		return get();
+	}
 
- private:
-  inline void verifyIsError() const {
-    debug_only::verify([this]() { return object_.which() == kErrorType_; },
-                       "Do not try to get error from Expected with value");
-  }
+private:
+	inline void verifyIsError() const
+	{
+		debug_only::verify([this]() {
+			return object_.which() == kErrorType_;
+		},
+		"Do not try to get error from Expected with value");
+	}
 
-  inline void verifyIsValue() const {
-    debug_only::verify([this]() { return object_.which() == kValueType_; },
-                       "Do not try to get value from Expected with error");
-  }
+	inline void verifyIsValue() const
+	{
+		debug_only::verify([this]() {
+			return object_.which() == kValueType_;
+		},
+		"Do not try to get value from Expected with error");
+	}
 
- private:
-  boost::variant<ValueType, ErrorType> object_;
-  enum ETypeId {
-    kValueType_ = 0,
-    kErrorType_ = 1,
-  };
-  debug_only::Var<bool> errorChecked_ = false;
+private:
+	boost::variant<ValueType, ErrorType> object_;
+	enum ETypeId {
+		kValueType_ = 0,
+		kErrorType_ = 1,
+	};
+	debug_only::Var<bool> errorChecked_ = false;
 };
 
 template <typename ValueType, typename ErrorCodeEnumType>

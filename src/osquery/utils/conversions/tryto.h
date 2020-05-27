@@ -15,98 +15,105 @@
 namespace osquery {
 
 enum class ConversionError {
-  InvalidArgument,
-  OutOfRange,
-  Unknown,
+	InvalidArgument,
+	OutOfRange,
+	Unknown,
 };
 
 template <typename ToType, typename FromType>
-inline typename std::enable_if<
-    std::is_same<ToType,
-                 typename std::remove_cv<typename std::remove_reference<
-                     FromType>::type>::type>::value,
-    Expected<ToType, ConversionError>>::type
-tryTo(FromType&& from) {
-  return std::forward<FromType>(from);
+inline typename std::enable_if <
+std::is_same<ToType,
+	typename std::remove_cv<typename std::remove_reference<
+	FromType>::type>::type>::value,
+	Expected<ToType, ConversionError >>::type
+	tryTo(FromType&& from)
+{
+	return std::forward<FromType>(from);
 }
 
 namespace impl {
 
 template <typename Type>
 struct IsStlString {
-  static constexpr bool value = std::is_same<Type, std::string>::value ||
-                                std::is_same<Type, std::wstring>::value;
+	static constexpr bool value = std::is_same<Type, std::string>::value ||
+								  std::is_same<Type, std::wstring>::value;
 };
 
 template <typename Type>
 struct IsInteger {
-  static constexpr bool value =
-      std::is_integral<Type>::value && !std::is_same<Type, bool>::value;
+	static constexpr bool value =
+		std::is_integral<Type>::value && !std::is_same<Type, bool>::value;
 };
 
-template <typename FromType,
-          typename ToType,
-          typename IntType,
-          typename =
-              typename std::enable_if<std::is_same<ToType, IntType>::value &&
-                                          IsStlString<FromType>::value,
-                                      IntType>::type>
+template < typename FromType,
+		   typename ToType,
+		   typename IntType,
+		   typename =
+		   typename std::enable_if < std::is_same<ToType, IntType>::value &&
+									 IsStlString<FromType>::value,
+									 IntType >::type >
 struct IsConversionFromStringToIntEnabledFor {
-  using type = IntType;
+	using type = IntType;
 };
 
 template <typename ToType, typename FromType>
 inline
-    typename IsConversionFromStringToIntEnabledFor<FromType, ToType, int>::type
-    throwingStringToInt(const FromType& from, const int base) {
-  auto pos = std::size_t{};
-  return std::stoi(from, &pos, base);
+typename IsConversionFromStringToIntEnabledFor<FromType, ToType, int>::type
+throwingStringToInt(const FromType& from, const int base)
+{
+	auto pos = std::size_t{};
+	return std::stoi(from, &pos, base);
 }
 
 template <typename ToType, typename FromType>
 inline typename IsConversionFromStringToIntEnabledFor<FromType,
-                                                      ToType,
-                                                      long int>::type
-throwingStringToInt(const FromType& from, const int base) {
-  auto pos = std::size_t{};
-  return std::stol(from, &pos, base);
+	   ToType,
+	   long int>::type
+	   throwingStringToInt(const FromType& from, const int base)
+{
+	auto pos = std::size_t{};
+	return std::stol(from, &pos, base);
 }
 
 template <typename ToType, typename FromType>
 inline typename IsConversionFromStringToIntEnabledFor<FromType,
-                                                      ToType,
-                                                      long long int>::type
-throwingStringToInt(const FromType& from, const int base) {
-  auto pos = std::size_t{};
-  return std::stoll(from, &pos, base);
+	   ToType,
+	   long long int>::type
+	   throwingStringToInt(const FromType& from, const int base)
+{
+	auto pos = std::size_t{};
+	return std::stoll(from, &pos, base);
 }
 
 template <typename ToType, typename FromType>
 inline typename IsConversionFromStringToIntEnabledFor<FromType,
-                                                      ToType,
-                                                      unsigned int>::type
-throwingStringToInt(const FromType& from, const int base) {
-  auto pos = std::size_t{};
-  return std::stoul(from, &pos, base);
+	   ToType,
+	   unsigned int>::type
+	   throwingStringToInt(const FromType& from, const int base)
+{
+	auto pos = std::size_t{};
+	return std::stoul(from, &pos, base);
 }
 
 template <typename ToType, typename FromType>
 inline typename IsConversionFromStringToIntEnabledFor<FromType,
-                                                      ToType,
-                                                      unsigned long int>::type
-throwingStringToInt(const FromType& from, const int base) {
-  auto pos = std::size_t{};
-  return std::stoul(from, &pos, base);
+	   ToType,
+	   unsigned long int>::type
+	   throwingStringToInt(const FromType& from, const int base)
+{
+	auto pos = std::size_t{};
+	return std::stoul(from, &pos, base);
 }
 
 template <typename ToType, typename FromType>
 inline
-    typename IsConversionFromStringToIntEnabledFor<FromType,
-                                                   ToType,
-                                                   unsigned long long int>::type
-    throwingStringToInt(const FromType& from, const int base) {
-  auto pos = std::size_t{};
-  return std::stoull(from, &pos, base);
+typename IsConversionFromStringToIntEnabledFor<FromType,
+		 ToType,
+		 unsigned long long int>::type
+		 throwingStringToInt(const FromType& from, const int base)
+{
+	auto pos = std::size_t{};
+	return std::stoull(from, &pos, base);
 }
 
 Expected<bool, ConversionError> stringToBool(std::string from);
@@ -117,26 +124,27 @@ Expected<bool, ConversionError> stringToBool(std::string from);
  * Template tryTo for [w]string to integer conversion
  */
 template <typename ToType, typename FromType>
-inline typename std::enable_if<impl::IsInteger<ToType>::value &&
-                                   impl::IsStlString<FromType>::value,
-                               Expected<ToType, ConversionError>>::type
-tryTo(const FromType& from, const int base = 10) noexcept {
-  try {
-    return impl::throwingStringToInt<ToType>(from, base);
-  } catch (const std::invalid_argument& ia) {
-    return createError(ConversionError::InvalidArgument)
-           << "If no conversion could be performed. " << ia.what();
-  } catch (const std::out_of_range& oor) {
-    return createError(ConversionError::OutOfRange)
-           << "Value read is out of the range of representable values by an "
-              "int. "
-           << oor.what();
-  } catch (...) {
-    return createError(ConversionError::Unknown)
-           << "Unknown error during conversion "
-           << boost::core::demangle(typeid(FromType).name()) << " to "
-           << boost::core::demangle(typeid(ToType).name()) << " base " << base;
-  }
+inline typename std::enable_if < impl::IsInteger<ToType>::value&&
+impl::IsStlString<FromType>::value,
+	 Expected<ToType, ConversionError >>::type
+	 tryTo(const FromType& from, const int base = 10) noexcept
+{
+	try {
+		return impl::throwingStringToInt<ToType>(from, base);
+	} catch (const std::invalid_argument& ia) {
+		return createError(ConversionError::InvalidArgument)
+			   << "If no conversion could be performed. " << ia.what();
+	} catch (const std::out_of_range& oor) {
+		return createError(ConversionError::OutOfRange)
+			   << "Value read is out of the range of representable values by an "
+			   "int. "
+			   << oor.what();
+	} catch (...) {
+		return createError(ConversionError::Unknown)
+			   << "Unknown error during conversion "
+			   << boost::core::demangle(typeid(FromType).name()) << " to "
+			   << boost::core::demangle(typeid(ToType).name()) << " base " << base;
+	}
 }
 
 /**
@@ -152,13 +160,15 @@ tryTo(const FromType& from, const int base = 10) noexcept {
  */
 template <typename ToType>
 inline typename std::enable_if<std::is_same<ToType, bool>::value,
-                               Expected<ToType, ConversionError>>::type
-tryTo(std::string from) {
-  return impl::stringToBool(std::move(from));
+	   Expected<ToType, ConversionError>>::type
+	   tryTo(std::string from)
+{
+	return impl::stringToBool(std::move(from));
 }
 
-inline size_t operator"" _sz(unsigned long long int x) {
-  return x;
+inline size_t operator"" _sz(unsigned long long int x)
+{
+	return x;
 }
 
 }

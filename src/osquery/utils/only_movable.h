@@ -17,25 +17,25 @@ namespace osquery {
  * their's as default.
  */
 class only_movable {
- protected:
-  /// Boilerplate self default constructor.
-  only_movable() = default;
+protected:
+	/// Boilerplate self default constructor.
+	only_movable() = default;
 
-  /// Boilerplate self destructor.
-  ~only_movable() = default;
+	/// Boilerplate self destructor.
+	~only_movable() = default;
 
-  /// Boilerplate move constructor.
-  only_movable(only_movable&&) noexcept = default;
+	/// Boilerplate move constructor.
+	only_movable(only_movable&&) noexcept = default;
 
-  /// Boilerplate move assignment.
-  only_movable& operator=(only_movable&&) = default;
+	/// Boilerplate move assignment.
+	only_movable& operator=(only_movable&&) = default;
 
- public:
-  /// Important, a private copy constructor prevents copying.
-  only_movable(const only_movable&) = delete;
+public:
+	/// Important, a private copy constructor prevents copying.
+	only_movable(const only_movable&) = delete;
 
-  /// Important, a private copy assignment constructor prevents copying.
-  only_movable& operator=(const only_movable&) = delete;
+	/// Important, a private copy assignment constructor prevents copying.
+	only_movable& operator=(const only_movable&) = delete;
 };
 
 } // namespace osquery

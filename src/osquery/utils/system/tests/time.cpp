@@ -14,21 +14,23 @@ namespace osquery {
 
 class TimeTests : public testing::Test {};
 
-TEST_F(TimeTests, test_asciitime) {
-  const std::time_t epoch = 1491518994;
-  const std::string expected = "Thu Apr  6 22:49:54 2017 UTC";
+TEST_F(TimeTests, test_asciitime)
+{
+	const std::time_t epoch = 1491518994;
+	const std::string expected = "Thu Apr  6 22:49:54 2017 UTC";
 
-  auto const result = std::gmtime(&epoch);
+	auto const result = std::gmtime(&epoch);
 
-  EXPECT_EQ(expected, toAsciiTime(result));
+	EXPECT_EQ(expected, toAsciiTime(result));
 }
 
-TEST_F(TimeTests, test_asciitimeutc) {
-  const std::time_t epoch = 1491518994;
-  const std::string expected = "Thu Apr  6 22:49:54 2017 UTC";
+TEST_F(TimeTests, test_asciitimeutc)
+{
+	const std::time_t epoch = 1491518994;
+	const std::string expected = "Thu Apr  6 22:49:54 2017 UTC";
 
-  auto const result = std::localtime(&epoch);
+	auto const result = std::localtime(&epoch);
 
-  EXPECT_EQ(expected, toAsciiTimeUTC(result));
+	EXPECT_EQ(expected, toAsciiTimeUTC(result));
 }
 }

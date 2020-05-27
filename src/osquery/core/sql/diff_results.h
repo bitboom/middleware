@@ -22,26 +22,28 @@ namespace osquery {
  * "removed" subset of rows.
  */
 struct DiffResults : private only_movable {
- public:
-  /// vector of added rows
-  QueryDataTyped added;
+public:
+	/// vector of added rows
+	QueryDataTyped added;
 
-  /// vector of removed rows
-  QueryDataTyped removed;
+	/// vector of removed rows
+	QueryDataTyped removed;
 
-  DiffResults() {}
-  DiffResults(DiffResults&&) = default;
-  DiffResults& operator=(DiffResults&&) = default;
+	DiffResults() {}
+	DiffResults(DiffResults&&) = default;
+	DiffResults& operator=(DiffResults&&) = default;
 
-  /// equals operator
-  bool operator==(const DiffResults& comp) const {
-    return (comp.added == added) && (comp.removed == removed);
-  }
+	/// equals operator
+	bool operator==(const DiffResults& comp) const
+	{
+		return (comp.added == added) && (comp.removed == removed);
+	}
 
-  /// not equals operator
-  bool operator!=(const DiffResults& comp) const {
-    return !(*this == comp);
-  }
+	/// not equals operator
+	bool operator!=(const DiffResults& comp) const
+	{
+		return !(*this == comp);
+	}
 };
 
 /**

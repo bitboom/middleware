@@ -11,13 +11,13 @@
 namespace osquery {
 
 const std::map<ColumnType, std::string> kColumnTypeNames = {
-    {UNKNOWN_TYPE, "UNKNOWN"},
-    {TEXT_TYPE, "TEXT"},
-    {INTEGER_TYPE, "INTEGER"},
-    {BIGINT_TYPE, "BIGINT"},
-    {UNSIGNED_BIGINT_TYPE, "UNSIGNED BIGINT"},
-    {DOUBLE_TYPE, "DOUBLE"},
-    {BLOB_TYPE, "BLOB"},
+	{UNKNOWN_TYPE, "UNKNOWN"},
+	{TEXT_TYPE, "TEXT"},
+	{INTEGER_TYPE, "INTEGER"},
+	{BIGINT_TYPE, "BIGINT"},
+	{UNSIGNED_BIGINT_TYPE, "UNSIGNED BIGINT"},
+	{DOUBLE_TYPE, "DOUBLE"},
+	{BLOB_TYPE, "BLOB"},
 };
 
 }
