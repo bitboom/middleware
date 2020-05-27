@@ -27,7 +27,8 @@
 
 using namespace vist;
 
-int main() try {
+int main() try
+{
 #ifdef TIZEN
 	LogStream::Init(std::make_shared<Dlog>());
 #endif
@@ -35,10 +36,12 @@ int main() try {
 	Vistd::Instance().Start();
 
 	return EXIT_SUCCESS;
-} catch(const Exception<ErrCode>& e) {
+} catch (const Exception<ErrCode>& e)
+{
 	ERROR(VIST) << "Failed while daemon is running." << e.what();
 	return EXIT_FAILURE;
-} catch(const std::exception& e) {
+} catch (const std::exception& e)
+{
 	ERROR(VIST) << "Failed while daemon is running." << e.what();
 	return EXIT_FAILURE;
 }

@@ -73,8 +73,14 @@ public:
 
 	virtual void onChanged(const PolicyValue& value) = 0;
 
-	const std::string& getName() const noexcept { return name; }
-	PolicyValue& getInitial() noexcept { return initial; }
+	const std::string& getName() const noexcept
+	{
+		return name;
+	}
+	PolicyValue& getInitial() noexcept
+	{
+		return initial;
+	}
 
 protected:
 	std::string name;

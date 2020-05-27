@@ -27,7 +27,8 @@ using namespace vist;
 
 DEFINE_string(query, "", "Query statement to execute.");
 
-int main(int argc, char *argv[]) try {
+int main(int argc, char* argv[]) try
+{
 	gflags::SetUsageMessage("ViST default admin program.");
 	gflags::ParseCommandLineFlags(&argc, &argv, true);
 
@@ -46,10 +47,12 @@ int main(int argc, char *argv[]) try {
 		std::cout << "Total " << rows.size() << "-rows." << std::endl;
 	}
 	return EXIT_SUCCESS;
-} catch(const Exception<ErrCode>& e) {
+} catch (const Exception<ErrCode>& e)
+{
 	std::cout << "Failed message: " << e.what() << std::endl;
 	return EXIT_FAILURE;
-} catch(const std::exception& e) {
+} catch (const std::exception& e)
+{
 	std::cout << "Failed message: " << e.what() << std::endl;
 	return EXIT_FAILURE;
 }

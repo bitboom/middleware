@@ -37,7 +37,8 @@ std::map<std::string, std::string> ALIAS = {
 	{ "state", "bluetooth" },
 	{ "desktopConnectivity", "bluetooth-desktop-connectivity" },
 	{ "pairing", "bluetooth-pairing" },
-	{ "tethering", "bluetooth-tethering"} };
+	{ "tethering", "bluetooth-tethering"}
+};
 
 void setPolicy(const std::string& name, int value)
 {
@@ -62,14 +63,15 @@ TableColumns BluetoothTable::columns() const
 	};
 }
 
-TableRows BluetoothTable::generate(QueryContext&) try {
+TableRows BluetoothTable::generate(QueryContext&) try
+{
 	INFO(VIST) << "Select query about bluetooth table.";
 
 	QueryData results;
 
 	Row row;
 
-	for (const auto&[schemaName, policyName]: ALIAS) {
+	for (const auto&[schemaName, policyName] : ALIAS) {
 		int value = vist::policy::API::Get(policyName);
 		row[schemaName] = std::to_string(value);
 	}
@@ -77,17 +79,20 @@ TableRows BluetoothTable::generate(QueryContext&) try {
 	results.emplace_back(std::move(row));
 
 	return osquery::tableRowsFromQueryData(std::move(results));
-} catch (const vist::Exception<ErrCode>& e) {
+} catch (const vist::Exception<ErrCode>& e)
+{
 	ERROR(VIST) << "Failed to query: " << e.what();
 	Row r;
 	return osquery::tableRowsFromQueryData({ r });
-} catch (...) {
+} catch (...)
+{
 	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return osquery::tableRowsFromQueryData({ r });
 }
 
-QueryData BluetoothTable::update(QueryContext&, const PluginRequest& request) try {
+QueryData BluetoothTable::update(QueryContext&, const PluginRequest& request) try
+{
 	INFO(VIST) << "Update query about bluetooth table.";
 	if (request.count("json_values") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
@@ -107,11 +112,13 @@ QueryData BluetoothTable::update(QueryContext&, const PluginRequest& request) tr
 	Row r;
 	r["status"] = "success";
 	return { r };
-} catch (const vist::Exception<ErrCode>& e) {
+} catch (const vist::Exception<ErrCode>& e)
+{
 	ERROR(VIST) << "Failed to query: " << e.what();
 	Row r;
 	return { r };
-} catch (...) {
+} catch (...)
+{
 	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return { r };

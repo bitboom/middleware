@@ -53,7 +53,9 @@ TEST(MainloopTests, single)
 	};
 
 	mainloop.addHandler(socket.getFd(), std::move(onAccept));
-	auto server = std::thread([&]() { mainloop.run(); });
+	auto server = std::thread([&]() {
+		mainloop.run();
+	});
 
 	// Send input to server.
 	Socket connected = Socket::connect(sockPath);
@@ -92,7 +94,9 @@ TEST(MainloopTests, multiflexing)
 
 	/// Set timeout to stop
 	mainloop.addHandler(socket.getFd(), std::move(onAccept));
-	auto server = std::thread([&]() { mainloop.run(1000); });
+	auto server = std::thread([&]() {
+		mainloop.run(1000);
+	});
 
 	auto task = [&]() {
 		// Send input to server.

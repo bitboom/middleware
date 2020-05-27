@@ -67,7 +67,9 @@ TEST(ConnectionTests, socket_communication)
 	};
 
 	mainloop.addHandler(socket.getFd(), std::move(onAccept));
-	auto serverThread = std::thread([&]() { mainloop.run(); });
+	auto serverThread = std::thread([&]() {
+		mainloop.run();
+	});
 
 	// client-side
 	Connection conn(sockPath);

@@ -27,7 +27,7 @@ TEST_F(NotificationTests, test_add_positive)
 {
 	auto& notifier = Notification::instance();
 
-	auto callback = [](const Row& row) {
+	auto callback = [](const Row & row) {
 		INFO(VIST) << "NotifyCallback called:";
 		for (const auto& r : row)
 			INFO(VIST) << "\t" << r.first << " : " << r.second;
@@ -41,7 +41,7 @@ TEST_F(NotificationTests, test_add_negative)
 {
 	auto& notifier = Notification::instance();
 
-	auto callback = [](const Row& row) {
+	auto callback = [](const Row & row) {
 		INFO(VIST) << "NotifyCallback called:";
 		for (const auto& r : row)
 			INFO(VIST) << "\t" << r.first << " : " << r.second;
@@ -56,7 +56,7 @@ TEST_F(NotificationTests, test_emit_positive)
 	auto& notifier = Notification::instance();
 
 	int called = 0;
-	auto callback = [&](const Row& row) {
+	auto callback = [&](const Row & row) {
 		INFO(VIST) << "NotifyCallback called:";
 		for (const auto& r : row)
 			INFO(VIST) << "\t" << r.first << " : " << r.second;

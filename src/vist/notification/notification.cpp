@@ -21,7 +21,7 @@
 #include <vist/logger.hpp>
 
 namespace {
-	std::mutex mutex;
+std::mutex mutex;
 } // anonymous namespace
 
 namespace vist {

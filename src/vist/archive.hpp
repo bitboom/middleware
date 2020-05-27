@@ -44,11 +44,11 @@ using IsArchival = typename std::enable_if<std::is_base_of<Archival, T>::value, 
 class Archive final {
 public:
 	template<typename Front, typename... Rest>
-	void pack(const Front& front, const Rest&... rest);
+	void pack(const Front& front, const Rest& ... rest);
 	inline void pack(void) {}
 
 	template<typename Front, typename... Rest>
-	void unpack(Front& front, Rest&... rest);
+	void unpack(Front& front, Rest& ... rest);
 	inline void unpack(void) {}
 
 	template<typename... Ts>
@@ -56,9 +56,9 @@ public:
 
 	// serialize method
 	template<typename T, IsFundamental<T> = 0>
-	Archive& operator<<(const T& value);
+	Archive & operator<<(const T& value);
 	template<typename T, IsArchival<T> = 0>
-	Archive& operator<<(const T& object);
+	Archive & operator<<(const T& object);
 	template<typename T>
 	Archive& operator<<(const std::vector<T>& values);
 	template<typename K, typename V>
@@ -72,9 +72,9 @@ public:
 
 	// deserialize method
 	template<typename T, IsFundamental<T> = 0>
-	Archive& operator>>(T& value);
+	Archive & operator>>(T& value);
 	template<typename T, IsArchival<T> = 0>
-	Archive& operator>>(T& object);
+	Archive & operator>>(T& object);
 	template<typename T>
 	Archive& operator>>(std::vector<T>& values);
 	template<typename K, typename V>
@@ -114,14 +114,14 @@ public:
 };
 
 template<typename Front, typename... Rest>
-void Archive::pack(const Front& front, const Rest&... rest)
+void Archive::pack(const Front& front, const Rest& ... rest)
 {
 	*this << front;
 	this->pack(rest...);
 }
 
 template<typename Front, typename... Rest>
-void Archive::unpack(Front& front, Rest&... rest)
+void Archive::unpack(Front& front, Rest& ... rest)
 {
 	*this >> front;
 	this->unpack(rest...);

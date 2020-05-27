@@ -33,7 +33,7 @@ TEST(ProcessTests, path_negative)
 	bool raised = false;
 	try {
 		Process::GetIdentifier(-1);
-	} catch(...) {
+	} catch (...) {
 		raised = true;
 	}
 

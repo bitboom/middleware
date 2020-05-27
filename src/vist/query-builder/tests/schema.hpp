@@ -48,10 +48,10 @@ struct Table2 {
 
 DECLARE_TABLE(table1, "table1", Table1::Column1, Table1::Column2, Table1::Column3);
 DECLARE_TABLE(table2, "table2", Table2::Column1,
-								Table2::Column2,
-								Table2::Column3,
-								Table2::Column4,
-								Table2::Column5);
+			  Table2::Column2,
+			  Table2::Column3,
+			  Table2::Column4,
+			  Table2::Column5);
 
 DECLARE_DATABASE(database, "database", table1, table2);
 

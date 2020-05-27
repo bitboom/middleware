@@ -61,8 +61,8 @@ struct Object : public Value {
 		if (!this->exist(key))
 			throw std::runtime_error("Not exist key.");
 
-		if constexpr (std::is_same_v<CompositeType, Array> ||
-					  std::is_same_v<CompositeType, Object>) {
+		if constexpr(std::is_same_v<CompositeType, Array> ||
+					 std::is_same_v<CompositeType, Object>) {
 			if (auto downcast = std::dynamic_pointer_cast<CompositeType>(this->pairs[key]->leaf);
 				downcast == nullptr)
 				throw std::runtime_error(key + "Mismatched type.");

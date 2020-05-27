@@ -43,7 +43,7 @@ struct Foo {
 		return false;
 	}
 
-//	void impossible(void) {}
+	//  void impossible(void) {}
 
 	std::string name;
 };
@@ -54,7 +54,7 @@ TEST(FunctorTests, functor)
 	auto fooSetName = make_functor(foo, &Foo::setName);
 	auto fooGetName = make_functor(foo, &Foo::getName);
 	auto fooEcho = make_functor(foo, &Foo::echo);
-//	auto fooImp = make_functor(foo, &Foo::impossible);
+	//  auto fooImp = make_functor(foo, &Foo::impossible);
 
 	std::string input = "Foo name";
 	bool ret = true;

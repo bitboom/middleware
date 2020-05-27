@@ -27,7 +27,9 @@ namespace util {
 
 inline std::string rtrim(std::string&& s)
 {
-	auto predicate = [](unsigned char c){ return !std::isspace(c); };
+	auto predicate = [](unsigned char c) {
+		return !std::isspace(c);
+	};
 	auto base = std::find_if(s.rbegin(), s.rend(), predicate).base();
 	s.erase(base, s.end());
 	return s;

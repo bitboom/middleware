@@ -62,12 +62,12 @@ public:
 		return getDouble();
 	}
 
-	operator const char*() const
+	operator const char* () const
 	{
 		return getText();
 	}
 
-	operator const void*() const
+	operator const void* () const
 	{
 		return getBlob();
 	}

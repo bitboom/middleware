@@ -30,7 +30,7 @@ template<typename T>
 class Crud {
 public:
 	template<typename... ColumnTypes>
-	T& select(ColumnTypes&&... cts);
+	T& select(ColumnTypes&& ... cts);
 
 	template<typename TableType>
 	T& selectAll(void);
@@ -38,23 +38,23 @@ public:
 	T& selectAll(void);
 
 	template<typename... AssginExpressions>
-	T& update(AssginExpressions&&... expression);
+	T& update(AssginExpressions&& ... expression);
 
 	template<typename... ColumnTypes>
-	T& insert(ColumnTypes&&... cts);
+	T& insert(ColumnTypes&& ... cts);
 
 	template<typename... ColumnTypes>
-	T& remove(ColumnTypes&&... cts);
+	T& remove(ColumnTypes&& ... cts);
 
 	template<typename Expr>
 	T& where(Expr expr);
 
 private:
 	template<typename L, typename R>
-	std::string processWhere(And<L,R>& expr);
+	std::string processWhere(And<L, R>& expr);
 
 	template<typename L, typename R>
-	std::string processWhere(Or<L,R>& expr);
+	std::string processWhere(Or<L, R>& expr);
 
 	template<typename Expr>
 	std::string processWhere(const Expr& expr);
@@ -62,7 +62,7 @@ private:
 
 template<typename T>
 template<typename... ColumnTypes>
-T& Crud<T>::select(ColumnTypes&&... cts)
+T& Crud<T>::select(ColumnTypes&& ... cts)
 {
 	static_cast<T*>(this)->cache.clear();
 
@@ -125,7 +125,7 @@ T& Crud<T>::selectAll(void)
 
 template<typename T>
 template<typename... AssginExpressions>
-T& Crud<T>::update(AssginExpressions&&... expression)
+T& Crud<T>::update(AssginExpressions&& ... expression)
 {
 	static_cast<T*>(this)->cache.clear();
 
@@ -133,12 +133,12 @@ T& Crud<T>::update(AssginExpressions&&... expression)
 	ss << "UPDATE " << static_cast<T*>(this)->name << " ";
 	ss << "SET ";
 
-	auto closure = [&ss, this](const auto&... iter) {
+	auto closure = [&ss, this](const auto & ... iter) {
 		(static_cast<void>( /// Make fold expression possible
-			(ss << static_cast<T*>(this)->getColumnName(iter.l) /// Column name
-				<< " " << static_cast<std::string>(iter) << " " /// Assign operator
-				<< iter.r << ", ") /// Value
-		), ...); /// Process fold expression
+			 (ss << static_cast<T*>(this)->getColumnName(iter.l) /// Column name
+			  << " " << static_cast<std::string>(iter) << " " /// Assign operator
+			  << iter.r << ", ") /// Value
+		 ), ...); /// Process fold expression
 	};
 	std::apply(closure, std::tuple(expression...));
 
@@ -153,19 +153,19 @@ T& Crud<T>::update(AssginExpressions&&... expression)
 
 template<typename T>
 template<typename... ColumnTypes>
-T& Crud<T>::insert(ColumnTypes&&... expression)
+T& Crud<T>::insert(ColumnTypes&& ... expression)
 {
 	static_cast<T*>(this)->cache.clear();
 
 	std::string query;
-	{ 
+	{
 		std::stringstream ss;
 		ss << "INSERT INTO " << static_cast<T*>(this)->name << " (";
 
-		auto onColumn = [&ss, this](const auto&... iter) {
+		auto onColumn = [&ss, this](const auto & ... iter) {
 			(static_cast<void>( /// Make fold expression possible
-				(ss << static_cast<T*>(this)->getColumnName(iter.l) << ", ") /// Column name
-			), ...); /// Process fold expression
+				 (ss << static_cast<T*>(this)->getColumnName(iter.l) << ", ") /// Column name
+			 ), ...); /// Process fold expression
 		};
 		std::apply(onColumn, std::tuple(expression...));
 
@@ -179,7 +179,7 @@ T& Crud<T>::insert(ColumnTypes&&... expression)
 
 	{
 		std::stringstream ss;
-		auto onValue = [&ss](const auto&... iter) {
+		auto onValue = [&ss](const auto & ... iter) {
 			(static_cast<void>((ss << iter.r) << ", "), ...); /// Process fold expression
 		};
 		std::apply(onValue, std::tuple(expression...));
@@ -199,7 +199,7 @@ T& Crud<T>::insert(ColumnTypes&&... expression)
 
 template<typename T>
 template<typename... ColumnTypes>
-T& Crud<T>::remove(ColumnTypes&&... cts)
+T& Crud<T>::remove(ColumnTypes&& ... cts)
 {
 	static_cast<T*>(this)->cache.clear();
 
@@ -227,7 +227,7 @@ T& Crud<T>::where(Expr expr)
 
 template<typename T>
 template<typename L, typename R>
-std::string Crud<T>::processWhere(And<L,R>& expr)
+std::string Crud<T>::processWhere(And<L, R>& expr)
 {
 	std::stringstream ss;
 	ss << this->processWhere(expr.l) << " ";
@@ -239,7 +239,7 @@ std::string Crud<T>::processWhere(And<L,R>& expr)
 
 template<typename T>
 template<typename L, typename R>
-std::string Crud<T>::processWhere(Or<L,R>& expr)
+std::string Crud<T>::processWhere(Or<L, R>& expr)
 {
 	std::stringstream ss;
 	ss << this->processWhere(expr.l) << " ";

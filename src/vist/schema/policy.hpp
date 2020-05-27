@@ -23,7 +23,7 @@ namespace schema {
 
 template <typename T>
 struct Policy {
-	std::string	name;
+	std::string name;
 	T value;
 };
 

@@ -59,7 +59,7 @@ private:
 };
 
 template<typename T>
-void Socket::send(const T *buffer, const std::size_t size) const
+void Socket::send(const T* buffer, const std::size_t size) const
 {
 	std::size_t written = 0;
 	while (written < size) {
@@ -76,7 +76,7 @@ void Socket::send(const T *buffer, const std::size_t size) const
 }
 
 template<typename T>
-void Socket::recv(T *buffer, const std::size_t size) const
+void Socket::recv(T* buffer, const std::size_t size) const
 {
 	std::size_t readen = 0;
 	while (readen < size) {

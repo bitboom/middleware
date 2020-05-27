@@ -64,14 +64,20 @@ struct Process {
 private:
 	static std::string canonicalize(std::string&& s)
 	{
-		{ /// rtrim
-			auto predicate = [](unsigned char c){ return std::isspace(c) || c == '\0'; };
+		{
+			/// rtrim
+			auto predicate = [](unsigned char c) {
+				return std::isspace(c) || c == '\0';
+			};
 			auto base = std::find_if(s.begin(), s.end(), predicate);
 			s.erase(base, s.end());
 		}
 
-		{ /// ltrim
-			auto predicate = [](unsigned char c){ return c == '/'; };
+		{
+			/// ltrim
+			auto predicate = [](unsigned char c) {
+				return c == '/';
+			};
 			auto base = std::find_if(s.rbegin(), s.rend(), predicate).base();
 			s.erase(s.begin(), base);
 		}

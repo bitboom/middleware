@@ -16,7 +16,7 @@
 /*
  * Usable JSON header-only library.
  *   - Applied design pattern: Composite pattern
- *     - Component structure: Value 
+ *     - Component structure: Value
  *     - Leaf structure: Int, String, Bool, Null
  *     - Composite structure: Array, Object
  */
@@ -26,7 +26,7 @@
  *     Json json;
  *     json["name"] = "sangwan";
  *     json["age"] = 99;
- *     
+ *
  *     // Get json value
  *     std::string name = json["name"];
  *     int age = json["age"];
@@ -70,9 +70,9 @@ struct Json {
 	{
 		auto value = std::make_shared<Value>();
 		auto composite = std::make_shared<CompositeType>();
-		if constexpr (std::is_same_v<CompositeType, Array>)
+		if constexpr(std::is_same_v<CompositeType, Array>)
 			composite->buffer = std::move(child.buffer);
-		else if constexpr (std::is_same_v<CompositeType, Object>)
+		else if constexpr(std::is_same_v<CompositeType, Object>)
 			composite->pairs = std::move(child.pairs);
 		else
 			static_assert(dependent_false<CompositeType>::value, "Only Composite type supported.");

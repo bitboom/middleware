@@ -31,10 +31,10 @@ using namespace vist::tsqb;
 using namespace vist::schema;
 
 Table policyInt { "policy", Column("name", &Policy<int>::name),
-							Column("value", &Policy<int>::value) };
+	Column("value", &Policy<int>::value) };
 
 Table policyStr { "policy", Column("name", &Policy<std::string>::name),
-							Column("value", &Policy<std::string>::value) };
+	Column("value", &Policy<std::string>::value) };
 
 Database metaDB { "db", policyInt, policyStr };
 

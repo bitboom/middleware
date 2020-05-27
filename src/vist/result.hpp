@@ -57,12 +57,24 @@ public:
 	Result(ErrCode ec) : ec(std::move(ec)), isError(true) {}
 	Result() = delete;
 
-	inline bool ok() { return !isError; }
-	inline bool err() { return isError; }
+	inline bool ok()
+	{
+		return !isError;
+	}
+	inline bool err()
+	{
+		return isError;
+	}
 
 	/// TBD: Consider to return rvalue.
-	inline Value& get() { return value; }
-	inline ErrCode getErrCode() { return ec; }
+	inline Value& get()
+	{
+		return value;
+	}
+	inline ErrCode getErrCode()
+	{
+		return ec;
+	}
 
 private:
 	Value value;

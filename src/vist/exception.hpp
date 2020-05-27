@@ -67,8 +67,8 @@ public:
 
 	using Self = Exception<ErrCode>;
 
-	Exception(ErrCode ec, const char *file,
-			  const char *function, unsigned int line) noexcept : ec(ec)
+	Exception(ErrCode ec, const char* file,
+			  const char* function, unsigned int line) noexcept : ec(ec)
 	{
 		std::stringstream ss;
 		ss << "[" << file << ":" << line << " " << function << "()]"

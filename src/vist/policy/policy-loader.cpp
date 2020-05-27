@@ -38,9 +38,9 @@ PolicyProvider* PolicyLoader::load(const std::string& path)
 
 PluginLoader::PluginLoader(const std::string& path, int flag)
 	: handle(::dlopen(path.c_str(), flag), [](void*)->int{return 0;})
-// Cleaning object after dlclose() makes SEGFAULT.
-// TODO: Sync dynamic loading's life-cycle with program.(PluginManager)
-//	: handle(::dlopen(path.c_str(), flag), ::dlclose)
+	  // Cleaning object after dlclose() makes SEGFAULT.
+	  // TODO: Sync dynamic loading's life-cycle with program.(PluginManager)
+	  //  : handle(::dlopen(path.c_str(), flag), ::dlclose)
 {
 	if (handle == nullptr)
 		THROW(ErrCode::LogicError) << "Failed to open: " << path;

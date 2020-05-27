@@ -79,7 +79,7 @@ TEST(JsonTests, int_type_mismatch)
 	try {
 		static_cast<std::string>(json["int"]);
 		EXPECT_TRUE(false);
-	} catch(...) {
+	} catch (...) {
 		EXPECT_TRUE(true);
 	}
 }
@@ -110,7 +110,7 @@ TEST(JsonTests, string_type_mismatch)
 	try {
 		static_cast<int>(json["string"]);
 		EXPECT_TRUE(false);
-	} catch(...) {
+	} catch (...) {
 		EXPECT_TRUE(true);
 	}
 }
@@ -262,8 +262,8 @@ TEST(JsonTests, osquery_format)
 		document.push("constraints", constraints);
 
 		EXPECT_EQ(document.serialize(), "{ \"constraints\": [ { \"affinity\": \"TEXT\", "
-										"\"name\": \"test_int\", "
-										"\"list\": [ { \"expr\": \"2\", \"op\": 2 } ] } ] }");
+				  "\"name\": \"test_int\", "
+				  "\"list\": [ { \"expr\": \"2\", \"op\": 2 } ] } ] }");
 	}
 
 	{
@@ -306,9 +306,9 @@ TEST(JsonTests, serialize)
 	//             "string": "root value" }
 	auto serialized = json.serialize();
 	EXPECT_EQ(serialized, "{ \"array\": [ 3, \"array value\" ], "
-						  "\"object\": { \"string\": \"child value\", \"int\": 2 }, "
-						  "\"int\": 1, "
-						  "\"string\": \"root value\" }");
+			  "\"object\": { \"string\": \"child value\", \"int\": 2 }, "
+			  "\"int\": 1, "
+			  "\"string\": \"root value\" }");
 
 	Json restore;
 	restore.deserialize(serialized);

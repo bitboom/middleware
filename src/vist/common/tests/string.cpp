@@ -72,7 +72,7 @@ TEST(StringTests, strip)
 	try {
 		strip(origin, '[', ']');
 		EXPECT_TRUE(false);
-	} catch(...) {
+	} catch (...) {
 		EXPECT_TRUE(true);
 	}
 }

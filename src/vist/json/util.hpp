@@ -27,7 +27,7 @@ namespace json {
 inline std::vector<std::string> canonicalize(std::vector<std::string>& tokens)
 {
 	std::vector<std::string> result;
-	auto rearrange = [&](std::vector<std::string>::iterator& iter, char first, char last) {
+	auto rearrange = [&](std::vector<std::string>::iterator & iter, char first, char last) {
 		if ((*iter).find(first) == std::string::npos)
 			return false;
 

@@ -32,11 +32,11 @@ Connection::Connection(const std::string& name, const int flags, bool integrityC
 
 	if (integrityCheck) {
 		bool verified = false;
-		sqlite3_stmt *integrity = NULL;
-		if (::sqlite3_prepare_v2(handle, "PRAGMA integrity_check;", -1, &integrity, NULL) == SQLITE_OK ) {
+		sqlite3_stmt* integrity = NULL;
+		if (::sqlite3_prepare_v2(handle, "PRAGMA integrity_check;", -1, &integrity, NULL) == SQLITE_OK) {
 			while (::sqlite3_step(integrity) == SQLITE_ROW) {
-				const unsigned char *result = ::sqlite3_column_text(integrity, 0);
-				if (result && ::strcmp((const char *)result, (const char *)"ok") == 0) {
+				const unsigned char* result = ::sqlite3_column_text(integrity, 0);
+				if (result && ::strcmp((const char*)result, (const char*)"ok") == 0) {
 					verified = true;
 					break;
 				}

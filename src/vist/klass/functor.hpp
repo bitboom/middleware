@@ -34,7 +34,7 @@ namespace klass {
 
 struct AbstractFunctor {
 	template<typename R, typename...Args>
-	R invoke(Args&&... args);
+	R invoke(Args&& ... args);
 	inline Archive invoke(Archive& archive);
 
 protected:
@@ -53,7 +53,7 @@ public:
 	explicit Functor(Klass& instance, MemFunc memFunc);
 
 	template<typename... Args>
-	auto operator()(Args&&... args) -> typename MemFunc::Return;
+	auto operator()(Args&& ... args) -> typename MemFunc::Return;
 	inline auto operator()(Archive& archive) -> typename MemFunc::Return;
 
 protected:
@@ -70,7 +70,7 @@ private:
 };
 
 template<typename R, typename...Args>
-R AbstractFunctor::invoke(Args&&... args)
+R AbstractFunctor::invoke(Args&& ... args)
 {
 	Archive parameters;
 	parameters.pack(std::forward<Args>(args)...);
@@ -94,7 +94,7 @@ Functor<R, K, Ps...>::Functor(Klass& instance, MemFunc memFunc)
 
 template<typename R, typename K, typename... Ps>
 template<typename... Args>
-auto Functor<R, K, Ps...>::operator()(Args&&... args) -> typename MemFunc::Return
+auto Functor<R, K, Ps...>::operator()(Args&& ... args) -> typename MemFunc::Return
 {
 	const Invokable& invokable = this->memFunc.get();
 	return invokable(this->instance, std::forward<Args>(args)...);
@@ -136,14 +136,14 @@ auto Functor<R, K, Ps...>::operator()(T& tuple,
 }
 
 template<typename R, typename K, typename... Ps>
-Functor<R, K, Ps...> make_functor(K& instance, R (K::* member)(Ps...))
+Functor<R, K, Ps...> make_functor(K& instance, R(K::* member)(Ps...))
 {
 	return Functor<R, K, Ps...>(instance, make_function(member));
 }
 
 template<typename R, typename K, typename... Ps>
 std::shared_ptr<Functor<R, K, Ps...>> make_functor_ptr(K& instance,
-													   R (K::* member)(Ps...))
+													   R(K::* member)(Ps...))
 {
 	return std::make_shared<Functor<R, K, Ps...>>(instance, make_function(member));
 }

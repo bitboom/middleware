@@ -59,17 +59,17 @@ struct PolicyDefinition {
 };
 
 DECLARE_TABLE(AdminTable, "admin", Admin::Id, Admin::Pkg,
-								   Admin::Uid, Admin::Key, Admin::Removable);
+			  Admin::Uid, Admin::Key, Admin::Removable);
 
 DECLARE_TABLE(ManagedPolicyTable, "managed_policy", ManagedPolicy::Id,
-													ManagedPolicy::Aid,
-													ManagedPolicy::Pid,
-													ManagedPolicy::Value);
+			  ManagedPolicy::Aid,
+			  ManagedPolicy::Pid,
+			  ManagedPolicy::Value);
 
 DECLARE_TABLE(PolicyDefinitionTable, "policy_definition", PolicyDefinition::Id,
-														  PolicyDefinition::Scope,
-														  PolicyDefinition::Name,
-														  PolicyDefinition::Ivalue);
+			  PolicyDefinition::Scope,
+			  PolicyDefinition::Name,
+			  PolicyDefinition::Ivalue);
 
 DECLARE_DATABASE(DPM, "dpm", AdminTable, ManagedPolicyTable, PolicyDefinitionTable);
 
@@ -92,7 +92,7 @@ TEST(QueryBuilderTsqbTests, SELECT_ALL)
 TEST(QueryBuilderTsqbTests, SELECT_WHERE)
 {
 	std::string select1 = AdminTable.select(Admin::Uid, Admin::Key)
-									.where(Admin::Id > 3);
+						  .where(Admin::Id > 3);
 	std::string select2 = AdminTable.selectAll().where(Admin::Uid > 3);
 	std::string select3 = AdminTable.selectAll().where(Admin::Uid > 3 && Admin::Pkg == "dpm");
 	std::string select4 = AdminTable.selectAll().where(Admin::Uid > 3 || Admin::Pkg == "dpm");
@@ -109,9 +109,9 @@ TEST(QueryBuilderTsqbTests, UPDATE)
 	std::string update1 = AdminTable.update(Admin::Id = id, Admin::Pkg = "pkg",
 											Admin::Uid = uid, Admin::Key = "key");
 	std::string update2 = AdminTable.update(Admin::Key = "key")
-									.where((Admin::Uid == uid) && (Admin::Id == id));
+						  .where((Admin::Uid == uid) && (Admin::Id == id));
 	std::string update3 = AdminTable.update(Admin::Key = "key", Admin::Pkg = "pkg")
-									.where((Admin::Uid == 0) && (Admin::Id == 1));
+						  .where((Admin::Uid == 0) && (Admin::Id == 1));
 
 	EXPECT_EQ(update1, "UPDATE admin SET id = 1, pkg = 'pkg', uid = 0, key = 'key'");
 	EXPECT_EQ(update2, "UPDATE admin SET key = 'key' WHERE uid = 0 AND id = 1");
@@ -143,24 +143,24 @@ TEST(QueryBuilderTsqbTests, INSERT)
 											Admin::Key = key);
 
 	EXPECT_EQ(insert1, "INSERT INTO admin (id, pkg, uid, key) "
-					   "VALUES (0, 'pkg', 1, 'key')");
+			  "VALUES (0, 'pkg', 1, 'key')");
 	EXPECT_EQ(insert2, "INSERT INTO admin (id, pkg, key) "
-					   "VALUES (0, 'pkg', 'key')");
+			  "VALUES (0, 'pkg', 'key')");
 }
 
 TEST(QueryBuilderTsqbTests, TYPE_SAFE)
 {
-/*
- * Below cause complie error since expression types are dismatch.
+	/*
+	 * Below cause complie error since expression types are dismatch.
 
-	std::string type_unsafe1 = admin.selectAll().where(Admin::Uid > "dpm");
-	std::string type_unsafe2 = admin.selectAll().where(Admin::Uid == "dpm");
-	std::string type_unsafe3 = admin.selectAll().where(Admin::Pkg == 3);
-	int pkg = 3;
-	std::string type_unsafe4 = admin.selectAll().where(Admin::Pkg) < pkg);
-	std::string type_unsafe5 = admin.remove().where(Admin::Pkg) == "dpm" &&
-													Admin::Uid) == "dpm");
-*/
+	    std::string type_unsafe1 = admin.selectAll().where(Admin::Uid > "dpm");
+	    std::string type_unsafe2 = admin.selectAll().where(Admin::Uid == "dpm");
+	    std::string type_unsafe3 = admin.selectAll().where(Admin::Pkg == 3);
+	    int pkg = 3;
+	    std::string type_unsafe4 = admin.selectAll().where(Admin::Pkg) < pkg);
+	    std::string type_unsafe5 = admin.remove().where(Admin::Pkg) == "dpm" &&
+	                                                    Admin::Uid) == "dpm");
+	*/
 }
 
 TEST(QueryBuilderTsqbTests, MULTI_SELECT)
@@ -169,11 +169,11 @@ TEST(QueryBuilderTsqbTests, MULTI_SELECT)
 										  ManagedPolicy::Id, ManagedPolicy::Value);
 	std::string multiSelect2 = DPM.select(Admin::Uid, Admin::Key,
 										  ManagedPolicy::Id, ManagedPolicy::Value)
-								  .where((Admin::Uid > 0) && (ManagedPolicy::Id == 3));
+							   .where((Admin::Uid > 0) && (ManagedPolicy::Id == 3));
 
 	EXPECT_EQ(multiSelect1, "SELECT admin.uid, admin.key, managed_policy.id, "
-							"managed_policy.value FROM admin, managed_policy");
+			  "managed_policy.value FROM admin, managed_policy");
 	EXPECT_EQ(multiSelect2, "SELECT admin.uid, admin.key, managed_policy.id, "
-							"managed_policy.value FROM admin, managed_policy "
-							"WHERE admin.uid > 0 AND managed_policy.id = 3");
+			  "managed_policy.value FROM admin, managed_policy "
+			  "WHERE admin.uid > 0 AND managed_policy.id = 3");
 }

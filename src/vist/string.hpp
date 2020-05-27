@@ -59,7 +59,7 @@ inline std::string strip(const std::string& origin, char begin, char end)
 	if (copied.size() < 2 || copied[0] != begin || copied[copied.size() - 1] != end)
 		throw std::invalid_argument("Wrong format.");
 
-	return copied.substr(1, copied.size() -2);
+	return copied.substr(1, copied.size() - 2);
 }
 
 inline std::size_t count(const std::string& str, char ch)

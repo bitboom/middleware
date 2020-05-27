@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include "column.hpp" 
-#include "database.hpp" 
-#include "table.hpp" 
+#include "column.hpp"
+#include "database.hpp"
+#include "table.hpp"
 
 #define DECLARE_COLUMN(instance, name, type) \
 	inline static vist::tsqb::Column instance = { name, type }

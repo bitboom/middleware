@@ -179,7 +179,7 @@ private:
 
 #ifndef __FILENAME__
 #define __FILENAME__ \
-(::strrchr(__FILE__, '/') ? ::strrchr(__FILE__, '/') + 1 : __FILE__)
+	(::strrchr(__FILE__, '/') ? ::strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 
 #define LOG(level, tag) vist::LogStream(LOGCAT(vist::LogLevel::level, #tag))

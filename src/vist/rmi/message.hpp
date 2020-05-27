@@ -53,9 +53,9 @@ struct VIST_API Message final {
 	Message& operator=(Message&&) = default;
 
 	template<typename... Args>
-	void enclose(Args&&... args);
+	void enclose(Args&& ... args);
 	template<typename... Args>
-	void disclose(Args&... args);
+	void disclose(Args& ... args);
 
 	bool success() const noexcept;
 	bool error() const noexcept;
@@ -71,14 +71,14 @@ struct VIST_API Message final {
 };
 
 template<typename... Args>
-void Message::enclose(Args&&... args)
+void Message::enclose(Args&& ... args)
 {
 	this->buffer.pack(std::forward<Args>(args)...);
 	header.length = this->buffer.size();
 }
 
 template<typename... Args>
-void Message::disclose(Args&... args)
+void Message::disclose(Args& ... args)
 {
 	this->buffer.unpack(args...);
 }

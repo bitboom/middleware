@@ -81,11 +81,13 @@ TableRows PolicyTable::generate(QueryContext& context) try
 	}
 
 	return osquery::tableRowsFromQueryData(std::move(results));
-} catch (const vist::Exception<ErrCode>& e) {
+} catch (const vist::Exception<ErrCode>& e)
+{
 	ERROR(VIST) << "Failed to query: " << e.what();
 	Row r;
 	return osquery::tableRowsFromQueryData({ r });
-} catch (...) {
+} catch (...)
+{
 	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return osquery::tableRowsFromQueryData({ r });
@@ -111,11 +113,13 @@ QueryData PolicyTable::update(QueryContext&, const PluginRequest& request) try
 	Row r;
 	r["status"] = "success";
 	return { r };
-} catch (const vist::Exception<ErrCode>& e) {
+} catch (const vist::Exception<ErrCode>& e)
+{
 	ERROR(VIST) << "Failed to query: " << e.what();
 	Row r;
 	return { r };
-} catch (...) {
+} catch (...)
+{
 	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return { r };

@@ -133,19 +133,19 @@ struct Or  : public Binary<L, R> {
 	}
 };
 
-template<typename L,
-		 typename R,
-		 typename = typename std::enable_if_t<is_expression<L>::value &&
-											  is_expression<R>::value>>
+template < typename L,
+		   typename R,
+		   typename = typename std::enable_if_t < is_expression<L>::value &&
+												  is_expression<R>::value >>
 And<L, R> operator&&(const L& l, const R& r)
 {
 	return {l, r};
 }
 
-template<typename L,
-		 typename R,
-		 typename = typename std::enable_if_t<is_expression<L>::value &&
-											  is_expression<R>::value>>
+template < typename L,
+		   typename R,
+		   typename = typename std::enable_if_t < is_expression<L>::value &&
+												  is_expression<R>::value >>
 Or<L, R> operator||(const L& l, const R& r)
 {
 	return {l, r};

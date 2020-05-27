@@ -31,11 +31,11 @@ struct Array : public Value {
 	void push(const Type& data)
 	{
 		auto value = std::make_shared<Value>();
-		if constexpr (std::is_same_v<Type, Array> || std::is_same_v<Type, Object>) {
+		if constexpr(std::is_same_v<Type, Array> || std::is_same_v<Type, Object>) {
 			auto real = std::make_shared<Type>();
 			*real = data;
 			value->leaf = real;
-		} else if constexpr (std::is_same_v<Type, Null>) {
+		} else if constexpr(std::is_same_v<Type, Null>) {
 			value->leaf = std::make_shared<Null>();
 		} else {
 			*value = data;

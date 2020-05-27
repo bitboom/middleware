@@ -20,7 +20,7 @@
 #include <vist/rmi/remote.hpp>
 
 namespace {
-	const std::string SOCK_ADDR = "/tmp/.vist";
+const std::string SOCK_ADDR = "/tmp/.vist";
 } // anonymous namespace
 
 namespace vist {

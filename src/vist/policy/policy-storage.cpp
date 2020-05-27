@@ -144,7 +144,7 @@ void PolicyStorage::enroll(const std::string& name)
 	}
 
 	/// Make admin deactivated as default.
-	Admin admin = {name , 0};
+	Admin admin = {name, 0};
 
 	std::string query = schema::AdminTable.insert(Admin::Name = admin.name,
 												  Admin::Activated = admin.activated);
@@ -191,13 +191,13 @@ void PolicyStorage::activate(const std::string& admin, bool state)
 
 	DEBUG(VIST) << "Activate admin: " << admin;
 	std::string query = schema::AdminTable.update(Admin::Activated = static_cast<int>(state))
-										  .where(Admin::Name == admin);
+						.where(Admin::Name == admin);
 	database::Statement stmt(*this->database, query);
 	if (!stmt.exec())
 		THROW(ErrCode::RuntimeError) << stmt.getErrorMessage();
 
 	this->admins[admin].activated = state;
-	INFO(VIST) << "Admin[" << admin << "]'s activated value is set: " << state; 
+	INFO(VIST) << "Admin[" << admin << "]'s activated value is set: " << state;
 }
 
 bool PolicyStorage::isActivated(const std::string& admin)
@@ -231,8 +231,8 @@ void PolicyStorage::update(const std::string& admin,
 		THROW(ErrCode::LogicError) << "Not exist policy: " << policy;
 
 	std::string query = schema::PolicyManagedTable.update(PolicyManaged::Value = value.dump())
-												  .where(PolicyManaged::Admin == admin &&
-														 PolicyManaged::Policy == policy);
+						.where(PolicyManaged::Admin == admin &&
+							   PolicyManaged::Policy == policy);
 	database::Statement stmt(*this->database, query);
 	if (!stmt.exec())
 		THROW(ErrCode::RuntimeError) << stmt.getErrorMessage();

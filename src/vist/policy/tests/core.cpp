@@ -21,14 +21,16 @@
 namespace vist {
 namespace policy {
 
-TEST(PolicyCoreTests, policy_loader) {
+TEST(PolicyCoreTests, policy_loader)
+{
 	auto& manager = PolicyManager::Instance();
 
 	EXPECT_TRUE(manager.providers.size() > 0);
 	EXPECT_TRUE(manager.policies.size() > 0);
 }
 
-TEST(PolicyCoreTests, policy_set_get_int) {
+TEST(PolicyCoreTests, policy_set_get_int)
+{
 	auto& manager = PolicyManager::Instance();
 	manager.enroll("testAdmin");
 	manager.set("sample-int-policy", PolicyValue(5), "testAdmin");
@@ -48,7 +50,8 @@ TEST(PolicyCoreTests, policy_set_get_int) {
 	manager.disenroll("testAdmin1");
 }
 
-TEST(PolicyCoreTests, policy_set_get_str) {
+TEST(PolicyCoreTests, policy_set_get_str)
+{
 	auto& manager = PolicyManager::Instance();
 	manager.enroll("testAdmin");
 	manager.set("sample-str-policy", PolicyValue("AAA"), "testAdmin");
@@ -67,13 +70,15 @@ TEST(PolicyCoreTests, policy_set_get_str) {
 	manager.disenroll("testAdmin1");
 }
 
-TEST(PolicyCoreTests, policy_get_all) {
+TEST(PolicyCoreTests, policy_get_all)
+{
 	auto& manager = PolicyManager::Instance();
 	auto policies = manager.getAll();
 	EXPECT_TRUE(policies.size() > 0);
 }
 
-TEST(PolicyCoreTests, policy_get_policy) {
+TEST(PolicyCoreTests, policy_get_policy)
+{
 	auto& manager = PolicyManager::Instance();
 	const auto& policy = manager.getPolicy("sample-int-policy");
 	EXPECT_EQ(policy->getName(), "sample-int-policy");
@@ -87,7 +92,8 @@ TEST(PolicyCoreTests, policy_get_policy) {
 	EXPECT_TRUE(raised);
 }
 
-TEST(PolicyCoreTests, admin) {
+TEST(PolicyCoreTests, admin)
+{
 	auto& manager = PolicyManager::Instance();
 	manager.enroll("testAdmin");
 
@@ -109,7 +115,8 @@ TEST(PolicyCoreTests, admin) {
 	manager.disenroll("testAdmin");
 }
 
-TEST(PolicyCoreTests, is_activated) {
+TEST(PolicyCoreTests, is_activated)
+{
 	auto& manager = PolicyManager::Instance();
 	manager.enroll("testAdmin1");
 	manager.enroll("testAdmin2");

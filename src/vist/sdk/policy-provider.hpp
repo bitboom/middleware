@@ -27,7 +27,7 @@ namespace policy {
 
 class PolicyProvider {
 public:
-	using FactoryType = PolicyProvider* (*)();
+	using FactoryType = PolicyProvider * (*)();
 
 	explicit PolicyProvider(std::string name) noexcept : name(std::move(name)) {}
 	virtual ~PolicyProvider() = default;
@@ -37,14 +37,20 @@ public:
 		policies[policy->getName()] = policy;
 	}
 
-	inline const std::string& getName() const noexcept { return name; }
+	inline const std::string& getName() const noexcept
+	{
+		return name;
+	}
 	static const std::string& getFactoryName() noexcept
 	{
 		static std::string name = "PolicyFactory";
 		return name;
 	}
 
-	inline std::size_t size() const noexcept { return policies.size(); }
+	inline std::size_t size() const noexcept
+	{
+		return policies.size();
+	}
 
 private:
 	std::string name;

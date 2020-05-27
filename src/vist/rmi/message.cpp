@@ -21,7 +21,7 @@ namespace rmi {
 
 Message::Message(unsigned int type, const std::string& signature) :
 	header({0, type, signature.size()}),
-	signature(signature)
+	   signature(signature)
 {
 	this->enclose(signature);
 }

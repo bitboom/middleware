@@ -46,7 +46,7 @@ TEST(ServerClientTests, not_ondemand)
 {
 	std::string sockPath = "@vist-test.sock";
 
-	auto task = [&](Message& message) -> Message {
+	auto task = [&](Message & message) -> Message {
 		EXPECT_EQ(message.signature, requestSignature);
 
 		int recv1;
@@ -67,7 +67,8 @@ TEST(ServerClientTests, not_ondemand)
 		server.run();
 	});
 
-	{ /// Client configuration
+	{
+		/// Client configuration
 		auto clientClosure = [&]() {
 			Client client(sockPath);
 
@@ -101,7 +102,7 @@ TEST(ServerClientTests, not_ondemand)
 TEST(ServerClientTests, peer_pid)
 {
 	std::string sockPath = "@vist-test.sock";
-	auto task = [](Message& message) -> Message {
+	auto task = [](Message & message) -> Message {
 		EXPECT_EQ(message.signature, requestSignature);
 
 		auto peer = Server::GetPeerCredentials();
@@ -121,7 +122,8 @@ TEST(ServerClientTests, peer_pid)
 		server.run();
 	});
 
-	{ /// Client configuration
+	{
+		/// Client configuration
 		auto clientClosure = [&]() {
 			Client client(sockPath);
 

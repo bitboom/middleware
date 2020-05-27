@@ -33,7 +33,7 @@ class Gateway::Impl {
 public:
 	explicit Impl(Gateway& gateway, const std::string& path, Gateway::ServiceType type)
 	{
-		auto dispatcher = [&gateway](auto& message) -> Message {
+		auto dispatcher = [&gateway](auto & message) -> Message {
 			std::string function = message.signature;
 			auto iter = gateway.functorMap.find(function);
 			if (iter == gateway.functorMap.end())

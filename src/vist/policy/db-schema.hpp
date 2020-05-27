@@ -54,10 +54,10 @@ struct PolicyDefinition {
 
 DECLARE_TABLE(AdminTable, "ADMIN", Admin::Name, Admin::Activated);
 DECLARE_TABLE(PolicyManagedTable, "POLICY_MANAGED", PolicyManaged::Admin,
-													PolicyManaged::Policy,
-													PolicyManaged::Value);
+			  PolicyManaged::Policy,
+			  PolicyManaged::Value);
 DECLARE_TABLE(PolicyDefinitionTable, "POLICY_DEFINITION", PolicyDefinition::Name,
-														  PolicyDefinition::Ivalue);
+			  PolicyDefinition::Ivalue);
 
 } // namespace schema
 } // namespace policy

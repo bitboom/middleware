@@ -32,7 +32,8 @@ struct Timer {
 	using Task = std::function<void()>;
 
 	/// Execute task() once until predicate() is true.
-	static void ExecOnce(Task task, Predicate predicate, unsigned int seconds) {
+	static void ExecOnce(Task task, Predicate predicate, unsigned int seconds)
+	{
 		auto worker = std::thread([task, predicate, seconds]() {
 			while (1) {
 				std::this_thread::sleep_for(std::chrono::seconds(seconds));

@@ -29,12 +29,13 @@ namespace vist {
 ThreadPool::ThreadPool(std::size_t threads)
 {
 	for (std::size_t i = 0; i < threads; i++) {
-	   workers.emplace_back([this] {
-			while (true) {
+		workers.emplace_back([this] {
+			while (true)
+			{
 				std::function<void()> task;
 
 				__BEGIN_CRITICAL__
-				condition.wait(lock, [this]{ return stop || !tasks.empty();});
+				condition.wait(lock, [this] { return stop || !tasks.empty();});
 				if (stop && tasks.empty()) {
 					return;
 				}
@@ -59,7 +60,7 @@ ThreadPool::~ThreadPool()
 
 	condition.notify_all();
 
-	for (std::thread &worker: workers) {
+	for (std::thread& worker : workers) {
 		if (worker.joinable()) {
 			worker.join();
 		}

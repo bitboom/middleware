@@ -27,7 +27,7 @@ using namespace vist;
 TEST(ThreadPoolTests, once)
 {
 	int count = 0;
-	auto task = [&count]{ count++; };
+	auto task = [&count] { count++; };
 
 	ThreadPool worker(5);
 	worker.submit(task);
@@ -39,7 +39,7 @@ TEST(ThreadPoolTests, once)
 TEST(ThreadPoolTests, multiple)
 {
 	int count = 0;
-	auto task = [&count]{ count++; };
+	auto task = [&count] { count++; };
 
 	ThreadPool worker(5);
 	std::size_t repeat = 10;

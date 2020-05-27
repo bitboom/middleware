@@ -40,14 +40,14 @@ public:
 	Remote& operator=(Remote&&) = default;
 
 	template<typename R, typename... Args>
-	R invoke(const std::string& name, Args&&... args);
+	R invoke(const std::string& name, Args&& ... args);
 
 	struct Method {
 		Remote& remote;
 		std::string name;
 
 		template<typename R, typename... Args>
-		R invoke(Args&&... args)
+		R invoke(Args&& ... args)
 		{
 			return remote.invoke<R>(name, std::forward<Args>(args)...);
 		}
@@ -61,7 +61,7 @@ private:
 };
 
 template<typename R, typename... Args>
-R Remote::invoke(const std::string& method, Args&&... args)
+R Remote::invoke(const std::string& method, Args&& ... args)
 {
 	Message message(Message::Type::MethodCall, method);
 	message.enclose(std::forward<Args>(args)...);

@@ -151,9 +151,9 @@ const std::shared_ptr<PolicyModel>& PolicyManager::getPolicy(const std::string& 
 
 	auto provider = this->policies[name];
 	auto iter = std::find_if(this->providers.begin(), this->providers.end(),
-							 [&provider](const std::unique_ptr<PolicyProvider>& p) {
-								 return p->getName() == provider;
-							 });
+	[&provider](const std::unique_ptr<PolicyProvider>& p) {
+		return p->getName() == provider;
+	});
 	if (iter == this->providers.end())
 		THROW(ErrCode::RuntimeError) << "Not exist provider[" << provider
 									 << "] about policy: " << name;

@@ -33,13 +33,17 @@ struct IndexSequence {};
 namespace {
 
 template<std::size_t N, std::size_t... S>
-struct SequenceExpansion : SequenceExpansion<N-1, N-1, S...> {};
+struct SequenceExpansion : SequenceExpansion < N - 1, N - 1, S... > {};
 
 template<std::size_t... S>
-struct SequenceExpansion<0, S...> { using Type = IndexSequence<S...>; };
+struct SequenceExpansion<0, S...> {
+	using Type = IndexSequence<S...>;
+};
 
 template<>
-struct SequenceExpansion<0> { using Type = EmptySequence; };
+struct SequenceExpansion<0> {
+	using Type = EmptySequence;
+};
 
 } // anonymous namespace
 

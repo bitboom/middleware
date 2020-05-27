@@ -30,7 +30,7 @@ TEST(VirtualTableTests, policy_int_table)
 	VirtualTable<Policy<int>> table;
 	EXPECT_TRUE(table.size() > 0);
 
-	for(const auto& row : table) {
+	for (const auto& row : table) {
 		Policy<int> policy = { row[&Policy<int>::name], row[&Policy<int>::value] };
 
 		INFO(VIST_CLIENT) << "[Test] Policy<int> table:";
@@ -55,7 +55,7 @@ TEST(VirtualTableTests, policy_str_table)
 	VirtualTable<Policy<std::string>> table;
 	EXPECT_TRUE(table.size() > 0);
 
-	for(const auto& row : table) {
+	for (const auto& row : table) {
 		Policy<std::string> policy = {
 			row[&Policy<std::string>::name],
 			row[&Policy<std::string>::value]

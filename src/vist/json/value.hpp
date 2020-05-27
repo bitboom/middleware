@@ -55,18 +55,28 @@ struct Value {
 			throw std::invalid_argument("Dumped value cannot empty.");
 
 		switch (dumped[0]) {
-			case '{' : this->convert<Object>(); break;
-			case '[' : this->convert<Array>(); break;
-			case '"': this->convert<String>(); break;
-			case 'n': this->convert<Null>(); break;
-			case 't': // fall through
-			case 'f' : this->convert<Bool>(); break;
-			default : {
-				if (dumped.find(".") == std::string::npos)
-					this->convert<Int>();
-				else
-					this->convert<Double>();
-			}
+		case '{' :
+			this->convert<Object>();
+			break;
+		case '[' :
+			this->convert<Array>();
+			break;
+		case '"':
+			this->convert<String>();
+			break;
+		case 'n':
+			this->convert<Null>();
+			break;
+		case 't': // fall through
+		case 'f' :
+			this->convert<Bool>();
+			break;
+		default : {
+			if (dumped.find(".") == std::string::npos)
+				this->convert<Int>();
+			else
+				this->convert<Double>();
+		}
 		}
 
 		this->leaf->deserialize(dumped);
@@ -75,16 +85,16 @@ struct Value {
 	template <typename Type>
 	Value& operator=(const Type& data)
 	{
-		if constexpr (std::is_same_v<Type, int>)
+		if constexpr(std::is_same_v<Type, int>)
 			this->leaf = std::make_shared<Int>(data);
-		else if constexpr (std::is_same_v<Type, double>)
+		else if constexpr(std::is_same_v<Type, double>)
 			this->leaf = std::make_shared<Double>(data);
-		else if constexpr (std::is_same_v<typename std::decay<Type>::type, std::string> ||
-						   std::is_same_v<typename std::decay<Type>::type, char*>)
+		else if constexpr(std::is_same_v<typename std::decay<Type>::type, std::string> ||
+						  std::is_same_v<typename std::decay<Type>::type, char*>)
 			this->leaf = std::make_shared<String>(data);
-		else if constexpr (std::is_same_v<Type, bool>)
+		else if constexpr(std::is_same_v<Type, bool>)
 			this->leaf = std::make_shared<Bool>(data);
-		else if constexpr (std::is_same_v<Type, std::nullptr_t>)
+		else if constexpr(std::is_same_v<Type, std::nullptr_t>)
 			this->leaf = std::make_shared<Null>();
 		else
 			static_assert(dependent_false<Type>::value, "Not supported type.");
@@ -195,7 +205,7 @@ struct String : public Value {
 		if (dumped[0] != '"' || dumped[dumped.size() - 1] != '"')
 			throw std::invalid_argument("Wrong format.");
 
-		this->data = dumped.substr(1, dumped.size() -2);
+		this->data = dumped.substr(1, dumped.size() - 2);
 	}
 
 	operator std::string() override

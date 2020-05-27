@@ -45,7 +45,7 @@ double Column::getDouble() const
 
 const char* Column::getText() const
 {
-	return reinterpret_cast<const char *>(sqlite3_column_text(statement, index));
+	return reinterpret_cast<const char*>(sqlite3_column_text(statement, index));
 }
 
 const void* Column::getBlob() const

@@ -70,8 +70,8 @@ TEST(DatabaseTests, column_bind_index1)
 
 	bool raised = false;
 	try {
-		const char *str = "PACKAGE";
-		void *blob = (void *)str;
+		const char* str = "PACKAGE";
+		void* blob = (void*)str;
 		double user = 5001;
 		sqlite3_int64 used = 1;
 		std::string key = "test key";
@@ -148,8 +148,8 @@ TEST(DatabaseTests, column_bind_name2)
 	std::string query = "INSERT INTO CLIENT VALUES (NULL, :PKG, :KEY, :IS_USED, :USER)";
 
 	try {
-		const char *str = "PACKAGE";
-		void *blob = (void *)str;
+		const char* str = "PACKAGE";
+		void* blob = (void*)str;
 		double user = 5001;
 		sqlite3_int64 used = 1;
 		std::string key = "test key";
@@ -202,8 +202,7 @@ TEST(DatabaseTests, no_transaction)
 	try {
 		database::Connection db(TEST_DB_PATH);
 		int loop = 500;
-		while (loop--)
-		{
+		while (loop--) {
 			database::Statement(db, query).exec();
 		}
 	} catch (const vist::Exception<ErrCode>& e) {
@@ -219,8 +218,7 @@ TEST(DatabaseTests, transaction)
 		database::Connection db(TEST_DB_PATH);
 		db.transactionBegin();
 		int loop = 500;
-		while (loop--)
-		{
+		while (loop--) {
 			database::Statement(db, query).exec();
 		}
 		db.transactionEnd();
@@ -237,8 +235,7 @@ TEST(DatabaseTests, transaction_RAW_STRING)
 		database::Connection db(TEST_DB_PATH);
 		db.exec("BEGIN TRANSACTION;");
 		int loop = 500;
-		while (loop--)
-		{
+		while (loop--) {
 			database::Statement(db, query).exec();
 		}
 		db.exec("END TRANSACTION;");

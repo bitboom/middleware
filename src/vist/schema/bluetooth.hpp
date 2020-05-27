@@ -21,22 +21,22 @@
 namespace vist {
 namespace schema {
 
-	struct Bluetooth {
-		int state;
-		int desktopConnectivity;
-		int pairing;
-		int tethering; 
+struct Bluetooth {
+	int state;
+	int desktopConnectivity;
+	int pairing;
+	int tethering;
 
-		DECLARE_COLUMN(State, "state", &Bluetooth::state);
-		DECLARE_COLUMN(DesktopConnectivity, "desktopConnectivity", &Bluetooth::desktopConnectivity);
-		DECLARE_COLUMN(Pairing, "pairing", &Bluetooth::pairing);
-		DECLARE_COLUMN(Tethering, "tethering", &Bluetooth::tethering);
-	};
+	DECLARE_COLUMN(State, "state", &Bluetooth::state);
+	DECLARE_COLUMN(DesktopConnectivity, "desktopConnectivity", &Bluetooth::desktopConnectivity);
+	DECLARE_COLUMN(Pairing, "pairing", &Bluetooth::pairing);
+	DECLARE_COLUMN(Tethering, "tethering", &Bluetooth::tethering);
+};
 
-	DECLARE_TABLE(BluetoothTable, "bluetooth", Bluetooth::State,
-											   Bluetooth::DesktopConnectivity,
-											   Bluetooth::Pairing,
-											   Bluetooth::Tethering);
+DECLARE_TABLE(BluetoothTable, "bluetooth", Bluetooth::State,
+			  Bluetooth::DesktopConnectivity,
+			  Bluetooth::Pairing,
+			  Bluetooth::Tethering);
 
 } // namesapce schema
 } // namesapce vist

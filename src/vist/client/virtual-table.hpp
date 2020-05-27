@@ -38,7 +38,10 @@ public:
 	template<typename Struct, typename Member>
 	Member operator[](Member Struct::*) const;
 
-	inline std::size_t size() const { return data.size(); }
+	inline std::size_t size() const
+	{
+		return data.size();
+	}
 
 private:
 	KeyValuePair data;
@@ -53,12 +56,27 @@ public:
 	using Iter = typename std::vector<VirtualRow<T>>::iterator;
 	using CIter = typename std::vector<VirtualRow<T>>::const_iterator;
 
-	inline Iter begin() { return rows.begin(); }
-	inline CIter begin() const { return rows.cbegin(); }
-	inline Iter end() { return rows.end(); }
-	inline CIter end() const { return rows.end(); }
+	inline Iter begin()
+	{
+		return rows.begin();
+	}
+	inline CIter begin() const
+	{
+		return rows.cbegin();
+	}
+	inline Iter end()
+	{
+		return rows.end();
+	}
+	inline CIter end() const
+	{
+		return rows.end();
+	}
 
-	inline std::size_t size() const { return rows.size(); }
+	inline std::size_t size() const
+	{
+		return rows.size();
+	}
 
 	template<typename Struct, typename Member>
 	VirtualRow<T>& filter(Member Struct::*field, const std::string& name)

@@ -129,7 +129,8 @@ void Mainloop::wait(int timeout, Stopper stopper)
 	this->dispatch(nfds);
 }
 
-void Mainloop::dispatch(int size) {
+void Mainloop::dispatch(int size)
+{
 	for (int i = 0; i < size; i++) {
 		auto handler = this->getHandler(this->events[i].data.fd);
 		auto onEvent = handler.first;

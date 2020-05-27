@@ -105,11 +105,13 @@ TableRows PolicyAdminTable::generate(QueryContext& context) try
 	}
 
 	return osquery::tableRowsFromQueryData(std::move(results));
-} catch (const vist::Exception<ErrCode>& e) {
+} catch (const vist::Exception<ErrCode>& e)
+{
 	ERROR(VIST) << "Failed to query: " << e.what();
 	Row r;
 	return osquery::tableRowsFromQueryData({ r });
-} catch (...) {
+} catch (...)
+{
 	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return osquery::tableRowsFromQueryData({ r });
@@ -129,11 +131,13 @@ QueryData PolicyAdminTable::insert(QueryContext&, const PluginRequest& request) 
 	Row r;
 	r["status"] = "success";
 	return { r };
-} catch (const vist::Exception<ErrCode>& e) {
+} catch (const vist::Exception<ErrCode>& e)
+{
 	ERROR(VIST) << "Failed to query: " << e.what();
 	Row r;
 	return { r };
-} catch (...) {
+} catch (...)
+{
 	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return { r };
@@ -153,11 +157,13 @@ QueryData PolicyAdminTable::delete_(QueryContext&, const PluginRequest& request)
 	Row r;
 	r["status"] = "success";
 	return { r };
-} catch (const vist::Exception<ErrCode>& e) {
+} catch (const vist::Exception<ErrCode>& e)
+{
 	ERROR(VIST) << "Failed to query: " << e.what();
 	Row r;
 	return { r };
-} catch (...) {
+} catch (...)
+{
 	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return { r };
@@ -183,11 +189,13 @@ QueryData PolicyAdminTable::update(QueryContext&, const PluginRequest& request) 
 	Row r;
 	r["status"] = "success";
 	return { r };
-} catch (const vist::Exception<ErrCode>& e) {
+} catch (const vist::Exception<ErrCode>& e)
+{
 	ERROR(VIST) << "Failed to query: " << e.what();
 	Row r;
 	return { r };
-} catch (...) {
+} catch (...)
+{
 	ERROR(VIST) << "Failed to query with unknown exception.";
 	Row r;
 	return { r };

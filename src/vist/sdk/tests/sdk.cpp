@@ -22,7 +22,7 @@
 #include <exception>
 
 namespace {
-	int g_value = -1;
+int g_value = -1;
 } // anonymous namespace
 
 using namespace vist;

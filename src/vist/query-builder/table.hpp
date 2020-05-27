@@ -77,13 +77,13 @@ template<typename... Cs>
 std::vector<std::string> Table<Columns...>::getColumnNames(Cs&& ...columns) const noexcept
 {
 	std::vector<std::string> names;
-	auto predicate = [this, &names](const auto& type) {
+	auto predicate = [this, &names](const auto & type) {
 		auto name = this->getColumnName(type);
 		if (!name.empty())
 			names.emplace_back(name);
 	};
 
-	auto closure = [&predicate](const auto&... iter) {
+	auto closure = [&predicate](const auto & ... iter) {
 		(predicate(iter), ...);
 	};
 
@@ -103,7 +103,7 @@ template<typename... Columns>
 std::vector<std::string> Table<Columns...>::getColumnNames(void) const noexcept
 {
 	std::vector<std::string> names;
-	auto closure = [&names](const auto&... iter) {
+	auto closure = [&names](const auto & ... iter) {
 		(names.push_back(iter.name), ...);
 	};
 
@@ -124,12 +124,12 @@ template<typename Column>
 std::string Table<Columns...>::getColumnName(Column&& column) const noexcept
 {
 	std::string name;
-	auto predicate = [&name, &column](const auto& iter) {
-		if (type::cast_compare(column.type, iter.type)) 
+	auto predicate = [&name, &column](const auto & iter) {
+		if (type::cast_compare(column.type, iter.type))
 			name = iter.name;
 	};
 
-	auto closure = [&predicate](const auto&... iter) {
+	auto closure = [&predicate](const auto & ... iter) {
 		(predicate(iter), ...);
 	};
 
