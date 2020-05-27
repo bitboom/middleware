@@ -26,11 +26,11 @@ namespace osquery {
  * to<std::string>(En::First) -> "En::First[1]"
  */
 template <typename ToType, typename FromType>
-inline typename std::enable_if < std::is_enum<FromType>::value&&
-std::is_same<ToType, std::string>::value,
-	ToType >::type
+inline typename std::enable_if <std::is_same<ToType, std::string>::value, ToType >::type
 	to(FromType from) noexcept
 {
+	static_assert(std::is_enum<FromType>::value, "FromType must be enum type.");
+
 	auto str = ToType{boost::core::demangle(typeid(from).name())};
 	str.append("[");
 	str.append(std::to_string(

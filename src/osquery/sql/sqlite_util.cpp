@@ -587,6 +587,9 @@ Status queryInternal(const std::string& query,
 					 QueryDataTyped& results,
 					 const SQLiteDBInstanceRef& instance)
 {
+	if (query.empty())
+		return Status::failure("Query cannot be empty.");
+
 	sqlite3_stmt* prepared_statement{nullptr}; /* Statement to execute. */
 
 	int rc = SQLITE_OK; /* Return Code */

@@ -34,6 +34,10 @@ Mainloop::Mainloop() :
 {
 	if (epollFd == -1)
 		THROW(ErrCode::RuntimeError) << "Failed to create epoll instance.";
+
+	::epoll_event event;
+	std::memset(&event, 0, sizeof(epoll_event));
+	events.fill(event);
 }
 
 Mainloop::~Mainloop()

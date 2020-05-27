@@ -78,7 +78,7 @@ public:
 
 private:
 	Value value;
-	ErrCode ec;
+	ErrCode ec = static_cast<ErrCode>(0);
 	bool isError = false;
 };
 
