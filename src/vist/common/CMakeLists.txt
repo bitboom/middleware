@@ -14,8 +14,15 @@
 
 ADD_VIST_COMMON_LIBRARY(vist_common archive.cpp
 									common.cpp
+									dynamic-loader.cpp
 									stringfy.cpp
 									thread-pool.cpp)
+
+SET(TARGET "test-plugin")
+ADD_LIBRARY(${TARGET} SHARED tests/res/sample-plugin.cpp)
+TARGET_LINK_LIBRARIES(${TARGET} vist-common)
+
+INSTALL(TARGETS ${TARGET} DESTINATION ${PLUGIN_INSTALL_DIR})
 
 FILE(GLOB COMMON_TESTS "tests/*.cpp")
 ADD_VIST_TEST(${COMMON_TESTS})
