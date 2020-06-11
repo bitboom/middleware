@@ -32,3 +32,7 @@ RUN cd /usr/src/gflags && \
 # build dependencies
 RUN apt-get update --fix-missing
 RUN apt-get install -qq libboost-all-dev libsqlite3-dev libsystemd-dev
+
+# debug
+RUN mkdir /cores
+RUN apt-get install -qq gdb
