@@ -32,8 +32,6 @@ PolicyManager::PolicyManager() : storage(DB_PATH)
 	loadProviders(PLUGIN_INSTALL_DIR);
 	int cnt = loadPolicies();
 	INFO(VIST) << std::to_string(cnt) << "-policies loaded";
-
-	this->storage.enroll(DEFAULT_POLICY_ADMIN);
 }
 
 std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
@@ -73,6 +71,27 @@ std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
 
 	INFO(VIST) << "Loaded result >> passed: " << passed << ", failed: " << failed;
 	return std::make_pair(passed, failed);
+}
+
+void PolicyManager::addProvider(std::shared_ptr<PolicyProvider>&& provider)
+{
+	for (const auto& p : this->providers) {
+		if (p->getName() == provider->getName()) {
+			INFO(VIST) << "Previous added provider: " << provider->getName();
+			return;
+		}
+	}
+
+	for (const auto& [name, policy] : provider->policies) {
+		this->policies[name] = provider->getName();
+
+		if (!storage.exists(name))
+			storage.define(name, policy->getInitial());
+	}
+
+	INFO(VIST) << "Added " << provider->policies.size()
+			   << "-policies from " << provider->getName();
+	this->providers.emplace_back(std::move(provider));
 }
 
 int PolicyManager::loadPolicies()
@@ -151,7 +170,7 @@ const std::shared_ptr<PolicyModel>& PolicyManager::getPolicy(const std::string& 
 
 	auto provider = this->policies[name];
 	auto iter = std::find_if(this->providers.begin(), this->providers.end(),
-	[&provider](const std::unique_ptr<PolicyProvider>& p) {
+	[&provider](const std::shared_ptr<PolicyProvider>& p) {
 		return p->getName() == provider;
 	});
 	if (iter == this->providers.end())

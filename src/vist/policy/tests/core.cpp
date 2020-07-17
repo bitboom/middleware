@@ -33,17 +33,17 @@ TEST(PolicyCoreTests, policy_set_get_int)
 {
 	auto& manager = PolicyManager::Instance();
 	manager.enroll("testAdmin");
-	manager.set("sample-int-policy", PolicyValue(5), "testAdmin");
+	manager.set("sample_int_policy", PolicyValue(5), "testAdmin");
 
 	/// Default Admin's policy is more strict. (Because of initial value: 7)
-	auto policy = manager.get("sample-int-policy");
+	auto policy = manager.get("sample_int_policy");
 	EXPECT_EQ(static_cast<int>(policy), 7);
 
 	manager.enroll("testAdmin1");
-	manager.set("sample-int-policy", PolicyValue(10), "testAdmin1");
+	manager.set("sample_int_policy", PolicyValue(10), "testAdmin1");
 
 	/// Manager should return the strongest policy.
-	policy = manager.get("sample-int-policy");
+	policy = manager.get("sample_int_policy");
 	EXPECT_EQ(static_cast<int>(policy), 10);
 
 	manager.disenroll("testAdmin");
@@ -80,8 +80,8 @@ TEST(PolicyCoreTests, policy_get_all)
 TEST(PolicyCoreTests, policy_get_policy)
 {
 	auto& manager = PolicyManager::Instance();
-	const auto& policy = manager.getPolicy("sample-int-policy");
-	EXPECT_EQ(policy->getName(), "sample-int-policy");
+	const auto& policy = manager.getPolicy("sample_int_policy");
+	EXPECT_EQ(policy->getName(), "sample_int_policy");
 
 	bool raised = false;
 	try {

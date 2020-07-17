@@ -16,17 +16,21 @@
 
 #include "vistd.hpp"
 
+#include <vist/dynamic-loader.hpp>
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
+#include <vist/policy/api.hpp>
 #include <vist/policy/policy-manager.hpp>
 #include <vist/rmi/gateway.hpp>
 
-#include <vist/table/bluetooth.hpp>
-#include <vist/table/policy-admin.hpp>
-#include <vist/table/policy.hpp>
+#include <vist/table/dynamic-table.hpp>
+#include <vist/table/policy/policy-admin.hpp>
+#include <vist/table/policy/policy.hpp>
 
 #include <osquery/registry_interface.h>
 #include <osquery/sql.h>
+
+#include <filesystem>
 
 namespace {
 const std::string SOCK_ADDR = "/tmp/.vist";
@@ -38,9 +42,10 @@ Vistd::Vistd()
 {
 	osquery::registryAndPluginInit();
 
-	table::BluetoothTable::Init();
-	table::PolicyAdminTable::Init();
-	table::PolicyTable::Init();
+	this->loadStaticTable();
+	this->loadDynamicTable();
+
+	policy::API::Admin::Enroll(DEFAULT_POLICY_ADMIN);
 }
 
 void Vistd::start()
@@ -71,11 +76,33 @@ void Vistd::start()
 
 Rows Vistd::query(const std::string& statement)
 {
+	DEBUG(VIST) << "Excute query: " << statement;
 	osquery::SQL sql(statement, true);
 	if (!sql.ok())
 		THROW(ErrCode::RuntimeError) << "Faild to execute query: " << sql.getMessageString();
 
 	return sql.rows();
+}
+
+void Vistd::loadStaticTable()
+{
+	table::PolicyAdminTable::Init();
+	table::PolicyTable::Init();
+}
+
+void Vistd::loadDynamicTable()
+{
+	for (auto& iter : std::filesystem::directory_iterator(TABLE_INSTALL_DIR)) {
+		DEBUG(VIST) << "Load dynamic table: " << iter.path();
+		DynamicLoader loader(iter.path());
+		auto factory = loader.load<table::DynamicTable::FactoryType>("DynamicTableFactory");
+		if (auto table = (*factory)(); table != nullptr) {
+			table->init();
+			delete table;
+		} else {
+			ERROR(VIST) << "Failed to load table.";
+		}
+	}
 }
 
 } // namespace vist

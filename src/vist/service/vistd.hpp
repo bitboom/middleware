@@ -58,6 +58,9 @@ private:
 	~Vistd() = default;
 
 	void start();
+
+	void loadStaticTable();
+	void loadDynamicTable();
 };
 
 } // namespace vist

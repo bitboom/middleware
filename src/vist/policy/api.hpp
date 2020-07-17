@@ -16,8 +16,10 @@
 
 #pragma once
 
+#include <vist/sdk/policy-provider.hpp>
 #include <vist/sdk/policy-value.hpp>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -36,6 +38,8 @@ struct API {
 
 		static void Activate(const std::string& admin, bool state = true);
 		static bool IsActivated();
+
+		static void AddProvider(std::shared_ptr<PolicyProvider>&& provider);
 
 		static std::unordered_map<std::string, int> GetAll();
 	};

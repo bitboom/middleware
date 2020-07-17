@@ -38,6 +38,7 @@ Requires: libsystemd
 
 %global vist_db_dir     %{vist_rw_dir}/db
 %global vist_plugin_dir %{vist_ro_dir}/plugin
+%global vist_table_dir %{vist_ro_dir}/table
 %global vist_script_dir %{vist_ro_dir}/script
 
 %description
@@ -67,6 +68,7 @@ cp %SOURCE1 .
 		 -DDEFAULT_POLICY_ADMIN=vist-cli \
 		 -DDB_INSTALL_DIR:PATH=%{vist_db_dir} \
 		 -DPLUGIN_INSTALL_DIR:PATH=%{vist_plugin_dir} \
+		 -DTABLE_INSTALL_DIR:PATH=%{vist_table_dir} \
 		 -DSCRIPT_INSTALL_DIR:PATH=%{vist_script_dir} \
 		 -DSYSTEMD_UNIT_DIR:PATH=%{_unitdir}
 

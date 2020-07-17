@@ -51,6 +51,8 @@ public:
 	void activate(const std::string& admin, bool state);
 	bool isActivated();
 
+	void addProvider(std::shared_ptr<PolicyProvider>&& provider);
+
 	void set(const std::string& policy,
 			 const PolicyValue& value,
 			 const std::string& admin);
@@ -67,7 +69,7 @@ private:
 	int loadPolicies();
 
 	PolicyStorage storage;
-	std::vector<std::unique_ptr<PolicyProvider>> providers;
+	std::vector<std::shared_ptr<PolicyProvider>> providers;
 
 	const std::shared_ptr<PolicyModel>& getPolicy(const std::string& name);
 

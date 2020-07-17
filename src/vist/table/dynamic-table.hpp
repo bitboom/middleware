@@ -19,16 +19,11 @@
 namespace vist {
 namespace table {
 
-using namespace osquery;
-
-class BluetoothTable final : public TablePlugin {
+class DynamicTable : public osquery::TablePlugin {
 public:
-	static void Init();
+	using FactoryType = DynamicTable* (*)();
 
-private:
-	TableColumns columns() const override;
-	TableRows generate(QueryContext&) override;
-	QueryData update(QueryContext&, const PluginRequest& request) override;
+	virtual void init() = 0;
 };
 
 } // namespace table

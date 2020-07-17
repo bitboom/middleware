@@ -32,27 +32,29 @@ TEST_F(CoreTests, query_select)
 
 	EXPECT_TRUE(rows.size() > 0);
 
-	std::string statement = "SELECT * FROM policy WHERE name = 'sample-int-policy'";
+	std::string statement = "SELECT * FROM policy WHERE name = 'sample_int_policy'";
 	rows = Vistd::Query(statement);
 
-	EXPECT_EQ(rows.size(), 1);
-	EXPECT_EQ(rows[0]["name"], "sample-int-policy");
+	if (rows.size() == 1)
+		EXPECT_EQ(rows[0]["name"], "sample_int_policy");
+	else
+		EXPECT_TRUE(false);
 }
 
 TEST_F(CoreTests, query_update)
 {
 	policy::API::Admin::Enroll("vist-test");
 
-	std::string statement = "SELECT * FROM policy WHERE name = 'sample-int-policy'";
+	std::string statement = "SELECT * FROM policy WHERE name = 'sample_int_policy'";
 	auto rows = Vistd::Query(statement);
 	/// Initial policy value
 	EXPECT_EQ(rows[0]["value"], "I/7");
 
-	statement = "UPDATE policy SET value = 'I/10' WHERE name = 'sample-int-policy'";
+	statement = "UPDATE policy SET value = 'I/10' WHERE name = 'sample_int_policy'";
 	rows = Vistd::Query(statement);
 	EXPECT_EQ(rows.size(), 0);
 
-	statement = "SELECT * FROM policy WHERE name = 'sample-int-policy'";
+	statement = "SELECT * FROM policy WHERE name = 'sample_int_policy'";
 	rows = Vistd::Query(statement);
 	EXPECT_EQ(rows[0]["value"], "I/10");
 

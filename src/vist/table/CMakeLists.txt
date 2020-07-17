@@ -12,6 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_VIST_LIBRARY(vist_table bluetooth.cpp
-							policy-admin.cpp
-							policy.cpp)
+## static virtual table
+ADD_VIST_LIBRARY(vist_table policy/policy-admin.cpp
+							policy/policy.cpp)
+
+## dynamic virtual table
+ADD_SUBDIRECTORY(policy/sample)

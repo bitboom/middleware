@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020-present Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,68 +14,64 @@
  *  limitations under the License
  */
 
-#include "bluetooth.hpp"
+#include "sample.hpp"
 
-#include <vist/exception.hpp>
-#include <vist/json.hpp>
+#include <vist/sdk/policy-model.hpp>
+#include <vist/sdk/policy-value.hpp>
+#include <vist/sdk/policy-provider.hpp>
+
 #include <vist/logger.hpp>
 #include <vist/policy/api.hpp>
 
 #include <osquery/registry.h>
 #include <osquery/sql/dynamic_table_row.h>
 
-#include <memory>
-#include <stdexcept>
-#include <string>
+extern "C" vist::table::DynamicTable* DynamicTableFactory()
+{
+	return new vist::table::SamplePolicyTable;
+}
 
 namespace vist {
 namespace table {
 
-namespace {
+using namespace osquery;
 
-std::map<std::string, std::string> ALIAS = {
-	{ "state", "bluetooth" },
-	{ "desktopConnectivity", "bluetooth-desktop-connectivity" },
-	{ "pairing", "bluetooth-pairing" },
-	{ "tethering", "bluetooth-tethering"}
-};
-
-void setPolicy(const std::string& name, int value)
+void SamplePolicyTable::init()
 {
-	vist::policy::API::Admin::Set(name, vist::policy::PolicyValue(value));
-}
-
-} // anonymous namespace
-
-void BluetoothTable::Init()
-{
+	// Register virtual table to sqlite3
 	auto tables = RegistryFactory::get().registry("table");
-	tables->add("bluetooth", std::make_shared<BluetoothTable>());
+	tables->add("sample_policy", std::make_shared<SamplePolicyTable>());
+
+	// Register policy to policy-manager
+	auto provider = std::make_shared<policy::Sample>("sample-provider");
+	provider->add(std::make_shared<policy::SampleIntPolicy>());
+	provider->add(std::make_shared<policy::SampleStrPolicy>());
+
+	policy::API::Admin::AddProvider(std::move(provider));
+
+	INFO(VIST_PLUGIN) << "Sample plugin loaded.";
 }
 
-TableColumns BluetoothTable::columns() const
+TableColumns SamplePolicyTable::columns() const
 {
 	return {
-		std::make_tuple("state", INTEGER_TYPE, ColumnOptions::DEFAULT),
-		std::make_tuple("desktopConnectivity", INTEGER_TYPE, ColumnOptions::DEFAULT),
-		std::make_tuple("pairing", INTEGER_TYPE, ColumnOptions::DEFAULT),
-		std::make_tuple("tethering", INTEGER_TYPE, ColumnOptions::DEFAULT),
+		std::make_tuple("sample_int_policy", INTEGER_TYPE, ColumnOptions::DEFAULT),
+		std::make_tuple("sample_str_policy", TEXT_TYPE, ColumnOptions::DEFAULT),
 	};
 }
 
-TableRows BluetoothTable::generate(QueryContext&) try
+TableRows SamplePolicyTable::generate(QueryContext&) try
 {
-	INFO(VIST) << "Select query about bluetooth table.";
-
-	QueryData results;
+	INFO(VIST) << "Select query about sample-policy table.";
 
 	Row row;
+	int intPolicy = vist::policy::API::Get("sample_int_policy");
+	row["sample_int_policy"] = std::to_string(intPolicy);
 
-	for (const auto&[schemaName, policyName] : ALIAS) {
-		int value = vist::policy::API::Get(policyName);
-		row[schemaName] = std::to_string(value);
-	}
+	std::string strPolicy = vist::policy::API::Get("sample_str_policy");
+	row["sample_str_policy"] = strPolicy;
 
+	QueryData results;
 	results.emplace_back(std::move(row));
 
 	return osquery::tableRowsFromQueryData(std::move(results));
@@ -91,23 +87,22 @@ TableRows BluetoothTable::generate(QueryContext&) try
 	return osquery::tableRowsFromQueryData({ r });
 }
 
-QueryData BluetoothTable::update(QueryContext&, const PluginRequest& request) try
+QueryData SamplePolicyTable::update(QueryContext&, const PluginRequest& request) try
 {
-	INFO(VIST) << "Update query about bluetooth table.";
+	INFO(VIST) << "Update query about sample-policy table.";
 	if (request.count("json_values") == 0)
 		throw std::runtime_error("Wrong request format. Not found json value.");
 
 	DEBUG(VIST) << "Request values: " << request.at("json_values");
 	json::Json document = json::Json::Parse(request.at("json_values"));
 	json::Array values = document.get<json::Array>("values");
-	if (values.size() != 4)
+	if (values.size() != 2)
 		throw std::runtime_error("Wrong request format.");
 
-	/// TODO(Sangwan): Sync vtab schema with policy definition
-	setPolicy("bluetooth", static_cast<int>(values.at(0)));
-	setPolicy("bluetooth-desktop-connectivity", static_cast<int>(values.at(1)));
-	setPolicy("bluetooth-pairing", static_cast<int>(values.at(2)));
-	setPolicy("bluetooth-tethering", static_cast<int>(values.at(3)));
+	policy::API::Admin::Set("sample_int_policy",
+			policy::PolicyValue(static_cast<int>(values.at(0))));
+	policy::API::Admin::Set("sample_str_policy",
+			policy::PolicyValue(static_cast<std::string>(values.at(1))));
 
 	Row r;
 	r["status"] = "success";

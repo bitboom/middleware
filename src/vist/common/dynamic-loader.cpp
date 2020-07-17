@@ -39,11 +39,14 @@ DynamicLoader::ScopedHandle DynamicLoader::init(const std::string& path, int fla
 		return handle;
 	};
 
-	auto close = [&](void* handle) {
+	auto close = [&](void* /*handle*/) {
 		::dlerror();
 
-		if (::dlclose(handle) != 0)
-			THROW(ErrCode::RuntimeError) << "Failed to close library: " << ::dlerror();
+// Calling symbol & code after dlclose() makes SEGFAULT.
+// TODO: Sync dynamic loading's life-cycle with program.
+//
+//		if (::dlclose(handle) != 0)
+//			THROW(ErrCode::RuntimeError) << "Failed to close library: " << ::dlerror();
 	};
 
 	return ScopedHandle(open(), close);

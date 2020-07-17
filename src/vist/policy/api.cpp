@@ -56,6 +56,11 @@ void API::Admin::Disenroll(const std::string& admin)
 	PolicyManager::Instance().disenroll(admin);
 }
 
+void API::Admin::AddProvider(std::shared_ptr<PolicyProvider>&& provider)
+{
+	PolicyManager::Instance().addProvider(std::move(provider));
+}
+
 void API::Admin::Activate(const std::string& admin, bool state)
 {
 	PolicyManager::Instance().activate(admin, state);
