@@ -65,9 +65,6 @@ private:
 	explicit PolicyManager();
 	~PolicyManager() = default;
 
-	std::pair<int, int> loadProviders(const std::string& path);
-	int loadPolicies();
-
 	PolicyStorage storage;
 	std::vector<std::shared_ptr<PolicyProvider>> providers;
 
@@ -76,7 +73,6 @@ private:
 	/// Policy-Provider
 	std::unordered_map<std::string, std::string> policies;
 
-	FRIEND_TEST(PolicyCoreTests, policy_loader);
 	FRIEND_TEST(PolicyCoreTests, policy_get_policy);
 };
 

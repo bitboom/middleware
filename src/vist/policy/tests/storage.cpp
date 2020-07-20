@@ -59,14 +59,14 @@ TEST_F(PolicyStorageTests, update)
 
 	bool isRaised = false;
 	try {
-		storage->update("fakeAdmin", "sample-int-policy", PolicyValue(0));
+		storage->update("fakeAdmin", "sample_int_policy", PolicyValue(0));
 	} catch (const std::exception&) {
 		isRaised = true;
 	}
 
 	isRaised = false;
 	try {
-		storage->update("testAdmin", "sample-int-policy", PolicyValue(0));
+		storage->update("testAdmin", "sample_int_policy", PolicyValue(0));
 	} catch (const std::exception&) {
 		isRaised = true;
 	}

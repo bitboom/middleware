@@ -15,7 +15,6 @@
  */
 
 #include "policy-manager.hpp"
-#include "policy-loader.hpp"
 
 #include <vist/exception.hpp>
 #include <vist/logger.hpp>
@@ -29,48 +28,6 @@ namespace policy {
 
 PolicyManager::PolicyManager() : storage(DB_PATH)
 {
-	loadProviders(PLUGIN_INSTALL_DIR);
-	int cnt = loadPolicies();
-	INFO(VIST) << std::to_string(cnt) << "-policies loaded";
-}
-
-std::pair<int, int> PolicyManager::loadProviders(const std::string& path)
-{
-	INFO(VIST) << "Load policies from :" << path;
-	using namespace boost::filesystem;
-	if (!is_directory(path))
-		THROW(ErrCode::LogicError) << "Plugin directory is wrong.: " << path;
-
-	int passed = 0, failed = 0;
-	for (directory_entry& entry : directory_iterator(path)) {
-		if (!is_regular_file(entry.path().string()))
-			continue;
-
-		try {
-			auto provider = PolicyLoader::load(entry.path().string());
-			DEBUG(VIST) << "Loaded provider: " << provider->getName();
-
-			bool exist = false;
-			for (const auto& p : this->providers) {
-				if (p->getName() == provider->getName()) {
-					exist = true;
-					break;
-				}
-			}
-
-			if (!exist)
-				this->providers.emplace_back(std::move(provider));
-		} catch (const std::exception& e) {
-			++failed;
-			ERROR(VIST) << "Failed to load: " << entry.path().string() << e.what();
-			continue;
-		}
-
-		++passed;
-	}
-
-	INFO(VIST) << "Loaded result >> passed: " << passed << ", failed: " << failed;
-	return std::make_pair(passed, failed);
 }
 
 void PolicyManager::addProvider(std::shared_ptr<PolicyProvider>&& provider)
@@ -92,24 +49,6 @@ void PolicyManager::addProvider(std::shared_ptr<PolicyProvider>&& provider)
 	INFO(VIST) << "Added " << provider->policies.size()
 			   << "-policies from " << provider->getName();
 	this->providers.emplace_back(std::move(provider));
-}
-
-int PolicyManager::loadPolicies()
-{
-	/// Make policy-provider map for performance
-	for (const auto& provider : providers) {
-		for (const auto& pair : provider->policies) {
-			std::string policy = pair.first;
-			this->policies[policy] = provider->getName();
-
-			/// Check the policy is defined on policy-storage
-			if (!storage.exists(pair.first)) {
-				storage.define(pair.first, pair.second->getInitial());
-			}
-		}
-	}
-
-	return this->policies.size();
 }
 
 void PolicyManager::enroll(const std::string& admin)

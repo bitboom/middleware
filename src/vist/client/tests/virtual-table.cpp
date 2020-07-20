@@ -44,10 +44,10 @@ TEST(VirtualTableTests, policy_int_filter)
 	VirtualTable<Policy<int>> table;
 	EXPECT_TRUE(table.size() > 0);
 
-	auto row = table.filter(&Policy<int>::name, "sample-int-policy");
+	auto row = table.filter(&Policy<int>::name, "sample_int_policy");
 	auto value = row[&Policy<int>::value];
 	EXPECT_TRUE(value > 0);
-	EXPECT_EQ(row[&Policy<int>::name], "sample-int-policy");
+	EXPECT_EQ(row[&Policy<int>::name], "sample_int_policy");
 }
 
 TEST(VirtualTableTests, policy_str_table)
@@ -72,8 +72,8 @@ TEST(VirtualTableTests, policy_str_filter)
 	VirtualTable<Policy<std::string>> table;
 	EXPECT_TRUE(table.size() > 0);
 
-	auto row = table.filter(&Policy<std::string>::name, "sample-str-policy");
+	auto row = table.filter(&Policy<std::string>::name, "sample_str_policy");
 	auto value = row[&Policy<std::string>::value];
 	EXPECT_TRUE(!value.empty());
-	EXPECT_EQ(row[&Policy<std::string>::name], "sample-str-policy");
+	EXPECT_EQ(row[&Policy<std::string>::name], "sample_str_policy");
 }

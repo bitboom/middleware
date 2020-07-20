@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,20 +17,25 @@
 #include <gtest/gtest.h>
 
 #include <vist/policy/policy-manager.hpp>
+#include <vist/service/vistd.hpp>
 
 namespace vist {
 namespace policy {
 
-TEST(PolicyCoreTests, policy_loader)
-{
-	auto& manager = PolicyManager::Instance();
+namespace test{
 
-	EXPECT_TRUE(manager.providers.size() > 0);
-	EXPECT_TRUE(manager.policies.size() > 0);
-}
+	void init()
+	{
+		// Policies are loaded via dynamic table when actual daemon starts.
+		static_cast<void>(Vistd::Instance());
+	}
+
+} // anonymous namespace
 
 TEST(PolicyCoreTests, policy_set_get_int)
 {
+	test::init();
+
 	auto& manager = PolicyManager::Instance();
 	manager.enroll("testAdmin");
 	manager.set("sample_int_policy", PolicyValue(5), "testAdmin");
@@ -52,18 +57,20 @@ TEST(PolicyCoreTests, policy_set_get_int)
 
 TEST(PolicyCoreTests, policy_set_get_str)
 {
+	test::init();
+
 	auto& manager = PolicyManager::Instance();
 	manager.enroll("testAdmin");
-	manager.set("sample-str-policy", PolicyValue("AAA"), "testAdmin");
+	manager.set("sample_str_policy", PolicyValue("AAA"), "testAdmin");
 
-	auto policy = manager.get("sample-str-policy");
+	auto policy = manager.get("sample_str_policy");
 	EXPECT_EQ(static_cast<std::string>(policy), "AAA");
 
 	manager.enroll("testAdmin1");
-	manager.set("sample-str-policy", PolicyValue("BBB"), "testAdmin1");
+	manager.set("sample_str_policy", PolicyValue("BBB"), "testAdmin1");
 
 	/// Manager should return the strongest policy.
-	policy = manager.get("sample-str-policy");
+	policy = manager.get("sample_str_policy");
 	EXPECT_EQ(static_cast<std::string>(policy), "AAA");
 
 	manager.disenroll("testAdmin");
@@ -72,6 +79,8 @@ TEST(PolicyCoreTests, policy_set_get_str)
 
 TEST(PolicyCoreTests, policy_get_all)
 {
+	test::init();
+
 	auto& manager = PolicyManager::Instance();
 	auto policies = manager.getAll();
 	EXPECT_TRUE(policies.size() > 0);
@@ -79,6 +88,8 @@ TEST(PolicyCoreTests, policy_get_all)
 
 TEST(PolicyCoreTests, policy_get_policy)
 {
+	test::init();
+
 	auto& manager = PolicyManager::Instance();
 	const auto& policy = manager.getPolicy("sample_int_policy");
 	EXPECT_EQ(policy->getName(), "sample_int_policy");

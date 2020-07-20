@@ -17,7 +17,6 @@ SET(${TARGET_VIST_POLICY_LIB}_SRCS "")
 
 ADD_VIST_POLICY_LIBRARY(vist_policy_core api.cpp
 										 policy-manager.cpp
-										 policy-loader.cpp
 										 policy-storage.cpp)
 
 FILE(GLOB POLICY_CORE_TESTS "tests/*.cpp")
