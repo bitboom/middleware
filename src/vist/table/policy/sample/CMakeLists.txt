@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-SET(TARGET "vist-plugin-sample")
+SET(TARGET "vist-table-sample")
 
 INCLUDE_DIRECTORIES(SYSTEM)
 
-ADD_LIBRARY(${TARGET} SHARED sample.cpp)
+ADD_LIBRARY(${TARGET} SHARED table.cpp)
 TARGET_LINK_LIBRARIES(${TARGET} vist-common ${TARGET_VIST_POLICY_LIB})
 
 INSTALL(TARGETS ${TARGET} DESTINATION ${TABLE_INSTALL_DIR})

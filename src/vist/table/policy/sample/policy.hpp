@@ -13,21 +13,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * Query example
- * - SELECT * FROM sample_policy
- * - UPDATE sample_policy SET sample_int_policy = 99
- * - UPDATE sample_policy SET sample_str_policy = 'TEST_VALUE'
- */
+
+#pragma once
 
 #include <vist/logger.hpp>
-#include <vist/table/dynamic-table.hpp>
-
 #include <vist/sdk/policy-model.hpp>
 #include <vist/sdk/policy-provider.hpp>
 #include <vist/sdk/policy-value.hpp>
-
-#include <osquery/tables.h>
 
 #include <memory>
 #include <string>
@@ -72,31 +64,16 @@ public:
 	}
 };
 
-class Sample : public PolicyProvider {
+class SampleProvider : public PolicyProvider {
 public:
-	Sample(const std::string& name) : PolicyProvider(name)
+	SampleProvider(const std::string& name) : PolicyProvider(name)
 	{
 	}
 
-	~Sample()
+	~SampleProvider()
 	{
 	}
 };
+
 } // namespace policy
-
-namespace table {
-
-using namespace osquery;
-
-class SamplePolicyTable final : public DynamicTable {
-public:
-	void init();
-
-private:
-	TableColumns columns() const override;
-	TableRows generate(QueryContext&) override;
-	QueryData update(QueryContext&, const PluginRequest& request) override;
-};
-
-} // namespace table
 } // namespace vist

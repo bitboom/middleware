@@ -18,3 +18,7 @@ ADD_VIST_LIBRARY(vist_table policy/policy-admin.cpp
 
 ## dynamic virtual table
 ADD_SUBDIRECTORY(policy/sample)
+
+IF(DEFINED GBS_BUILD)
+	ADD_SUBDIRECTORY(policy/bluetooth)
+ENDIF(DEFINED GBS_BUILD)

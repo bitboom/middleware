@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2020-present Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,17 +14,13 @@
  *  limitations under the License
  */
 
-#include "sample.hpp"
+#include "policy.hpp"
+#include "table.hpp"
 
-#include <vist/sdk/policy-model.hpp>
-#include <vist/sdk/policy-value.hpp>
-#include <vist/sdk/policy-provider.hpp>
-
+#include <vist/exception.hpp>
+#include <vist/json.hpp>
 #include <vist/logger.hpp>
 #include <vist/policy/api.hpp>
-
-#include <osquery/registry.h>
-#include <osquery/sql/dynamic_table_row.h>
 
 extern "C" vist::table::DynamicTable* DynamicTableFactory()
 {
@@ -34,18 +30,15 @@ extern "C" vist::table::DynamicTable* DynamicTableFactory()
 namespace vist {
 namespace table {
 
-using namespace osquery;
-
 void SamplePolicyTable::init()
 {
-	// Register virtual table to sqlite3
-	auto tables = RegistryFactory::get().registry("table");
-	tables->add("sample_policy", std::make_shared<SamplePolicyTable>());
+	DynamicTable::Register("sample_policy", std::make_shared<SamplePolicyTable>());
 
 	// Register policy to policy-manager
-	auto provider = std::make_shared<policy::Sample>("sample-provider");
-	provider->add(std::make_shared<policy::SampleIntPolicy>());
-	provider->add(std::make_shared<policy::SampleStrPolicy>());
+	using namespace policy;
+	auto provider = std::make_shared<SampleProvider>("sample-provider");
+	provider->add(std::make_shared<SampleIntPolicy>());
+	provider->add(std::make_shared<SampleStrPolicy>());
 
 	policy::API::Admin::AddProvider(std::move(provider));
 

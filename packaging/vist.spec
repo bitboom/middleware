@@ -77,6 +77,7 @@ make %{?jobs:-j%jobs}
 %install
 %make_install
 mkdir -p %{buildroot}/%{vist_db_dir}
+mkdir -p %{buildroot}/%{vist_table_dir}
 mkdir -p %{buildroot}/%{vist_plugin_dir}
 mkdir -p %{buildroot}/%{vist_script_dir}
 
@@ -110,7 +111,7 @@ fi
 %{_unitdir}/sockets.target.wants/vist.socket
 %{vist_script_dir}/*.sql
 %dir %attr(-, %{user_name}, %{group_name}) %{vist_db_dir}
-%dir %attr(-, %{user_name}, %{group_name}) %{vist_plugin_dir}
+%dir %attr(-, %{user_name}, %{group_name}) %{vist_table_dir}
 %dir %attr(-, %{user_name}, %{group_name}) %{vist_script_dir}
 
 ## Test Package ##############################################################
@@ -120,14 +121,16 @@ Group: Security/Testing
 BuildRequires: gtest-devel
 Requires: gtest
 
-%description test 
+%description test
 Provides internal testcases for ViST implementation.
 
 %files test
 %manifest packaging/%{name}-test.manifest
 %{_bindir}/osquery-test
 %attr(4755 %{user_name}, %{group_name}) %{_bindir}/vist-test
-%dir %attr(-, %{user_name}, %{group_name}) %{vist_plugin_dir}/sample
+%dir %attr(-, %{user_name}, %{group_name}) %{vist_table_dir}
+%attr(-, %{user_name}, %{group_name}) %{vist_table_dir}/libvist-table-sample.so
+%attr(-, %{user_name}, %{group_name}) %{vist_plugin_dir}/libtest-plugin.so
 
 ## ViST Plugins #############################################################
 %package plugins
@@ -147,12 +150,10 @@ Requires: klay
 Provides plugins for controlling policies.
 
 %pre plugins
-rm -f %{vist_plugin_dir}/bluetooth
-rm -f %{vist_plugin_dir}/wifi
+#rm -f %{vist_plugin_dir}/bluetooth
+#rm -f %{vist_plugin_dir}/wifi
 
 %files plugins
 %manifest packaging/%{name}-plugins.manifest
-%{vist_plugin_dir}/bluetooth
-%{vist_plugin_dir}/wifi
-%{_bindir}/vist-plugin-bluetooth-test
-%{_bindir}/vist-plugin-wifi-test
+%attr(-, %{user_name}, %{group_name}) %{vist_table_dir}/libvist-bluetooth-policy.so
+%attr(4755 %{user_name}, %{group_name}) %{_bindir}/vist-bluetooth-policy-test

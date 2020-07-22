@@ -13,31 +13,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
+/*
+ * Query example
+ * - SELECT * FROM bluetooth
+ * - UPDATE bluetooth SET state = 1 // enable
+ * - UPDATE bluetooth SET state = 0 // disable
+ */
 
-#include <memory>
-
-#include <osquery/registry.h>
-#include <osquery/sql/dynamic_table_row.h>
-#include <osquery/tables.h>
-
-using namespace osquery;
+#include <vist/table/dynamic-table.hpp>
 
 namespace vist {
 namespace table {
 
-class DynamicTable : public TablePlugin {
+class BluetoothTable final : public DynamicTable {
 public:
-	using FactoryType = DynamicTable* (*)();
+	void init();
 
-	virtual void init() = 0;
-
-	template <typename T>
-	static void Register(const std::string& name, std::shared_ptr<T>&& table)
-	{
-		// Register virtual table to sqlite3
-		auto tables = RegistryFactory::get().registry("table");
-		tables->add(name, std::move(table));
-	}
+private:
+	TableColumns columns() const override;
+	TableRows generate(QueryContext&) override;
+	QueryData update(QueryContext&, const PluginRequest& request) override;
 };
 
 } // namespace table
