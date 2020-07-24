@@ -923,7 +923,7 @@ static int xFilter(sqlite3_vtab_cursor* pVtabCursor,
 	if (Registry::get().exists("table", pVtab->content->name, true)) {
 		auto plugin = Registry::get().plugin("table", pVtab->content->name);
 		auto table = std::dynamic_pointer_cast<TablePlugin>(plugin);
-		pCur->rows = table->generate(context);
+		pCur->rows = tableRowsFromQueryData(table->generate(context));
 	} else {
 		PluginRequest request = {{"action", "generate"}};
 		TablePlugin::setRequestFromContext(context, request);

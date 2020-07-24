@@ -17,62 +17,47 @@
 #include "policy-admin.hpp"
 
 #include <vist/exception.hpp>
-#include <vist/json.hpp>
 #include <vist/logger.hpp>
 #include <vist/policy/api.hpp>
-
-#include <osquery/registry.h>
-#include <osquery/sql/dynamic_table_row.h>
-
-#include <memory>
-#include <stdexcept>
-#include <string>
+#include <vist/table/builder.hpp>
+#include <vist/table/parser.hpp>
+#include <vist/table/util.hpp>
 
 namespace vist {
 namespace table {
 
 namespace {
 
-std::string getValue(std::string&& alias, const std::string& key)
+std::string removeAlias(std::string&& alias)
 {
 	auto pos = alias.find(";");
 	auto token = alias.substr(0, pos);
 
-	if (token == key)
+	if (token == "name")
 		return alias.erase(0, pos + 1);
 	else
 		return std::string();
-}
-
-std::string parseAdmin(const std::string& request, bool insert = true)
-{
-	json::Json document = json::Json::Parse(request);
-	json::Array values = document.get<json::Array>("values");
-
-	if (insert)
-		return values.at(0);
-	else
-		return getValue(values.at(0), "name");
 }
 
 } // anonymous namespace
 
 void PolicyAdminTable::Init()
 {
-	auto tables = RegistryFactory::get().registry("table");
-	tables->add("policy_admin", std::make_shared<PolicyAdminTable>());
+	Builder::table<PolicyAdminTable>("policy_admin");
 }
 
 TableColumns PolicyAdminTable::columns() const
 {
 	return {
-		std::make_tuple("name", TEXT_TYPE, ColumnOptions::DEFAULT),
-		std::make_tuple("activated", INTEGER_TYPE, ColumnOptions::DEFAULT),
+		Builder::column<std::string>("name"),
+		Builder::column<int>("activated"),
 	};
 }
 
-TableRows PolicyAdminTable::generate(QueryContext& context) try
+QueryData PolicyAdminTable::generate(QueryContext& context)
 {
+	TABLE_EXCEPTION_GUARD_START
+
 	INFO(VIST) << "Select query about policy-admin table.";
 
 	QueryData results;
@@ -104,101 +89,55 @@ TableRows PolicyAdminTable::generate(QueryContext& context) try
 		}
 	}
 
-	return osquery::tableRowsFromQueryData(std::move(results));
-} catch (const vist::Exception<ErrCode>& e)
-{
-	ERROR(VIST) << "Failed to query: " << e.what();
-	Row r;
-	return osquery::tableRowsFromQueryData({ r });
-} catch (...)
-{
-	ERROR(VIST) << "Failed to query with unknown exception.";
-	Row r;
-	return osquery::tableRowsFromQueryData({ r });
+	return results;
+
+	TABLE_EXCEPTION_GUARD_END
 }
 
-QueryData PolicyAdminTable::insert(QueryContext&, const PluginRequest& request) try
+QueryData PolicyAdminTable::insert(QueryContext&, const PluginRequest& request)
 {
-	INFO(VIST) << "Insert query about policy-admin table.";
-	if (request.count("json_values") == 0)
-		throw std::runtime_error("Wrong request format. Not found json value.");
+	TABLE_EXCEPTION_GUARD_START
 
-	DEBUG(VIST) << "Request values: " << request.at("json_values");
-	auto admin = parseAdmin(request.at("json_values"));
+	INFO(VIST) << "Insert query about policy-admin table.";
+	auto admin = Parser::column<std::string>(request, 0);
+
 	DEBUG(VIST) << "Admin info [name]: " << admin;
 	vist::policy::API::Admin::Enroll(admin);
 
-	Row r;
-	r["status"] = "success";
-	return { r };
-} catch (const vist::Exception<ErrCode>& e)
-{
-	ERROR(VIST) << "Failed to query: " << e.what();
-	Row r;
-	return { r };
-} catch (...)
-{
-	ERROR(VIST) << "Failed to query with unknown exception.";
-	Row r;
-	return { r };
+	return success();
+
+	TABLE_EXCEPTION_GUARD_END
 }
 
-QueryData PolicyAdminTable::delete_(QueryContext&, const PluginRequest& request) try
+QueryData PolicyAdminTable::delete_(QueryContext&, const PluginRequest& request)
 {
-	INFO(VIST) << "Delete query about policy-admin table.";
-	if (request.count("json_values") == 0)
-		throw std::runtime_error("Wrong request format. Not found json value.");
+	TABLE_EXCEPTION_GUARD_START
 
-	DEBUG(VIST) << "Request values: " << request.at("json_values");
-	auto admin = parseAdmin(request.at("json_values"), false);
+	INFO(VIST) << "Delete query about policy-admin table.";
+	auto admin = removeAlias(Parser::column<std::string>(request, 0));
+
 	DEBUG(VIST) << "Admin info [name]: " << admin;
 	vist::policy::API::Admin::Disenroll(admin);
 
-	Row r;
-	r["status"] = "success";
-	return { r };
-} catch (const vist::Exception<ErrCode>& e)
-{
-	ERROR(VIST) << "Failed to query: " << e.what();
-	Row r;
-	return { r };
-} catch (...)
-{
-	ERROR(VIST) << "Failed to query with unknown exception.";
-	Row r;
-	return { r };
+	return success();
+
+	TABLE_EXCEPTION_GUARD_END
 }
 
-QueryData PolicyAdminTable::update(QueryContext&, const PluginRequest& request) try
+QueryData PolicyAdminTable::update(QueryContext&, const PluginRequest& request)
 {
+	TABLE_EXCEPTION_GUARD_START
+
 	INFO(VIST) << "Update query about policy-admin table.";
-	if (request.count("json_values") == 0)
-		throw std::runtime_error("Wrong request format. Not found json value.");
 
-	DEBUG(VIST) << "Request values: " << request.at("json_values");
-	json::Json document = json::Json::Parse(request.at("json_values"));
-	json::Array values = document.get<json::Array>("values");
-	if (values.size() != 2)
-		throw std::runtime_error("Wrong request format.");
-
-	std::string name = static_cast<std::string>(values.at(0));
-	int activated = static_cast<int>(values.at(1));
+	auto name = Parser::column<std::string>(request, 0);
+	auto activated = Parser::column<int>(request, 1);
 
 	vist::policy::API::Admin::Activate(name, activated);
 
-	Row r;
-	r["status"] = "success";
-	return { r };
-} catch (const vist::Exception<ErrCode>& e)
-{
-	ERROR(VIST) << "Failed to query: " << e.what();
-	Row r;
-	return { r };
-} catch (...)
-{
-	ERROR(VIST) << "Failed to query with unknown exception.";
-	Row r;
-	return { r };
+	return success();
+
+	TABLE_EXCEPTION_GUARD_END
 }
 
 } // namespace tables

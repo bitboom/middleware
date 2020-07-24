@@ -748,10 +748,9 @@ public:
 	 * @param context A query context filled in by SQLite's virtual table API.
 	 * @return The result rows for this table, given the query context.
 	 */
-	virtual TableRows generate(QueryContext& context)
+	virtual QueryData generate(QueryContext&)
 	{
-		(void)context;
-		return TableRows();
+		return QueryData();
 	}
 
 	/// Callback for DELETE statements

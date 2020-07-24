@@ -13,28 +13,35 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * Query example
- * - SELECT * FROM sample_policy
- * - UPDATE sample_policy SET sample_int_policy = 99
- * - UPDATE sample_policy SET sample_str_policy = 'TEST_VALUE'
- */
+
+#include "util.hpp"
 
 #include <vist/logger.hpp>
-#include <vist/table/dynamic-table.hpp>
 
 namespace vist {
 namespace table {
 
-class SamplePolicyTable final : public DynamicTable {
-public:
-	void init();
+QueryData exception_guard(const std::function<QueryData()>& func) try
+{
+	return func();
+} catch (const vist::Exception<ErrCode>& e)
+{
+	ERROR(VIST) << "Failed while excuting query: " << e.what();
+	Row r;
+	return { r };
+} catch (...)
+{
+	ERROR(VIST) << "Failed to query with unknown exception.";
+	Row r;
+	return { r };
+}
 
-private:
-	TableColumns columns() const override;
-	QueryData generate(QueryContext&) override;
-	QueryData update(QueryContext&, const PluginRequest& request) override;
-};
+QueryData success()
+{
+	Row r;
+	r["status"] = "success";
+	return QueryData { r };
+}
 
 } // namespace table
 } // namespace vist

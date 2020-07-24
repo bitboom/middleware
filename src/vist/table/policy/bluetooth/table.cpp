@@ -18,9 +18,11 @@
 #include "table.hpp"
 
 #include <vist/exception.hpp>
-#include <vist/json.hpp>
 #include <vist/logger.hpp>
 #include <vist/policy/api.hpp>
+#include <vist/table/builder.hpp>
+#include <vist/table/parser.hpp>
+#include <vist/table/util.hpp>
 
 extern "C" vist::table::DynamicTable* DynamicTableFactory()
 {
@@ -48,7 +50,7 @@ void setPolicy(const std::string& name, int value)
 
 void BluetoothTable::init()
 {
-	DynamicTable::Register("bluetooth", std::make_shared<BluetoothTable>());
+	Builder::table<BluetoothTable>("bluetooth");
 
 	auto provider = std::make_shared<policy::Bluetooth>("bluetooth");
 	provider->add(std::make_shared<policy::BluetoothState>());
@@ -64,15 +66,17 @@ void BluetoothTable::init()
 TableColumns BluetoothTable::columns() const
 {
 	return {
-		std::make_tuple("state", INTEGER_TYPE, ColumnOptions::DEFAULT),
-		std::make_tuple("desktopConnectivity", INTEGER_TYPE, ColumnOptions::DEFAULT),
-		std::make_tuple("pairing", INTEGER_TYPE, ColumnOptions::DEFAULT),
-		std::make_tuple("tethering", INTEGER_TYPE, ColumnOptions::DEFAULT),
+		Builder::column<int>("state"),
+		Builder::column<int>("desktopConnectivity"),
+		Builder::column<int>("pairing"),
+		Builder::column<int>("tethering")
 	};
 }
 
-TableRows BluetoothTable::generate(QueryContext&) try
+QueryData BluetoothTable::generate(QueryContext&)
 {
+	TABLE_EXCEPTION_GUARD_START
+
 	INFO(VIST) << "Select query about bluetooth table.";
 
 	Row row;
@@ -84,50 +88,26 @@ TableRows BluetoothTable::generate(QueryContext&) try
 	QueryData results;
 	results.emplace_back(std::move(row));
 
-	return osquery::tableRowsFromQueryData(std::move(results));
-} catch (const vist::Exception<ErrCode>& e)
-{
-	ERROR(VIST) << "Failed to query: " << e.what();
-	Row r;
-	return osquery::tableRowsFromQueryData({ r });
-} catch (...)
-{
-	ERROR(VIST) << "Failed to query with unknown exception.";
-	Row r;
-	return osquery::tableRowsFromQueryData({ r });
+	return results;
+
+	TABLE_EXCEPTION_GUARD_END
 }
 
-QueryData BluetoothTable::update(QueryContext&, const PluginRequest& request) try
+QueryData BluetoothTable::update(QueryContext&, const PluginRequest& request)
 {
-	INFO(VIST) << "Update query about bluetooth table.";
-	if (request.count("json_values") == 0)
-		throw std::runtime_error("Wrong request format. Not found json value.");
+	TABLE_EXCEPTION_GUARD_START
 
-	DEBUG(VIST) << "Request values: " << request.at("json_values");
-	json::Json document = json::Json::Parse(request.at("json_values"));
-	json::Array values = document.get<json::Array>("values");
-	if (values.size() != 4)
-		throw std::runtime_error("Wrong request format.");
+	INFO(VIST) << "Update query about bluetooth table.";
 
 	/// TODO(Sangwan): Sync vtab schema with policy definition
-	setPolicy("bluetooth", static_cast<int>(values.at(0)));
-	setPolicy("bluetooth-desktop-connectivity", static_cast<int>(values.at(1)));
-	setPolicy("bluetooth-pairing", static_cast<int>(values.at(2)));
-	setPolicy("bluetooth-tethering", static_cast<int>(values.at(3)));
+	setPolicy("bluetooth", Parser::column<int>(request, 0));
+	setPolicy("bluetooth-desktop-connectivity", Parser::column<int>(request, 1));
+	setPolicy("bluetooth-pairing", Parser::column<int>(request, 2));
+	setPolicy("bluetooth-tethering", Parser::column<int>(request, 3));
 
-	Row r;
-	r["status"] = "success";
-	return { r };
-} catch (const vist::Exception<ErrCode>& e)
-{
-	ERROR(VIST) << "Failed to query: " << e.what();
-	Row r;
-	return { r };
-} catch (...)
-{
-	ERROR(VIST) << "Failed to query with unknown exception.";
-	Row r;
-	return { r };
+	return success();
+
+	TABLE_EXCEPTION_GUARD_END
 }
 
 } // namespace table

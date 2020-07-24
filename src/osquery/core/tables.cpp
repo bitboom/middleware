@@ -138,8 +138,7 @@ Status TablePlugin::call(const PluginRequest& request,
 
 	if (action == "generate") {
 		auto context = getContextFromRequest(request);
-		TableRows result = generate(context);
-		response = tableRowsToPluginResponse(result);
+		response = generate(context);
 	} else if (action == "delete") {
 		auto context = getContextFromRequest(request);
 		response = delete_(context, request);

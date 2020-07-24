@@ -13,7 +13,8 @@
 #  limitations under the License
 
 ## static virtual table
-ADD_VIST_LIBRARY(vist_table policy/policy-admin.cpp
+ADD_VIST_LIBRARY(vist_table util.cpp
+							policy/policy-admin.cpp
 							policy/policy.cpp)
 
 ## dynamic virtual table

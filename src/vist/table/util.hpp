@@ -13,28 +13,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * Query example
- * - SELECT * FROM sample_policy
- * - UPDATE sample_policy SET sample_int_policy = 99
- * - UPDATE sample_policy SET sample_str_policy = 'TEST_VALUE'
- */
 
-#include <vist/logger.hpp>
-#include <vist/table/dynamic-table.hpp>
+#pragma once
+
+#include <vist/exception.hpp>
+
+#include <functional>
+
+#include <osquery/tables.h>
+
+using namespace osquery;
+
+#define TABLE_EXCEPTION_GUARD_START return vist::table::exception_guard([&]() {
+#define TABLE_EXCEPTION_GUARD_END   });
 
 namespace vist {
 namespace table {
 
-class SamplePolicyTable final : public DynamicTable {
-public:
-	void init();
+QueryData exception_guard(const std::function<QueryData()>&);
 
-private:
-	TableColumns columns() const override;
-	QueryData generate(QueryContext&) override;
-	QueryData update(QueryContext&, const PluginRequest& request) override;
-};
+QueryData success();
 
 } // namespace table
 } // namespace vist

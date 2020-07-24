@@ -225,11 +225,11 @@ private:
 	}
 
 public:
-	TableRows generate(QueryContext&) override
+	QueryData generate(QueryContext&) override
 	{
-		TableRows tr;
-		tr.push_back(make_table_row({{"x", "1"}, {"y", "2"}}));
-		tr.push_back(make_table_row({{"x", "2"}, {"y", "1"}}));
+		QueryData tr;
+		tr.push_back({{"x", "1"}, {"y", "2"}});
+		tr.push_back({{"x", "2"}, {"y", "1"}});
 		return tr;
 	}
 
@@ -248,11 +248,11 @@ private:
 	}
 
 public:
-	TableRows generate(QueryContext&) override
+	QueryData generate(QueryContext&) override
 	{
-		TableRows tr;
-		tr.push_back(make_table_row({{"x", "1"}, {"z", "2"}}));
-		tr.push_back(make_table_row({{"x", "2"}, {"z", "1"}}));
+		QueryData tr;
+		tr.push_back({{"x", "1"}, {"z", "2"}});
+		tr.push_back({{"x", "2"}, {"z", "1"}});
 		return tr;
 	}
 
@@ -353,10 +353,10 @@ private:
 	}
 
 public:
-	TableRows generate(QueryContext&) override
+	QueryData generate(QueryContext&) override
 	{
-		TableRows results;
-		results.push_back(make_table_row({{"data", "{\"test\": 1}"}}));
+		QueryData results;
+		results.push_back({{"data", "{\"test\": 1}"}});
 		return results;
 	}
 
@@ -431,16 +431,14 @@ private:
 	}
 
 public:
-	TableRows generate(QueryContext& context) override
+	QueryData generate(QueryContext& context) override
 	{
-		TableRows results;
+		QueryData results;
 		if (context.isCached("awesome_data")) {
 			// There is cache entry for awesome data.
-			results.push_back(make_table_row({{"data", "more_awesome_data"}}));
+			results.push_back({{"data", "more_awesome_data"}});
 		} else {
-			auto tr = make_table_row({{"data", "awesome_data"}});
-			context.setCache("awesome_data", static_cast < TableRowHolder && >(tr));
-			results.push_back(std::move(tr));
+			results.push_back({{"data", "awesome_data"}});
 		}
 		return results;
 	}
@@ -490,18 +488,13 @@ public:
 		return TableAttributes::CACHEABLE;
 	}
 
-	TableRows generate(QueryContext& ctx) override
+	QueryData generate(QueryContext& ctx) override
 	{
-		if (isCached(60, ctx)) {
-			return getCache();
-		}
-
 		generates_++;
-		auto r = make_table_row();
+		Row r;
 		r["i"] = "1";
-		TableRows result;
+		QueryData result;
 		result.push_back(std::move(r));
-		setCache(60, 1, ctx, result);
 		return result;
 	}
 
@@ -574,15 +567,15 @@ private:
 	}
 
 public:
-	TableRows generate(QueryContext& context) override
+	QueryData generate(QueryContext& context) override
 	{
-		TableRows results;
+		QueryData results;
 
 		// To test, we'll move all predicate constraints into the result set.
 		// First we'll move constrains for the column `i` using operands =, LIKE.
 		auto i = context.constraints["i"].getAll(EQUALS);
 		for (const auto& constraint : i) {
-			auto r = make_table_row();
+			Row r;
 			r["i"] = constraint;
 			r["op"] = "EQUALS";
 			results.push_back(std::move(r));
@@ -590,7 +583,7 @@ public:
 
 		i = context.constraints["i"].getAll(LIKE);
 		for (const auto& constraint : i) {
-			auto r = make_table_row();
+			Row r;
 			r["i"] = constraint;
 			r["op"] = "LIKE";
 			results.push_back(std::move(r));
@@ -685,20 +678,20 @@ private:
 	}
 
 public:
-	TableRows generate(QueryContext& context) override
+	QueryData generate(QueryContext& context) override
 	{
 		scans++;
 
-		TableRows results;
+		QueryData results;
 		auto indexes = context.constraints["i"].getAll<int>(EQUALS);
 		for (const auto& i : indexes) {
-			results.push_back(make_table_row(
-			{{"i", INTEGER(i)}, {"j", INTEGER(i * 10)}, {"text", "none"}}));
+			results.push_back(
+			{{"i", INTEGER(i)}, {"j", INTEGER(i * 10)}, {"text", "none"}});
 		}
 		if (indexes.empty()) {
 			for (size_t i = 0; i < 100; i++) {
-				results.push_back(make_table_row(
-				{{"i", INTEGER(i)}, {"j", INTEGER(i * 10)}, {"text", "some"}}));
+				results.push_back(
+				{{"i", INTEGER(i)}, {"j", INTEGER(i * 10)}, {"text", "some"}});
 			}
 		}
 		return results;
@@ -719,19 +712,19 @@ private:
 	}
 
 public:
-	TableRows generate(QueryContext& context) override
+	QueryData generate(QueryContext& context) override
 	{
 		scans++;
 
-		TableRows results;
+		QueryData results;
 		auto indexes = context.constraints["j"].getAll<int>(EQUALS);
 		for (const auto& j : indexes) {
-			results.push_back(make_table_row({{"j", INTEGER(j)}, {"text", "none"}}));
+			results.push_back({{"j", INTEGER(j)}, {"text", "none"}});
 		}
 		if (indexes.empty()) {
 			for (size_t j = 0; j < 100; j++) {
 				results.push_back(
-				make_table_row({{"j", INTEGER(j)}, {"text", "some"}}));
+				{{"j", INTEGER(j)}, {"text", "some"}});
 			}
 		}
 		return results;
@@ -752,13 +745,13 @@ private:
 	}
 
 public:
-	TableRows generate(QueryContext& context) override
+	QueryData generate(QueryContext& context) override
 	{
 		scans++;
 
-		TableRows results;
+		QueryData results;
 		for (size_t i = 0; i < 10; i++) {
-			results.push_back(make_table_row({{"i", INTEGER(i)}, {"text", "some"}}));
+			results.push_back({{"i", INTEGER(i)}, {"text", "some"}});
 		}
 		return results;
 	}
@@ -786,9 +779,9 @@ private:
 	}
 
 public:
-	TableRows generate(QueryContext& context) override
+	QueryData generate(QueryContext& context) override
 	{
-		auto r = make_table_row();
+		Row r;
 		if (context.isColumnUsed("col1")) {
 			r["col1"] = "value1";
 		}
@@ -798,7 +791,7 @@ public:
 		if (context.isColumnUsed("col3")) {
 			r["col3"] = "value3";
 		}
-		TableRows result;
+		QueryData result;
 		result.push_back(std::move(r));
 		return result;
 	}
@@ -868,10 +861,10 @@ private:
 	}
 
 public:
-	TableRows generate(QueryContext& context) override
+	QueryData generate(QueryContext& context) override
 	{
-		TableRows results;
-		auto r = make_table_row();
+		QueryData results;
+		Row r;
 		if (context.isAnyColumnUsed(UsedColumnsBitset(0x1))) {
 			r["col1"] = "value1";
 		}

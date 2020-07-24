@@ -18,9 +18,11 @@
 #include "table.hpp"
 
 #include <vist/exception.hpp>
-#include <vist/json.hpp>
 #include <vist/logger.hpp>
 #include <vist/policy/api.hpp>
+#include <vist/table/builder.hpp>
+#include <vist/table/parser.hpp>
+#include <vist/table/util.hpp>
 
 extern "C" vist::table::DynamicTable* DynamicTableFactory()
 {
@@ -32,7 +34,7 @@ namespace table {
 
 void SamplePolicyTable::init()
 {
-	DynamicTable::Register("sample_policy", std::make_shared<SamplePolicyTable>());
+	Builder::table<SamplePolicyTable>("sample_policy");
 
 	// Register policy to policy-manager
 	using namespace policy;
@@ -48,13 +50,15 @@ void SamplePolicyTable::init()
 TableColumns SamplePolicyTable::columns() const
 {
 	return {
-		std::make_tuple("sample_int_policy", INTEGER_TYPE, ColumnOptions::DEFAULT),
-		std::make_tuple("sample_str_policy", TEXT_TYPE, ColumnOptions::DEFAULT),
+		Builder::column<int>("sample_int_policy"),
+		Builder::column<std::string>("sample_str_policy")
 	};
 }
 
-TableRows SamplePolicyTable::generate(QueryContext&) try
+QueryData SamplePolicyTable::generate(QueryContext&)
 {
+	TABLE_EXCEPTION_GUARD_START
+
 	INFO(VIST) << "Select query about sample-policy table.";
 
 	Row row;
@@ -67,49 +71,26 @@ TableRows SamplePolicyTable::generate(QueryContext&) try
 	QueryData results;
 	results.emplace_back(std::move(row));
 
-	return osquery::tableRowsFromQueryData(std::move(results));
-} catch (const vist::Exception<ErrCode>& e)
-{
-	ERROR(VIST) << "Failed to query: " << e.what();
-	Row r;
-	return osquery::tableRowsFromQueryData({ r });
-} catch (...)
-{
-	ERROR(VIST) << "Failed to query with unknown exception.";
-	Row r;
-	return osquery::tableRowsFromQueryData({ r });
+	return results;
+
+	TABLE_EXCEPTION_GUARD_END
 }
 
-QueryData SamplePolicyTable::update(QueryContext&, const PluginRequest& request) try
+QueryData SamplePolicyTable::update(QueryContext&, const PluginRequest& request)
 {
+	TABLE_EXCEPTION_GUARD_START
+
 	INFO(VIST) << "Update query about sample-policy table.";
-	if (request.count("json_values") == 0)
-		throw std::runtime_error("Wrong request format. Not found json value.");
 
-	DEBUG(VIST) << "Request values: " << request.at("json_values");
-	json::Json document = json::Json::Parse(request.at("json_values"));
-	json::Array values = document.get<json::Array>("values");
-	if (values.size() != 2)
-		throw std::runtime_error("Wrong request format.");
+	auto intPolicy = Parser::column<int>(request, 0);
+	auto strPolicy = Parser::column<std::string>(request, 1);
 
-	policy::API::Admin::Set("sample_int_policy",
-			policy::PolicyValue(static_cast<int>(values.at(0))));
-	policy::API::Admin::Set("sample_str_policy",
-			policy::PolicyValue(static_cast<std::string>(values.at(1))));
+	policy::API::Admin::Set("sample_int_policy", policy::PolicyValue(intPolicy));
+	policy::API::Admin::Set("sample_str_policy", policy::PolicyValue(strPolicy));
 
-	Row r;
-	r["status"] = "success";
-	return { r };
-} catch (const vist::Exception<ErrCode>& e)
-{
-	ERROR(VIST) << "Failed to query: " << e.what();
-	Row r;
-	return { r };
-} catch (...)
-{
-	ERROR(VIST) << "Failed to query with unknown exception.";
-	Row r;
-	return { r };
+	return success();
+
+	TABLE_EXCEPTION_GUARD_END
 }
 
 } // namespace table

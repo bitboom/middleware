@@ -13,27 +13,35 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License
  */
-/*
- * Query example
- * - SELECT * FROM sample_policy
- * - UPDATE sample_policy SET sample_int_policy = 99
- * - UPDATE sample_policy SET sample_str_policy = 'TEST_VALUE'
- */
 
-#include <vist/logger.hpp>
-#include <vist/table/dynamic-table.hpp>
+#pragma once
+
+#include <vist/exception.hpp>
+#include <vist/json.hpp>
+
+#include <osquery/tables.h>
+
+using namespace osquery;
 
 namespace vist {
 namespace table {
 
-class SamplePolicyTable final : public DynamicTable {
-public:
-	void init();
+struct Parser {
 
-private:
-	TableColumns columns() const override;
-	QueryData generate(QueryContext&) override;
-	QueryData update(QueryContext&, const PluginRequest& request) override;
+	template <typename T>
+	static auto column(const PluginRequest& request, std::size_t index) -> T
+	{
+		if (request.count("json_values") == 0)
+			THROW(ErrCode::LogicError) << "Wrong request format. Not found json value.";
+
+		json::Json document = json::Json::Parse(request.at("json_values"));
+		json::Array values = document.get<json::Array>("values");
+		if (values.size() < index)
+			THROW(ErrCode::LogicError) << "Wrong index.";
+
+		return static_cast<T>(values.at(index));
+	}
+
 };
 
 } // namespace table

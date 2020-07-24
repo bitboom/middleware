@@ -27,7 +27,7 @@ public:
 
 private:
 	TableColumns columns() const override;
-	TableRows generate(QueryContext&) override;
+	QueryData generate(QueryContext&) override;
 	QueryData update(QueryContext&, const PluginRequest& request) override;
 };
 
