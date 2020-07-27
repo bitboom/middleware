@@ -22,10 +22,10 @@
 #include <vist/policy/api.hpp>
 #include <vist/policy/policy-manager.hpp>
 #include <vist/rmi/gateway.hpp>
-
 #include <vist/table/dynamic-table.hpp>
-#include <vist/table/policy/policy-admin.hpp>
-#include <vist/table/policy/policy.hpp>
+
+#include <tables/built-in/policy-admin.hpp>
+#include <tables/built-in/policy.hpp>
 
 #include <osquery/registry_interface.h>
 #include <osquery/sql.h>

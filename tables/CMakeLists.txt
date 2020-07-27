@@ -12,5 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-## static virtual table
-ADD_VIST_LIBRARY(vist_table util.cpp)
+ADD_SUBDIRECTORY(policy/sample)
+
+IF(DEFINED GBS_BUILD)
+	ADD_SUBDIRECTORY(policy/bluetooth)
+ENDIF(DEFINED GBS_BUILD)
+
+# TODO: Add built-in table's TC

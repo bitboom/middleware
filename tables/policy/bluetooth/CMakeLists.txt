@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Samsung Electronics Co., Ltd All Rights Reserved
+# Copyright (c) 2019-present Samsung Electronics Co., Ltd All Rights Reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-SET(TARGET "vist-plugin-bluetooth")
+SET(TARGET "vist-bluetooth-policy")
 SET(TARGET_TEST ${TARGET}-test)
-
-SET(PLUGIN_SOURCES "bluetooth.cpp")
 
 SET(DEPENDENCY bluetooth-api
 			   capi-network-bluetooth)
@@ -24,21 +22,22 @@ PKG_CHECK_MODULES(PLUGIN_DEPS REQUIRED ${DEPENDENCY})
 
 INCLUDE_DIRECTORIES(SYSTEM ${PLUGIN_DEPS_INCLUDE_DIRS})
 
-ADD_LIBRARY(${TARGET} SHARED ${PLUGIN_SOURCES})
-SET_TARGET_PROPERTIES(${TARGET} PROPERTIES COMPILE_FLAGS "-fvisibility=default")
+## LIB ###########################################
+ADD_LIBRARY(${TARGET} SHARED policy.cpp table.cpp)
 TARGET_LINK_LIBRARIES(${TARGET} ${PLUGIN_DEPS_LIBRARIES}
-								vist-common)
+								${TARGET_VIST_COMMON_LIB}
+								${TARGET_VIST_POLICY_LIB})
 
-INSTALL(FILES libvist-plugin-bluetooth.so
-		RENAME bluetooth
-		DESTINATION ${PLUGIN_INSTALL_DIR})
+INSTALL(TARGETS ${TARGET} DESTINATION ${TABLE_INSTALL_DIR})
 
-ADD_EXECUTABLE(${TARGET_TEST} ../tests.cpp
-							  bluetooth.cpp
-							  bluetooth-test.cpp)
+## TEST #############################################
+ADD_EXECUTABLE(${TARGET_TEST} ${VIST_SRCS}/main/tests.cpp
+							  policy.cpp
+							  table.cpp
+							  tests/bluetooth.cpp)
 TARGET_LINK_LIBRARIES(${TARGET_TEST} ${PLUGIN_DEPS_LIBRARIES}
-									 vist-common
-									 vist-client
+									 ${TARGET_VIST_CLIENT_LIB}
+									 ${TARGET_VIST_LIB}
 									 gtest
 									 pthread)
 INSTALL(TARGETS ${TARGET_TEST}
