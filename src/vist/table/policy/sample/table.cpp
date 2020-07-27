@@ -55,7 +55,7 @@ TableColumns SamplePolicyTable::columns() const
 	};
 }
 
-QueryData SamplePolicyTable::generate(QueryContext&)
+QueryData SamplePolicyTable::select(QueryContext&)
 {
 	TABLE_EXCEPTION_GUARD_START
 

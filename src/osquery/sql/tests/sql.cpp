@@ -37,7 +37,7 @@ private:
 		};
 	}
 
-	QueryData generate(QueryContext& ctx)
+	QueryData select(QueryContext& ctx)
 	{
 		QueryData results;
 		if (ctx.constraints["test_int"].existsAndMatches("1")) {

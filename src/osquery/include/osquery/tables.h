@@ -748,7 +748,7 @@ public:
 	 * @param context A query context filled in by SQLite's virtual table API.
 	 * @return The result rows for this table, given the query context.
 	 */
-	virtual QueryData generate(QueryContext&)
+	virtual QueryData select(QueryContext&)
 	{
 		return QueryData();
 	}

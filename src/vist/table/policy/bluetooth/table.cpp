@@ -73,7 +73,7 @@ TableColumns BluetoothTable::columns() const
 	};
 }
 
-QueryData BluetoothTable::generate(QueryContext&)
+QueryData BluetoothTable::select(QueryContext&)
 {
 	TABLE_EXCEPTION_GUARD_START
 

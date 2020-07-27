@@ -225,7 +225,7 @@ private:
 	}
 
 public:
-	QueryData generate(QueryContext&) override
+	QueryData select(QueryContext&) override
 	{
 		QueryData tr;
 		tr.push_back({{"x", "1"}, {"y", "2"}});
@@ -248,7 +248,7 @@ private:
 	}
 
 public:
-	QueryData generate(QueryContext&) override
+	QueryData select(QueryContext&) override
 	{
 		QueryData tr;
 		tr.push_back({{"x", "1"}, {"z", "2"}});
@@ -353,7 +353,7 @@ private:
 	}
 
 public:
-	QueryData generate(QueryContext&) override
+	QueryData select(QueryContext&) override
 	{
 		QueryData results;
 		results.push_back({{"data", "{\"test\": 1}"}});
@@ -431,7 +431,7 @@ private:
 	}
 
 public:
-	QueryData generate(QueryContext& context) override
+	QueryData select(QueryContext& context) override
 	{
 		QueryData results;
 		if (context.isCached("awesome_data")) {
@@ -488,7 +488,7 @@ public:
 		return TableAttributes::CACHEABLE;
 	}
 
-	QueryData generate(QueryContext& ctx) override
+	QueryData select(QueryContext& ctx) override
 	{
 		generates_++;
 		Row r;
@@ -567,7 +567,7 @@ private:
 	}
 
 public:
-	QueryData generate(QueryContext& context) override
+	QueryData select(QueryContext& context) override
 	{
 		QueryData results;
 
@@ -678,7 +678,7 @@ private:
 	}
 
 public:
-	QueryData generate(QueryContext& context) override
+	QueryData select(QueryContext& context) override
 	{
 		scans++;
 
@@ -712,7 +712,7 @@ private:
 	}
 
 public:
-	QueryData generate(QueryContext& context) override
+	QueryData select(QueryContext& context) override
 	{
 		scans++;
 
@@ -745,7 +745,7 @@ private:
 	}
 
 public:
-	QueryData generate(QueryContext& context) override
+	QueryData select(QueryContext& context) override
 	{
 		scans++;
 
@@ -779,7 +779,7 @@ private:
 	}
 
 public:
-	QueryData generate(QueryContext& context) override
+	QueryData select(QueryContext& context) override
 	{
 		Row r;
 		if (context.isColumnUsed("col1")) {
@@ -861,7 +861,7 @@ private:
 	}
 
 public:
-	QueryData generate(QueryContext& context) override
+	QueryData select(QueryContext& context) override
 	{
 		QueryData results;
 		Row r;

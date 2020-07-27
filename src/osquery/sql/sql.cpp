@@ -100,7 +100,7 @@ void escapeNonPrintableBytesEx(std::string& data)
 QueryData SQL::selectAllFrom(const std::string& table)
 {
 	PluginResponse response;
-	Registry::call("table", table, {{"action", "generate"}}, response);
+	Registry::call("table", table, {{"action", "select"}}, response);
 	return response;
 }
 
@@ -118,7 +118,7 @@ QueryData SQL::selectFrom(const std::initializer_list<std::string>& columns,
 						  ConstraintOperator op,
 						  const std::string& expr)
 {
-	PluginRequest request = {{"action", "generate"}};
+	PluginRequest request = {{"action", "select"}};
 	// Create a fake content, there will be no caching.
 	QueryContext ctx;
 	ctx.constraints[column].add(Constraint(op, expr));

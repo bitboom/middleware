@@ -56,7 +56,7 @@ TableColumns PolicyTable::columns() const
 	};
 }
 
-QueryData PolicyTable::generate(QueryContext& context)
+QueryData PolicyTable::select(QueryContext& context)
 {
 	TABLE_EXCEPTION_GUARD_START
 

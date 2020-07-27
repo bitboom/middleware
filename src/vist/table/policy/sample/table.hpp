@@ -32,7 +32,7 @@ public:
 
 private:
 	TableColumns columns() const override;
-	QueryData generate(QueryContext&) override;
+	QueryData select(QueryContext&) override;
 	QueryData update(QueryContext&, const PluginRequest& request) override;
 };
 

@@ -136,9 +136,9 @@ Status TablePlugin::call(const PluginRequest& request,
 
 	const auto& action = request.at("action");
 
-	if (action == "generate") {
+	if (action == "select") {
 		auto context = getContextFromRequest(request);
-		response = generate(context);
+		response = select(context);
 	} else if (action == "delete") {
 		auto context = getContextFromRequest(request);
 		response = delete_(context, request);
