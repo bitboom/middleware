@@ -10,7 +10,6 @@
 
 #include <mutex>
 #include <shared_mutex>
-#include <boost/thread/recursive_mutex.hpp>
 
 namespace osquery {
 
@@ -28,11 +27,5 @@ using RecursiveMutex = std::recursive_mutex;
 
 /// Helper alias for write locking a recursive mutex.
 using RecursiveLock = std::unique_lock<std::recursive_mutex>;
-
-/// Helper alias for upgrade locking a mutex.
-using UpgradeLock = boost::upgrade_lock<Mutex>;
-
-/// Helper alias for write locking an upgrade lock.
-using WriteUpgradeLock = boost::upgrade_to_unique_lock<Mutex>;
 
 } // namespace osquery

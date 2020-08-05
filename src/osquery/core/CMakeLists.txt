@@ -17,8 +17,7 @@ ADD_OSQUERY_LIBRARY(osquery_core tables.cpp
 								 plugins/plugin.cpp
 								 plugins/sql.cpp
 								 sql/column.cpp
-								 sql/diff_results.cpp
-								 sql/scheduled_query.cpp)
+								 sql/diff_results.cpp)
 
 FILE(GLOB OSQUERY_CORE_TESTS "tests/*.cpp")
 ADD_OSQUERY_TEST(${OSQUERY_SQL_TESTS})

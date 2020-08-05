@@ -23,7 +23,6 @@ ADD_OSQUERY_LINK(glog
 				 dl
 				 boost_regex
 				 boost_system
-				 boost_thread
 				 boost_filesystem
 				 sqlite3)
 

@@ -12,15 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License
 
-ADD_OSQUERY_LIBRARY(osquery_utils base64.cpp
-								  chars.cpp
-								  only_movable.cpp
+ADD_OSQUERY_LIBRARY(osquery_utils only_movable.cpp
 								  status/status.cpp
-								  system/time.cpp
-								  system/posix/env.cpp
-								  system/posix/errno.cpp
-								  system/posix/filepath.cpp
-								  system/posix/time.cpp
 								  conversions/tryto.cpp
 								  conversions/split.cpp)
 

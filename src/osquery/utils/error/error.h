@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <osquery/utils/attribute.h>
 #include <osquery/utils/conversions/to.h>
 
 #include <memory>
@@ -137,7 +136,7 @@ inline std::ostream& operator<<(std::ostream& out, const ErrorBase& error)
 }
 
 template <typename ErrorCodeEnumType, typename OtherErrorCodeEnumType>
-OSQUERY_NODISCARD Error<ErrorCodeEnumType> createError(
+[[nodiscard]] Error<ErrorCodeEnumType> createError(
 	ErrorCodeEnumType error_code,
 	Error<OtherErrorCodeEnumType> underlying_error)
 {
@@ -148,7 +147,7 @@ OSQUERY_NODISCARD Error<ErrorCodeEnumType> createError(
 }
 
 template <typename ErrorCodeEnumType>
-OSQUERY_NODISCARD Error<ErrorCodeEnumType> createError(
+[[nodiscard]] Error<ErrorCodeEnumType> createError(
 	ErrorCodeEnumType error_code)
 {
 	return Error<ErrorCodeEnumType>(error_code);

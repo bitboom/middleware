@@ -84,34 +84,4 @@ TEST_F(StatusTests, test_failure_with_success_code)
 #endif
 }
 
-namespace {
-
-enum class TestError {
-	Semantic = 1,
-};
-
-bool stringContains(const std::string& where, const std::string& what)
-{
-	return boost::contains(where, what);
-};
-
-} // namespace
-
-TEST_F(StatusTests, test_expected_to_status_failure)
-{
-	const auto expected = Expected<std::string, TestError>(
-							  TestError::Semantic, "The ultimate failure reason");
-	auto s = to<Status>(expected);
-	EXPECT_FALSE(s.ok());
-	EXPECT_PRED2(stringContains, s.toString(), "The ultimate failure reason");
-}
-
-TEST_F(StatusTests, test_expected_to_status_success)
-{
-	const auto expected =
-		Expected<std::string, TestError>("This is not a failure");
-	auto s = to<Status>(expected);
-	EXPECT_TRUE(s.ok());
-	EXPECT_EQ(s, Status::success());
-}
 }

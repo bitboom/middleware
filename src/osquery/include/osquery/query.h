@@ -18,7 +18,6 @@
 
 #include <osquery/core.h>
 #include <osquery/core/sql/diff_results.h>
-#include <osquery/core/sql/scheduled_query.h>
 
 namespace osquery {
 
@@ -78,18 +77,6 @@ public:
  */
 class Query {
 public:
-	/**
-	 * @brief Constructor which sets up necessary parameters of a Query object.
-	 *
-	 * Given a query, this constructor calculates the value of columnFamily_,
-	 * which can be accessed via the getColumnFamilyName getter method.
-	 *
-	 * @param name The query name.
-	 * @param q a SheduledQuery struct.
-	 */
-	explicit Query(std::string name, const ScheduledQuery& q)
-		: query_(q.query), name_(std::move(name)) {}
-
 	/**
 	 * @brief Serialize the data in RocksDB into a useful data structure
 	 *

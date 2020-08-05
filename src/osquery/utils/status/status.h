@@ -9,7 +9,6 @@
 #pragma once
 
 #include <osquery/utils/error/error.h>
-#include <osquery/utils/expected/expected.h>
 #include <sstream>
 #include <string>
 
@@ -169,14 +168,5 @@ private:
 };
 
 ::std::ostream& operator<<(::std::ostream& os, const Status& s);
-
-template <typename ToType, typename ValueType, typename ErrorCodeEnumType>
-inline
-typename std::enable_if<std::is_same<ToType, Status>::value, Status>::type
-to(const Expected<ValueType, ErrorCodeEnumType>& expected)
-{
-	return expected ? Status::success()
-		   : Status::failure(expected.getError().getMessage());
-}
 
 } // namespace osquery

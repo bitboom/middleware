@@ -10,8 +10,6 @@
 
 #include <string>
 
-#include <osquery/utils/macros/macros.h>
-
 /// A configuration error is catastrophic and should exit the watcher.
 #define EXIT_CATASTROPHIC 78
 
