@@ -45,7 +45,13 @@ auto bt_allowed(int value)
 
 } // anonymous namespace
 
-void BluetoothState::onChanged(const PolicyValue& value)
+
+BluetoothProvider::State::State() :
+	PolicyModel(GetPolicyName(schema::Bluetooth::State), PolicyValue(1))
+{
+}
+
+void BluetoothProvider::State::onChanged(const PolicyValue& value)
 {
 	auto enable = bt_allowed(value);
 	auto ret = ::bluetooth_dpm_set_allow_mode(enable);
@@ -55,7 +61,12 @@ void BluetoothState::onChanged(const PolicyValue& value)
 	INFO(VIST_PLUGIN) << "Bluetooth state is changed to " << enable;
 }
 
-void DesktopConnectivity::onChanged(const PolicyValue& value)
+BluetoothProvider::DesktopConnectivity::DesktopConnectivity() :
+	PolicyModel(GetPolicyName(schema::Bluetooth::DesktopConnectivity), PolicyValue(1))
+{
+}
+
+void BluetoothProvider::DesktopConnectivity::onChanged(const PolicyValue& value)
 {
 	auto enable = allowed(value);
 	auto ret = ::bluetooth_dpm_set_desktop_connectivity_state(enable);
@@ -65,7 +76,12 @@ void DesktopConnectivity::onChanged(const PolicyValue& value)
 	INFO(VIST_PLUGIN) << "Bluetooth desktop connectivity state is changed to " << enable;
 }
 
-void Pairing::onChanged(const PolicyValue& value)
+BluetoothProvider::Pairing::Pairing() :
+	PolicyModel(GetPolicyName(schema::Bluetooth::Pairing), PolicyValue(1))
+{
+}
+
+void BluetoothProvider::Pairing::onChanged(const PolicyValue& value)
 {
 	auto enable = allowed(value);
 	auto ret = ::bluetooth_dpm_set_pairing_state(enable);
@@ -75,19 +91,24 @@ void Pairing::onChanged(const PolicyValue& value)
 	INFO(VIST_PLUGIN) << "Bluetooth pairing state is changed to " << enable;
 }
 
-void Tethering::onChanged(const PolicyValue& value)
+BluetoothProvider::Tethering::Tethering() :
+	PolicyModel(GetPolicyName(schema::Bluetooth::Tethering), PolicyValue(1))
+{
+}
+
+void BluetoothProvider::Tethering::onChanged(const PolicyValue& value)
 {
 	auto enable = value;
 	INFO(VIST_PLUGIN) << "Bluetooth tethering state is changed to " << enable;
 }
 
-Bluetooth::Bluetooth(const std::string& name) : PolicyProvider(name)
+BluetoothProvider::BluetoothProvider(const std::string& name) : PolicyProvider(name)
 {
 	if (::bt_initialize() != BT_ERROR_NONE)
 		THROW(ErrCode::RuntimeError) << "Failed to init bluetooth provider.";
 }
 
-Bluetooth::~Bluetooth()
+BluetoothProvider::~BluetoothProvider()
 {
 	::bt_deinitialize();
 }

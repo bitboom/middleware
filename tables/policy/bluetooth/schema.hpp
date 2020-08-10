@@ -33,10 +33,10 @@ struct Bluetooth {
 	DECLARE_COLUMN(Tethering, "tethering", &Bluetooth::tethering);
 };
 
-DECLARE_TABLE(BluetoothTable, "bluetooth", Bluetooth::State,
-			  Bluetooth::DesktopConnectivity,
-			  Bluetooth::Pairing,
-			  Bluetooth::Tethering);
+DECLARE_TABLE(bluetooth, "bluetooth", Bluetooth::State,
+									  Bluetooth::DesktopConnectivity,
+									  Bluetooth::Pairing,
+									  Bluetooth::Tethering);
 
 } // namesapce schema
 } // namesapce vist

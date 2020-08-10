@@ -20,38 +20,42 @@
 #include <vist/sdk/policy-provider.hpp>
 #include <vist/sdk/policy-value.hpp>
 
+#include "schema.hpp"
+
 namespace vist {
 namespace policy {
 
-class BluetoothState : public PolicyModel {
+class BluetoothProvider final : public PolicyProvider {
 public:
-	BluetoothState() : PolicyModel("bluetooth", PolicyValue(1)) {}
-	void onChanged(const PolicyValue& value) override;
+	BluetoothProvider(const std::string& name);
+	~BluetoothProvider();
+
+	struct State : public PolicyModel {
+		State();
+		void onChanged(const PolicyValue& value) override;
+	};
+
+	struct DesktopConnectivity : public PolicyModel {
+		DesktopConnectivity();
+		void onChanged(const PolicyValue& value) override;
+	};
+
+	struct Pairing: public PolicyModel {
+		Pairing();
+		void onChanged(const PolicyValue& value) override;
+	};
+
+	struct Tethering: public PolicyModel {
+		Tethering();
+		void onChanged(const PolicyValue&) override;
+	};
+
 };
 
-class DesktopConnectivity : public PolicyModel {
-public:
-	DesktopConnectivity() : PolicyModel("bluetooth-desktop-connectivity", PolicyValue(1)) {}
-	void onChanged(const PolicyValue& value) override;
-};
-
-class Pairing: public PolicyModel {
-public:
-	Pairing() : PolicyModel("bluetooth-pairing", PolicyValue(1)) {}
-	void onChanged(const PolicyValue& value) override;
-};
-
-class Tethering: public PolicyModel {
-public:
-	Tethering() : PolicyModel("bluetooth-tethering", PolicyValue(1)) {}
-	void onChanged(const PolicyValue&);
-};
-
-class Bluetooth final : public PolicyProvider {
-public:
-	Bluetooth(const std::string& name);
-	~Bluetooth();
-};
+template <typename Column>
+std::string GetPolicyName(const Column& column) {
+	return schema::bluetooth.name + "-" + column.name;
+}
 
 } // namespace policy
 } // namespace vist

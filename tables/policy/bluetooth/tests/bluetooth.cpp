@@ -15,6 +15,7 @@
  */
 
 #include "../policy.hpp"
+#include "../schema.hpp"
 
 #include <vist/client/query.hpp>
 #include <vist/exception.hpp>
@@ -45,10 +46,10 @@ void change_policy_state()
 TEST(BluetoothTests, change_policy_state)
 {
 	try {
-		change_policy_state<BluetoothState>();
-		change_policy_state<DesktopConnectivity>();
-		change_policy_state<Pairing>();
-		change_policy_state<Tethering>();
+		change_policy_state<BluetoothProvider::State>();
+		change_policy_state<BluetoothProvider::DesktopConnectivity>();
+		change_policy_state<BluetoothProvider::Pairing>();
+		change_policy_state<BluetoothProvider::Tethering>();
 	} catch(const vist::Exception<ErrCode>& e) {
 		EXPECT_TRUE(false) << e.what();
 	}
@@ -80,4 +81,28 @@ TEST(BluetoothTests, set_policies)
 	}
 
 	Query::Execute("DELETE FROM policy_admin WHERE name = 'vist-bluetooth-policy-test'");
+}
+
+TEST(BluetoothTests, schema)
+{
+	using namespace vist::schema;
+	std::string select1 = bluetooth.selectAll();
+	EXPECT_EQ(select1, "SELECT * FROM bluetooth");
+
+	std::string select2 = bluetooth.select(Bluetooth::State);
+	EXPECT_EQ(select2, "SELECT state FROM bluetooth");
+
+	std::string update1 = bluetooth.update(Bluetooth::State = 1);
+	EXPECT_EQ(update1, "UPDATE bluetooth SET state = 1");
+
+	std::string update2 = bluetooth.update(Bluetooth::State = 1, Bluetooth::Pairing = 0);
+	EXPECT_EQ(update2, "UPDATE bluetooth SET state = 1, pairing = 0");
+}
+
+TEST(BluetoothTests, type_safe_query)
+{
+	std::string query = schema::bluetooth.selectAll();
+	auto rows = Query::Execute(query);
+
+	EXPECT_TRUE(rows.size() == 1);
 }

@@ -34,16 +34,15 @@ namespace table {
 
 namespace {
 
-std::map<std::string, std::string> ALIAS = {
-	{ "state", "bluetooth" },
-	{ "desktopConnectivity", "bluetooth-desktop-connectivity" },
-	{ "pairing", "bluetooth-pairing" },
-	{ "tethering", "bluetooth-tethering"}
-};
-
 void setPolicy(const std::string& name, int value)
 {
 	vist::policy::API::Admin::Set(name, vist::policy::PolicyValue(value));
+}
+
+std::string getPolicy(const std::string& name)
+{
+	int value = vist::policy::API::Get(name);
+	return std::to_string(value);
 }
 
 } // anonymous namespace
@@ -52,11 +51,12 @@ void BluetoothTable::init()
 {
 	Builder::table<BluetoothTable>("bluetooth");
 
-	auto provider = std::make_shared<policy::Bluetooth>("bluetooth");
-	provider->add(std::make_shared<policy::BluetoothState>());
-	provider->add(std::make_shared<policy::DesktopConnectivity>());
-	provider->add(std::make_shared<policy::Pairing>());
-	provider->add(std::make_shared<policy::Tethering>());
+	using namespace vist::policy;
+	auto provider = std::make_shared<BluetoothProvider>("bluetooth");
+	provider->add(std::make_shared<BluetoothProvider::State>());
+	provider->add(std::make_shared<BluetoothProvider::DesktopConnectivity>());
+	provider->add(std::make_shared<BluetoothProvider::Pairing>());
+	provider->add(std::make_shared<BluetoothProvider::Tethering>());
 
 	policy::API::Admin::AddProvider(provider);
 
@@ -65,11 +65,13 @@ void BluetoothTable::init()
 
 TableColumns BluetoothTable::columns() const
 {
+	// Define Virtual table's schema (column)
+	using namespace schema;
 	return {
-		Builder::column<int>("state"),
-		Builder::column<int>("desktopConnectivity"),
-		Builder::column<int>("pairing"),
-		Builder::column<int>("tethering")
+		Builder::column<int>(Bluetooth::State.name),
+		Builder::column<int>(Bluetooth::DesktopConnectivity.name),
+		Builder::column<int>(Bluetooth::Pairing.name),
+		Builder::column<int>(Bluetooth::Tethering.name)
 	};
 }
 
@@ -79,11 +81,16 @@ QueryData BluetoothTable::select(QueryContext&)
 
 	INFO(VIST) << "Select query about bluetooth table.";
 
+	using namespace schema;
+	using namespace policy;
+	// Policy name format: bluetooth-xxx
+	// Virtual table column name formant: xxx
 	Row row;
-	for (const auto& [schemaName, policyName] : ALIAS) {
-		int value = vist::policy::API::Get(policyName);
-		row[schemaName] = std::to_string(value);
-	}
+	row[Bluetooth::State.name] = getPolicy(GetPolicyName(Bluetooth::State));
+	row[Bluetooth::DesktopConnectivity.name] =
+		getPolicy(GetPolicyName(Bluetooth::DesktopConnectivity));
+	row[Bluetooth::Pairing.name] = getPolicy(GetPolicyName(Bluetooth::Pairing));
+	row[Bluetooth::Tethering.name] = getPolicy(GetPolicyName(Bluetooth::Tethering));
 
 	QueryData results;
 	results.emplace_back(std::move(row));
@@ -99,11 +106,12 @@ QueryData BluetoothTable::update(QueryContext&, const PluginRequest& request)
 
 	INFO(VIST) << "Update query about bluetooth table.";
 
-	/// TODO(Sangwan): Sync vtab schema with policy definition
-	setPolicy("bluetooth", Parser::column<int>(request, 0));
-	setPolicy("bluetooth-desktop-connectivity", Parser::column<int>(request, 1));
-	setPolicy("bluetooth-pairing", Parser::column<int>(request, 2));
-	setPolicy("bluetooth-tethering", Parser::column<int>(request, 3));
+	using namespace schema;
+	using namespace policy;
+	setPolicy(GetPolicyName(Bluetooth::State), Parser::column<int>(request, 0));
+	setPolicy(GetPolicyName(Bluetooth::DesktopConnectivity), Parser::column<int>(request, 1));
+	setPolicy(GetPolicyName(Bluetooth::Pairing), Parser::column<int>(request, 2));
+	setPolicy(GetPolicyName(Bluetooth::Tethering), Parser::column<int>(request, 3));
 
 	return success();
 
