@@ -33,6 +33,10 @@ int main() try
 	LogStream::Init(std::make_shared<Dlog>());
 #endif
 
+#ifdef TIZEN_TEST_GCOV
+	::setenv("GCOV_PREFIX", "/tmp", 1);
+#endif
+
 	Vistd::Instance().Start();
 
 	return EXIT_SUCCESS;

@@ -20,6 +20,10 @@
 
 #include <utility>
 
+#ifdef TIZEN_TEST_GCOV
+extern "C" void __gcov_flush();
+#endif
+
 namespace vist {
 namespace rmi {
 namespace impl {
@@ -36,6 +40,10 @@ Connection::Connection(const std::string& path) :
 
 void Connection::send(Message& message)
 {
+#ifdef TIZEN_TEST_GCOV
+	__gcov_flush();
+#endif
+
 	std::lock_guard<std::mutex> lock(this->sendMutex);
 
 	message.header.id = this->sequence++;

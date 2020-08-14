@@ -58,6 +58,13 @@ cp %SOURCE1 .
 	CXXFLAGS="$CXXFLAGS -Wp,-U_FORTIFY_SOURCE"
 %endif
 
+%if 0%{?gcov:1}
+export CFLAGS+=" -fprofile-arcs -ftest-coverage"
+export CXXFLAGS+=" -fprofile-arcs -ftest-coverage"
+export FFLAGS+=" -fprofile-arcs -ftest-coverage"
+export LDFLAGS+=" -lgcov"
+%endif
+
 %cmake . -DCMAKE_BUILD_TYPE=%{build_type} \
 		 -DVERSION=%{version} \
 		 -DOSQUERY_VERSION=%{osquery_version} \
@@ -70,7 +77,8 @@ cp %SOURCE1 .
 		 -DPLUGIN_INSTALL_DIR:PATH=%{vist_plugin_dir} \
 		 -DTABLE_INSTALL_DIR:PATH=%{vist_table_dir} \
 		 -DSCRIPT_INSTALL_DIR:PATH=%{vist_script_dir} \
-		 -DSYSTEMD_UNIT_DIR:PATH=%{_unitdir}
+		 -DSYSTEMD_UNIT_DIR:PATH=%{_unitdir} \
+		 -DBUILD_GCOV=%{?gcov:1}%{!?gcov:0}
 
 make %{?jobs:-j%jobs}
 
