@@ -60,13 +60,13 @@ Socket::Socket(const std::string& path)
 	::strncpy(addr.sun_path, path.c_str(), sizeof(sockaddr_un::sun_path) - 1);
 	addr.sun_path[sizeof(sockaddr_un::sun_path) - 1] = '\0';
 
-	if (addr.sun_path[0] == '@')
+	if (addr.sun_path[0] == '@') {
 		addr.sun_path[0] = '\0';
-
-	struct stat buf;
-	if (::stat(path.c_str(), &buf) == 0)
+	} else {
+		errno = 0;
 		if (::unlink(path.c_str()) == -1)
-			THROW(ErrCode::RuntimeError) << "Failed to remove exist socket.";
+			WARN(VIST) << "Failed to remove exist socket: " << errno;
+	}
 
 	if (::bind(fd, reinterpret_cast<::sockaddr*>(&addr), sizeof(::sockaddr_un)) == -1) {
 		::close(fd);
