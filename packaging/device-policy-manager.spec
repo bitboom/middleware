@@ -59,7 +59,7 @@ managing device policies.
 %{_unitdir}/multi-user.target.wants/device-policy-manager.service
 %{_unitdir}/device-policy-syspopup.service
 /etc/dbus-1/system.d/org.tizen.dpm.syspopup.conf
-/usr/share/dbus-1/system-services/org.tizen.dpm.syspopup.service
+/usr/share/dbus-1/system-services/org.tizen.DevicePolicyManager.service
 
 %prep
 %setup -q
