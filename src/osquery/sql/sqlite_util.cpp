@@ -14,13 +14,14 @@
 #include <osquery/utils/conversions/castvariant.h>
 
 #include <osquery/core.h>
-#include <vist/logger.hpp>
 #include <osquery/registry_factory.h>
 #include <osquery/sql.h>
 
 #include <osquery/utils/conversions/split.h>
 
 #include <boost/lexical_cast.hpp>
+
+#include <vist/logger.hpp>
 
 namespace osquery {
 
@@ -273,13 +274,15 @@ SQLiteDBInstance::SQLiteDBInstance(sqlite3*& db, Mutex& mtx)
 
 static inline void openOptimized(sqlite3*& db)
 {
-	sqlite3_open(":memory:", &db);
+	if (sqlite3_open(":memory:", &db) != SQLITE_OK)
+		ERROR(VIST) << "[osquery] error: " << sqlite3_errmsg(db);
 
 	std::string settings;
 	for (const auto& setting : kMemoryDBSettings) {
 		settings += "PRAGMA " + setting.first + "=" + setting.second + "; ";
 	}
-	sqlite3_exec(db, settings.c_str(), nullptr, nullptr, nullptr);
+	if (sqlite3_exec(db, settings.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
+		ERROR(VIST) << "[osquery] error: " << sqlite3_errmsg(db);
 }
 
 void SQLiteDBInstance::init()

@@ -17,6 +17,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/variant.hpp>
 
+#include <vist/logger.hpp>
+
 namespace osquery {
 class SQLiteUtilTests : public testing::Test {
 public:
@@ -37,7 +39,9 @@ std::shared_ptr<SQLiteDBInstance> getTestDBC()
 	};
 
 	for (auto q : queries) {
-		sqlite3_exec(dbc->db(), q.c_str(), nullptr, nullptr, &err);
+		if (sqlite3_exec(dbc->db(), q.c_str(), nullptr, nullptr, &err) != SQLITE_OK)
+			ERROR(VIST) << "[osquery] error: " << sqlite3_errmsg(dbc->db());
+
 		if (err != nullptr) {
 			throw std::domain_error(std::string("Cannot create testing DBC's db: ") +
 									err);
@@ -91,11 +95,12 @@ TEST_F(SQLiteUtilTests, test_reset)
 	auto internal_db = SQLiteDBManager::get()->db();
 	ASSERT_NE(nullptr, internal_db);
 
-	sqlite3_exec(internal_db,
-				 "create view test_view as select 'test';",
-				 nullptr,
-				 nullptr,
-				 nullptr);
+	if (sqlite3_exec(internal_db,
+					 "create view test_view as select 'test';",
+					 nullptr,
+					 nullptr,
+					 nullptr) != SQLITE_OK)
+		ERROR(VIST) << "[osquery] error: " << sqlite3_errmsg(internal_db);
 
 	SQLiteDBManager::resetPrimary();
 	auto instance = SQLiteDBManager::get();
@@ -150,7 +155,9 @@ TEST_F(SQLiteUtilTests, test_get_test_db_result_stream)
 	auto results = getTestDBResultStream();
 	for (auto r : results) {
 		char* err_char = nullptr;
-		sqlite3_exec(dbc->db(), (r.first).c_str(), nullptr, nullptr, &err_char);
+		if (sqlite3_exec(dbc->db(), (r.first).c_str(), nullptr, nullptr, &err_char) != SQLITE_OK)
+			ERROR(VIST) << "[osquery] error: " << sqlite3_errmsg(dbc->db());
+
 		EXPECT_TRUE(err_char == nullptr);
 		if (err_char != nullptr) {
 			sqlite3_free(err_char);
