@@ -13,7 +13,7 @@ Source1005: %{name}-test.manifest
 BuildRequires: cmake
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(libsmack)
-BuildRequires: pkgconfig(libsystemd-daemon)
+BuildRequires: pkgconfig(libsystemd)
 BuildRequires: pkgconfig(libtzplatform-config)
 Requires: security-config
 Requires: lib%{name}-sw-backend = %{version}-%{release}

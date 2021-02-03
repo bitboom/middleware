@@ -1,7 +1,7 @@
 PKG_CHECK_MODULES(SERVER_DEP
     REQUIRED
     libsmack
-    libsystemd-daemon
+    libsystemd
     )
 
 FIND_PACKAGE(Threads REQUIRED)
