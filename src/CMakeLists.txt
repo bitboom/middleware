@@ -25,7 +25,7 @@ PKG_CHECK_MODULES(VCORE_DEPS
     openssl1.1
     xmlsec1
     dlog
-    libsystemd-journal
+    libsystemd
     )
 
 ADD_DEFINITIONS(${VCORE_DEPS_CFLAGS})
@@ -107,7 +107,7 @@ PKG_CHECK_MODULES(CERT_SERVER_DEP
     REQUIRED
     dlog
     sqlite3
-    libsystemd-daemon
+    libsystemd
     key-manager
     )
 

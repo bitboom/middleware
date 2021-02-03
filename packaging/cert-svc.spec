@@ -18,10 +18,9 @@ BuildRequires: pkgconfig(libpcrecpp)
 BuildRequires: pkgconfig(xmlsec1)
 BuildRequires: pkgconfig(libxml-2.0)
 BuildRequires: pkgconfig(libxslt)
-BuildRequires: pkgconfig(libsystemd-daemon)
+BuildRequires: pkgconfig(libsystemd)
 BuildRequires: pkgconfig(key-manager)
 BuildRequires: pkgconfig(libtzplatform-config)
-BuildRequires: pkgconfig(libsystemd-journal)
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: ca-certificates
 BuildRequires: ca-certificates-devel
