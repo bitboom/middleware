@@ -27,7 +27,7 @@ PKG_CHECK_MODULES(${TARGET_CERT_CHECKER}_DEP
     gio-2.0
     icu-i18n
     key-manager
-    libsystemd-daemon
+    libsystemd
     sqlite3
     pkgmgr
     pkgmgr-info

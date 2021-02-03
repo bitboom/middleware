@@ -18,8 +18,7 @@
 #
 PKG_CHECK_MODULES(${TARGET_CERT_CHECKER_COMMON}_DEP
 	REQUIRED
-	libsystemd-journal
-	libsystemd-daemon
+	libsystemd
 )
 
 SET(COMMON_PATH ${CERT_CHECKER_SRC_PATH}/common)
