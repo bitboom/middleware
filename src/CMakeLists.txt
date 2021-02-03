@@ -69,7 +69,7 @@ SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES VERSION   ${LIB_VERSION})
 PKG_CHECK_MODULES(KLAY_DEPS REQUIRED	gio-2.0
 										sqlite3
 										dlog
-										libsystemd-daemon
+										libsystemd
 )
 
 INCLUDE_DIRECTORIES(SYSTEM	${KLAY_INCLUDE}

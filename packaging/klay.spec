@@ -12,7 +12,7 @@ BuildRequires: cmake
 BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(dlog)
-BuildRequires: pkgconfig(libsystemd-daemon)
+BuildRequires: pkgconfig(libsystemd)
 BuildRequires: pkgconfig(libtzplatform-config)
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
