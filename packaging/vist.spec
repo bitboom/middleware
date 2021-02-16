@@ -18,7 +18,7 @@ BuildRequires: gflags-devel
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(libtzplatform-config)
-BuildRequires: pkgconfig(libsystemd-daemon)
+BuildRequires: pkgconfig(libsystemd)
 Requires: glog
 Requires: gflag
 Requires: boost-regex boost-system boost-thread boost-filesystem
