@@ -196,6 +196,7 @@ Connection::ObjectId Connection::registerObject(const std::string& object,
 	if (error)
 		throw klay::Exception(error->message);
 
+	MethodCallback* methodCallback = new MethodCallback(methodcall, vanished, this);
 	GDBusInterfaceInfo* inf = node->interfaces[0];
 	GDBusInterfaceVTable vtable;
 	vtable.method_call = &Connection::onMethodCall;
@@ -206,12 +207,13 @@ Connection::ObjectId Connection::registerObject(const std::string& object,
 												    object.c_str(),
 												    inf,
 												    &vtable,
-												    new MethodCallback(methodcall, vanished, this),
+												    methodCallback,
 												    &freeUserData<MethodCallback>,
 												    &error);
 	g_dbus_node_info_unref(node);
     if (error) {
         ERROR(KSINK, error->message);
+        delete methodCallback;
         throw klay::Exception(error->message);
     }
 
