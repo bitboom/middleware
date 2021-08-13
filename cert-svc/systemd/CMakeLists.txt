@@ -1,0 +1,11 @@
+SET(CERT_SERVER "cert-server")
+
+CONFIGURE_FILE(${CERT_SERVER}.socket.in ${CERT_SERVER}.socket @ONLY)
+CONFIGURE_FILE(${CERT_SERVER}.service.in ${CERT_SERVER}.service @ONLY)
+
+INSTALL(
+	FILES
+		${PROJECT_SOURCE_DIR}/systemd/${CERT_SERVER}.socket
+		${PROJECT_SOURCE_DIR}/systemd/${CERT_SERVER}.service
+	DESTINATION ${SYSTEMD_UNIT_DIR}
+	)

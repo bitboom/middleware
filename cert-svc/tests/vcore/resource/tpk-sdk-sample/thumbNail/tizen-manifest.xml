@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<manifest xmlns="http://tizen.org/ns/packages" api-version="2.4" package="org.example.thumbnailutil" version="1.0.0">
+    <profile name="mobile"/>
+    <ui-application appid="org.example.thumbnailutil" exec="thumbnailutil" multiple="false" nodisplay="false" taskmanage="true" type="capp">
+        <label>thumbnailutil</label>
+        <icon>thumbnailutil.png</icon>
+    </ui-application>
+    <privileges>
+        <privilege>http://tizen.org/privilege/mediastorage</privilege>
+        <privilege>http://tizen.org/privilege/content.write</privilege>
+    </privileges>
+</manifest>
