@@ -1,0 +1,9 @@
+<manifest>
+	<request>
+		<domain name="_" />
+	</request>
+	<assign>
+		<filesystem path="@TANCHOR_BASE@" label="@SMACK_LABEL@" type="transmutable" />
+		<filesystem path="@TANCHOR_PKG@" label="@PKG_SMACK_LABEL@" type="transmutable" />
+	</assign>
+</manifest>
