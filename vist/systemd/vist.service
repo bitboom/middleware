@@ -1,0 +1,10 @@
+[Unit]
+Description=Virtual Security Table service
+
+[Service]
+User=security_fw
+Group=security_fw
+SmackProcessLabel=System
+ExecStart=/bin/vistd
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure

@@ -1,0 +1,13 @@
+[Unit]
+Description=Virtual Security Table socket
+
+[Socket]
+ListenStream=/tmp/.vist
+SocketUser=security_fw
+SocketGroup=security_fw
+SocketMode=0777
+SmackLabelIPIn=*
+SmackLabelIPOut=@
+
+[Install]
+WantedBy=sockets.target

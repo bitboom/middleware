@@ -1,0 +1,18 @@
+# cscope/ctag data
+/cscope.files
+/cscope.out
+/tags
+
+# Temporary files
+*.swp
+*~
+
+# Build Artifacts
+.provision
+build/
+
+# Dependency Artifacts
+deps/
+
+# Run Artifacts
+*.log
