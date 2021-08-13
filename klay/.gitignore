@@ -1,0 +1,9 @@
+# cscope/ctag data
+cscope.files
+cscope.out
+tags
+
+# Temporary files
+*.swp
+*.swo
+*~
