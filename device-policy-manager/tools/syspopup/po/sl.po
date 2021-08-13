@@ -1,0 +1,93 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "Odložišče"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "V redu"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "Prekliči"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "Zajem zaslona"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "Geslo"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "Dostopna točka"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Varnostni pravilnik preprečuje uporabo sinhronizacije namizja."
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "Fot."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "Varnostni pravilnik preprečuje uporabo aplikacije %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "Varnostni pravilnik omejuje uporabo programa %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "Uporabljen je varnostni pravilnik."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "Veljaven varn. pravilnik"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "Varnostni pravilnik preprečuje namestitev aplikacij."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "Varnostni pravilnik preprečuje namestitev te aplikacije."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "Varnostni pravilnik preprečuje odstranitev aplikacij."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "Varnostni pravilnik preprečuje odstranitev te aplikacije."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "Varnostni pravilnik zahteva, da spremenite geslo."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "Varnostni pravilnik omejuje uporabo mikrofona."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "Varnostni pravilnik omejuje uporabo informacij o lokaciji."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "Varnostni pravilnik preprečuje uporabo vmesnika Bluetooth."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "Varnostni pravilnik preprečuje pošiljanje sporočil."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "Varnostni pravilnik omejuje prejemanje sporočil."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "Varnostni pravilnik preprečuje uporabo aplikacij brskalnika."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "Varnostni pravilnik omejuje uporabo kartice SD."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "Varnostni pravilnik preprečuje dešifriranje telefona."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "Varnostni pravilnik preprečuje uporabo vmesnika Wi-Fi."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "Varnostni pravilnik preprečuje spreminjanje nastavitev."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Varnostni pravilnik omejuje uporabo e-pošte POP/IMAP."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Varnostni pravilnik preprečuje uporabo e-pošte POP/IMAP."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Varnostni pravilnik omejuje uporabo računalniške povezave."
+

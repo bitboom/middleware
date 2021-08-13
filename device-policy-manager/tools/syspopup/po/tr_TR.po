@@ -1,0 +1,93 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "Pano"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "Tamam"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "İptal"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "Ekran yakalama"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "Şifre"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "Erişim Noktası"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Güvenlik ilkesi masaüstü eşitleme kullanımını engelliyor."
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "Kamera"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "Güvenlik ilkesi, %s kullanımını engelliyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "Güvenlik ilkesi, %s kullanımını kısıtlıyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "Güvenlik ilkesi uygulandı."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "Güvenlik ilkesi geçerli"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "Güvenlik ilkesi, uygulamaların yüklenmesini engelliyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "Güvenlik ilkesi, bu uygulamanın yüklenmesini engelliyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "Güvenlik ilkesi, uygulamaların kaldırılmasını engelliyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "Güvenlik ilkesi, bu uygulamanın kaldırılmasını engelliyor."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "Güvenlik ilkesi, şifrenizi değiştirmenizi istiyor"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "Güvenlik ilkesi, mikrofon kullanımını kısıtlıyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "Güvenlik ilkesi, konum bilgisi kullanımını kısıtlıyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "Güvenlik ilkesi Bluetooth kullanımını engelliyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "Güvenlik ilkesi, mesaj göndermeyi engelliyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "Güvenlik ilkesi, mesaj almayı kısıtlıyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "Güvenlik ilkesi, tarayıcı uygulamalarının kullanımını engelliyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "Güvenlik ilkesi, SD kart kullanımını kısıtlıyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "Güvenlik ilkesi, telefonun şifresini çözmeyi engelliyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "Güvenlik ilkesi Wi-Fi kullanımını engelliyor."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "Güvenlik ilkesi ayarların değiştirilmesini engelliyor."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Güvenlik ilkesi POP/IMAP eposta kullanımını kısıtlıyor."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Güvenlik ilkesi POP/IMAP e-posta kullanımını engelliyor."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Güvenlik ilkesi PC bağlantısı kullanımını kısıtlıyor."
+

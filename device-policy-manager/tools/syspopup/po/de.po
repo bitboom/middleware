@@ -1,0 +1,93 @@
+msgid "IDS_TPLATFORM_OPT_CLIPBOARD"
+msgstr "Zwischenablage"
+
+msgid "IDS_TPLATFORM_BUTTON_OK"
+msgstr "OK"
+
+msgid "IDS_TPLATFORM_BUTTON2_CANCEL"
+msgstr "Abbrechen"
+
+msgid "IDS_MF_BODY_SCREEN_CAPTURE_M_NOUN"
+msgstr "Screenshot"
+
+msgid "IDS_ST_BODY_PASSWORD"
+msgstr "Passwort"
+
+msgid "IDS_MOBILEAP_MBODY_HOTSPOT_SPRINT"
+msgstr "Hotspot"
+
+msgid "IDS_ST_BODY_NFC"
+msgstr "NFC"
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_DESKTOP_SYNC"
+msgstr "Sicherheitsrichtlinie verhindert die Verwendung der Desktop-Synchronisierung."
+
+msgid "IDS_IDLE_TAB4_CAMERA"
+msgstr "Kamera"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_PS"
+msgstr "Sicherheitsrichtlinie verhindert die Verwendung von %s."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_PS"
+msgstr "Eine Sicherheitsrichtlinie schränkt die Verwendung von %s ein."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_APPLIED"
+msgstr "Sicherheitsrichtlinien angewendet."
+
+msgid "IDS_IDLE_MBODY_SECURITY_POLICY_IN_EFFECT"
+msgstr "Sicherheitsrichtlinie aktiv"
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_APPS"
+msgstr "Eine Sicherheitsrichtlinie verhindert die Installation von Apps."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_INSTALLATION_OF_THIS_APP"
+msgstr "Eine Sicherheitsrichtlinie verhindert die Installation dieser App."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_APPS"
+msgstr "Eine Sicherheitsrichtlinie verhindert die Deinstallation von Apps."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_UNINSTALLING_OF_THIS_APP"
+msgstr "Eine Sicherheitsrichtlinie verhindert die Deinstallation dieser App."
+
+msgid "IDS_IDLE_POP_THE_SECURITY_POLICY_REQUIRES_YOU_TO_CHANGE_YOUR_PASSWORD"
+msgstr "Die Sicherheitsrichtlinie erfordert ein Ändern Ihres Passworts."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_MIC"
+msgstr "Eine Sicherheitsrichtlinie schränkt die Verwendung des Mikrofons ein."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_LOCATION_INFO"
+msgstr "Eine Sicherheitsrichtlinie schränkt die Verwendung von Standortinformationen ein."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BLUETOOTH"
+msgstr "Die Sicherheitsrichtlinie verhindert die Verwendung von Bluetooth."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_SENDING_MESSAGES"
+msgstr "Eine Sicherheitsrichtlinie verhindert das Senden von Nachrichten."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_RETRIEVING_MESSAGES"
+msgstr "Eine Sicherheitsrichtlinie schränkt den Empfang von Nachrichten ein."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_BROWSER_APPS"
+msgstr "Eine Sicherheitsrichtlinie verhindert die Verwendung von Browser-Apps."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_RESTRICTS_USE_OF_SD_CARD"
+msgstr "Eine Sicherheitsrichtlinie schränkt die Verwendung von SD-Karten ein."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_DECRYPTION_OF_PHONE"
+msgstr "Eine Sicherheitsrichtlinie verhindert die Entschlüsselung des Telefons."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_USE_OF_WI_FI"
+msgstr "Die Sicherheitsrichtlinie verhindert die Verwendung von WLAN."
+
+msgid "IDS_IDLE_TPOP_SECURITY_POLICY_PREVENTS_CHANGING_SETTINGS"
+msgstr "Die Sicherheitsrichtlinie verhindert das Ändern der Einstellungen."
+
+msgid "IDS_EMAIL_POP_SECURITY_POLICY_RESTRICTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Sicherheitsrichtlinie schränkt die Verwendung von POP-/IMAP-E-Mail ein."
+
+msgid "IDS_ST_POP_SECURITY_POLICY_PREVENTS_USE_OF_POP_IMAP_EMAIL"
+msgstr "Sicherheitsrichtlinie verhindert die Verwendung von POP/IMAP-E-Mail."
+
+msgid "IDS_USB_POP_SECURITY_POLICY_RESTRICTS_USE_OF_THE_PC_CONNECTION"
+msgstr "Eine Sicherheitsrichtlinie schränkt die Verwendung der PC-Verbindung ein."
+

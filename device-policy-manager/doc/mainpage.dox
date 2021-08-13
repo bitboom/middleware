@@ -1,0 +1,49 @@
+/**
+ @mainpage Tizen Device Policy Management Framework
+
+ @section Introduction
+ The primary purpose of the DPM(Device Policy Management) framework is to support enterprise applications, which require integration with policies enforced on the device to restrict their operations on some circumstance, such as exchange or corporate apps.<br>
+<br>
+<br>
+ @section Architecture
+The Device Policy Management framework consists of the device policy manager and policy client library as shown in the figure.
+The device policy manager manages all policies enforced on the device and exposes APIs to administrator via the policy client library called libdpm. Thus, the policy client should link the policy client library to enforce policies.
+
+<br>
+ @image html dpm.png "Tizen Device Policy Management Framework"
+ <br>
+ @section PolicyGroup Policy Groups
+ The Device Policy Management framework supposts following three policy groups.
+ Each policy group has dedicated header file. So, you should include it to use any API associated to the policy group
+   <center>
+   <table>
+   <tr>
+       <td><b>Policy Group</b></td>
+       <td><center><b>Description</b></center></td>
+       <td><b>Related header file</b></td>
+   </tr>
+   <tr>
+       <td>PasswordPolicy</td>
+       <td>Provide functionality to control password policy</td>
+       <td>dpm/password.h</td>
+   </tr>
+   <tr>
+       <td>SecurityPolicy</td>
+       <td>Provide functionality to control security such as encryption and device wipe</td>
+       <td>dpm/security.h</td>
+   </tr>
+   <tr>
+       <td>ZonePolicy</td>
+       <td>Provide functionality to control application containers</td>
+       <td>dpm/zone.h</td>
+   </tr>
+   </table>
+   </center>
+<br>
+<br>
+<br>
+ @section Priviliges
+Only privileged client, which is registered to the policy manager can enforce policies. Other unprivileged application are only allowed to subscribe policy change notification published by the device policy manager.<br>
+<br>
+<br>
+*/
