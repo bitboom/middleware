@@ -1,0 +1,6 @@
+[Unit]
+Description=Cert-checker popup service
+
+[Service]
+EnvironmentFile=@POPUP_ENV_PATH@
+ExecStart=@BIN_DIR@/@SERVICE_NAME@-popup

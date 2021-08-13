@@ -1,0 +1,9 @@
+[Unit]
+Description=Cert-checker popup socket
+
+[Socket]
+ListenStream=@POPUP_STREAM@
+SocketMode=0777
+
+[Install]
+WantedBy=sockets.target

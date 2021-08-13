@@ -1,0 +1,8 @@
+[Socket]
+ListenStream=@SERVICE_STREAM@
+SocketUser=@SERVICE_USER@
+SocketGroup=@SERVICE_GROUP@
+SocketMode=0777
+
+[Install]
+WantedBy=sockets.target
