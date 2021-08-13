@@ -1,0 +1,11 @@
+# subject labels allowed to use password checking/setting
+# put each allowed label in new line
+# If the preloaded app can hold internal privilege later,
+# the whitelist would be replaced with cynara.
+System
+System::Privileged
+User
+# This is for the mobile preloaded app.
+User::Pkg::org.tizen.keyguard
+User::Pkg::org.tizen.lockscreen
+User::Pkg::org.tizen.setting

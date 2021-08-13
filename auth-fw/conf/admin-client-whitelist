@@ -1,0 +1,4 @@
+# subject labels allowed to use password reset and password policy setting
+# put each allowed label in new line
+System
+System::Privileged

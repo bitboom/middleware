@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=@LIB_INSTALL_DIR@
+includedir=${prefix}/include
+
+Name: @SERVICE_NAME@-admin
+Description: @SERVICE_NAME@ admin client
+Version: @VERSION@
+Requires:
+Libs: -L${libdir} -l@SERVICE_NAME@-client-admin -l@SERVICE_NAME@-commons
+Cflags: -I${includedir}/@SERVICE_NAME@
